@@ -133,7 +133,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// ソフトウェアアダプタでなければ採用!出なければ帰れ!
 		if (!(adapterDesc.Flags & DXGI_ADAPTER_FLAG3_SOFTWARE)) {
 			// 採用したアダプタの情報をログに出力.
-			Log(ConvertString((L"Use Adapter:{}\n",adapterDesc.Description)));
+			Log(ConvertString(std::format(L"Use Adapter : {}\n",adapterDesc.Description)));
 			break;
 		}
 
@@ -158,7 +158,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// 指定した昨日レベルでデバイスが生成できたかを確認
 		if (SUCCEEDED(hr)) {
 			// 生成できたログ出力を行ってループを抜ける.
-			Log(std::format("FeatureLevel : {}",featureLevelStrings[i]));
+			Log(std::format("FeatureLevel : {}\n",featureLevelStrings[i]));
 			break;
 		}
 
