@@ -16,8 +16,23 @@
     <Filter Include="Shader">
       <UniqueIdentifier>{e662d609-73ec-4106-9595-f5c883800c14}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Vector">
+    <Filter Include="Math">
+      <UniqueIdentifier>{b4866934-20bb-404d-880d-d14975207f59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\Vertex">
+      <UniqueIdentifier>{13ff5b98-560e-49fd-b9a4-0252d0135038}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\Vector">
       <UniqueIdentifier>{f457cc85-e7ad-4fa8-9408-e84971d73868}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\Matrix">
+      <UniqueIdentifier>{ae6f87a4-bb47-40a2-a6dd-e61a03d3118f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\Transform">
+      <UniqueIdentifier>{af90178b-6b0e-48e5-aabd-12c20463cff6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Camera">
+      <UniqueIdentifier>{9580d45d-9102-407b-82ae-83e1d8780761}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -28,7 +43,22 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Vector4.cpp">
-      <Filter>Vector</Filter>
+      <Filter>Math\Vector</Filter>
+    </ClCompile>
+    <ClCompile Include="Vertex4.cpp">
+      <Filter>Math\Vertex</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector3.cpp">
+      <Filter>Math\Vector</Filter>
+    </ClCompile>
+    <ClCompile Include="Matrix4x4.cpp">
+      <Filter>Math\Matrix</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>Math\Transform</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -41,7 +71,22 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vector4.h">
-      <Filter>Vector</Filter>
+      <Filter>Math\Vector</Filter>
+    </ClInclude>
+    <ClInclude Include="Vertex4.h">
+      <Filter>Math\Vertex</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector3.h">
+      <Filter>Math\Vector</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix4x4.h">
+      <Filter>Math\Matrix</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>Math\Transform</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
