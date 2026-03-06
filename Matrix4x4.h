@@ -1,6 +1,6 @@
 #pragma once
 #include "Vector3.h"
-#include "Vertex4.h"
+#include "Vertex.h"
 #include "Transform.h"
 #include "assert.h"
 #include <cmath>

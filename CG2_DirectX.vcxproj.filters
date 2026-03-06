@@ -37,6 +37,9 @@
     <Filter Include="imgui">
       <UniqueIdentifier>{88847a18-f60d-4774-a014-42b6fbca9de0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Math\Math">
+      <UniqueIdentifier>{b174c634-d049-48b3-92fd-3c09250c8dac}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -51,7 +54,7 @@
     <ClCompile Include="Vector4.cpp">
       <Filter>Math\Vector</Filter>
     </ClCompile>
-    <ClCompile Include="Vertex4.cpp">
+    <ClCompile Include="Vertex.cpp">
       <Filter>Math\Vertex</Filter>
     </ClCompile>
     <ClCompile Include="Vector3.cpp">
@@ -87,6 +90,12 @@
     <ClCompile Include="externals\imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="Vector2.cpp">
+      <Filter>Math\Vector</Filter>
+    </ClCompile>
+    <ClCompile Include="Math.cpp">
+      <Filter>Math\Math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Object3d.VS.hlsl">
@@ -100,7 +109,7 @@
     <ClInclude Include="Vector4.h">
       <Filter>Math\Vector</Filter>
     </ClInclude>
-    <ClInclude Include="Vertex4.h">
+    <ClInclude Include="Vertex.h">
       <Filter>Math\Vertex</Filter>
     </ClInclude>
     <ClInclude Include="Vector3.h">
@@ -139,5 +148,16 @@
     <ClInclude Include="externals\imgui\imstb_truetype.h">
       <Filter>imgui</Filter>
     </ClInclude>
+    <ClInclude Include="Vector2.h">
+      <Filter>Math\Vector</Filter>
+    </ClInclude>
+    <ClInclude Include="Math.h">
+      <Filter>Math\Math</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Object3d.hlsli">
+      <Filter>Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>
