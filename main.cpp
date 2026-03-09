@@ -12,6 +12,7 @@
 #include <cassert>
 #include <dxgidebug.h>
 #include <dxcapi.h>
+#include <vector>
 #include "Vector4.h"
 #include "Vertex.h"
 #include "Matrix4x4.h"
@@ -19,6 +20,7 @@
 #include "Camera.h"
 #include "Math.h"
 #include "externals/DirectXTex/DirectXTex.h"
+#include "externals/DirectXTex/d3dx12.h"
 
 
 #ifdef USE_IMGUI
@@ -234,9 +236,9 @@ ID3D12Resource* CreateTextureResource(ID3D12Device* device, const DirectX::TexMe
 
 	// 2. 利用するHeapの設定。非常に特殊な運用。02_04exで一般的なケース版がある(後々そっちに変えましょね).
 	D3D12_HEAP_PROPERTIES heapProperties{};
-	heapProperties.Type = D3D12_HEAP_TYPE_CUSTOM; // 細かい設定を行う.
-	heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK; // WriteBackポリシーでCPUアクセス可能.
-	heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0; // プロセッサの近くに配置.
+	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT; // 細かい設定を行う(03_00_exで変更した).
+	//heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK; // WriteBackポリシーでCPUアクセス可能.
+	//heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0; // プロセッサの近くに配置.
 
 	// 3. Resourceを生成する.
 
@@ -245,7 +247,7 @@ ID3D12Resource* CreateTextureResource(ID3D12Device* device, const DirectX::TexMe
 		&heapProperties, // Heapの設定.
 		D3D12_HEAP_FLAG_NONE, // Heapの特殊な設定。特になし.
 		&resourceDesc, // Resource設定.
-		D3D12_RESOURCE_STATE_GENERIC_READ, // 初回のResourceState。Textureは基本読むだけ.
+		D3D12_RESOURCE_STATE_COPY_DEST, // データ転送される設定(03_00_exで変更した).
 		nullptr, // Clear最適値。使わないのでnullptr.
 		IID_PPV_ARGS(&resource)); // 作成するResourceポインタへのポインタ.
 
@@ -254,6 +256,9 @@ ID3D12Resource* CreateTextureResource(ID3D12Device* device, const DirectX::TexMe
 	return resource;
 }
 
+[[nodiscard]]
+// 過去のやつ.
+/*
 void UploadTextureData(ID3D12Resource* texture,const DirectX::ScratchImage& mipImage) {
 	// Meta情報を取得.
 	const DirectX::TexMetadata& metadata = mipImage.GetMetadata();
@@ -272,8 +277,31 @@ void UploadTextureData(ID3D12Resource* texture,const DirectX::ScratchImage& mipI
 
 		assert(SUCCEEDED(hr));
 	}
+	
 
 }
+*/
+
+// にゅー！.
+ID3D12Resource* UploadTextureData(ID3D12Resource* texture,const DirectX::ScratchImage& mipImages,ID3D12Device* device,
+	ID3D12GraphicsCommandList* commandList) {
+	
+	std::vector<D3D12_SUBRESOURCE_DATA> subresource;
+	DirectX::PrepareUpload(device,mipImages.GetImages(),mipImages.GetImageCount(),mipImages.GetMetadata(),subresource);
+	uint64_t intermediateSize = GetRequiredIntermediateSize(texture,0,UINT(subresource.size()));
+	ID3D12Resource* intermediateResource = CreateBufferResource(device,intermediateSize);
+	UpdateSubresources(commandList,texture,intermediateResource,0,0,UINT(subresource.size()),subresource.data());
+	// Textureへの転用後は利用できるよう、D3D12_RESOURCE_STATE_COPY_DESTからD3D12_RESOURCE_STATE_GENERIC_READへResourceStateを変更する.
+	D3D12_RESOURCE_BARRIER barrier{};
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier.Transition.pResource = texture;
+	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
+	commandList->ResourceBarrier(1,&barrier);
+	return intermediateResource;
+};
 
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -762,7 +790,34 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	DirectX::ScratchImage mipImage = LoadTexture("Resource/uvChecker.png");
 	const DirectX::TexMetadata& metadata = mipImage.GetMetadata();
 	ID3D12Resource* textureResource = CreateTextureResource(device,metadata);
-	UploadTextureData(textureResource,mipImage);
+	ID3D12Resource* intermediateResource = UploadTextureData(textureResource,mipImage,device,commandList);
+
+	// commandListをCloseし、キックしたりする(スワップチェーン無しのフレーム更新みたいなもの).
+	hr = commandList->Close();
+	assert(SUCCEEDED(hr));
+
+	//GPUにコマンドリストの実行を行わせる.
+	ID3D12CommandList* commandLists[] = { commandList };
+	commandQueue->ExecuteCommandLists(1, commandLists);
+
+	// Fanceの値を更新.
+	fenceValue++;
+	// GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る.
+	commandQueue->Signal(fence, fenceValue);
+
+	// Fenceの値が指定したSignal値にたどり着いているか確認する.
+	// GetCompletedValueの初期値はFence作成時に渡した初期値.
+	if (fence->GetCompletedValue() < fenceValue) {
+		// 指定したSignalにたどり着いていないので、たどり着くまで待つようにイベントを設定する.
+		fence->SetEventOnCompletion(fenceValue, fenceEvent);
+		// イベント待つ.
+		WaitForSingleObject(fenceEvent, INFINITE);
+	}
+
+	hr = commandAllocator->Reset();
+	assert(SUCCEEDED(hr));
+	hr = commandList->Reset(commandAllocator, nullptr);
+	assert(SUCCEEDED(hr));
 
 
 	/*=============================================================
