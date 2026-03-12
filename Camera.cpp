@@ -43,3 +43,10 @@ Matrix4x4 Camera::GetWorldViewProjectionMatrix(Matrix4x4 matrix){
 	Matrix4x4 worldViewProjectionMatrix = matrix * viewMatrix * projectionMatrix;
 	return worldViewProjectionMatrix;
 }
+
+Matrix4x4 Camera::GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix){
+	Matrix4x4 viewMatrix = matrix_.Identity();
+	Matrix4x4 projectionMatrix = Matrix4x4::MakeOrthographicMatrix({ {0.0f,0.0f},{0.0f,0.0f},{0.0f,0.0f},{windowWidth_,windowHeight_} }, 0.0f, 100.0f);
+	Matrix4x4 worldViewProjectionMatrix = matrix * viewMatrix * projectionMatrix;
+	return worldViewProjectionMatrix;
+}
