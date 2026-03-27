@@ -40,6 +40,9 @@
     <Filter Include="Math\Math">
       <UniqueIdentifier>{b174c634-d049-48b3-92fd-3c09250c8dac}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Renderer">
+      <UniqueIdentifier>{02656ce8-d9ac-445c-b22d-7d95ba6f9511}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -95,6 +98,9 @@
     </ClCompile>
     <ClCompile Include="Math.cpp">
       <Filter>Math\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -153,6 +159,9 @@
     </ClInclude>
     <ClInclude Include="Math.h">
       <Filter>Math\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
