@@ -35,3 +35,7 @@ public:
 	static Matrix4x4 MakeViewportMatrix(Vector3 leftTop, float width, float height, float minDepth, float maxDepth);
 };
 
+struct TransformationMatrix {
+	Matrix4x4 WVP;
+	Matrix4x4 World;
+};

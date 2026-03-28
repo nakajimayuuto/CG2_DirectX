@@ -43,6 +43,18 @@
     <Filter Include="Renderer">
       <UniqueIdentifier>{02656ce8-d9ac-445c-b22d-7d95ba6f9511}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader\hlsl">
+      <UniqueIdentifier>{64ec877d-11c7-4f7b-86d2-fbd88ee10b95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\CPU">
+      <UniqueIdentifier>{25c0c9a9-8fa0-4bc0-bc3b-c7c872813c2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\CPU\Material">
+      <UniqueIdentifier>{11d1524a-bd52-4efb-b175-13c2c83cd246}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\CPU\DirectionalLight">
+      <UniqueIdentifier>{6edd4377-3868-4a94-a6a6-8568a1bb10e9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -105,10 +117,10 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Object3d.VS.hlsl">
-      <Filter>Shader</Filter>
+      <Filter>Shader\hlsl</Filter>
     </FxCompile>
     <FxCompile Include="Object3d.PS.hlsl">
-      <Filter>Shader</Filter>
+      <Filter>Shader\hlsl</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -163,10 +175,16 @@
     <ClInclude Include="Renderer.h">
       <Filter>Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Shader\CPU\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectionalLight.h">
+      <Filter>Shader\CPU\DirectionalLight</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Object3d.hlsli">
-      <Filter>Shader</Filter>
+      <Filter>Shader\hlsl</Filter>
     </None>
   </ItemGroup>
 </Project>
