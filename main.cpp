@@ -641,7 +641,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 【VertexResourceを生成する】
 	const uint32_t kSubdivision = 16;
 	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
-	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * kSubdivision * kSubdivision * 6);
+	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * kSubdivision * kSubdivision * 4);
 
 	// 【MaterialResourceを生成する】
 	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
@@ -673,9 +673,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// リソースの先頭のアドレスから使う.
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 6;
+	vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 4;
 	// 1頂点あたりのサイズ.
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
+
+	// 【IndexResourceを生成する】
+	// 実際に頂点リソースを作る.
+	ID3D12Resource* indexResource = CreateBufferResource(device, sizeof(uint32_t) * kSubdivision * kSubdivision * 6);
+
+	// 頂点バッファビューを作成する.
+	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
+	// リソースの先頭のアドレスから使う.
+	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
+	// 使用するリソースのサイズはインデックス6つ分のサイズ.
+	indexBufferView.SizeInBytes = sizeof(uint32_t) * kSubdivision * kSubdivision * 6;
+	// インデックスはuint32_tとする.
+	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 
 
 	// 【Resourceにデータを書き込む】
@@ -685,6 +698,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 書き込むためのアドレスを取得.
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 
+	// インデックスリソースにデータを書き込む.
+	uint32_t* indexData = nullptr;
+	// 書き込むためのアドレスを取得.
+	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
 
 	// スフィアの描画プログラム.(いつかRendererに入れる)
 	const float kLonEvery = std::numbers::pi_v<float> *2.0f / kSubdivision;
@@ -694,7 +711,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;
 
 		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; lonIndex++) {
-			uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
+			uint32_t start = (latIndex * kSubdivision + lonIndex) * 4;
+			uint32_t indexStart = (latIndex * kSubdivision + lonIndex) * 6;
 			float lon = lonIndex * kLonEvery;
 
 			float u = static_cast<float>(lonIndex) / static_cast<float>(kSubdivision);
@@ -706,15 +724,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			vertexData[start + 1].texcoord = { u - 1.0f / static_cast<float>(kSubdivision) ,v - 1.0f / static_cast<float>(kSubdivision) };
 			vertexData[start + 2].position = { cos(lat) * cos(lon + std::numbers::pi_v<float> *2.0f / kSubdivision),sin(lat),cos(lat) * sin(lon + std::numbers::pi_v<float> *2.0f / kSubdivision) ,1.0f };
 			vertexData[start + 2].texcoord = { u ,v };
-
-			vertexData[start + 3].position = { cos(lat) * cos(lon + std::numbers::pi_v<float> *2.0f / kSubdivision),sin(lat),cos(lat) * sin(lon + std::numbers::pi_v<float> *2.0f / kSubdivision) ,1.0f };
-			vertexData[start + 3].texcoord = { u ,v };
-			vertexData[start + 4].position = { cos(lat + std::numbers::pi_v<float> / kSubdivision) * cos(lon),sin(lat + std::numbers::pi_v<float> / kSubdivision),cos(lat + std::numbers::pi_v<float> / kSubdivision) * sin(lon) ,1.0f };
-			vertexData[start + 4].texcoord = { u - 1.0f / static_cast<float>(kSubdivision) ,v - 1.0f / static_cast<float>(kSubdivision) };
-			vertexData[start + 5].position = { cos(lat + std::numbers::pi_v<float> / kSubdivision) * cos(lon + std::numbers::pi_v<float> *2.0f / kSubdivision),sin(lat + std::numbers::pi_v<float> / kSubdivision),cos(lat + std::numbers::pi_v<float> / kSubdivision) * sin(lon + std::numbers::pi_v<float> *2.0f / kSubdivision),1.0f };
-			vertexData[start + 5].texcoord = { u ,v - 1.0f / static_cast<float>(kSubdivision) };
+			vertexData[start + 3].position = { cos(lat + std::numbers::pi_v<float> / kSubdivision) * cos(lon + std::numbers::pi_v<float> *2.0f / kSubdivision),sin(lat + std::numbers::pi_v<float> / kSubdivision),cos(lat + std::numbers::pi_v<float> / kSubdivision) * sin(lon + std::numbers::pi_v<float> *2.0f / kSubdivision),1.0f };
+			vertexData[start + 3].texcoord = { u ,v - 1.0f / static_cast<float>(kSubdivision) };
 			
-			for (uint32_t i = 0; i < 6; i++) {
+			indexData[indexStart] = start;
+			indexData[indexStart + 1] = start + 1;
+			indexData[indexStart + 2] = start + 2;
+			indexData[indexStart + 3] = start + 1;
+			indexData[indexStart + 4] = start + 3;
+			indexData[indexStart + 5] = start + 2;
+
+			
+			for (uint32_t i = 0; i < 4; i++) {
 				vertexData[start + i].normal.x = vertexData[start + i].position.x;
 				vertexData[start + i].normal.y = vertexData[start + i].position.y;
 				vertexData[start + i].normal.z = vertexData[start + i].position.z;
@@ -748,16 +769,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	=============================================================*/
 	// 【VertexResourceを生成する】
 	// 実際に頂点リソースを作る.
-	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
+	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 4);
 
 	// 頂点バッファビューを作成する.
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{};
 	// リソースの先頭のアドレスから使う.
 	vertexBufferViewSprite.BufferLocation = vertexResourceSprite->GetGPUVirtualAddress();
 	// 使用するリソースのサイズは頂点3つ分のサイズ.
-	vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 6;
+	vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 4;
 	// 1頂点あたりのサイズ.
 	vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
+
+	// 【IndexResourceを生成する】
+	// 実際に頂点リソースを作る.
+	ID3D12Resource* indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
+
+	// 頂点バッファビューを作成する.
+	D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
+	// リソースの先頭のアドレスから使う.
+	indexBufferViewSprite.BufferLocation = indexResourceSprite->GetGPUVirtualAddress();
+	// 使用するリソースのサイズはインデックス6つ分のサイズ.
+	indexBufferViewSprite.SizeInBytes = sizeof(uint32_t) * 6;
+	// インデックスはuint32_tとする.
+	indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
+
 
 	// 【MaterialResourceを生成する】
 	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
@@ -798,34 +833,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexDataSprite[2].texcoord = { 1.0f,1.0f };
 	vertexDataSprite[2].normal = { 0.0f,0.0f,-1.0f };
 	// 2枚目の三角形.
-	vertexDataSprite[3].position = { 0.0f,0.0f,0.0f,1.0f }; // 左上.
-	vertexDataSprite[3].texcoord = { 0.0f,0.0f };
+	vertexDataSprite[3].position = { 640.0f,0.0f,0.0f,1.0f }; // 右上.
+	vertexDataSprite[3].texcoord = { 1.0f,0.0f };
 	vertexDataSprite[3].normal = { 0.0f,0.0f,-1.0f };
-	vertexDataSprite[4].position = { 640.0f,0.0f,0.0f,1.0f }; // 右上.
-	vertexDataSprite[4].texcoord = { 1.0f,0.0f };
-	vertexDataSprite[4].normal = { 0.0f,0.0f,-1.0f };
-	vertexDataSprite[5].position = { 640.0f,360.0f,0.0f,1.0f }; // 右下.
-	vertexDataSprite[5].texcoord = { 1.0f,1.0f };
-	vertexDataSprite[5].normal = { 0.0f,0.0f,-1.0f };
+
+	// インデックスリソースにデータを書き込む.
+	uint32_t* indexDataSprite = nullptr;
+	// 書き込むためのアドレスを取得.
+	indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
+	// 1枚目の三角形.
+	indexDataSprite[0] = 0;
+	indexDataSprite[1] = 1;
+	indexDataSprite[2] = 2;
+	indexDataSprite[3] = 1;
+	indexDataSprite[4] = 3;
+	indexDataSprite[5] = 2;
 
 
 
 	// 【DirectionalLight】
-	// 絶対ここでバグってる.
-	// Resourceを作成っていきなり言われてもどうすりゃいいかわからんよ.
-	// それっぽいことしてるけどそれっぽいだけで多分違うしマジでわからない.
-	// 助けて.
-	// 設定的な部分でミスってる
-	// 考え方はあってそう
-	// マジでわからんキレそう
-	// ストレスヤバいマジでヤバいマジで
-	// 
-	// 「「おー」＠おｐじゅお＠ｊ」ぴ：ｂのぴじゅ」：のぴｊぶいん：ｈ０ｐ：おｐじゅぼｐｊぐぶ：ほｐｇｂ：んｈぴｂｊ
-	// 
-	// 
-	// 
-	// 
-	// 
 	// //DirectionalLightResourceを作る。DirectionalLight 1つ分のサイズを用意する.
 	ID3D12Resource* directionalLightResource = CreateBufferResource(device, sizeof(DirectionalLight));
 	// データを書き込む.
@@ -1249,6 +1275,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootSignature(rootSignature);
 			commandList->SetPipelineState(graphicsPipelineState); // PS0を設定.
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferView); // VBVを設定.
+			commandList->IASetIndexBuffer(&indexBufferView); // IBVを設定.
 			// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			// CBufferの場所を設定.
@@ -1261,13 +1288,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// DirectionalLight用のCBufferの場所.
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 			// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-			commandList->DrawInstanced(kSubdivision* kSubdivision * 6, 1, 0, 0);
+			commandList->DrawIndexedInstanced(kSubdivision* kSubdivision * 6, 1, 0, 0,0);
 
 			/*=============================================================
 			三角形のSpriteの描画のコマンド.
 			=============================================================*/
 			// Spriteの描画。変更が必要なものだけ変更する.
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite); // VBVを設定.
+			commandList->IASetIndexBuffer(&indexBufferViewSprite); // IBVを設定.
 			// マテリアル用のCBufferの場所.
 			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
 			// transformationMatrixCBufferの場所.
@@ -1276,7 +1304,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[0]);
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 			// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-			commandList->DrawInstanced(6, 1, 0, 0);
+			commandList->DrawIndexedInstanced(6, 1, 0, 0,0);
 
 
 #ifdef USE_IMGUI
@@ -1350,6 +1378,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// 三角形の解放開始.
 	vertexResource->Release();
+	indexResource->Release();
 	graphicsPipelineState->Release();
 	signatureBlob->Release();
 
@@ -1367,6 +1396,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// Spriteの解放開始.
 	vertexResourceSprite->Release();
+	indexResourceSprite->Release();
 	transformationMatrixResourceSprite->Release();
 	materialResourceSprite->Release();
 	// Spriteの解放終了.
