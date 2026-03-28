@@ -653,6 +653,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 今回は赤を書き込んでみる
 	materialData->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	materialData->enableLighting = true;
+	materialData->uvTransform = Matrix4x4::Identity();
 
 	// 【TransformationMatrix】
 	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
@@ -804,6 +805,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 今回は赤を書き込んでみる
 	materialDataSprite->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	materialDataSprite->enableLighting = false;
+	materialDataSprite->uvTransform = Matrix4x4::Identity();
 
 	// 【TransformationMatrix】
 	//Sprite用のTransformationMatrixを作る。Matrix4x4 1つ分のサイズを用意する.
@@ -1113,6 +1115,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 
+	Transform uvTransformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+
+
 	Camera::GetInstance()->Initialize(kClientWidth, kClinetHeight);
 
 	// ウィンドウのxボタンが押されるまでループ.
@@ -1179,6 +1184,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::SliderFloat("rotate", reinterpret_cast<float*>(&transformSprite.rotate.z), 0.0f, Radian(360.0f));
 			ImGui::SliderFloat2("translate", reinterpret_cast<float*>(&transformSprite.translate), -640.0f, 1280.0f);
 
+			ImGui::SliderFloat2("UVScale", reinterpret_cast<float*>(&uvTransformSprite.scale), 0.0f, 2.0f);
+			ImGui::SliderFloat("UVRotate", reinterpret_cast<float*>(&uvTransformSprite.rotate.z), 0.0f, Radian(360.0f));
+			ImGui::SliderFloat2("UVTranslate", reinterpret_cast<float*>(&uvTransformSprite.translate), -640.0f, 1280.0f);
+
 			ImGui::End();
 
 
@@ -1220,6 +1229,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			transformationMatrixDataSprite->World = worldMatrix;
 			transformationMatrixDataSprite->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
+
+			materialDataSprite->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransformSprite);
 
 			/*=============================================================
 			以下にゲームの描画処理を記述.
