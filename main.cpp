@@ -20,8 +20,14 @@
 #include "Transform.h"
 #include "Camera.h"
 #include "Math.h"
+
 #include "Material.h"
 #include "DirectionalLight.h"
+
+#include "ModelData.h"
+#include <fstream>
+#include <sstream>
+
 #include "externals/DirectXTex/DirectXTex.h"
 #include "externals/DirectXTex/d3dx12.h"
 
@@ -355,6 +361,124 @@ D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDiscriptorHandle(ID3D12DescriptorHeap* descrip
 	return handleGPU;
 }
 
+// ModelManager的n(以下略.
+MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& fileName) {
+	// 1. 中で必要となる変数の宣言.
+	MaterialData materialData; // 構築するModelData.
+	std::string line; // ファイルから読んだ1行を格納するもの.
+
+
+	// 2. ファイルを開く.
+	std::ifstream file(directoryPath + "/" + fileName); // ファイルを開く.
+	assert(file.is_open()); // とりあえず開けなかったら止める.
+	
+
+	// 3. 実際にファイルを読み、MaterialDataを構築していく.
+	while (std::getline(file, line)) {
+		std::string identifier;
+		std::istringstream s(line);
+		s >> identifier; // 先頭の識別子を読む.
+
+		// identifierに応じた処理.
+
+		if (identifier == "map_Kd") {
+			std::string textureFilename;
+			s >> textureFilename;
+			// 連結してファイルパスにする.
+			materialData.textureFilePath = directoryPath+"/"+textureFilename;
+		}
+	}
+
+
+	// 4. MaterialDataを返す.
+
+	return materialData;
+}
+
+// ModelManager的な奴に入れる.
+ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileName) {
+	// 1. 中で必要となる変数の宣言.
+	ModelData modelData; // 構築するModelData.
+	std::vector<Vector4> positions; // 位置.
+	std::vector<Vector3> normals; // 法線.
+	std::vector<Vector2> texcoords; // テクスチャ座標.
+	std::string line; // ファイルから読んだ1行を格納するもの.
+
+
+	// 2. ファイルを開く.
+	std::ifstream file(directoryPath + "/" + fileName); // ファイルを開く.
+	assert(file.is_open()); // とりあえず開けなかったら止める.
+
+
+	// 3. 実際にファイルを読み、ModelDataを構築していく.
+	while (std::getline(file, line)) {
+		std::string identifier;
+		std::istringstream s(line);
+		s >> identifier; // 先頭の識別子を読む.
+
+		// identifierに応じた処理.
+
+		if (identifier == "v") {
+			Vector4 position;
+			s >> position.x >> position.y >> position.z;
+			position.x *= -1.0f;
+			position.w = 1.0f;
+			positions.push_back(position);
+		}
+		else if (identifier == "vt") {
+			Vector2 texcoord;
+			s >> texcoord.x >> texcoord.y;
+			texcoord.y = 1.0f - texcoord.y;
+			texcoords.push_back(texcoord);
+		}
+		else if (identifier == "vn") {
+			Vector3 normal;
+			s >> normal.x >> normal.y >> normal.z;
+			normal.x *= -1.0f;
+			normals.push_back(normal);
+		}
+		else if (identifier == "f") {
+			VertexData triangle[3];
+			// 面は三角形限定。その他は未対応.
+			for (uint32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
+				std::string vertexDefinition;
+				s >> vertexDefinition;
+				// 頂点の要素へのIndexは「位置/UV/法線」で格納されているので、分解してIndexを取得する.
+				std::istringstream v(vertexDefinition);
+				uint32_t elementIndices[3];
+				for (uint32_t element = 0; element < 3; ++element) {
+					std::string index;
+					std::getline(v, index, '/');// 区切りでインデックスを読んでいく.
+					elementIndices[element] = std::stoi(index);
+				}
+				// 要素へのIndexから、実際の要素の値を取得して、頂点を構築する.
+				Vector4 position = positions[elementIndices[0] - 1];
+				Vector2 texcoord = texcoords[elementIndices[1] - 1];
+				Vector3 normal = normals[elementIndices[2] - 1];
+				//VertexData vertex = {position,texcoord,normal};
+				//modelData.vertices.push_back(vertex);
+				triangle[faceVertex] = { position,texcoord,normal };
+			}
+
+			modelData.vertices.push_back(triangle[2]);
+			modelData.vertices.push_back(triangle[1]);
+			modelData.vertices.push_back(triangle[0]);
+		}
+		else if (identifier == "mtllib") {
+			// MaterialTemplateLiblaryファイルの名前を取得する.
+			std::string materialFilename;
+			s >> materialFilename;
+			// 基本的にObjファイルと同一階層にmtlは存在させるので、ディレクトリ名とファイル名を渡す.
+			modelData.material = LoadMaterialTemplateFile(directoryPath, materialFilename);
+		}
+	}
+
+	// 4. ModelDataを返す.
+
+
+	return modelData;
+}
+
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	/*=============================================================
 	COMの初期化.
@@ -640,8 +764,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	=============================================================*/
 	// 【VertexResourceを生成する】
 	const uint32_t kSubdivision = 16;
+	
+	// モデル読み込み
+	ModelData modelData = LoadObjFile("Resource","axis.obj");
+	
 	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
-	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * kSubdivision * kSubdivision * 4);
+	//ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * kSubdivision * kSubdivision * 4);
+	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
 
 	// 【MaterialResourceを生成する】
 	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
@@ -674,7 +803,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// リソースの先頭のアドレスから使う.
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 4;
+	//vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 4;
+	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size());
 	// 1頂点あたりのサイズ.
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 
@@ -698,12 +828,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	VertexData* vertexData = nullptr;
 	// 書き込むためのアドレスを取得.
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	std:memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());
 
 	// インデックスリソースにデータを書き込む.
 	uint32_t* indexData = nullptr;
 	// 書き込むためのアドレスを取得.
 	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
 
+	/*
 	// スフィアの描画プログラム.(いつかRendererに入れる)
 	const float kLonEvery = std::numbers::pi_v<float> *2.0f / kSubdivision;
 	const float kLatEvery = std::numbers::pi_v<float> / kSubdivision;
@@ -743,7 +875,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 		}
 	}
-
+	*/
 
 
 
@@ -888,13 +1020,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Texture読み込み.
 	=============================================================*/
 	// Textureを読んで転送する.
-	const uint32_t textureDataMax = 2;
+	const uint32_t textureDataMax = 3;
 	DirectX::ScratchImage mipImage[textureDataMax];
 	ID3D12Resource* textureResource[textureDataMax];
 	ID3D12Resource* intermediateResource[textureDataMax];
 	DirectX::TexMetadata metadata[textureDataMax];
 	mipImage[0] = LoadTexture("Resource/uvChecker.png");
 	mipImage[1] = LoadTexture("Resource/monsterBall.png");
+	mipImage[2] = LoadTexture(modelData.material.textureFilePath);
 
 	for (uint32_t dataNumber = 0; dataNumber < textureDataMax; dataNumber++) {
 		metadata[dataNumber] = mipImage[dataNumber].GetMetadata();
@@ -1109,7 +1242,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	bool isTriangleAutoMove = false;
 
-	bool useMonsterBall = true;
+	//bool useMonsterBall = true;
+	uint32_t textureNumber = 2;
 
 	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 
@@ -1160,7 +1294,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			materialData->color = imColor;
 
-			ImGui::Checkbox("useMonsterBall",&useMonsterBall);
+			//ImGui::Checkbox("useMonsterBall",&useMonsterBall);
+			//ImGui::SliderInt("texture", reinterpret_cast<int*>(textureNumber),0,2);
 
 			ImGui::Checkbox("enableLighting", reinterpret_cast<bool*>(&materialData->enableLighting));
 
@@ -1286,7 +1421,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootSignature(rootSignature);
 			commandList->SetPipelineState(graphicsPipelineState); // PS0を設定.
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferView); // VBVを設定.
-			commandList->IASetIndexBuffer(&indexBufferView); // IBVを設定.
+			//commandList->IASetIndexBuffer(&indexBufferView); // IBVを設定.
 			// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			// CBufferの場所を設定.
@@ -1295,11 +1430,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// WVP用のCBufferの場所.
 			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 			// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
-			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandlesGPU[1] : textureSrvHandlesGPU[0]);
+			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[textureNumber]);
 			// DirectionalLight用のCBufferの場所.
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 			// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-			commandList->DrawIndexedInstanced(kSubdivision* kSubdivision * 6, 1, 0, 0,0);
+			//commandList->DrawIndexedInstanced(kSubdivision* kSubdivision * 6, 1, 0, 0,0);
+			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
 			/*=============================================================
 			三角形のSpriteの描画のコマンド.
@@ -1315,7 +1451,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[0]);
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 			// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-			commandList->DrawIndexedInstanced(6, 1, 0, 0,0);
+			//commandList->DrawIndexedInstanced(6, 1, 0, 0,0);
 
 
 #ifdef USE_IMGUI

@@ -8,3 +8,7 @@ struct Material {
 	float padding[3];
 	Matrix4x4 uvTransform;
 };
+
+struct MaterialData {
+	std::string textureFilePath;
+};

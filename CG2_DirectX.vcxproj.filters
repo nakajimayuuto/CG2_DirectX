@@ -55,6 +55,9 @@
     <Filter Include="Shader\CPU\DirectionalLight">
       <UniqueIdentifier>{6edd4377-3868-4a94-a6a6-8568a1bb10e9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader\CPU\ModelData">
+      <UniqueIdentifier>{bcdd4363-c5a0-4f8a-ba8a-2a889a7cc3d1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -180,6 +183,9 @@
     </ClInclude>
     <ClInclude Include="DirectionalLight.h">
       <Filter>Shader\CPU\DirectionalLight</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelData.h">
+      <Filter>Shader\CPU\ModelData</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
