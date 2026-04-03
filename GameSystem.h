@@ -21,6 +21,7 @@
 #include "Transform.h"
 #include "Camera.h"
 #include "Math.h"
+#include "Environment.h"
 
 #include "Material.h"
 #include "DirectionalLight.h"
@@ -40,17 +41,89 @@
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #endif // USE_IMGUI
 
-class GameSystem{
+class GameSystem {
+public:
+	//texturemanager行き
+
+
+	Material* materialData = nullptr;
+
+	TransformationMatrix* wvpData = nullptr;
+
+	Material* materialDataSprite = nullptr;
+
+	TransformationMatrix* transformationMatrixDataSprite = nullptr;
+
+	DirectionalLight* directionalLightData = nullptr;
+
+	void TextureManagerProgram();
+
+private:
+	const uint32_t kSubdivision = 16;
+
+	ModelData modelData;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource = nullptr;
+
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource = nullptr;
+
+	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
+
+	D3D12_VIEWPORT viewport{};
+
+	D3D12_RECT scissorRect{};
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSprite = nullptr;
+
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{};
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexResourceSprite = nullptr;
+
+	D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceSprite = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResourceSprite = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource = nullptr;
+
+	static constexpr uint32_t textureDataMax = 3;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource[textureDataMax] = { nullptr };
+	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource[textureDataMax] = {nullptr};
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource = nullptr;
+
+	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandlesCPU[textureDataMax];
+	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandlesGPU[textureDataMax];
+
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
+
+	// GameSystemで使うやつ.
 public:
 	static GameSystem* GetInstance();
 	
 	void Initialize();
 
-	void BeginFrame();
+	bool ProcessMessage();
+
+	bool BeginFrame();
 
 	void DrawSetup();
 
 	void Endframe();
+
+	void Finalize();
+
+	WindowSize GetWindowSize();
 
 private:
 
@@ -114,5 +187,40 @@ private:
 
 	// ModelManager的な奴に入れる.
 	ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileName);
+
+private:
+	MSG msg{};
+
+	HRESULT hr;
+
+	HWND hwnd;
+
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
+
+	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> swapChainResource[2] = { nullptr };
+
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvDescriptorHeap = nullptr;
+
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
+
+	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
+
+	uint64_t fenceValue = 0;
+
+	HANDLE fenceEvent;
+
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap = nullptr;
+
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle;
+
+	D3D12_RESOURCE_BARRIER barrier{};
 };
 

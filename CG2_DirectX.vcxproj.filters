@@ -58,6 +58,12 @@
     <Filter Include="Shader\CPU\ModelData">
       <UniqueIdentifier>{bcdd4363-c5a0-4f8a-ba8a-2a889a7cc3d1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Convert">
+      <UniqueIdentifier>{5720a672-7eae-4ac4-9b2f-88aac487d845}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSystem">
+      <UniqueIdentifier>{b04344e2-3355-43ce-b3b7-85d81f384337}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -116,6 +122,15 @@
     </ClCompile>
     <ClCompile Include="Renderer.cpp">
       <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSystem.cpp">
+      <Filter>GameSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Convert.cpp">
+      <Filter>Convert</Filter>
+    </ClCompile>
+    <ClCompile Include="Environment.cpp">
+      <Filter>GameSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -186,6 +201,15 @@
     </ClInclude>
     <ClInclude Include="ModelData.h">
       <Filter>Shader\CPU\ModelData</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSystem.h">
+      <Filter>GameSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Convert.h">
+      <Filter>Convert</Filter>
+    </ClInclude>
+    <ClInclude Include="Environment.h">
+      <Filter>GameSystem</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
