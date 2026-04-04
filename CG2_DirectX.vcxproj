@@ -58,6 +58,7 @@
     <ClCompile Include="Math.cpp" />
     <ClCompile Include="Matrix4x4.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="ModelManager.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Vector2.cpp" />
     <ClCompile Include="Vector3.cpp" />
@@ -96,7 +97,9 @@
     <ClInclude Include="Math.h" />
     <ClInclude Include="Matrix4x4.h" />
     <ClInclude Include="ModelData.h" />
+    <ClInclude Include="ModelInfo.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="ModelManager.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Vector2.h" />
     <ClInclude Include="Vector3.h" />

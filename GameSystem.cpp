@@ -24,7 +24,7 @@ void GameSystem::TextureManagerProgram(){
 	commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
 	//commandList->DrawIndexedInstanced(kSubdivision* kSubdivision * 6, 1, 0, 0,0);
-	commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+	commandList->DrawInstanced(UINT(modelData.vertices.size() +  kSubdivision * kSubdivision * 6), 1, 0, 0);
 
 	/*=============================================================
 	三角形のSpriteの描画のコマンド.
@@ -351,7 +351,7 @@ void GameSystem::Initialize() {
 
 	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
 	//Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource 
-	vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
+	vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size() + sizeof(VertexData) * kSubdivision * kSubdivision * 6);
 
 	// 【MaterialResourceを生成する】
 	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
@@ -387,7 +387,7 @@ void GameSystem::Initialize() {
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
 	//vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 4;
-	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size());
+	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size() + sizeof(VertexData) * kSubdivision * kSubdivision * 6);
 	// 1頂点あたりのサイズ.
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 
@@ -419,7 +419,7 @@ std:memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData
 	// 書き込むためのアドレスを取得.
 	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
 
-	/*
+	
 	// スフィアの描画プログラム.(いつかRendererに入れる)
 	const float kLonEvery = std::numbers::pi_v<float> *2.0f / kSubdivision;
 	const float kLatEvery = std::numbers::pi_v<float> / kSubdivision;
@@ -428,7 +428,7 @@ std:memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData
 		float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;
 
 		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; lonIndex++) {
-			uint32_t start = (latIndex * kSubdivision + lonIndex) * 4;
+			uint32_t start = (latIndex * kSubdivision + lonIndex) * 6 + modelData.vertices.size();
 			uint32_t indexStart = (latIndex * kSubdivision + lonIndex) * 6;
 			float lon = lonIndex * kLonEvery;
 
@@ -459,7 +459,7 @@ std:memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData
 			}
 		}
 	}
-	*/
+	
 
 
 

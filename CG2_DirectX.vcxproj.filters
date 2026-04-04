@@ -64,6 +64,12 @@
     <Filter Include="GameSystem">
       <UniqueIdentifier>{b04344e2-3355-43ce-b3b7-85d81f384337}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ModelManager">
+      <UniqueIdentifier>{441f4dc5-cb99-4e79-ad2d-c41e59b4a24c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\CPU\ModelInfo">
+      <UniqueIdentifier>{89204984-3070-4280-913c-318d97913af8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -131,6 +137,9 @@
     </ClCompile>
     <ClCompile Include="Environment.cpp">
       <Filter>GameSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelManager.cpp">
+      <Filter>ModelManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -210,6 +219,12 @@
     </ClInclude>
     <ClInclude Include="Environment.h">
       <Filter>GameSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelManager.h">
+      <Filter>ModelManager</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelInfo.h">
+      <Filter>Shader\CPU\ModelInfo</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
