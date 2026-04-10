@@ -1,11 +1,13 @@
 #include "Camera.h"
 #include "GameSystem.h"
+#include "Renderer.h"
+#include "ModelManager.h"
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
-	GameSystem system;
+	GameSystem* system = GameSystem::GetInstance();
 
-	system.Initialize();
+	system->Initialize();
 
 	/*=============================================================
 	ここから下がゲームの変数.
@@ -15,8 +17,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	bool isTriangleAutoMove = false;
 
-	//bool useMonsterBall = true;
-	uint32_t textureNumber = 2;
+	bool useMonsterBall = true;
+	int textureNumber = 1;
 
 	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 
@@ -24,12 +26,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Transform uvTransformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 
+	Camera::GetInstance()->Initialize(system->GetWindowSize().width, system->GetWindowSize().height);
 
-	Camera::GetInstance()->Initialize(system.GetWindowSize().width, system.GetWindowSize().height);
+	
+
+	Renderer::Model testModel;
+
+	ModelManager::GetInstance()->RegisterObj("test", "Resource", "axis.obj");
+	TextureManager::GetInstance()->RegisterTexture("monster_ball", "Resource/monsterBall.png");
+	testModel.Initialize(ModelManager::GetInstance()->GetModelInfo("test"));
+
+	Renderer::Sphere testSphere;
+
+	testSphere.Initialize(TextureManager::GetInstance()->GetTextureInfo("monster_ball"));
+
+	Renderer::Sprite testSprite;
+
+	testSprite.Initialize(TextureManager::GetInstance()->GetTextureInfo("monster_ball"));
 
 	// ウィンドウのxボタンが押されるまでループ.
-	while (system.ProcessMessage()) {
-		if (system.BeginFrame()) {
+	while (system->ProcessMessage()) {
+		if (system->BeginFrame()) {
 //
 			/*=============================================================
 			以下にゲームの更新処理を記述.
@@ -42,16 +59,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::SliderFloat3("rotate", reinterpret_cast<float*>(&transform.rotate), 0.0f, Radian(360.0f));
 			ImGui::SliderFloat3("translate", reinterpret_cast<float*>(&transform.translate), -5.0f, 5.0f);
 
-			Vector4 imColor = system.materialData->color;
+			Vector4 imColor = testModel.materialData_->color;
 
 			ImGui::ColorEdit4("color", reinterpret_cast<float*>(&imColor));
 
-			system.materialData->color = imColor;
+			system->materialData->color = imColor;
+
+			testModel.materialData_->color = imColor;
 
 			//ImGui::Checkbox("useMonsterBall",&useMonsterBall);
-			//ImGui::SliderInt("texture", reinterpret_cast<int*>(textureNumber),0,2);
+			ImGui::SliderInt("texture",&textureNumber,0,2);
 
-			ImGui::Checkbox("enableLighting", reinterpret_cast<bool*>(&system.materialData->enableLighting));
+			ImGui::Checkbox("enableLighting", reinterpret_cast<bool*>(&system->materialData->enableLighting));
+			ImGui::Checkbox("testEnableLighting", reinterpret_cast<bool*>(&testModel.materialData_->enableLighting));
 
 			if (ImGui::Button("AutoMove")) {
 				if (isTriangleAutoMove) {
@@ -81,19 +101,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 			ImGui::Begin("DirectionalLight");
-			imColor = system.directionalLightData->color;
+			imColor = DirectionalLight::GetInstance()->GetDirectionalLightData()->color;
 
 			ImGui::ColorEdit4("color", reinterpret_cast<float*>(&imColor));
 
-			system.directionalLightData->color = imColor;
+			DirectionalLight::GetInstance()->GetDirectionalLightData()->color = imColor;
 
-			Vector3 imDirection = system.directionalLightData->direction;
+			Vector3 imDirection = DirectionalLight::GetInstance()->GetDirectionalLightData()->direction;
 
 			ImGui::SliderFloat3("direction", reinterpret_cast<float*>(&imDirection), -1.0f, 1.0f);
 
-			system.directionalLightData->direction = imDirection.Normalize();
+			DirectionalLight::GetInstance()->GetDirectionalLightData()->direction = imDirection.Normalize();
 
-			ImGui::SliderFloat("intensity", &system.directionalLightData->intensity, 0.0f, 1.0f);
+			ImGui::SliderFloat("intensity", &DirectionalLight::GetInstance()->GetDirectionalLightData()->intensity, 0.0f, 1.0f);
 
 			ImGui::End();
 
@@ -111,29 +131,43 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform);
 
-			system.wvpData->World = worldMatrix;
-			system.wvpData->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+			//system->wvpData->World = worldMatrix;
+			//system->wvpData->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+
+			testModel.wvpData_->World = worldMatrix;
+			testModel.wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+
+			testSphere.wvpData_->World = worldMatrix;
+			testSphere.wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
 
 			worldMatrix = Matrix4x4::MakeAffineMatrix(transformSprite);
 
-			system.transformationMatrixDataSprite->World = worldMatrix;
-			system.transformationMatrixDataSprite->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
+			//system->transformationMatrixDataSprite->World = worldMatrix;
+			//system->transformationMatrixDataSprite->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
 
-			system.materialDataSprite->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransformSprite);
+
+			//system->materialDataSprite->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransformSprite);
+
+			testSprite.transformationMatrixData_->World = worldMatrix;
+			testSprite.transformationMatrixData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
+
+
+			testSprite.materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransformSprite);
 
 			/*=============================================================
 			以下にゲームの描画処理を記述.
 			=============================================================*/
-			system.DrawSetup();
+			system->DrawSetup();
 
-			// ここをTextureManagerに変える
-			system.TextureManagerProgram();
+			// testModel.Draw();
+			// testSphere.Draw();
+			testSprite.Draw();
 
-			system.Endframe();
+			system->Endframe();
 		}
 	}
 
-	system.Finalize();
+	system->Finalize();
 
 	return 0;
 }

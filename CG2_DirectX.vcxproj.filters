@@ -70,6 +70,9 @@
     <Filter Include="Shader\CPU\ModelInfo">
       <UniqueIdentifier>{89204984-3070-4280-913c-318d97913af8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="TextureManager">
+      <UniqueIdentifier>{f6206ad7-50ef-4fbc-a72f-ad08f68f0ed3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -140,6 +143,12 @@
     </ClCompile>
     <ClCompile Include="ModelManager.cpp">
       <Filter>ModelManager</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectionalLight.cpp">
+      <Filter>Shader\CPU\DirectionalLight</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -225,6 +234,9 @@
     </ClInclude>
     <ClInclude Include="ModelInfo.h">
       <Filter>Shader\CPU\ModelInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureManager.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

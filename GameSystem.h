@@ -34,6 +34,8 @@
 #include "externals/DirectXTex/DirectXTex.h"
 #include "externals/DirectXTex/d3dx12.h"
 
+#include "ModelManager.h"
+
 #ifdef USE_IMGUI
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
@@ -44,7 +46,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 class GameSystem {
 public:
 	//texturemanager行き
-
+	bool useModelInfoTexture = false;
 
 	Material* materialData = nullptr;
 
@@ -54,14 +56,14 @@ public:
 
 	TransformationMatrix* transformationMatrixDataSprite = nullptr;
 
-	DirectionalLight* directionalLightData = nullptr;
+	//DirectionalLightData* directionalLightData = nullptr;
 
 	void TextureManagerProgram();
 
 private:
 	const uint32_t kSubdivision = 16;
 
-	ModelData modelData;
+	ModelInfo modelData;
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = nullptr;
 
@@ -75,10 +77,6 @@ private:
 
 	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
 
-	D3D12_VIEWPORT viewport{};
-
-	D3D12_RECT scissorRect{};
-
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSprite = nullptr;
 
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{};
@@ -91,7 +89,7 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResourceSprite = nullptr;
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource = nullptr;
+	//Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource = nullptr;
 
 	static constexpr uint32_t textureDataMax = 3;
 
@@ -100,12 +98,8 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource = nullptr;
 
-	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandlesCPU[textureDataMax];
+	//D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandlesCPU[textureDataMax];
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandlesGPU[textureDataMax];
-
-	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
-
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
 
 	// GameSystemで使うやつ.
 public:
@@ -125,6 +119,24 @@ public:
 
 	WindowSize GetWindowSize();
 
+	Microsoft::WRL::ComPtr<ID3D12Device> GetDevice() { return device; };
+
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> GetCommandList() { return commandList; };
+
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetCommandQueue() { return commandQueue; };
+
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> GetCommandAllocator() { return commandAllocator; };
+
+	Microsoft::WRL::ComPtr<ID3D12Fence> GetFence() { return fence; };
+
+	uint64_t GetFenceValue() { return fenceValue; };
+
+	void FenceValueIncrement() { fenceValue++; };
+	
+	HANDLE GetFenceEvent() { return fenceEvent; };
+
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetSrvDescriptorHeap() { return srvDescriptorHeap; };
+	uint32_t GetDescriptorSizeSRV() { return descriptorSizeSRV; };
 private:
 
 	struct D3DResourceLeakChecker {
@@ -143,11 +155,12 @@ private:
 
 	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
+public:
 	// ログを表示する.
-	void Log(const std::string& message);
+	static void Log(const std::string& message);
 
 	// CompileShader関数(どうやってファイル分けするかね).
-	IDxcBlob* CompileShader(
+	static IDxcBlob* CompileShader(
 		// CompilerするShaderファイルへのパス.
 		const std::wstring& filePath,
 		// Compilerに使用するProfile.
@@ -158,40 +171,42 @@ private:
 		IDxcIncludeHandler* includeHandler);
 
 	// BufferResourceを作る関数.
-	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr<ID3D12Device> device, size_t sizeInBytes);
+	static Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr<ID3D12Device> device, size_t sizeInBytes);
 
 	// DescriptorHeap関数(どうやってファイル分けするかね).
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(
+	static Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(
 		Microsoft::WRL::ComPtr<ID3D12Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDiscriptors, bool shaderVisible);
 
 
 
 	// Textureデータを読む(TextureManager的な奴に入れる).
-	DirectX::ScratchImage LoadTexture(const std::string& filePath);
+	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
 
 	// DirectX12のTextureResourceを作る(TextureManager的な奴に入れる).
 	static Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, const DirectX::TexMetadata& metaData);
 
 	// にゅー！.
-	Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages, Microsoft::WRL::ComPtr<ID3D12Device> device,
+	static Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages, Microsoft::WRL::ComPtr<ID3D12Device> device,
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList);
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> CreateDepthStencilTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, int32_t width, int32_t height);
+	static Microsoft::WRL::ComPtr<ID3D12Resource> CreateDepthStencilTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, int32_t width, int32_t height);
 
-	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDiscriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index);
+	static D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index);
 
-	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDiscriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index);
+	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index);
 
 	// ModelManager的n(以下略.
-	MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& fileName);
+	static MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& fileName);
 
 	// ModelManager的な奴に入れる.
-	ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileName);
+	static ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileName);
 
 private:
 	MSG msg{};
 
 	HRESULT hr;
+
+	Microsoft::WRL::ComPtr<ID3D12Device> device = nullptr;
 
 	HWND hwnd;
 
@@ -219,8 +234,18 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap = nullptr;
 
+	uint32_t descriptorSizeSRV;
+
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle;
 
 	D3D12_RESOURCE_BARRIER barrier{};
+
+	D3D12_VIEWPORT viewport{};
+
+	D3D12_RECT scissorRect{};
+
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
 };
 

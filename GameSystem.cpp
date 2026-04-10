@@ -1,14 +1,10 @@
 #include "GameSystem.h"
+#include "TextureManager.h"
 
 void GameSystem::TextureManagerProgram(){
 	/*=============================================================
 	三角形の描画のコマンド.
 	=============================================================*/
-	commandList->RSSetViewports(1, &viewport); // Viewportを設定.
-	commandList->RSSetScissorRects(1, &scissorRect); // Scissorを設定.
-	// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
-	commandList->SetGraphicsRootSignature(rootSignature.Get());
-	commandList->SetPipelineState(graphicsPipelineState.Get()); // PS0を設定.
 	commandList->IASetVertexBuffers(0, 1, &vertexBufferView); // VBVを設定.
 	//commandList->IASetIndexBuffer(&indexBufferView); // IBVを設定.
 	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
@@ -19,12 +15,16 @@ void GameSystem::TextureManagerProgram(){
 	// WVP用のCBufferの場所.
 	commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
+	if(useModelInfoTexture){
+	commandList->SetGraphicsRootDescriptorTable(2, modelData.textureSrvHandlesGPU);
+	}else {
 	commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[2]);
+	}
 	// DirectionalLight用のCBufferの場所.
-	commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
 	//commandList->DrawIndexedInstanced(kSubdivision* kSubdivision * 6, 1, 0, 0,0);
-	commandList->DrawInstanced(UINT(modelData.vertices.size() +  kSubdivision * kSubdivision * 6), 1, 0, 0);
+	commandList->DrawInstanced(UINT(modelData.modelData.vertices.size() +  kSubdivision * kSubdivision * 6), 1, 0, 0);
 
 	/*=============================================================
 	三角形のSpriteの描画のコマンド.
@@ -38,7 +38,7 @@ void GameSystem::TextureManagerProgram(){
 	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
 	commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[0]);
-	commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
 	//commandList->DrawIndexedInstanced(6, 1, 0, 0,0);
 }
@@ -159,7 +159,7 @@ void GameSystem::Initialize() {
 
 	// 適切なアダプタが見つからなかったので起動できない.
 
-	Microsoft::WRL::ComPtr<ID3D12Device> device = nullptr;
+	//Microsoft::WRL::ComPtr<ID3D12Device> device = nullptr;
 
 	// 機能レベルとログ出力用の文字列.
 	D3D_FEATURE_LEVEL featureLevels[] = {
@@ -276,7 +276,7 @@ void GameSystem::Initialize() {
 	// SRV用のヒープでディスクリプタの数は128。SRVはShader内で触るものなので、ShaderVisbleはtrue.
 	//Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvDescriptorHeap 
 	srvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
-	const uint32_t descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	// SwapChainからResourceを引っ張ってくる.
 	//Microsoft::WRL::ComPtr<ID3D12Resource> swapChainResource[2] = { nullptr };
@@ -296,7 +296,7 @@ void GameSystem::Initialize() {
 	const uint32_t rtvHandleMax = 2;
 
 	for (uint32_t dataNumber = 0; dataNumber < rtvHandleMax; dataNumber++) {
-		rtvHandles[dataNumber] = GetCPUDiscriptorHandle(rtvDescriptorHeap, descriptorSizeRTV, dataNumber);
+		rtvHandles[dataNumber] = GetCPUDescriptorHandle(rtvDescriptorHeap, descriptorSizeRTV, dataNumber);
 	}
 	device->CreateRenderTargetView(swapChainResource[0].Get(), &rtvDesc, rtvHandles[0]);
 
@@ -347,11 +347,13 @@ void GameSystem::Initialize() {
 
 	// モデル読み込み
 	//ModelData modelData 
-	modelData = LoadObjFile("Resource", "axis.obj");
+
+	ModelManager::GetInstance()->RegisterObj("axis","Resource", "axis.obj");
+	modelData = ModelManager::GetInstance()->GetModelInfo("axis");
 
 	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
 	//Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource 
-	vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size() + sizeof(VertexData) * kSubdivision * kSubdivision * 6);
+	vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.modelData.vertices.size() + sizeof(VertexData) * kSubdivision * kSubdivision * 6);
 
 	// 【MaterialResourceを生成する】
 	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
@@ -387,7 +389,7 @@ void GameSystem::Initialize() {
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
 	//vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 4;
-	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size() + sizeof(VertexData) * kSubdivision * kSubdivision * 6);
+	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.modelData.vertices.size() + sizeof(VertexData) * kSubdivision * kSubdivision * 6);
 	// 1頂点あたりのサイズ.
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 
@@ -412,7 +414,7 @@ void GameSystem::Initialize() {
 	VertexData* vertexData = nullptr;
 	// 書き込むためのアドレスを取得.
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-std:memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());
+std:memcpy(vertexData, modelData.modelData.vertices.data(), sizeof(VertexData) * modelData.modelData.vertices.size());
 
 	// インデックスリソースにデータを書き込む.
 	uint32_t* indexData = nullptr;
@@ -428,7 +430,7 @@ std:memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData
 		float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;
 
 		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; lonIndex++) {
-			uint32_t start = (latIndex * kSubdivision + lonIndex) * 6 + modelData.vertices.size();
+			uint32_t start = (latIndex * kSubdivision + lonIndex) * 6 + modelData.modelData.vertices.size();
 			uint32_t indexStart = (latIndex * kSubdivision + lonIndex) * 6;
 			float lon = lonIndex * kLonEvery;
 
@@ -575,16 +577,19 @@ std:memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData
 
 	// 【DirectionalLight】
 	// //DirectionalLightResourceを作る。DirectionalLight 1つ分のサイズを用意する.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource 
-	directionalLightResource = CreateBufferResource(device, sizeof(DirectionalLight));
-	// データを書き込む.
-	//DirectionalLight* directionalLightData = nullptr;
-	// 書き込むためのアドレスを取得.
-	directionalLightResource->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData));
-	// 単位行列を書き込んでおく.
-	directionalLightData->color = { 1.0f,1.0f,1.0f,1.0f };
-	directionalLightData->direction = { 0.0f,-1.0f,0.0f };
-	directionalLightData->intensity = 1.0f;
+	////Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource 
+	//directionalLightResource = CreateBufferResource(device, sizeof(DirectionalLightData));
+	//// データを書き込む.
+	////DirectionalLight* directionalLightData = nullptr;
+	//// 書き込むためのアドレスを取得.
+	//directionalLightResource->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData));
+	//// 単位行列を書き込んでおく.
+	//directionalLightData->color = { 1.0f,1.0f,1.0f,1.0f };
+	//directionalLightData->direction = { 0.0f,-1.0f,0.0f };
+	//directionalLightData->intensity = 1.0f;
+
+	DirectionalLight::GetInstance()->Initialize();
+
 
 	/*=============================================================
 	ImGuiの初期化.
@@ -603,57 +608,6 @@ std:memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData
 	ImGuiIO& io = ImGui::GetIO();
 	io.Fonts->Build();
 #endif // USE_IMGUI
-
-
-	/*=============================================================
-	Texture読み込み.
-	=============================================================*/
-	// Textureを読んで転送する.
-	DirectX::ScratchImage mipImage[textureDataMax];
-	//Microsoft::WRL::ComPtr<ID3D12Resource> textureResource[textureDataMax];
-	//Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource[textureDataMax];
-	DirectX::TexMetadata metadata[textureDataMax];
-	mipImage[0] = LoadTexture("Resource/uvChecker.png");
-	mipImage[1] = LoadTexture("Resource/monsterBall.png");
-	mipImage[2] = LoadTexture(modelData.material.textureFilePath);
-
-	for (uint32_t dataNumber = 0; dataNumber < textureDataMax; dataNumber++) {
-		metadata[dataNumber] = mipImage[dataNumber].GetMetadata();
-		textureResource[dataNumber] = CreateTextureResource(device, metadata[dataNumber]);
-		intermediateResource[dataNumber] = UploadTextureData(textureResource[dataNumber], mipImage[dataNumber], device, commandList);
-	}
-
-	// commandListをCloseし、キックしたりする(スワップチェーン無しのフレーム更新みたいなもの).
-	hr = commandList->Close();
-	assert(SUCCEEDED(hr));
-
-	//GPUにコマンドリストの実行を行わせる.
-	Microsoft::WRL::ComPtr<ID3D12CommandList> commandLists[] = { commandList };
-	commandQueue->ExecuteCommandLists(1, commandLists->GetAddressOf());
-
-	// Fanceの値を更新.
-	fenceValue++;
-	// GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る.
-	commandQueue->Signal(fence.Get(), fenceValue);
-
-	// Fenceの値が指定したSignal値にたどり着いているか確認する.
-	// GetCompletedValueの初期値はFence作成時に渡した初期値.
-	if (fence->GetCompletedValue() < fenceValue) {
-		// 指定したSignalにたどり着いていないので、たどり着くまで待つようにイベントを設定する.
-		fence->SetEventOnCompletion(fenceValue, fenceEvent);
-		// イベント待つ.
-		WaitForSingleObject(fenceEvent, INFINITE);
-	}
-
-	hr = commandAllocator->Reset();
-	assert(SUCCEEDED(hr));
-	hr = commandList->Reset(commandAllocator.Get(), nullptr);
-	assert(SUCCEEDED(hr));
-
-	//for (uint32_t dataNumber = 0; dataNumber < textureDataMax; dataNumber++) {
-	//	intermediateResource[dataNumber]->Release();
-	//}
-
 	/*=============================================================
 	DepthStencilTextureをつくる
 	=============================================================*/
@@ -686,22 +640,10 @@ std:memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData
 	=============================================================*/
 	// metaDataを基にSRVの設定.
 
-	//D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandlesCPU[textureDataMax];
-	//D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandlesGPU[textureDataMax];
-
-	for (uint32_t dataNumber = 0; dataNumber < textureDataMax; dataNumber++) {
-		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc[textureDataMax]{};
-		srvDesc[dataNumber].Format = metadata[dataNumber].format;
-		srvDesc[dataNumber].Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		srvDesc[dataNumber].ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; // 2Dテクスチャ.
-		srvDesc[dataNumber].Texture2D.MipLevels = UINT(metadata[dataNumber].mipLevels);
-
-		// SRVを生成するDescriptorHeapを決める.
-		textureSrvHandlesCPU[dataNumber] = GetCPUDiscriptorHandle(srvDescriptorHeap, descriptorSizeSRV, dataNumber + 1);
-		textureSrvHandlesGPU[dataNumber] = GetGPUDiscriptorHandle(srvDescriptorHeap, descriptorSizeSRV, dataNumber + 1);
-		// SRVの生成.
-		device->CreateShaderResourceView(textureResource[dataNumber].Get(), &srvDesc[dataNumber], textureSrvHandlesCPU[dataNumber]);
-	}
+	textureSrvHandlesGPU[0] = TextureManager::GetInstance()->RegisterTexture("checker", "Resource/uvChecker.png").textureSrvHandlesGPU;
+	textureSrvHandlesGPU[1] = TextureManager::GetInstance()->RegisterTexture("ball", "Resource/monsterBall.png").textureSrvHandlesGPU;
+	textureSrvHandlesGPU[2] = TextureManager::GetInstance()->RegisterTexture("filePath", modelData.modelData.material.textureFilePath).textureSrvHandlesGPU;
+	
 
 	/*=============================================================
 	PSO(どこに書けばいいかわからぬ).
@@ -853,6 +795,14 @@ bool GameSystem::BeginFrame() {
 }
 
 void GameSystem::DrawSetup() {
+
+	ImGui::Begin("TextureTest");
+
+	ImGui::Checkbox("useModelInfoTexture", &useModelInfoTexture);
+
+	ImGui::End();
+
+
 #ifdef USE_IMGUI
 	// ImGuiの内部コマンドを生成する.
 	ImGui::Render();
@@ -893,6 +843,13 @@ void GameSystem::DrawSetup() {
 	// 描画用のDescriptorHeapの設定.
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { srvDescriptorHeap.Get() };
 	commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
+
+
+	commandList->RSSetViewports(1, &viewport); // Viewportを設定.
+	commandList->RSSetScissorRects(1, &scissorRect); // Scissorを設定.
+	// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
+	commandList->SetGraphicsRootSignature(rootSignature.Get());
+	commandList->SetPipelineState(graphicsPipelineState.Get()); // PS0を設定.
 }
 
 void GameSystem::Endframe() {
@@ -972,7 +929,6 @@ void GameSystem::Finalize(){
 WindowSize GameSystem::GetWindowSize(){
 	return {1280,720};
 }
-
 LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 #ifdef USE_IMGUI
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
@@ -1206,13 +1162,13 @@ Microsoft::WRL::ComPtr<ID3D12Resource> GameSystem::CreateDepthStencilTextureReso
 
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE GameSystem::GetCPUDiscriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index) {
+D3D12_CPU_DESCRIPTOR_HANDLE GameSystem::GetCPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index) {
 	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	handleCPU.ptr += (descriptorSize * index);
 	return handleCPU;
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE GameSystem::GetGPUDiscriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index) {
+D3D12_GPU_DESCRIPTOR_HANDLE GameSystem::GetGPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index) {
 	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
 	handleGPU.ptr += (descriptorSize * index);
 	return handleGPU;

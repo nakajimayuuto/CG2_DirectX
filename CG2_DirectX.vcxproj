@@ -17,6 +17,7 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Convert.cpp" />
+    <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="Environment.cpp" />
     <ClCompile Include="externals\imgui\imgui.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -59,6 +60,7 @@
     <ClCompile Include="Matrix4x4.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="ModelManager.cpp" />
+    <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Vector2.cpp" />
     <ClCompile Include="Vector3.cpp" />
@@ -100,6 +102,7 @@
     <ClInclude Include="ModelInfo.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="ModelManager.h" />
+    <ClInclude Include="TextureManager.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Vector2.h" />
     <ClInclude Include="Vector3.h" />

@@ -1,40 +1,31 @@
 #pragma once
-#pragma comment(lib,"d3d12.lib")
+#include <string>
+
 
 #include <map>
-#include <string>
-#include "ModelData.h"
-#include <fstream>
-#include <sstream>
-
-
 #include <d3d12.h>
 
 #include "externals/DirectXTex/DirectXTex.h"
 #include "externals/DirectXTex/d3dx12.h"
 
-struct ModelInfo {
-	ModelData modelData;
+struct TextureInfo {
+	uint32_t number;
 
+	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource = nullptr;
+
+	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandlesCPU;
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandlesGPU;
 };
 
-class ModelManager{
+class TextureManager{
 public:
-	static ModelManager* GetInstance();
+	static TextureManager* GetInstance();
 
-	void RegisterObj(const std::string& name, const std::string& directoryPath, const std::string& fileName);
-	
-	ModelData GetModelData(const std::string& name);
+	TextureInfo RegisterTexture(const std::string& name, const std::string& filePath);
 
-	ModelInfo GetModelInfo(const std::string& name);
+	TextureInfo GetTextureInfo(const std::string& name);
 private:
-	// ModelManager的n(以下略.
-	MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& fileName);
-
-	// ModelManager的な奴に入れる.
-	ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileName);
-
 	// Textureデータを読む(TextureManager的な奴に入れる).
 	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
 
@@ -45,6 +36,7 @@ private:
 	static Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages, Microsoft::WRL::ComPtr<ID3D12Device> device,
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList);
 private:
-	std::map<std::string, ModelInfo> models_;
+	std::map<std::string, TextureInfo> textures_;
+	uint32_t textureNumber_ = 1;
 };
 
