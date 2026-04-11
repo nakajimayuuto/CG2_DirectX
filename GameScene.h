@@ -1,0 +1,35 @@
+#pragma once
+#include "Renderer.h"
+#include "ModelManager.h"
+
+class GameScene{
+public:
+	void Initialize();
+
+	void Update();
+
+	void Draw();
+private:
+	bool isModelAutoMove = false;
+
+	bool isSphereAutoMove = false;
+
+	bool useMonsterBall = true;
+
+	int textureNumber_ = 0;
+
+	Renderer::Model testModel = Renderer::Model();
+
+	Renderer::Sphere testSphere = Renderer::Sphere();
+
+	Renderer::Sprite testSprite = Renderer::Sprite();
+
+	Transform transformModel{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+
+	Transform transformSphere{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+
+	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+
+	Transform uvTransformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+};
+

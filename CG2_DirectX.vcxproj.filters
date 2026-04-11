@@ -52,12 +52,6 @@
     <Filter Include="Shader\CPU\Material">
       <UniqueIdentifier>{11d1524a-bd52-4efb-b175-13c2c83cd246}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shader\CPU\DirectionalLight">
-      <UniqueIdentifier>{6edd4377-3868-4a94-a6a6-8568a1bb10e9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shader\CPU\ModelData">
-      <UniqueIdentifier>{bcdd4363-c5a0-4f8a-ba8a-2a889a7cc3d1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Convert">
       <UniqueIdentifier>{5720a672-7eae-4ac4-9b2f-88aac487d845}</UniqueIdentifier>
     </Filter>
@@ -72,6 +66,21 @@
     </Filter>
     <Filter Include="TextureManager">
       <UniqueIdentifier>{f6206ad7-50ef-4fbc-a72f-ad08f68f0ed3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\CPU\ModelData">
+      <UniqueIdentifier>{bcdd4363-c5a0-4f8a-ba8a-2a889a7cc3d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DirectionalLight">
+      <UniqueIdentifier>{6edd4377-3868-4a94-a6a6-8568a1bb10e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene">
+      <UniqueIdentifier>{9bdabbde-5d1a-4352-af41-22d42fa3fa6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene\GameScene">
+      <UniqueIdentifier>{db5a2186-fa07-429f-9c95-7e420a69d02b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui\ImGuiLibrary">
+      <UniqueIdentifier>{58b25aba-c5fb-4a4c-9377-9f8c3a31634c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -144,11 +153,14 @@
     <ClCompile Include="ModelManager.cpp">
       <Filter>ModelManager</Filter>
     </ClCompile>
-    <ClCompile Include="TextureManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="DirectionalLight.cpp">
-      <Filter>Shader\CPU\DirectionalLight</Filter>
+      <Filter>DirectionalLight</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureManager.cpp">
+      <Filter>TextureManager</Filter>
+    </ClCompile>
+    <ClCompile Include="GameScene.cpp">
+      <Filter>Scene\GameScene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -215,7 +227,7 @@
       <Filter>Shader\CPU\Material</Filter>
     </ClInclude>
     <ClInclude Include="DirectionalLight.h">
-      <Filter>Shader\CPU\DirectionalLight</Filter>
+      <Filter>DirectionalLight</Filter>
     </ClInclude>
     <ClInclude Include="ModelData.h">
       <Filter>Shader\CPU\ModelData</Filter>
@@ -236,7 +248,13 @@
       <Filter>Shader\CPU\ModelInfo</Filter>
     </ClInclude>
     <ClInclude Include="TextureManager.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>TextureManager</Filter>
+    </ClInclude>
+    <ClInclude Include="GameScene.h">
+      <Filter>Scene\GameScene</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui.h">
+      <Filter>imgui\ImGuiLibrary</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

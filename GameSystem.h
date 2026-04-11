@@ -44,62 +44,6 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #endif // USE_IMGUI
 
 class GameSystem {
-public:
-	//texturemanager行き
-	bool useModelInfoTexture = false;
-
-	Material* materialData = nullptr;
-
-	TransformationMatrix* wvpData = nullptr;
-
-	Material* materialDataSprite = nullptr;
-
-	TransformationMatrix* transformationMatrixDataSprite = nullptr;
-
-	//DirectionalLightData* directionalLightData = nullptr;
-
-	void TextureManagerProgram();
-
-private:
-	const uint32_t kSubdivision = 16;
-
-	ModelInfo modelData;
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = nullptr;
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = nullptr;
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource = nullptr;
-
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource = nullptr;
-
-	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSprite = nullptr;
-
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{};
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> indexResourceSprite = nullptr;
-
-	D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceSprite = nullptr;
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResourceSprite = nullptr;
-
-	//Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource = nullptr;
-
-	static constexpr uint32_t textureDataMax = 3;
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource[textureDataMax] = { nullptr };
-	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource[textureDataMax] = {nullptr};
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource = nullptr;
-
-	//D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandlesCPU[textureDataMax];
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandlesGPU[textureDataMax];
 
 	// GameSystemで使うやつ.
 public:
@@ -243,6 +187,8 @@ private:
 	D3D12_VIEWPORT viewport{};
 
 	D3D12_RECT scissorRect{};
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource = nullptr;
 
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
 

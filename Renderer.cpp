@@ -1,8 +1,11 @@
 #include "Renderer.h"
 #include "GameSystem.h"
 
-void Renderer::Model::Initialize(ModelInfo info) {
+void Renderer::Model::Initialize(const ModelInfo& info) {
 	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
+
+	isVisible_;
+	isVisible_ = true;
 
 	modelInfo_ = info;
 
@@ -58,7 +61,16 @@ void Renderer::Model::Initialize(ModelInfo info) {
 	
 }
 
-void Renderer::Model::Draw(){
+void Renderer::Model::Draw(const Transform& transform){
+	if (!isVisible_) {
+		return;
+	}
+	
+	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform);
+
+	wvpData_->World = worldMatrix;
+	wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+
 	/*=============================================================
 	三角形の描画のコマンド.
 	=============================================================*/
@@ -89,6 +101,8 @@ void Renderer::Model::Draw(){
 }
 
 void Renderer::Sphere::Initialize(TextureInfo info){
+	isVisible_ = true;
+
 	textureInfo_ = info;
 	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
 	//Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource 
@@ -201,7 +215,15 @@ void Renderer::Sphere::Initialize(TextureInfo info){
 	}
 }
 
-void Renderer::Sphere::Draw() {
+void Renderer::Sphere::Draw(const Transform& transform) {
+	if (!isVisible_) {
+		return;
+	}
+	
+	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform);
+
+	wvpData_->World = worldMatrix;
+	wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
 	/*=============================================================
 	三角形の描画のコマンド.
 	=============================================================*/
@@ -232,6 +254,8 @@ void Renderer::Sphere::Draw() {
 }
 
 void Renderer::Sprite::Initialize(TextureInfo info){
+	isVisible_ = true;
+
 	textureInfo_ = info;
 	/*=============================================================
 	Sprite用のResourceとView.
@@ -323,7 +347,15 @@ void Renderer::Sprite::Initialize(TextureInfo info){
 	indexDataSprite[5] = 2;
 }
 
-void Renderer::Sprite::Draw() {
+void Renderer::Sprite::Draw(const Transform& transform) {
+	if (!isVisible_) {
+		return;
+	}
+
+	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform);
+
+	transformationMatrixData_->World = worldMatrix;
+	transformationMatrixData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
 	/*=============================================================
 	三角形のSpriteの描画のコマンド.
 	=============================================================*/

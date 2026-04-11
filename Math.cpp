@@ -39,6 +39,27 @@ float Degree(float radian) {
 }
 
 
+Vector3 Radian(Vector3 degree) {
+	Vector3 radian;
+
+	radian.x = Radian(degree.x);
+	radian.y = Radian(degree.y);
+	radian.z = Radian(degree.z);
+
+	return radian;
+}
+
+
+Vector3 Degree(Vector3 radian) {
+	Vector3 degree;
+
+	degree.x = Degree(radian.x);
+	degree.y = Degree(radian.y);
+	degree.z = Degree(radian.z);
+
+	return degree;
+}
+
 float Clamp(float clamping, float min, float max) {
 	float clamp = clamping;
 

@@ -1,8 +1,9 @@
-﻿#pragma once
+#pragma once
 
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "Vector2.h"
+#include "Vector3.h"
 
 /// <summary>
 /// ベクトルの長さを取得する
@@ -31,6 +32,20 @@ float Radian(float degree);
 /// <param name="radian">変換するRadian</param>
 /// <returns></returns>
 float Degree(float radian);
+
+/// <summary>
+/// DegreeをRadianに変換する
+/// </summary>
+/// <param name="degree">変換するDegree</param>
+/// <returns></returns>
+Vector3 Radian(Vector3 degree);
+
+/// <summary>
+/// RadianをDegreeに変換する
+/// </summary>
+/// <param name="radian">変換するRadian</param>
+/// <returns></returns>
+Vector3 Degree(Vector3 radian);
 
 /// <summary>
 /// 値を特定の範囲に収める

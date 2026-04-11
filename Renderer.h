@@ -10,14 +10,23 @@
 	namespace Renderer {
 	class Model {
 	public:
-		void Initialize(ModelInfo info);
+		void Initialize(const ModelInfo& info);
 
-		void Draw();
+		void Draw(const Transform& transform);
+
+		void SetIsVisible(bool isVisible) { isVisible_ = isVisible; };
+
+		bool GetIsVisible() { return isVisible_; };
+
+		void ChangeTexture(const TextureInfo& info) { modelInfo_.textureSrvHandlesGPU = info.textureSrvHandlesGPU; };
 	public:
 		Material* materialData_ = nullptr;
 
-		TransformationMatrix* wvpData_ = nullptr;
 	private:
+		TransformationMatrix* wvpData_ = nullptr;
+
+		bool isVisible_ = true;
+
 		ModelInfo modelInfo_;
 
 		Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_ = nullptr;
@@ -33,12 +42,22 @@
 	public:
 		void Initialize(TextureInfo info);
 
-		void Draw();
+		void Draw(const Transform& transform);
 
+		void SetIsVisible(bool isVisible) { isVisible_ = isVisible; };
+
+		bool GetIsVisible() { return isVisible_; };
+
+		void ChangeTexture(const TextureInfo& info) { textureInfo_.textureSrvHandlesGPU = info.textureSrvHandlesGPU; };
+
+	public:
 		Material* materialData_ = nullptr;
 
-		TransformationMatrix* wvpData_ = nullptr;
 	private:
+		TransformationMatrix* wvpData_ = nullptr;
+		
+		bool isVisible_;
+
 		const uint32_t kSubdivision_ = 16;
 
 		TextureInfo textureInfo_;
@@ -60,12 +79,22 @@
 	public:
 		void Initialize(TextureInfo info);
 
-		void Draw();
+		void Draw(const Transform& transform);
 
+		void SetIsVisible(bool isVisible) { isVisible_ = isVisible; };
+
+		bool GetIsVisible() { return isVisible_; };
+
+		void ChangeTexture(const TextureInfo& info) { textureInfo_.textureSrvHandlesGPU = info.textureSrvHandlesGPU; };
+		
+	public:
 		Material* materialData_ = nullptr;
 
-		TransformationMatrix* transformationMatrixData_ = nullptr;
 	private:
+		TransformationMatrix* transformationMatrixData_ = nullptr;
+		
+		bool isVisible_;
+
 		const uint32_t kSubdivision_ = 16;
 
 		TextureInfo textureInfo_;

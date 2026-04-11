@@ -1,48 +1,6 @@
 #include "GameSystem.h"
 #include "TextureManager.h"
 
-void GameSystem::TextureManagerProgram(){
-	/*=============================================================
-	三角形の描画のコマンド.
-	=============================================================*/
-	commandList->IASetVertexBuffers(0, 1, &vertexBufferView); // VBVを設定.
-	//commandList->IASetIndexBuffer(&indexBufferView); // IBVを設定.
-	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
-	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	// CBufferの場所を設定.
-	// マテリアル用のCBufferの場所.
-	commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-	// WVP用のCBufferの場所.
-	commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
-	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
-	if(useModelInfoTexture){
-	commandList->SetGraphicsRootDescriptorTable(2, modelData.textureSrvHandlesGPU);
-	}else {
-	commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[2]);
-	}
-	// DirectionalLight用のCBufferの場所.
-	commandList->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-	//commandList->DrawIndexedInstanced(kSubdivision* kSubdivision * 6, 1, 0, 0,0);
-	commandList->DrawInstanced(UINT(modelData.modelData.vertices.size() +  kSubdivision * kSubdivision * 6), 1, 0, 0);
-
-	/*=============================================================
-	三角形のSpriteの描画のコマンド.
-	=============================================================*/
-	// Spriteの描画。変更が必要なものだけ変更する.
-	commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite); // VBVを設定.
-	commandList->IASetIndexBuffer(&indexBufferViewSprite); // IBVを設定.
-	// マテリアル用のCBufferの場所.
-	commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
-	// transformationMatrixCBufferの場所.
-	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
-	commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[0]);
-	commandList->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-	//commandList->DrawIndexedInstanced(6, 1, 0, 0,0);
-}
-
 GameSystem* GameSystem::GetInstance() {
 	static GameSystem gameSystem;
 	return &gameSystem;
@@ -339,132 +297,6 @@ void GameSystem::Initialize() {
 	// もともとPSOがあった場所(03_01にて変更).
 	//
 
-	/*=============================================================
-	ResourceとView.
-	=============================================================*/
-	// 【VertexResourceを生成する】
-	//const uint32_t kSubdivision = 16;
-
-	// モデル読み込み
-	//ModelData modelData 
-
-	ModelManager::GetInstance()->RegisterObj("axis","Resource", "axis.obj");
-	modelData = ModelManager::GetInstance()->GetModelInfo("axis");
-
-	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
-	//Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource 
-	vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.modelData.vertices.size() + sizeof(VertexData) * kSubdivision * kSubdivision * 6);
-
-	// 【MaterialResourceを生成する】
-	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> materialResource 
-	materialResource = CreateBufferResource(device, sizeof(Material));
-	// マテリアルにデータを書き込む.
-	//Material* materialData = nullptr;
-	// 書き込むためのアドレスを取得.
-	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
-	// 今回は赤を書き込んでみる
-	materialData->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	materialData->enableLighting = true;
-	materialData->uvTransform = Matrix4x4::Identity();
-
-	// 【TransformationMatrix】
-	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource 
-	wvpResource = CreateBufferResource(device, sizeof(TransformationMatrix));
-	// データを書き込む.
-	//TransformationMatrix* wvpData = nullptr;
-	// 書き込むためのアドレスを取得.
-	wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
-	// 単位行列を書き込んでおく.
-	wvpData->WVP = Matrix4x4::Identity();
-	wvpData->World = Matrix4x4::Identity();
-
-
-	// 【VertexBufferViewを作成する】
-
-	// 頂点バッファビューを作成する.
-	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-	// リソースの先頭のアドレスから使う.
-	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
-	//vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 4;
-	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.modelData.vertices.size() + sizeof(VertexData) * kSubdivision * kSubdivision * 6);
-	// 1頂点あたりのサイズ.
-	vertexBufferView.StrideInBytes = sizeof(VertexData);
-
-	// 【IndexResourceを生成する】
-	// 実際に頂点リソースを作る.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> indexResource 
-	indexResource = CreateBufferResource(device, sizeof(uint32_t) * kSubdivision * kSubdivision * 6);
-
-	// 頂点バッファビューを作成する.
-	//D3D12_INDEX_BUFFER_VIEW indexBufferView{};
-	// リソースの先頭のアドレスから使う.
-	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
-	// 使用するリソースのサイズはインデックス6つ分のサイズ.
-	indexBufferView.SizeInBytes = sizeof(uint32_t) * kSubdivision * kSubdivision * 6;
-	// インデックスはuint32_tとする.
-	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
-
-
-	// 【Resourceにデータを書き込む】
-
-	// 頂点リソースにデータを書き込む.
-	VertexData* vertexData = nullptr;
-	// 書き込むためのアドレスを取得.
-	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-std:memcpy(vertexData, modelData.modelData.vertices.data(), sizeof(VertexData) * modelData.modelData.vertices.size());
-
-	// インデックスリソースにデータを書き込む.
-	uint32_t* indexData = nullptr;
-	// 書き込むためのアドレスを取得.
-	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
-
-	
-	// スフィアの描画プログラム.(いつかRendererに入れる)
-	const float kLonEvery = std::numbers::pi_v<float> *2.0f / kSubdivision;
-	const float kLatEvery = std::numbers::pi_v<float> / kSubdivision;
-
-	for (uint32_t latIndex = 0; latIndex < kSubdivision; latIndex++) {
-		float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;
-
-		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; lonIndex++) {
-			uint32_t start = (latIndex * kSubdivision + lonIndex) * 6 + modelData.modelData.vertices.size();
-			uint32_t indexStart = (latIndex * kSubdivision + lonIndex) * 6;
-			float lon = lonIndex * kLonEvery;
-
-			float u = static_cast<float>(lonIndex) / static_cast<float>(kSubdivision);
-			float v = 1.0f - static_cast<float>(latIndex) / static_cast<float>(kSubdivision);
-
-			vertexData[start].position = { cos(lat) * cos(lon),sin(lat),cos(lat) * sin(lon) ,1.0f };
-			vertexData[start].texcoord = { u - 1.0f / static_cast<float>(kSubdivision),v };
-			vertexData[start + 1].position = { cos(lat + std::numbers::pi_v<float> / kSubdivision) * cos(lon),sin(lat + std::numbers::pi_v<float> / kSubdivision),cos(lat + std::numbers::pi_v<float> / kSubdivision) * sin(lon) ,1.0f };
-			vertexData[start + 1].texcoord = { u - 1.0f / static_cast<float>(kSubdivision) ,v - 1.0f / static_cast<float>(kSubdivision) };
-			vertexData[start + 2].position = { cos(lat) * cos(lon + std::numbers::pi_v<float> *2.0f / kSubdivision),sin(lat),cos(lat) * sin(lon + std::numbers::pi_v<float> *2.0f / kSubdivision) ,1.0f };
-			vertexData[start + 2].texcoord = { u ,v };
-			vertexData[start + 3].position = { cos(lat + std::numbers::pi_v<float> / kSubdivision) * cos(lon + std::numbers::pi_v<float> *2.0f / kSubdivision),sin(lat + std::numbers::pi_v<float> / kSubdivision),cos(lat + std::numbers::pi_v<float> / kSubdivision) * sin(lon + std::numbers::pi_v<float> *2.0f / kSubdivision),1.0f };
-			vertexData[start + 3].texcoord = { u ,v - 1.0f / static_cast<float>(kSubdivision) };
-
-			indexData[indexStart] = start;
-			indexData[indexStart + 1] = start + 1;
-			indexData[indexStart + 2] = start + 2;
-			indexData[indexStart + 3] = start + 1;
-			indexData[indexStart + 4] = start + 3;
-			indexData[indexStart + 5] = start + 2;
-
-
-			for (uint32_t i = 0; i < 4; i++) {
-				vertexData[start + i].normal.x = vertexData[start + i].position.x;
-				vertexData[start + i].normal.y = vertexData[start + i].position.y;
-				vertexData[start + i].normal.z = vertexData[start + i].position.z;
-			}
-		}
-	}
-	
-
-
-
 	// 【ビューポート】
 	//D3D12_VIEWPORT viewport{};
 	// クライアント領域のサイズと一緒にして画面全体に表示.
@@ -483,113 +315,7 @@ std:memcpy(vertexData, modelData.modelData.vertices.data(), sizeof(VertexData) *
 	scissorRect.top = 0;
 	scissorRect.bottom = kClinetHeight;
 
-	/*=============================================================
-	Sprite用のResourceとView.
-	=============================================================*/
-	// 【VertexResourceを生成する】
-	// 実際に頂点リソースを作る.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSprite 
-	vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 4);
-
-	// 頂点バッファビューを作成する.
-	//D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{};
-	// リソースの先頭のアドレスから使う.
-	vertexBufferViewSprite.BufferLocation = vertexResourceSprite->GetGPUVirtualAddress();
-	// 使用するリソースのサイズは頂点3つ分のサイズ.
-	vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 4;
-	// 1頂点あたりのサイズ.
-	vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
-
-	// 【IndexResourceを生成する】
-	// 実際に頂点リソースを作る.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> indexResourceSprite 
-	indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
-
-	// 頂点バッファビューを作成する.
-	//D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
-	// リソースの先頭のアドレスから使う.
-	indexBufferViewSprite.BufferLocation = indexResourceSprite->GetGPUVirtualAddress();
-	// 使用するリソースのサイズはインデックス6つ分のサイズ.
-	indexBufferViewSprite.SizeInBytes = sizeof(uint32_t) * 6;
-	// インデックスはuint32_tとする.
-	indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
-
-
-	// 【MaterialResourceを生成する】
-	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceSprite
-	materialResourceSprite = CreateBufferResource(device, sizeof(Material));
-	// マテリアルにデータを書き込む.
-	//Material* materialDataSprite = nullptr;
-	// 書き込むためのアドレスを取得.
-	materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSprite));
-	// 今回は赤を書き込んでみる
-	materialDataSprite->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	materialDataSprite->enableLighting = false;
-	materialDataSprite->uvTransform = Matrix4x4::Identity();
-
-	// 【TransformationMatrix】
-	//Sprite用のTransformationMatrixを作る。Matrix4x4 1つ分のサイズを用意する.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResourceSprite 
-	transformationMatrixResourceSprite = CreateBufferResource(device, sizeof(TransformationMatrix));
-	// データを書き込む.
-	//TransformationMatrix* transformationMatrixDataSprite = nullptr;
-	// 書き込むためのアドレスを取得.
-	transformationMatrixResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixDataSprite));
-	// 単位行列を書き込んでおく.
-	transformationMatrixDataSprite->WVP = Matrix4x4::Identity();
-	transformationMatrixDataSprite->World = Matrix4x4::Identity();
-
-	// 【Resourceにデータを書き込む】
-
-	// 頂点リソースにデータを書き込む.
-	VertexData* vertexDataSprite = nullptr;
-	// 書き込むためのアドレスを取得.
-	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
-	// 1枚目の三角形.
-	vertexDataSprite[0].position = { 0.0f,360.0f,0.0f,1.0f }; // 左下.
-	vertexDataSprite[0].texcoord = { 0.0f,1.0f };
-	vertexDataSprite[0].normal = { 0.0f,0.0f,-1.0f };
-	vertexDataSprite[1].position = { 0.0f,0.0f,0.0f,1.0f }; // 左上.
-	vertexDataSprite[1].texcoord = { 0.0f,0.0f };
-	vertexDataSprite[1].normal = { 0.0f,0.0f,-1.0f };
-	vertexDataSprite[2].position = { 640.0f,360.0f,0.0f,1.0f }; // 右下.
-	vertexDataSprite[2].texcoord = { 1.0f,1.0f };
-	vertexDataSprite[2].normal = { 0.0f,0.0f,-1.0f };
-	// 2枚目の三角形.
-	vertexDataSprite[3].position = { 640.0f,0.0f,0.0f,1.0f }; // 右上.
-	vertexDataSprite[3].texcoord = { 1.0f,0.0f };
-	vertexDataSprite[3].normal = { 0.0f,0.0f,-1.0f };
-
-	// インデックスリソースにデータを書き込む.
-	uint32_t* indexDataSprite = nullptr;
-	// 書き込むためのアドレスを取得.
-	indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
-	// 1枚目の三角形.
-	indexDataSprite[0] = 0;
-	indexDataSprite[1] = 1;
-	indexDataSprite[2] = 2;
-	indexDataSprite[3] = 1;
-	indexDataSprite[4] = 3;
-	indexDataSprite[5] = 2;
-
-
-
-	// 【DirectionalLight】
-	// //DirectionalLightResourceを作る。DirectionalLight 1つ分のサイズを用意する.
-	////Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource 
-	//directionalLightResource = CreateBufferResource(device, sizeof(DirectionalLightData));
-	//// データを書き込む.
-	////DirectionalLight* directionalLightData = nullptr;
-	//// 書き込むためのアドレスを取得.
-	//directionalLightResource->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData));
-	//// 単位行列を書き込んでおく.
-	//directionalLightData->color = { 1.0f,1.0f,1.0f,1.0f };
-	//directionalLightData->direction = { 0.0f,-1.0f,0.0f };
-	//directionalLightData->intensity = 1.0f;
-
 	DirectionalLight::GetInstance()->Initialize();
-
 
 	/*=============================================================
 	ImGuiの初期化.
@@ -633,17 +359,6 @@ std:memcpy(vertexData, modelData.modelData.vertices.data(), sizeof(VertexData) *
 	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
 	// 比較関数はLessEqual。つまり、近ければ描画される.
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-
-
-	/*=============================================================
-	ShaderResourceViewを作る.
-	=============================================================*/
-	// metaDataを基にSRVの設定.
-
-	textureSrvHandlesGPU[0] = TextureManager::GetInstance()->RegisterTexture("checker", "Resource/uvChecker.png").textureSrvHandlesGPU;
-	textureSrvHandlesGPU[1] = TextureManager::GetInstance()->RegisterTexture("ball", "Resource/monsterBall.png").textureSrvHandlesGPU;
-	textureSrvHandlesGPU[2] = TextureManager::GetInstance()->RegisterTexture("filePath", modelData.modelData.material.textureFilePath).textureSrvHandlesGPU;
-	
 
 	/*=============================================================
 	PSO(どこに書けばいいかわからぬ).
@@ -795,14 +510,6 @@ bool GameSystem::BeginFrame() {
 }
 
 void GameSystem::DrawSetup() {
-
-	ImGui::Begin("TextureTest");
-
-	ImGui::Checkbox("useModelInfoTexture", &useModelInfoTexture);
-
-	ImGui::End();
-
-
 #ifdef USE_IMGUI
 	// ImGuiの内部コマンドを生成する.
 	ImGui::Render();
