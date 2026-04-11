@@ -2,6 +2,12 @@
 #include "GameSystem.h"
 #include "GameScene.h"
 
+
+// オーディオ類.
+#include <xaudio2.h>
+#pragma comment(lib,"xaudio2.lib")
+#include <fstream>
+
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	GameSystem* system = GameSystem::GetInstance();
@@ -9,6 +15,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	system->Initialize();
 
 	Camera::GetInstance()->Initialize(system->GetWindowSize().width, system->GetWindowSize().height);
+
+	/*=============================================================
+	オーディオ類(07_00).
+	=============================================================*/
+	Microsoft::WRL::ComPtr<IXAudio2> xAudio2;
+	IXAudio2MasteringVoice* masterVoice;
+
+
+
 
 	/*=============================================================
 	ここから下がゲームの変数.
