@@ -4,6 +4,8 @@
 #include "Math.h"
 #include "DirectionalLight.h"
 #include "SoundManager.h"
+#include "InputManager.h"
+
 void GameScene::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("test", "Resource", "axis.obj");
 
@@ -92,6 +94,23 @@ void GameScene::Update() {
 
 	int numberTemp = textureNumber_;
 	ImGui::SliderInt("texture", &textureNumber_, 0, 1);
+
+	if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
+		transformSphere.translate.x += 0.02f;
+	}
+
+	if (InputManager::GetInstance()->PressKey(DIK_LEFT)) {
+		transformSphere.translate.x -= 0.02f;
+	}
+
+	if (InputManager::GetInstance()->PressKey(DIK_UP)) {
+		transformSphere.translate.z += 0.02f;
+	}
+
+	if (InputManager::GetInstance()->PressKey(DIK_DOWN)) {
+		transformSphere.translate.z -= 0.02f;
+	}
+
 
 	if (numberTemp != textureNumber_) {
 		switch (textureNumber_) {

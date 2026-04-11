@@ -82,10 +82,9 @@ public:
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetSrvDescriptorHeap() { return srvDescriptorHeap; };
 	uint32_t GetDescriptorSizeSRV() { return descriptorSizeSRV; };
 
-	// Audioの諸々が終わったら消す.
-	HRESULT GetHr() { return hr; };
+	WNDCLASS GetWc() { return wc; };
 
-	void SetHr(HRESULT newHr) { hr = newHr; };
+	HWND GetHWND() { return hwnd; };
 private:
 
 	struct D3DResourceLeakChecker {
@@ -151,6 +150,8 @@ public:
 	static ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileName);
 
 private:
+	WNDCLASS wc{};
+
 	MSG msg{};
 
 	HRESULT hr;

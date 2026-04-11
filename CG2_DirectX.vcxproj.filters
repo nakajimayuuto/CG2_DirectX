@@ -88,6 +88,9 @@
     <Filter Include="Managers\SoundManager">
       <UniqueIdentifier>{f4cd9e91-c44f-41f4-997d-2287b1ea4666}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Managers\InputManager">
+      <UniqueIdentifier>{28d8bb8c-f15a-45b7-a0f4-1c89c988f4e7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -170,6 +173,9 @@
     </ClCompile>
     <ClCompile Include="SoundManager.cpp">
       <Filter>Managers\SoundManager</Filter>
+    </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>Managers\InputManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -267,6 +273,9 @@
     </ClInclude>
     <ClInclude Include="SoundManager.h">
       <Filter>Managers\SoundManager</Filter>
+    </ClInclude>
+    <ClInclude Include="InputManager.h">
+      <Filter>Managers\InputManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

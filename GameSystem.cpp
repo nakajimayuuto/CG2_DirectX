@@ -1,5 +1,6 @@
 #include "GameSystem.h"
 #include "SoundManager.h"
+#include "InputManager.h"
 
 GameSystem* GameSystem::GetInstance() {
 	static GameSystem gameSystem;
@@ -23,7 +24,7 @@ void GameSystem::Initialize() {
 	Window作成系
 	=============================================================*/
 
-	WNDCLASS wc{};
+	//WNDCLASS wc{};
 
 	// ウィンドウプロシージャ
 	wc.lpfnWndProc = WindowProc;
@@ -78,6 +79,8 @@ void GameSystem::Initialize() {
 
 	// ウィンドウを表示する.
 	ShowWindow(hwnd, SW_SHOW);
+
+	InputManager::GetInstance()->Initialize();
 
 	//MSG msg{};
 
@@ -496,6 +499,8 @@ bool GameSystem::BeginFrame() {
 
 		return false;
 	}
+
+	InputManager::GetInstance()->Update();
 
 #ifdef USE_IMGUI
 	ImGui_ImplDX12_NewFrame();
