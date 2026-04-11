@@ -1,4 +1,6 @@
 #include "Camera.h"
+#include "InputManager.h"
+#include "Math.h"
 
 Camera* Camera::GetInstance() {
 	static Camera instance;
@@ -7,7 +9,7 @@ Camera* Camera::GetInstance() {
 
 void Camera::Initialize(float windowWidth, float windowHeight) {
 	scale_ = { 1.0f,1.0f,1.0f };
-	rotate_ = { 0.0f,0.0,0.0f };
+	rotate_ = { 0.0f,0.0f,0.0f };
 	translate_ = { 0.0f,0.0f,-10.0f };
 
 	windowWidth_ = windowWidth;
@@ -19,10 +21,51 @@ void Camera::Initialize(float windowWidth, float windowHeight) {
 	farClip_ = 100.0f;
 	minDepth_ = 0.0f;
 	maxDepth_ = 1.0f;
+
+	// 【デバッグカメラ用】
+	useDebugCamera_ = false;
+
+	debugScale_ = { 1.0f,1.0f,1.0f };
+	debugTranslate_ = { 0.0f,0.0f,-10.0f };
+
+	debugMatRot_ = Matrix4x4::MakeAffineMatrix(debugScale_,rotate_,debugTranslate_);
 }
 
 void Camera::Update() {
+	if (useDebugCamera_) {
+		DebugUpdate();
+
+		//matrix_ = Matrix4x4::MakeAffineMatrix(debugScale_, debugRotate_, debugTranslate_);
+		return;
+	}
+
 	matrix_ = Matrix4x4::MakeAffineMatrix(scale_, rotate_, translate_);
+}
+
+void Camera::DebugUpdate(){
+	Vector3 debugRotate = { 0.0f,0.0f,0.0f };
+	if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
+		debugRotate.x += Radian(1.0f);
+	}
+	if (InputManager::GetInstance()->PressKey(DIK_LEFT)) {
+		debugRotate.x -= Radian(1.0f);
+	}
+	if (InputManager::GetInstance()->PressKey(DIK_UP)) {
+		debugRotate.y -= Radian(1.0f);
+	}
+	if (InputManager::GetInstance()->PressKey(DIK_DOWN)) {
+		debugRotate.y += Radian(1.0f);
+	}
+
+	Matrix4x4 matRotDelta = Matrix4x4::Identity();
+	matRotDelta *= Matrix4x4::MakeRotateYMatrix(debugRotate.x);
+	matRotDelta *= Matrix4x4::MakeRotateXMatrix(debugRotate.y);
+
+	debugMatRot_ = matRotDelta * debugMatRot_;
+
+	matrix_ = Matrix4x4::MakeScaleMatrix(debugScale_);
+	matrix_ *= Matrix4x4::MakeTranslateMatrix(debugTranslate_);
+	matrix_ *= debugMatRot_;
 }
 
 Vector3 Camera::GetCameraVector3(Vector3 vector3, Matrix4x4 matrix) {

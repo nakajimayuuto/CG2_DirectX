@@ -14,6 +14,11 @@ public:
 	Matrix4x4 operator*(float scalar);
 	Matrix4x4 operator*(const Matrix4x4& m1);
 
+	Matrix4x4& operator+=(const Matrix4x4& m1);
+	Matrix4x4& operator-=(const Matrix4x4& m1);
+	Matrix4x4& operator*=(float scalar);
+	Matrix4x4& operator*=(const Matrix4x4& m1);
+
 	Matrix4x4 Inverse();
 	static Matrix4x4 GetInverse(Matrix4x4 matrix);
 	Matrix4x4 Transpose();

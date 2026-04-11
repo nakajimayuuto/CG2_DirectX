@@ -47,6 +47,46 @@ Matrix4x4 Matrix4x4::operator*(const Matrix4x4& m1) {
 	return result;
 }
 
+Matrix4x4& Matrix4x4::operator+=(const Matrix4x4& m1) {
+	for (int row = 0; row < 4; row++) {
+		for (int column = 0; column < 4; column++) {
+			matrix[column][row] += m1.matrix[column][row];
+		}
+	}
+
+	return *this;
+}
+
+Matrix4x4& Matrix4x4::operator-=(const Matrix4x4& m1) {
+	for (int row = 0; row < 4; row++) {
+		for (int column = 0; column < 4; column++) {
+			matrix[column][row] -= m1.matrix[column][row];
+		}
+	}
+
+	return *this;
+}
+
+Matrix4x4& Matrix4x4::operator*=(float scalar) {
+	for (int row = 0; row < 4; row++) {
+		for (int column = 0; column < 4; column++) {
+			matrix[column][row] *= scalar;
+		}
+	}
+
+	return *this;
+}
+
+Matrix4x4& Matrix4x4::operator*=(const Matrix4x4& m1) {
+	for (int row = 0; row < 4; row++) {
+		for (int column = 0; column < 4; column++) {
+			matrix[row][column] = (matrix[row][0] * m1.matrix[0][column]) + (matrix[row][1] * m1.matrix[1][column]) + (matrix[row][2] * m1.matrix[2][column]) + (matrix[row][3] * m1.matrix[3][column]);
+		}
+	}
+
+	return *this;
+}
+
 Matrix4x4 Matrix4x4::Inverse() {
 	float determinat = {
 		(matrix[0][0] * matrix[1][1] * matrix[2][2] * matrix[3][3])//

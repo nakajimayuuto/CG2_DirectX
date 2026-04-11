@@ -21,6 +21,14 @@ class Camera{
 	float minDepth_; 
 	float maxDepth_;
 
+
+	Vector3 debugScale_;
+	//Vector3 debugRotate_;
+	Vector3 debugTranslate_;
+
+	Matrix4x4 debugMatRot_;
+
+	bool useDebugCamera_;
 public:
 
 	static Camera* GetInstance();
@@ -28,6 +36,8 @@ public:
 	void Initialize(float windowWidth, float windowHeight);
 
 	void Update();
+
+	void DebugUpdate();
 		
 	void SetPoisiton(Vector3 vector3) { translate_ = vector3; }
 
@@ -38,5 +48,9 @@ public:
 	Matrix4x4 GetWorldViewProjectionMatrix(Matrix4x4 matrix);
 
 	Matrix4x4 GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix);
+
+	void ChangeCameraMode() { useDebugCamera_ != useDebugCamera_; };
+
+	bool GetUseDebugCamera() { return useDebugCamera_; };
 };
 
