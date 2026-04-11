@@ -4,9 +4,6 @@
 
 
 // オーディオ類.
-#include <xaudio2.h>
-#pragma comment(lib,"xaudio2.lib")
-#include <fstream>
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
@@ -19,11 +16,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	/*=============================================================
 	オーディオ類(07_00).
 	=============================================================*/
-	Microsoft::WRL::ComPtr<IXAudio2> xAudio2;
-	IXAudio2MasteringVoice* masterVoice;
-
-
-
+	
 
 	/*=============================================================
 	ここから下がゲームの変数.
@@ -31,8 +24,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	GameScene* gameScene = new GameScene();
 	gameScene->Initialize();
-
-	
 
 	// ウィンドウのxボタンが押されるまでループ.
 	while (system->ProcessMessage()) {

@@ -58,14 +58,8 @@
     <Filter Include="GameSystem">
       <UniqueIdentifier>{b04344e2-3355-43ce-b3b7-85d81f384337}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ModelManager">
-      <UniqueIdentifier>{441f4dc5-cb99-4e79-ad2d-c41e59b4a24c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shader\CPU\ModelInfo">
       <UniqueIdentifier>{89204984-3070-4280-913c-318d97913af8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="TextureManager">
-      <UniqueIdentifier>{f6206ad7-50ef-4fbc-a72f-ad08f68f0ed3}</UniqueIdentifier>
     </Filter>
     <Filter Include="Shader\CPU\ModelData">
       <UniqueIdentifier>{bcdd4363-c5a0-4f8a-ba8a-2a889a7cc3d1}</UniqueIdentifier>
@@ -81,6 +75,18 @@
     </Filter>
     <Filter Include="imgui\ImGuiLibrary">
       <UniqueIdentifier>{58b25aba-c5fb-4a4c-9377-9f8c3a31634c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers">
+      <UniqueIdentifier>{9302c9a7-66fe-44e9-a284-c96e5f371ae2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\ModelManager">
+      <UniqueIdentifier>{441f4dc5-cb99-4e79-ad2d-c41e59b4a24c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\TextureManager">
+      <UniqueIdentifier>{f6206ad7-50ef-4fbc-a72f-ad08f68f0ed3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\SoundManager">
+      <UniqueIdentifier>{f4cd9e91-c44f-41f4-997d-2287b1ea4666}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -151,16 +157,19 @@
       <Filter>GameSystem</Filter>
     </ClCompile>
     <ClCompile Include="ModelManager.cpp">
-      <Filter>ModelManager</Filter>
+      <Filter>Managers\ModelManager</Filter>
     </ClCompile>
     <ClCompile Include="DirectionalLight.cpp">
       <Filter>DirectionalLight</Filter>
     </ClCompile>
     <ClCompile Include="TextureManager.cpp">
-      <Filter>TextureManager</Filter>
+      <Filter>Managers\TextureManager</Filter>
     </ClCompile>
     <ClCompile Include="GameScene.cpp">
       <Filter>Scene\GameScene</Filter>
+    </ClCompile>
+    <ClCompile Include="SoundManager.cpp">
+      <Filter>Managers\SoundManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -242,19 +251,22 @@
       <Filter>GameSystem</Filter>
     </ClInclude>
     <ClInclude Include="ModelManager.h">
-      <Filter>ModelManager</Filter>
+      <Filter>Managers\ModelManager</Filter>
     </ClInclude>
     <ClInclude Include="ModelInfo.h">
       <Filter>Shader\CPU\ModelInfo</Filter>
     </ClInclude>
     <ClInclude Include="TextureManager.h">
-      <Filter>TextureManager</Filter>
+      <Filter>Managers\TextureManager</Filter>
     </ClInclude>
     <ClInclude Include="GameScene.h">
       <Filter>Scene\GameScene</Filter>
     </ClInclude>
     <ClInclude Include="ImGui.h">
       <Filter>imgui\ImGuiLibrary</Filter>
+    </ClInclude>
+    <ClInclude Include="SoundManager.h">
+      <Filter>Managers\SoundManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,5 @@
 #include "GameSystem.h"
-#include "TextureManager.h"
+#include "SoundManager.h"
 
 GameSystem* GameSystem::GetInstance() {
 	static GameSystem gameSystem;
@@ -480,6 +480,8 @@ void GameSystem::Initialize() {
 	//Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
 	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));
+
+	SoundManager::GetInstance()->Initialize();
 }
 
 bool GameSystem::ProcessMessage() {
@@ -613,6 +615,8 @@ void GameSystem::Endframe() {
 }
 
 void GameSystem::Finalize(){
+	SoundManager::GetInstance()->Finalize();
+
 	/*=============================================================
 	メモリ解放系.
 	=============================================================*/

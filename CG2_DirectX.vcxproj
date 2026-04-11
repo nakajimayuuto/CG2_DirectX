@@ -61,6 +61,7 @@
     <ClCompile Include="Matrix4x4.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="ModelManager.cpp" />
+    <ClCompile Include="SoundManager.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Vector2.cpp" />
@@ -104,6 +105,7 @@
     <ClInclude Include="ModelInfo.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="ModelManager.h" />
+    <ClInclude Include="SoundManager.h" />
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Vector2.h" />

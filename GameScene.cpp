@@ -3,6 +3,7 @@
 #include "ImGui.h"
 #include "Math.h"
 #include "DirectionalLight.h"
+#include "SoundManager.h"
 void GameScene::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("test", "Resource", "axis.obj");
 
@@ -14,6 +15,10 @@ void GameScene::Initialize() {
 	testSphere.Initialize(TextureManager::GetInstance()->GetTextureInfo("monster_ball"));
 
 	testSprite.Initialize(TextureManager::GetInstance()->GetTextureInfo("monster_ball"));
+
+	SoundManager::GetInstance()->RegisterSound("Alarm1","Resource/Alarm01.wav");
+	SoundManager::GetInstance()->RegisterSound("Alarm2","Resource/Alarm02.wav");
+	SoundManager::GetInstance()->RegisterSound("Alarm3","Resource/Alarm03.wav");
 }
 
 void GameScene::Update() {
@@ -146,6 +151,10 @@ void GameScene::Update() {
 	ImGui::End();
 
 
+	/*=============================================================
+	光源のデバッグ.
+	=============================================================*/
+
 	ImGui::Begin("DirectionalLight");
 	imColor = DirectionalLight::GetInstance()->GetDirectionalLightData()->color;
 	Vector3 imDirection = DirectionalLight::GetInstance()->GetDirectionalLightData()->direction;
@@ -155,6 +164,31 @@ void GameScene::Update() {
 	ImGui::SliderFloat("intensity", &DirectionalLight::GetInstance()->GetDirectionalLightData()->intensity, 0.0f, 1.0f);
 	DirectionalLight::GetInstance()->GetDirectionalLightData()->color = imColor;
 	DirectionalLight::GetInstance()->GetDirectionalLightData()->direction = imDirection.Normalize();
+	ImGui::End();
+
+
+	/*=============================================================
+	サウンドのデバッグ.
+	=============================================================*/
+
+	ImGui::Begin("Sound");
+
+	ImGui::SliderInt("Sounds",&soundNumber_,0,2);
+
+	if (ImGui::Button("Play")) {
+		switch (soundNumber_){
+		case 0:
+			SoundManager::GetInstance()->SoundPlayWave(SoundManager::GetInstance()->GetSoundData("Alarm1"));
+			break;
+		case 1:
+			SoundManager::GetInstance()->SoundPlayWave(SoundManager::GetInstance()->GetSoundData("Alarm2"));
+			break;
+		case 2:
+			SoundManager::GetInstance()->SoundPlayWave(SoundManager::GetInstance()->GetSoundData("Alarm3"));
+			break;
+		}
+	}
+
 	ImGui::End();
 
 #endif // USE_IMGUI

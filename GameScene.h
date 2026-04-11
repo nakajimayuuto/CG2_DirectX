@@ -18,6 +18,8 @@ private:
 
 	int textureNumber_ = 0;
 
+	int soundNumber_ = 0;
+
 	Renderer::Model testModel = Renderer::Model();
 
 	Renderer::Sphere testSphere = Renderer::Sphere();

@@ -81,6 +81,11 @@ public:
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetSrvDescriptorHeap() { return srvDescriptorHeap; };
 	uint32_t GetDescriptorSizeSRV() { return descriptorSizeSRV; };
+
+	// Audioの諸々が終わったら消す.
+	HRESULT GetHr() { return hr; };
+
+	void SetHr(HRESULT newHr) { hr = newHr; };
 private:
 
 	struct D3DResourceLeakChecker {
