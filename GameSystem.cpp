@@ -1,6 +1,7 @@
 #include "GameSystem.h"
 #include "SoundManager.h"
 #include "InputManager.h"
+#include "Environment.h"
 
 GameSystem* GameSystem::GetInstance() {
 	static GameSystem gameSystem;
@@ -30,7 +31,7 @@ void GameSystem::Initialize() {
 	wc.lpfnWndProc = WindowProc;
 
 	// ウィンドウクラス名
-	wc.lpszClassName = L"CG2WindowClass";
+	wc.lpszClassName = Environment::GetInstance()->GetWindowTitle();
 
 	// インスタンスハンドル.
 	wc.hInstance = GetModuleHandle(nullptr);
@@ -42,11 +43,11 @@ void GameSystem::Initialize() {
 	RegisterClass(&wc);
 
 	// クライアント領域のサイズ.
-	const int32_t kClientWidth = 1280;
-	const int32_t kClinetHeight = 720;
+	int32_t kClientWidth = Environment::GetInstance()->GetWindowSize().width;
+	int32_t kClinetHeight = Environment::GetInstance()->GetWindowSize().height;
 
 	// ウィンドウサイズを表す構造体に九合アント領域を入れる.
-	RECT wrc{ 0,0,kClientWidth,kClinetHeight };
+	RECT wrc{ 0,0,kClientWidth,kClinetHeight};
 
 	// クライアント領域をもとに実際のサイズにwrcを変更してもらう.
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
@@ -642,9 +643,6 @@ void GameSystem::Finalize(){
 	CoUninitialize();
 }
 
-WindowSize GameSystem::GetWindowSize(){
-	return {1280,720};
-}
 LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 #ifdef USE_IMGUI
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {

@@ -11,12 +11,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	system->Initialize();
 
-	Camera::GetInstance()->Initialize(system->GetWindowSize().width, system->GetWindowSize().height);
-
-	/*=============================================================
-	オーディオ類(07_00).
-	=============================================================*/
-	
+	Camera::GetInstance()->Initialize(Environment::GetInstance()->GetWindowSize().width, Environment::GetInstance()->GetWindowSize().height);
 
 	/*=============================================================
 	ここから下がゲームの変数.

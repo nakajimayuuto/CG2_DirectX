@@ -61,8 +61,6 @@ public:
 
 	void Finalize();
 
-	WindowSize GetWindowSize();
-
 	Microsoft::WRL::ComPtr<ID3D12Device> GetDevice() { return device; };
 
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> GetCommandList() { return commandList; };
