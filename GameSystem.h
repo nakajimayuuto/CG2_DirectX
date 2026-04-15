@@ -3,6 +3,7 @@
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"dxcompiler.lib")
+#pragma comment(lib,"Dbghelp.lib")
 
 #include <Windows.h>
 #include <cstdint>
@@ -13,6 +14,7 @@
 #include <cassert>
 #include <dxgidebug.h>
 #include <dxcapi.h>
+#include <dbghelp.h>
 #include <vector>
 #include <numbers>
 #include "Vector4.h"
@@ -49,6 +51,8 @@ class GameSystem {
 public:
 	static GameSystem* GetInstance();
 	
+	static LONG WINAPI ExportDump();
+
 	void Initialize();
 
 	bool ProcessMessage();
