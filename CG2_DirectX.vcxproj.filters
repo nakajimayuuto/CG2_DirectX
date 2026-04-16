@@ -13,13 +13,274 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{b4866934-20bb-404d-880d-d14975207f59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\Vertex">
+      <UniqueIdentifier>{13ff5b98-560e-49fd-b9a4-0252d0135038}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\Vector">
+      <UniqueIdentifier>{f457cc85-e7ad-4fa8-9408-e84971d73868}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\Matrix">
+      <UniqueIdentifier>{ae6f87a4-bb47-40a2-a6dd-e61a03d3118f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\Transform">
+      <UniqueIdentifier>{af90178b-6b0e-48e5-aabd-12c20463cff6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Camera">
+      <UniqueIdentifier>{9580d45d-9102-407b-82ae-83e1d8780761}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\Math">
+      <UniqueIdentifier>{b174c634-d049-48b3-92fd-3c09250c8dac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer">
+      <UniqueIdentifier>{02656ce8-d9ac-445c-b22d-7d95ba6f9511}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene">
+      <UniqueIdentifier>{9bdabbde-5d1a-4352-af41-22d42fa3fa6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene\GameScene">
+      <UniqueIdentifier>{db5a2186-fa07-429f-9c95-7e420a69d02b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers">
+      <UniqueIdentifier>{9302c9a7-66fe-44e9-a284-c96e5f371ae2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\ModelManager">
+      <UniqueIdentifier>{441f4dc5-cb99-4e79-ad2d-c41e59b4a24c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\TextureManager">
+      <UniqueIdentifier>{f6206ad7-50ef-4fbc-a72f-ad08f68f0ed3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\SoundManager">
+      <UniqueIdentifier>{f4cd9e91-c44f-41f4-997d-2287b1ea4666}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\InputManager">
+      <UniqueIdentifier>{28d8bb8c-f15a-45b7-a0f4-1c89c988f4e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{3b419ee5-1669-4ef5-82b9-4defc02090c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\imgui">
+      <UniqueIdentifier>{88847a18-f60d-4774-a014-42b6fbca9de0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\imgui\ImGuiLibrary">
+      <UniqueIdentifier>{58b25aba-c5fb-4a4c-9377-9f8c3a31634c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Material">
+      <UniqueIdentifier>{11d1524a-bd52-4efb-b175-13c2c83cd246}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\ModelData">
+      <UniqueIdentifier>{bcdd4363-c5a0-4f8a-ba8a-2a889a7cc3d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\ModelInfo">
+      <UniqueIdentifier>{89204984-3070-4280-913c-318d97913af8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\hlsl">
+      <UniqueIdentifier>{64ec877d-11c7-4f7b-86d2-fbd88ee10b95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Convert">
+      <UniqueIdentifier>{5720a672-7eae-4ac4-9b2f-88aac487d845}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\GameSystem">
+      <UniqueIdentifier>{b04344e2-3355-43ce-b3b7-85d81f384337}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Environment">
+      <UniqueIdentifier>{287b7e76-d3a6-4ddf-81c9-40565c22e8f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DirectionalLight">
+      <UniqueIdentifier>{6edd4377-3868-4a94-a6a6-8568a1bb10e9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
+    <Text Include="externals\imgui\LICENSE.txt">
+      <Filter>Engine\imgui</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Vector4.cpp">
+      <Filter>Math\Vector</Filter>
+    </ClCompile>
+    <ClCompile Include="Vertex.cpp">
+      <Filter>Math\Vertex</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector3.cpp">
+      <Filter>Math\Vector</Filter>
+    </ClCompile>
+    <ClCompile Include="Matrix4x4.cpp">
+      <Filter>Math\Matrix</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>Math\Transform</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\imgui\imgui.cpp">
+      <Filter>Engine\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\imgui\imgui_demo.cpp">
+      <Filter>Engine\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\imgui\imgui_draw.cpp">
+      <Filter>Engine\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\imgui\imgui_impl_dx12.cpp">
+      <Filter>Engine\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\imgui\imgui_impl_win32.cpp">
+      <Filter>Engine\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\imgui\imgui_tables.cpp">
+      <Filter>Engine\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\imgui\imgui_widgets.cpp">
+      <Filter>Engine\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector2.cpp">
+      <Filter>Math\Vector</Filter>
+    </ClCompile>
+    <ClCompile Include="Math.cpp">
+      <Filter>Math\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSystem.cpp">
+      <Filter>Engine\GameSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Convert.cpp">
+      <Filter>Engine\Convert</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelManager.cpp">
+      <Filter>Managers\ModelManager</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectionalLight.cpp">
+      <Filter>DirectionalLight</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureManager.cpp">
+      <Filter>Managers\TextureManager</Filter>
+    </ClCompile>
+    <ClCompile Include="GameScene.cpp">
+      <Filter>Scene\GameScene</Filter>
+    </ClCompile>
+    <ClCompile Include="SoundManager.cpp">
+      <Filter>Managers\SoundManager</Filter>
+    </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>Managers\InputManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Environment.cpp">
+      <Filter>Environment</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Object3d.VS.hlsl">
+      <Filter>Engine\hlsl</Filter>
+    </FxCompile>
+    <FxCompile Include="Object3d.PS.hlsl">
+      <Filter>Engine\hlsl</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Vector4.h">
+      <Filter>Math\Vector</Filter>
+    </ClInclude>
+    <ClInclude Include="Vertex.h">
+      <Filter>Math\Vertex</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector3.h">
+      <Filter>Math\Vector</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix4x4.h">
+      <Filter>Math\Matrix</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>Math\Transform</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui\imconfig.h">
+      <Filter>Engine\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui\imgui.h">
+      <Filter>Engine\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui\imgui_impl_dx12.h">
+      <Filter>Engine\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui\imgui_impl_win32.h">
+      <Filter>Engine\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui\imgui_internal.h">
+      <Filter>Engine\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui\imstb_rectpack.h">
+      <Filter>Engine\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui\imstb_textedit.h">
+      <Filter>Engine\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui\imstb_truetype.h">
+      <Filter>Engine\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector2.h">
+      <Filter>Math\Vector</Filter>
+    </ClInclude>
+    <ClInclude Include="Math.h">
+      <Filter>Math\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Engine\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectionalLight.h">
+      <Filter>DirectionalLight</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelData.h">
+      <Filter>Engine\ModelData</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSystem.h">
+      <Filter>Engine\GameSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Convert.h">
+      <Filter>Engine\Convert</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelManager.h">
+      <Filter>Managers\ModelManager</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelInfo.h">
+      <Filter>Engine\ModelInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureManager.h">
+      <Filter>Managers\TextureManager</Filter>
+    </ClInclude>
+    <ClInclude Include="GameScene.h">
+      <Filter>Scene\GameScene</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui.h">
+      <Filter>Engine\imgui\ImGuiLibrary</Filter>
+    </ClInclude>
+    <ClInclude Include="SoundManager.h">
+      <Filter>Managers\SoundManager</Filter>
+    </ClInclude>
+    <ClInclude Include="InputManager.h">
+      <Filter>Managers\InputManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Environment.h">
+      <Filter>Environment</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Object3d.hlsli">
+      <Filter>Engine\hlsl</Filter>
+    </None>
   </ItemGroup>
 </Project>
