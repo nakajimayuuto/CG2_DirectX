@@ -149,12 +149,6 @@ public:
 
 	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index);
 
-	// ModelManager的n(以下略.
-	static MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& fileName);
-
-	// ModelManager的な奴に入れる.
-	static ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileName);
-
 private:
 	WNDCLASS wc{};
 
