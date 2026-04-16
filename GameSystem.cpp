@@ -3,6 +3,7 @@
 #include "InputManager.h"
 #include "Environment.h"
 #include <strsafe.h>
+#include <filesystem>
 
 GameSystem* GameSystem::GetInstance() {
 	static GameSystem gameSystem;
@@ -75,10 +76,10 @@ void GameSystem::Initialize() {
 
 	// クライアント領域のサイズ.
 	int32_t kClientWidth = Environment::GetInstance()->GetWindowSize().width;
-	int32_t kClinetHeight = Environment::GetInstance()->GetWindowSize().height;
+	int32_t kClientHeight = Environment::GetInstance()->GetWindowSize().height;
 
 	// ウィンドウサイズを表す構造体に九合アント領域を入れる.
-	RECT wrc{ 0,0,kClientWidth,kClinetHeight};
+	RECT wrc{ 0,0,kClientWidth,kClientHeight};
 
 	// クライアント領域をもとに実際のサイズにwrcを変更してもらう.
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
@@ -247,7 +248,7 @@ void GameSystem::Initialize() {
 	//Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain = nullptr;
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
 	swapChainDesc.Width = kClientWidth; //画面の幅。ウィンドウのクライアント領域を同じものにする.
-	swapChainDesc.Height = kClinetHeight; //画面の高さ。ウィンドウのクライアント領域を同じものにする.
+	swapChainDesc.Height = kClientHeight; //画面の高さ。ウィンドウのクライアント領域を同じものにする.
 	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; //色の形式.
 	swapChainDesc.SampleDesc.Count = 1; // マルチサンプルしない.
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // 描画のターゲットとして利用する.
@@ -261,12 +262,12 @@ void GameSystem::Initialize() {
 	/*=============================================================
 	ディスクリプタ系
 	=============================================================*/
-	// RTV用のヒープでディスクリプタの数は2。RTVはShader内で触るものではないので、ShaderVisbleはfalse.
-	//Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDiscriptorHeap
+	// RTV用のヒープでディスクリプタの数は2。RTVはShader内で触るものではないので、ShaderVisibleはfalse.
+	//Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap
 	rtvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
 	const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-	// SRV用のヒープでディスクリプタの数は128。SRVはShader内で触るものなので、ShaderVisbleはtrue.
+	// SRV用のヒープでディスクリプタの数は128。SRVはShader内で触るものなので、ShaderVisibleはtrue.
 	//Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvDescriptorHeap 
 	srvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
 	descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -336,7 +337,7 @@ void GameSystem::Initialize() {
 	//D3D12_VIEWPORT viewport{};
 	// クライアント領域のサイズと一緒にして画面全体に表示.
 	viewport.Width = static_cast<FLOAT>(kClientWidth);
-	viewport.Height = static_cast<FLOAT>(kClinetHeight);
+	viewport.Height = static_cast<FLOAT>(kClientHeight);
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
 	viewport.MinDepth = 0.0f;
@@ -348,7 +349,7 @@ void GameSystem::Initialize() {
 	scissorRect.left = 0;
 	scissorRect.right = kClientWidth;
 	scissorRect.top = 0;
-	scissorRect.bottom = kClinetHeight;
+	scissorRect.bottom = kClientHeight;
 
 	DirectionalLight::GetInstance()->Initialize();
 
@@ -373,7 +374,7 @@ void GameSystem::Initialize() {
 	DepthStencilTextureをつくる
 	=============================================================*/
 	//Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource 
-	depthStencilResource = CreateDepthStencilTextureResource(device, kClientWidth, kClinetHeight);
+	depthStencilResource = CreateDepthStencilTextureResource(device, kClientWidth, kClientHeight);
 
 	// DSV用のヒープでディスクリプタ数は1。DSVはShader内で触れるものではないので、ShaderVisibleはfalse.
 	//Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap 
@@ -598,7 +599,7 @@ void GameSystem::DrawSetup() {
 	commandList->SetPipelineState(graphicsPipelineState.Get()); // PS0を設定.
 }
 
-void GameSystem::Endframe() {
+void GameSystem::EndFrame() {
 #ifdef USE_IMGUI
 	// ImGuiの描画.
 	// 実際のcommandListのImGuiの描画コマンドを積む.
@@ -628,7 +629,7 @@ void GameSystem::Endframe() {
 	swapChain->Present(1, 0);
 
 
-	// Fanceの値を更新.
+	// Fenceの値を更新.
 	fenceValue++;
 	// GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る.
 	commandQueue->Signal(fence.Get(), fenceValue);
@@ -1017,7 +1018,7 @@ ModelData GameSystem::LoadObjFile(const std::string& directoryPath, const std::s
 			modelData.vertices.push_back(triangle[1]);
 			modelData.vertices.push_back(triangle[0]);
 		} else if (identifier == "mtllib") {
-			// MaterialTemplateLiblaryファイルの名前を取得する.
+			// MaterialTemplateLibraryファイルの名前を取得する.
 			std::string materialFilename;
 			s >> materialFilename;
 			// 基本的にObjファイルと同一階層にmtlは存在させるので、ディレクトリ名とファイル名を渡す.

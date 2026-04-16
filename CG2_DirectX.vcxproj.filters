@@ -58,9 +58,6 @@
     <Filter Include="Managers\InputManager">
       <UniqueIdentifier>{28d8bb8c-f15a-45b7-a0f4-1c89c988f4e7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Camera\DebugCamera">
-      <UniqueIdentifier>{deabb042-6361-46a3-991d-9e58caea2c93}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Engine">
       <UniqueIdentifier>{3b419ee5-1669-4ef5-82b9-4defc02090c0}</UniqueIdentifier>
     </Filter>
@@ -177,9 +174,6 @@
     <ClCompile Include="InputManager.cpp">
       <Filter>Managers\InputManager</Filter>
     </ClCompile>
-    <ClCompile Include="DebugCamera.cpp">
-      <Filter>Camera\DebugCamera</Filter>
-    </ClCompile>
     <ClCompile Include="Environment.cpp">
       <Filter>Environment</Filter>
     </ClCompile>
@@ -279,9 +273,6 @@
     </ClInclude>
     <ClInclude Include="InputManager.h">
       <Filter>Managers\InputManager</Filter>
-    </ClInclude>
-    <ClInclude Include="DebugCamera.h">
-      <Filter>Camera\DebugCamera</Filter>
     </ClInclude>
     <ClInclude Include="Environment.h">
       <Filter>Environment</Filter>

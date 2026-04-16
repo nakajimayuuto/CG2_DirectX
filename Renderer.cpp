@@ -75,16 +75,7 @@ void Renderer::Model::Draw(const Transform& transform){
 	/*=============================================================
 	三角形の描画のコマンド.
 	=============================================================*/
-	//D3D12_VIEWPORT viewport = GameSystem::GetInstance()->GetViewport();
-	//D3D12_RECT scissorRect = GameSystem::GetInstance()->GetScissorRect();
-	//
-	//GameSystem::GetInstance()->GetCommandList()->RSSetViewports(1, &viewport); // Viewportを設定.
-	//GameSystem::GetInstance()->GetCommandList()->RSSetScissorRects(1, &scissorRect); // Scissorを設定.
-	//// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
-	//GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootSignature(GameSystem::GetInstance()->GetRootSignature().Get());
-	//GameSystem::GetInstance()->GetCommandList()->SetPipelineState(GameSystem::GetInstance()->GetGraphicsPipelineState().Get()); // PS0を設定.
 	GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_); // VBVを設定.
-	//commandList->IASetIndexBuffer(&indexBufferView); // IBVを設定.
 	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
 	GameSystem::GetInstance()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// CBufferの場所を設定.
@@ -97,7 +88,6 @@ void Renderer::Model::Draw(const Transform& transform){
 	// DirectionalLight用のCBufferの場所.
 	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-	//commandList->DrawIndexedInstanced(kSubdivision* kSubdivision * 6, 1, 0, 0,0);
 	GameSystem::GetInstance()->GetCommandList()->DrawInstanced(UINT(modelInfo_.modelData.vertices.size()), 1, 0, 0);
 }
 
@@ -106,15 +96,12 @@ void Renderer::Sphere::Initialize(TextureInfo info){
 
 	textureInfo_ = info;
 	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
-	//Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource 
 	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(),sizeof(VertexData) * kSubdivision_ * kSubdivision_ * 6);
 
 	// 【MaterialResourceを生成する】
 	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> materialResource 
 	materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
 	// マテリアルにデータを書き込む.
-	//Material* materialData = nullptr;
 	// 書き込むためのアドレスを取得.
 	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
 	// 今回は赤を書き込んでみる
@@ -124,10 +111,8 @@ void Renderer::Sphere::Initialize(TextureInfo info){
 
 	// 【TransformationMatrix】
 	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource 
 	wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
 	// データを書き込む.
-	//TransformationMatrix* wvpData = nullptr;
 	// 書き込むためのアドレスを取得.
 	wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&wvpData_));
 	// 単位行列を書き込んでおく.
@@ -138,22 +123,18 @@ void Renderer::Sphere::Initialize(TextureInfo info){
 	// 【VertexBufferViewを作成する】
 
 	// 頂点バッファビューを作成する.
-	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 	// リソースの先頭のアドレスから使う.
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
 	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
-	//vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 4;
 	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * kSubdivision_ * kSubdivision_ * 4);
 	// 1頂点あたりのサイズ.
 	vertexBufferView_.StrideInBytes = sizeof(VertexData);
 
 	// 【IndexResourceを生成する】
 	// 実際に頂点リソースを作る.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> indexResource 
 	indexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * kSubdivision_ * kSubdivision_ * 6);
 
 	// 頂点バッファビューを作成する.
-	//D3D12_INDEX_BUFFER_VIEW indexBufferView{};
 	// リソースの先頭のアドレスから使う.
 	indexBufferView_.BufferLocation = indexResource_->GetGPUVirtualAddress();
 	// 使用するリソースのサイズはインデックス6つ分のサイズ.
@@ -228,14 +209,6 @@ void Renderer::Sphere::Draw(const Transform& transform) {
 	/*=============================================================
 	三角形の描画のコマンド.
 	=============================================================*/
-	//D3D12_VIEWPORT viewport = GameSystem::GetInstance()->GetViewport();
-	//D3D12_RECT scissorRect = GameSystem::GetInstance()->GetScissorRect();
-	//
-	//GameSystem::GetInstance()->GetCommandList()->RSSetViewports(1, &viewport); // Viewportを設定.
-	//GameSystem::GetInstance()->GetCommandList()->RSSetScissorRects(1, &scissorRect); // Scissorを設定.
-	//// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
-	//GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootSignature(GameSystem::GetInstance()->GetRootSignature().Get());
-	//GameSystem::GetInstance()->GetCommandList()->SetPipelineState(GameSystem::GetInstance()->GetGraphicsPipelineState().Get()); // PS0を設定.
 	GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_); // VBVを設定.
 	GameSystem::GetInstance()->GetCommandList()->IASetIndexBuffer(&indexBufferView_); // IBVを設定.
 	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
@@ -251,7 +224,6 @@ void Renderer::Sphere::Draw(const Transform& transform) {
 	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
 	GameSystem::GetInstance()->GetCommandList()->DrawIndexedInstanced(kSubdivision_* kSubdivision_ * 6, 1, 0, 0,0);
-	//GameSystem::GetInstance()->GetCommandList()->DrawInstanced(UINT(modelInfo_.modelData.vertices.size()), 1, 0, 0);
 }
 
 void Renderer::Sprite::Initialize(TextureInfo info){
@@ -263,11 +235,9 @@ void Renderer::Sprite::Initialize(TextureInfo info){
 	=============================================================*/
 	// 【VertexResourceを生成する】
 	// 実際に頂点リソースを作る.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSprite 
 	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * 4);
 
 	// 頂点バッファビューを作成する.
-	//D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{};
 	// リソースの先頭のアドレスから使う.
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
 	// 使用するリソースのサイズは頂点3つ分のサイズ.
@@ -277,11 +247,9 @@ void Renderer::Sprite::Initialize(TextureInfo info){
 
 	// 【IndexResourceを生成する】
 	// 実際に頂点リソースを作る.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> indexResourceSprite 
 	indexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * 6);
 
 	// 頂点バッファビューを作成する.
-	//D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
 	// リソースの先頭のアドレスから使う.
 	indexBufferView_.BufferLocation = indexResource_->GetGPUVirtualAddress();
 	// 使用するリソースのサイズはインデックス6つ分のサイズ.
@@ -295,7 +263,6 @@ void Renderer::Sprite::Initialize(TextureInfo info){
 	//Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceSprite
 	materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
 	// マテリアルにデータを書き込む.
-	//Material* materialDataSprite = nullptr;
 	// 書き込むためのアドレスを取得.
 	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
 	// 今回は赤を書き込んでみる
@@ -305,10 +272,8 @@ void Renderer::Sprite::Initialize(TextureInfo info){
 
 	// 【TransformationMatrix】
 	//Sprite用のTransformationMatrixを作る。Matrix4x4 1つ分のサイズを用意する.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResourceSprite 
 	transformationMatrixResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
 	// データを書き込む.
-	//TransformationMatrix* transformationMatrixDataSprite = nullptr;
 	// 書き込むためのアドレスを取得.
 	transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_));
 	// 単位行列を書き込んでおく.

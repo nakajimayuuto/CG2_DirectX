@@ -18,13 +18,6 @@ public:
 
 	void Initialize();
 
-
-	//void SetColor(Vector4 color) { directionalLightData->color = color; };
-
-	//void SetDirection(Vector3 direction) { directionalLightData->direction = direction; };
-
-	//void SetIntensity(float intensity) { directionalLightData->intensity = intensity; };
-
 	Microsoft::WRL::ComPtr<ID3D12Resource> GetDirectionalLightResource() { return directionalLightResource; };
 
 	DirectionalLightData* GetDirectionalLightData() { return directionalLightData; };

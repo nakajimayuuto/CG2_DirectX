@@ -61,7 +61,7 @@ public:
 
 	void DrawSetup();
 
-	void Endframe();
+	void EndFrame();
 
 	void Finalize();
 

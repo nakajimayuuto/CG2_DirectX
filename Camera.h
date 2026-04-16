@@ -10,7 +10,7 @@ class Camera{
 	float windowWidth_;
 	float windowHeight_;
 
-	Vertex4 orthographiicVertex_;
+	Vertex4 orthographicVertex_;
 	Vector3 viewportLeftTop_;
 	float viewportWidth_;
 	float viewportHeight_;
@@ -39,7 +39,7 @@ public:
 
 	void DebugUpdate();
 		
-	void SetPoisiton(Vector3 vector3) { translate_ = vector3; }
+	void SetPosition(Vector3 vector3) { translate_ = vector3; }
 
 	void SetRotate(Vector3 rotate) { rotate_ = rotate; };
 

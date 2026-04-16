@@ -37,7 +37,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			gameScene->Draw();
 
-			system->Endframe();
+			system->EndFrame();
 		}
 	}
 

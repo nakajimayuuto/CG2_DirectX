@@ -9,7 +9,6 @@ DirectionalLight* DirectionalLight::GetInstance() {
 void DirectionalLight::Initialize() {
 	directionalLightResource = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(DirectionalLightData));
 	// データを書き込む.
-	//DirectionalLight* directionalLightData = nullptr;
 	// 書き込むためのアドレスを取得.
 	directionalLightResource->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData));
 	// 単位行列を書き込んでおく.
