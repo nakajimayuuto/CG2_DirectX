@@ -6,8 +6,13 @@
 #include "TextureManager.h"
 #include "externals/DirectXTex/DirectXTex.h"
 #include "externals/DirectXTex/d3dx12.h"
-
 	namespace Renderer {
+		enum class LightingType {
+			kNone = 0,
+			kHalfLambert = 1,
+			kLambert = 2,
+		};
+
 	class Model {
 	public:
 		void Initialize(const ModelInfo& info);
@@ -19,10 +24,17 @@
 		bool GetIsVisible() { return isVisible_; };
 
 		void ChangeTexture(const TextureInfo& info) { modelInfo_.textureSrvHandlesGPU = info.textureSrvHandlesGPU; };
-	public:
-		Material* materialData_ = nullptr;
+	
+		void SetColor(Vector4 color) { materialData_->color = color; };
 
+		Vector4 GetColor() { return materialData_->color; };
+
+		void SetLightingType(LightingType type) { materialData_->lightingType = static_cast<uint32_t>(type); };
+
+		LightingType GetLightingType() { return static_cast<LightingType>(materialData_->lightingType); };
 	private:
+		Material* materialData_ = nullptr;
+	
 		TransformationMatrix* wvpData_ = nullptr;
 
 		bool isVisible_ = true;
@@ -50,10 +62,16 @@
 
 		void ChangeTexture(const TextureInfo& info) { textureInfo_.textureSrvHandlesGPU = info.textureSrvHandlesGPU; };
 
-	public:
+		void SetColor(Vector4 color) { materialData_->color = color; };
+
+		Vector4 GetColor() { return materialData_->color; };
+
+		void SetLightingType(LightingType type) { materialData_->lightingType = static_cast<uint32_t>(type); };
+
+		LightingType GetLightingType() { return static_cast<LightingType>(materialData_->lightingType); };
+	private:
 		Material* materialData_ = nullptr;
 
-	private:
 		TransformationMatrix* wvpData_ = nullptr;
 		
 		bool isVisible_;
@@ -87,10 +105,20 @@
 
 		void ChangeTexture(const TextureInfo& info) { textureInfo_.textureSrvHandlesGPU = info.textureSrvHandlesGPU; };
 		
-	public:
+		void SetColor(Vector4 color) { materialData_->color = color; };
+
+		Vector4 GetColor() { return materialData_->color; };
+
+		void SetUvTransform(const Transform& transform) { uvTransform_ = transform; };
+
+		void SetSize(Vector2 size);
+	private:
+		Transform uvTransform_;
+
 		Material* materialData_ = nullptr;
 
-	private:
+		VertexData* vertexData = nullptr;
+	
 		TransformationMatrix* transformationMatrixData_ = nullptr;
 		
 		bool isVisible_;
