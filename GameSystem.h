@@ -51,7 +51,7 @@ class GameSystem {
 public:
 	static GameSystem* GetInstance();
 	
-	static LONG WINAPI ExportDump();
+	static LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception);
 
 	void Initialize();
 

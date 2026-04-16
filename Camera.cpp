@@ -93,3 +93,11 @@ Matrix4x4 Camera::GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix){
 	Matrix4x4 worldViewProjectionMatrix = matrix * viewMatrix * projectionMatrix;
 	return worldViewProjectionMatrix;
 }
+
+void Camera::ChangeCameraMode(){
+	if (useDebugCamera_) {
+		useDebugCamera_ = false;
+	} else {
+		useDebugCamera_ = true;
+	}
+}

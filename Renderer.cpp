@@ -1,5 +1,6 @@
 #include "Renderer.h"
 #include "GameSystem.h"
+#include <vector>
 
 void Renderer::Model::Initialize(const ModelInfo& info) {
 	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)

@@ -9,9 +9,9 @@ GameSystem* GameSystem::GetInstance() {
 	return &gameSystem;
 }
 
-LONG __stdcall GameSystem::ExportDump(){
+LONG __stdcall GameSystem::ExportDump(EXCEPTION_POINTERS* exception){
 	// 時刻を取得して、時刻を名前に入れたファイルを作成。Dumpsディレクトリ以下に出力.
-	SYSTEMTIME time;
+	SYSTEMTIME time = {0.0f};
 	wchar_t filePath[MAX_PATH] = { 0 };
 	CreateDirectory(L"./Dumps",nullptr);
 	StringCchPrintfW(filePath,MAX_PATH, L"./Dumps/%04d-%02d%02d-%02d%02d.dmp",time.wYear,time.wMonth,time.wDay,time.wHour,time.wMinute);
@@ -24,8 +24,9 @@ LONG __stdcall GameSystem::ExportDump(){
 	minidumpInfomation.ThreadId = threadId;
 	minidumpInfomation.ExceptionPointers = exception;
 	minidumpInfomation.ClientPointers = TRUE;
-
-
+	// Dumpを出力する。MiniDumpNormalは最低限の情報を出力するフラグ
+	MiniDumpWriteDump(GetCurrentProcess(), processId, dumpFileHandle, MiniDumpNormal, &minidumpInfomation, nullptr,nullptr);
+	// 他に関連付けられているSHE例外ハンドルがあれば実行。通常はプロセスを終了する.
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 
@@ -334,8 +335,8 @@ void GameSystem::Initialize() {
 	// 【ビューポート】
 	//D3D12_VIEWPORT viewport{};
 	// クライアント領域のサイズと一緒にして画面全体に表示.
-	viewport.Width = kClientWidth;
-	viewport.Height = kClinetHeight;
+	viewport.Width = static_cast<FLOAT>(kClientWidth);
+	viewport.Height = static_cast<FLOAT>(kClinetHeight);
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
 	viewport.MinDepth = 0.0f;

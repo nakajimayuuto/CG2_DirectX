@@ -11,7 +11,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	system->Initialize();
 
-	Camera::GetInstance()->Initialize(Environment::GetInstance()->GetWindowSize().width, Environment::GetInstance()->GetWindowSize().height);
+	Camera::GetInstance()->Initialize(static_cast<float>(Environment::GetInstance()->GetWindowSize().width), static_cast<float>(Environment::GetInstance()->GetWindowSize().height));
 
 	/*=============================================================
 	ここから下がゲームの変数.

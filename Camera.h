@@ -49,7 +49,7 @@ public:
 
 	Matrix4x4 GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix);
 
-	void ChangeCameraMode() { useDebugCamera_ != useDebugCamera_; };
+	void ChangeCameraMode();
 
 	bool GetUseDebugCamera() { return useDebugCamera_; };
 };
