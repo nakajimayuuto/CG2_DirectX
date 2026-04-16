@@ -361,3 +361,6 @@ DirectXGame/imgui.ini
 **/DirectXTex/Shaders/Compiled/
 
 imgui.ini
+
+*.log
+/logs

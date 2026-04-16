@@ -87,6 +87,8 @@ public:
 	WNDCLASS GetWc() { return wc; };
 
 	HWND GetHWND() { return hwnd; };
+
+	std::ofstream& GetLogStream() { return logStream; };
 private:
 
 	struct D3DResourceLeakChecker {
@@ -104,6 +106,8 @@ private:
 	};
 
 	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+
+	std::ofstream CreateLogFile();
 
 public:
 	// ログを表示する.
@@ -161,6 +165,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Device> device = nullptr;
 
 	HWND hwnd;
+
+	std::ofstream logStream;
 
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue = nullptr;
 
