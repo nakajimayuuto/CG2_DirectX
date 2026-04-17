@@ -125,8 +125,6 @@ ModelData ModelManager::LoadObjFile(const std::string& directoryPath, const std:
 				Vector4 position = positions[elementIndices[0] - 1];
 				Vector2 texcoord = texcoords[elementIndices[1] - 1];
 				Vector3 normal = normals[elementIndices[2] - 1];
-				//VertexData vertex = {position,texcoord,normal};
-				//modelData.vertices.push_back(vertex);
 				triangle[faceVertex] = { position,texcoord,normal };
 			}
 
@@ -179,8 +177,6 @@ Microsoft::WRL::ComPtr<ID3D12Resource> ModelManager::CreateTextureResource(Micro
 	// 2. 利用するHeapの設定。非常に特殊な運用。02_04exで一般的なケース版がある(後々そっちに変えましょね).
 	D3D12_HEAP_PROPERTIES heapProperties{};
 	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT; // 細かい設定を行う(03_00_exで変更した).
-	//heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK; // WriteBackポリシーでCPUアクセス可能.
-	//heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0; // プロセッサの近くに配置.
 
 	// 3. Resourceを生成する.
 

@@ -13,7 +13,7 @@ GameSystem* GameSystem::GetInstance() {
 
 LONG __stdcall GameSystem::ExportDump(EXCEPTION_POINTERS* exception){
 	// 時刻を取得して、時刻を名前に入れたファイルを作成。Dumpsディレクトリ以下に出力.
-	SYSTEMTIME time = {0.0f};
+	SYSTEMTIME time = {0};
 	wchar_t filePath[MAX_PATH] = { 0 };
 	CreateDirectory(L"./Dumps",nullptr);
 	StringCchPrintfW(filePath,MAX_PATH, L"./Dumps/%04d-%02d%02d-%02d%02d.dmp",time.wYear,time.wMonth,time.wDay,time.wHour,time.wMinute);
@@ -40,14 +40,6 @@ void GameSystem::Initialize() {
 	// main関数始まってすぐに登録すると良い.
 	SetUnhandledExceptionFilter(ExportDump);
 
-
-
-	/*=============================================================
-	メモリ解放チェック.
-	=============================================================*/
-
-	//D3DResourceLeakChecker leakCheck;
-
 	/*=============================================================
 	COMの初期化.
 	=============================================================*/
@@ -57,8 +49,6 @@ void GameSystem::Initialize() {
 	/*=============================================================
 	Window作成系
 	=============================================================*/
-
-	//WNDCLASS wc{};
 
 	// ウィンドウプロシージャ
 	wc.lpfnWndProc = WindowProc;
@@ -86,7 +76,6 @@ void GameSystem::Initialize() {
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
 
 	// ウィンドウの生成.
-	//HWND hwnd 
 	hwnd = CreateWindow(
 		wc.lpszClassName,		// 利用するクラス名.
 		L"CG2",					// タイトルバーの文字.
@@ -118,14 +107,11 @@ void GameSystem::Initialize() {
 
 	logStream = CreateLogFile();
 
-	//MSG msg{};
-
 	// CG2_00_05.
 
 	// DXGIファクトリーの生成.
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
 
-	//HRESULT hr = 
 	hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
 
 	assert(SUCCEEDED(hr));
@@ -155,8 +141,6 @@ void GameSystem::Initialize() {
 	}
 
 	// 適切なアダプタが見つからなかったので起動できない.
-
-	//Microsoft::WRL::ComPtr<ID3D12Device> device = nullptr;
 
 	// 機能レベルとログ出力用の文字列.
 	D3D_FEATURE_LEVEL featureLevels[] = {
@@ -191,7 +175,6 @@ void GameSystem::Initialize() {
 		// 警告時に止まる.
 		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
 		// 解放.
-		//infoQueue->Release();
 
 		// 抑制するメッセージのID.
 		D3D12_MESSAGE_ID denyIds[] = {
@@ -220,7 +203,6 @@ void GameSystem::Initialize() {
 	=============================================================*/
 
 	// コマンドキューを生成する
-	//Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue = nullptr;
 
 	D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};
 
@@ -230,14 +212,12 @@ void GameSystem::Initialize() {
 	assert(SUCCEEDED(hr));
 
 	// コマンドアロケータを生成する
-	//Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator = nullptr;
 
 	hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator));
 	// コマンドアロケータの生成がうまくいかなかったので起動できない.
 	assert(SUCCEEDED(hr));
 
 	// コマンドリストを生成する
-	//Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
 
 	hr = device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), nullptr, IID_PPV_ARGS(&commandList));
 	// コマンドリストの生成がうまくいかなかったので起動できない.
@@ -248,7 +228,6 @@ void GameSystem::Initialize() {
 	スワップチェーン
 	=============================================================*/
 	// スワップチェーンを生成する.
-	//Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain = nullptr;
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
 	swapChainDesc.Width = kClientWidth; //画面の幅。ウィンドウのクライアント領域を同じものにする.
 	swapChainDesc.Height = kClientHeight; //画面の高さ。ウィンドウのクライアント領域を同じものにする.
@@ -266,17 +245,14 @@ void GameSystem::Initialize() {
 	ディスクリプタ系
 	=============================================================*/
 	// RTV用のヒープでディスクリプタの数は2。RTVはShader内で触るものではないので、ShaderVisibleはfalse.
-	//Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap
 	rtvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
 	const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
 	// SRV用のヒープでディスクリプタの数は128。SRVはShader内で触るものなので、ShaderVisibleはtrue.
-	//Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvDescriptorHeap 
 	srvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
 	descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	// SwapChainからResourceを引っ張ってくる.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> swapChainResource[2] = { nullptr };
 	hr = swapChain->GetBuffer(0, IID_PPV_ARGS(&swapChainResource[0]));
 	// 上手く取得出来なければ起動できない.
 	assert(SUCCEEDED(hr));
@@ -288,7 +264,6 @@ void GameSystem::Initialize() {
 	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB; // 出力結果をSRGBに変換して書き込む.
 	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D; // 2dテクスチャとして書き込む.
 	// RTVを2つ作るのでディスクリプタを2つ用意.
-	//D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
 	// まず1つ目を作る。1つ目は最初の所に作る。作る場所をこちらで指定して上げる必要がある.
 	const uint32_t rtvHandleMax = 2;
 
@@ -305,8 +280,6 @@ void GameSystem::Initialize() {
 	Fence、Event系
 	=============================================================*/
 	// 初期値0でFenceを作る.
-	//Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
-	//uint64_t fenceValue = 0;
 	hr = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 	assert(SUCCEEDED(hr));
 
@@ -337,7 +310,6 @@ void GameSystem::Initialize() {
 	//
 
 	// 【ビューポート】
-	//D3D12_VIEWPORT viewport{};
 	// クライアント領域のサイズと一緒にして画面全体に表示.
 	viewport.Width = static_cast<FLOAT>(kClientWidth);
 	viewport.Height = static_cast<FLOAT>(kClientHeight);
@@ -347,7 +319,6 @@ void GameSystem::Initialize() {
 	viewport.MaxDepth = 1.0f;
 
 	// 【シザー矩形】
-	//D3D12_RECT scissorRect{};
 	// 基本的にビューポートと同じ矩形が構成されるようにする.
 	scissorRect.left = 0;
 	scissorRect.right = kClientWidth;
@@ -376,11 +347,9 @@ void GameSystem::Initialize() {
 	/*=============================================================
 	DepthStencilTextureをつくる
 	=============================================================*/
-	//Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource 
 	depthStencilResource = CreateDepthStencilTextureResource(device, kClientWidth, kClientHeight);
 
 	// DSV用のヒープでディスクリプタ数は1。DSVはShader内で触れるものではないので、ShaderVisibleはfalse.
-	//Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap 
 	dsvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
 
 	// DSVの設定.
@@ -453,7 +422,6 @@ void GameSystem::Initialize() {
 		assert(false);
 	}
 	// バイナリを元に生成.
-	//Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
 	hr = device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
 	assert(SUCCEEDED(hr));
 
@@ -516,7 +484,6 @@ void GameSystem::Initialize() {
 	graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	// 実際に生成.
-	//Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
 	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));
 
@@ -547,7 +514,6 @@ bool GameSystem::BeginFrame() {
 #endif // USE_IMGUI
 
 	// 指定した深度で画面全体をクリアする.
-	//D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle 
 	dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
@@ -569,7 +535,6 @@ void GameSystem::DrawSetup() {
 
 
 	// TransitionBarrierの設定.
-	//D3D12_RESOURCE_BARRIER barrier{};
 	// 今回のバリアはTransition.
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	// Noneにしておく.
@@ -859,8 +824,6 @@ Microsoft::WRL::ComPtr<ID3D12Resource> GameSystem::CreateTextureResource(Microso
 	// 2. 利用するHeapの設定。非常に特殊な運用。02_04exで一般的なケース版がある(後々そっちに変えましょね).
 	D3D12_HEAP_PROPERTIES heapProperties{};
 	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT; // 細かい設定を行う(03_00_exで変更した).
-	//heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK; // WriteBackポリシーでCPUアクセス可能.
-	//heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0; // プロセッサの近くに配置.
 
 	// 3. Resourceを生成する.
 
@@ -944,116 +907,4 @@ D3D12_GPU_DESCRIPTOR_HANDLE GameSystem::GetGPUDescriptorHandle(Microsoft::WRL::C
 	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
 	handleGPU.ptr += (descriptorSize * index);
 	return handleGPU;
-}
-
-MaterialData GameSystem::LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& fileName) {
-	// 1. 中で必要となる変数の宣言.
-	MaterialData materialData; // 構築するModelData.
-	std::string line; // ファイルから読んだ1行を格納するもの.
-
-
-	// 2. ファイルを開く.
-	std::ifstream file(directoryPath + "/" + fileName); // ファイルを開く.
-	assert(file.is_open()); // とりあえず開けなかったら止める.
-
-
-	// 3. 実際にファイルを読み、MaterialDataを構築していく.
-	while (std::getline(file, line)) {
-		std::string identifier;
-		std::istringstream s(line);
-		s >> identifier; // 先頭の識別子を読む.
-
-		// identifierに応じた処理.
-
-		if (identifier == "map_Kd") {
-			std::string textureFilename;
-			s >> textureFilename;
-			// 連結してファイルパスにする.
-			materialData.textureFilePath = directoryPath + "/" + textureFilename;
-		}
-	}
-
-
-	// 4. MaterialDataを返す.
-
-	return materialData;
-}
-
-ModelData GameSystem::LoadObjFile(const std::string& directoryPath, const std::string& fileName) {
-	// 1. 中で必要となる変数の宣言.
-	ModelData modelData; // 構築するModelData.
-	std::vector<Vector4> positions; // 位置.
-	std::vector<Vector3> normals; // 法線.
-	std::vector<Vector2> texcoords; // テクスチャ座標.
-	std::string line; // ファイルから読んだ1行を格納するもの.
-
-
-	// 2. ファイルを開く.
-	std::ifstream file(directoryPath + "/" + fileName); // ファイルを開く.
-	assert(file.is_open()); // とりあえず開けなかったら止める.
-
-
-	// 3. 実際にファイルを読み、ModelDataを構築していく.
-	while (std::getline(file, line)) {
-		std::string identifier;
-		std::istringstream s(line);
-		s >> identifier; // 先頭の識別子を読む.
-
-		// identifierに応じた処理.
-
-		if (identifier == "v") {
-			Vector4 position;
-			s >> position.x >> position.y >> position.z;
-			position.x *= -1.0f;
-			position.w = 1.0f;
-			positions.push_back(position);
-		} else if (identifier == "vt") {
-			Vector2 texcoord;
-			s >> texcoord.x >> texcoord.y;
-			texcoord.y = 1.0f - texcoord.y;
-			texcoords.push_back(texcoord);
-		} else if (identifier == "vn") {
-			Vector3 normal;
-			s >> normal.x >> normal.y >> normal.z;
-			normal.x *= -1.0f;
-			normals.push_back(normal);
-		} else if (identifier == "f") {
-			VertexData triangle[3];
-			// 面は三角形限定。その他は未対応.
-			for (uint32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
-				std::string vertexDefinition;
-				s >> vertexDefinition;
-				// 頂点の要素へのIndexは「位置/UV/法線」で格納されているので、分解してIndexを取得する.
-				std::istringstream v(vertexDefinition);
-				uint32_t elementIndices[3];
-				for (uint32_t element = 0; element < 3; ++element) {
-					std::string index;
-					std::getline(v, index, '/');// 区切りでインデックスを読んでいく.
-					elementIndices[element] = std::stoi(index);
-				}
-				// 要素へのIndexから、実際の要素の値を取得して、頂点を構築する.
-				Vector4 position = positions[elementIndices[0] - 1];
-				Vector2 texcoord = texcoords[elementIndices[1] - 1];
-				Vector3 normal = normals[elementIndices[2] - 1];
-				//VertexData vertex = {position,texcoord,normal};
-				//modelData.vertices.push_back(vertex);
-				triangle[faceVertex] = { position,texcoord,normal };
-			}
-
-			modelData.vertices.push_back(triangle[2]);
-			modelData.vertices.push_back(triangle[1]);
-			modelData.vertices.push_back(triangle[0]);
-		} else if (identifier == "mtllib") {
-			// MaterialTemplateLibraryファイルの名前を取得する.
-			std::string materialFilename;
-			s >> materialFilename;
-			// 基本的にObjファイルと同一階層にmtlは存在させるので、ディレクトリ名とファイル名を渡す.
-			modelData.material = LoadMaterialTemplateFile(directoryPath, materialFilename);
-		}
-	}
-
-	// 4. ModelDataを返す.
-
-
-	return modelData;
 }

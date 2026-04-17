@@ -11,8 +11,6 @@ TextureInfo TextureManager::RegisterTexture(const std::string& name, const std::
 	=============================================================*/
 	// Textureを読んで転送する.
 	DirectX::ScratchImage mipImage;
-	//Microsoft::WRL::ComPtr<ID3D12Resource> textureResource[textureDataMax];
-	//Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource[textureDataMax];
 	DirectX::TexMetadata metadata;
 	mipImage = LoadTexture(filePath);
 
@@ -52,9 +50,6 @@ TextureInfo TextureManager::RegisterTexture(const std::string& name, const std::
 	ShaderResourceViewを作る.
 	=============================================================*/
 	// metaDataを基にSRVの設定.
-
-	//D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandlesCPU[textureDataMax];
-	//D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandlesGPU[textureDataMax];
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
 	srvDesc.Format = metadata.format;
@@ -112,8 +107,6 @@ Microsoft::WRL::ComPtr<ID3D12Resource> TextureManager::CreateTextureResource(Mic
 	// 2. 利用するHeapの設定。非常に特殊な運用。02_04exで一般的なケース版がある(後々そっちに変えましょね).
 	D3D12_HEAP_PROPERTIES heapProperties{};
 	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT; // 細かい設定を行う(03_00_exで変更した).
-	//heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK; // WriteBackポリシーでCPUアクセス可能.
-	//heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0; // プロセッサの近くに配置.
 
 	// 3. Resourceを生成する.
 

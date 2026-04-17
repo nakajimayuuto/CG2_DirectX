@@ -60,7 +60,7 @@ SoundData SoundManager::SoundLoadWave(const char* fileName) {
 		assert(false);
 	}
 
-	// Formtatチャンクの読み込み.
+	// Formatチャンクの読み込み.
 	FormatChunk format = {};
 	// チャンクヘッダーの確認.
 	file.read(reinterpret_cast<char*>(&format), sizeof(ChunkHeader));

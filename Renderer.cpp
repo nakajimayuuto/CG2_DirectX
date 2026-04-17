@@ -22,7 +22,7 @@ void Renderer::Model::Initialize(const ModelInfo& info) {
 	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
 	// 今回は赤を書き込んでみる
 	materialData_->color = {1.0f, 1.0f, 1.0f, 1.0f};
-	materialData_->enableLighting = true;
+	materialData_->lightingType = static_cast<uint32_t>(LightingType::kHalfLambert);
 	materialData_->uvTransform = Matrix4x4::Identity();
 	
 	// 【TransformationMatrix】
@@ -106,7 +106,7 @@ void Renderer::Sphere::Initialize(TextureInfo info){
 	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
 	// 今回は赤を書き込んでみる
 	materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	materialData_->enableLighting = true;
+	materialData_->lightingType = static_cast<uint32_t>(LightingType::kHalfLambert);
 	materialData_->uvTransform = Matrix4x4::Identity();
 
 	// 【TransformationMatrix】
@@ -267,7 +267,7 @@ void Renderer::Sprite::Initialize(TextureInfo info){
 	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
 	// 今回は赤を書き込んでみる
 	materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	materialData_->enableLighting = false;
+	materialData_->lightingType = static_cast<uint32_t>(LightingType::kNone);
 	materialData_->uvTransform = Matrix4x4::Identity();
 
 	// 【TransformationMatrix】
@@ -283,7 +283,6 @@ void Renderer::Sprite::Initialize(TextureInfo info){
 	// 【Resourceにデータを書き込む】
 
 	// 頂点リソースにデータを書き込む.
-	VertexData* vertexData = nullptr;
 	// 書き込むためのアドレスを取得.
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 	// 1枚目の三角形.
@@ -322,6 +321,8 @@ void Renderer::Sprite::Draw(const Transform& transform) {
 
 	transformationMatrixData_->World = worldMatrix;
 	transformationMatrixData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
+
+	materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransform_);
 	/*=============================================================
 	三角形のSpriteの描画のコマンド.
 	=============================================================*/
@@ -342,4 +343,19 @@ void Renderer::Sprite::Draw(const Transform& transform) {
 
 
 	
+}
+
+void Renderer::Sprite::SetSize(Vector2 size){
+	vertexData[0].position = { 0.0f,size.y,0.0f,1.0f }; // 左下.
+	vertexData[0].texcoord = { 0.0f,1.0f };
+	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f }; // 左上.
+	vertexData[1].texcoord = { 0.0f,0.0f };
+	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[2].position = { size.x,size.y,0.0f,1.0f }; // 右下.
+	vertexData[2].texcoord = { 1.0f,1.0f };
+	vertexData[2].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[3].position = { size.x,0.0f,0.0f,1.0f }; // 右上.
+	vertexData[3].texcoord = { 1.0f,0.0f };
+	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
 }

@@ -46,13 +46,18 @@ void GameScene::Update() {
 	ImGui::SliderFloat3("translate", reinterpret_cast<float*>(&transformModel.translate), -5.0f, 5.0f);
 	transformModel.rotate = Radian(rotate);
 
-	Vector4 imColor = testModel.materialData_->color;
+	Vector4 imColor = testModel.GetColor();
 
 	ImGui::ColorEdit4("color", reinterpret_cast<float*>(&imColor));
 
-	testModel.materialData_->color = imColor;
+	testModel.SetColor(imColor);
 
-	ImGui::Checkbox("testEnableLighting", reinterpret_cast<bool*>(&testModel.materialData_->enableLighting));
+	//ImGui::Checkbox("testEnableLighting", reinterpret_cast<bool*>(&testModel.materialData_->lightingType));
+	int imSlider = static_cast<int>(testModel.GetLightingType());
+
+	ImGui::SliderInt("ModelLightingType",&imSlider,0,2);
+
+	testModel.SetLightingType(static_cast<Renderer::LightingType>(imSlider));
 
 	if (ImGui::Button("AutoMove")) {
 		if (isModelAutoMove) {
@@ -86,11 +91,17 @@ void GameScene::Update() {
 	ImGui::SliderFloat3("translate", reinterpret_cast<float*>(&transformSphere.translate), -5.0f, 5.0f);
 	transformSphere.rotate = Radian(rotate);
 
-	imColor = testSphere.materialData_->color;
+	imColor = testSphere.GetColor();
 
 	ImGui::ColorEdit4("color", reinterpret_cast<float*>(&imColor));
 
-	testSphere.materialData_->color = imColor;
+	testSphere.SetColor(imColor);
+
+	imSlider = static_cast<int>(testSphere.GetLightingType());
+
+	ImGui::SliderInt("ModelLightingType", &imSlider, 0, 2);
+
+	testSphere.SetLightingType(static_cast<Renderer::LightingType>(imSlider));
 
 	int numberTemp = textureNumber_;
 	ImGui::SliderInt("texture", &textureNumber_, 0, 1);
@@ -122,8 +133,6 @@ void GameScene::Update() {
 			break;
 		}
 	}
-
-	ImGui::Checkbox("testEnableLighting", reinterpret_cast<bool*>(&testSphere.materialData_->enableLighting));
 
 	if (ImGui::Button("AutoMove")) {
 		if (isSphereAutoMove) {
@@ -163,9 +172,9 @@ void GameScene::Update() {
 	ImGui::SliderFloat2("UVTranslate", reinterpret_cast<float*>(&uvTransformSprite.translate), -640.0f, 1280.0f);
 	uvTransformSprite.rotate.z = Radian(rotate.z);
 
-	imColor = testSprite.materialData_->color;
+	imColor = testSprite.GetColor();
 	ImGui::ColorEdit4("color", reinterpret_cast<float*>(&imColor));
-	testSprite.materialData_->color = imColor;
+	testSprite.SetColor(imColor);
 
 	ImGui::End();
 
@@ -229,7 +238,7 @@ void GameScene::Update() {
 		}
 	}
 
-	testSprite.materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransformSprite);
+	testSprite.SetUvTransform(uvTransformSprite);
 }
 
 void GameScene::Draw() {
