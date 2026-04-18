@@ -54,7 +54,7 @@ void GameSystem::Initialize() {
 	wc.lpfnWndProc = WindowProc;
 
 	// ウィンドウクラス名
-	wc.lpszClassName = Environment::GetInstance()->GetWindowTitle();
+	wc.lpszClassName = L"CG2WindowClass";
 
 	// インスタンスハンドル.
 	wc.hInstance = GetModuleHandle(nullptr);
@@ -78,7 +78,7 @@ void GameSystem::Initialize() {
 	// ウィンドウの生成.
 	hwnd = CreateWindow(
 		wc.lpszClassName,		// 利用するクラス名.
-		L"CG2",					// タイトルバーの文字.
+		Environment::GetInstance()->GetWindowTitle(),					// タイトルバーの文字.
 		WS_OVERLAPPEDWINDOW,	// よく見るウィンドウスタイル.
 		CW_USEDEFAULT,			// 表示X座標(Windowsに任せる).
 		CW_USEDEFAULT,			// 表示Y座標(WindowsOSに任せる).
@@ -488,11 +488,13 @@ void GameSystem::Initialize() {
 	assert(SUCCEEDED(hr));
 
 	SoundManager::GetInstance()->Initialize();
-
-
 }
 
 bool GameSystem::ProcessMessage() {
+	if (Environment::GetInstance()->GetIsGameFinished()) {
+		return false;
+	}
+
 	return msg.message != WM_QUIT;
 }
 

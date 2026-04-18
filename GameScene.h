@@ -1,14 +1,15 @@
 #pragma once
 #include "Renderer.h"
 #include "ModelManager.h"
+#include "IScene.h"
 
-class GameScene{
+class GameScene : public IScene{
 public:
-	void Initialize();
+	void Initialize() override;
 
-	void Update();
+	void Update() override;
 
-	void Draw();
+	void Draw() override;
 private:
 	bool isModelAutoMove = false;
 

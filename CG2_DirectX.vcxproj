@@ -62,6 +62,7 @@
     <ClCompile Include="Matrix4x4.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="ModelManager.cpp" />
+    <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="SoundManager.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Transform.cpp" />
@@ -100,13 +101,14 @@
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="GameSystem.h" />
     <ClInclude Include="InputManager.h" />
+    <ClInclude Include="IScene.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Math.h" />
     <ClInclude Include="Matrix4x4.h" />
     <ClInclude Include="ModelData.h" />
-    <ClInclude Include="ModelInfo.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="ModelManager.h" />
+    <ClInclude Include="SceneManager.h" />
     <ClInclude Include="SoundManager.h" />
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="Transform.h" />

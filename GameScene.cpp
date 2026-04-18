@@ -5,6 +5,7 @@
 #include "DirectionalLight.h"
 #include "SoundManager.h"
 #include "InputManager.h"
+#include "Environment.h"
 
 void GameScene::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("test", "Resource", "axis.obj");
@@ -24,6 +25,10 @@ void GameScene::Initialize() {
 }
 
 void GameScene::Update() {
+	if (InputManager::GetInstance()->TriggerKey(DIK_ESCAPE)) {
+		Environment::GetInstance()->GameFinished();
+	}
+
 	// 球のもろもろ.
 #ifdef USE_IMGUI
 	bool isVisible;
@@ -52,7 +57,6 @@ void GameScene::Update() {
 
 	testModel.SetColor(imColor);
 
-	//ImGui::Checkbox("testEnableLighting", reinterpret_cast<bool*>(&testModel.materialData_->lightingType));
 	int imSlider = static_cast<int>(testModel.GetLightingType());
 
 	ImGui::SliderInt("ModelLightingType",&imSlider,0,2);
