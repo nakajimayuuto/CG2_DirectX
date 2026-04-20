@@ -154,8 +154,6 @@ private:
 
 	MSG msg{};
 
-	HRESULT hr;
-
 	Microsoft::WRL::ComPtr<ID3D12Device> device = nullptr;
 
 	HWND hwnd;
