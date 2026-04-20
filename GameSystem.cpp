@@ -1,3 +1,9 @@
+#pragma comment(lib,"d3d12.lib")
+#pragma comment(lib,"dxgi.lib")
+#pragma comment(lib,"dxguid.lib")
+#pragma comment(lib,"dxcompiler.lib")
+#pragma comment(lib,"Dbghelp.lib")
+
 #include "GameSystem.h"
 #include "SoundManager.h"
 #include "InputManager.h"
@@ -14,7 +20,7 @@ GameSystem* GameSystem::GetInstance() {
 LONG __stdcall GameSystem::ExportDump(EXCEPTION_POINTERS* exception) {
 	// 時刻を取得して、時刻を名前に入れたファイルを作成。Dumpsディレクトリ以下に出力.
 	SYSTEMTIME time;
-	GetSystemTime(&time);
+	GetLocalTime(&time);
 	wchar_t filePath[MAX_PATH] = { 0 };
 	CreateDirectory(L"./Dumps", nullptr);
 	StringCchPrintfW(filePath, MAX_PATH, L"./Dumps/%04d-%02d%02d-%02d%02d.dmp", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute);
