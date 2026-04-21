@@ -17,6 +17,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ここから下がゲームの変数.
 	=============================================================*/
 
+	uint32_t* p = nullptr;
+	*p = 100;
 
 	SceneManager::GetInstance()->Initialize();
 
