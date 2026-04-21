@@ -17,6 +17,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ここから下がゲームの変数.
 	=============================================================*/
 
+
 	SceneManager::GetInstance()->Initialize();
 
 	// ウィンドウのxボタンが押されるまでループ.
