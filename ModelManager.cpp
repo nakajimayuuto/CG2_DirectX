@@ -121,6 +121,20 @@ ModelData ModelManager::LoadObjFile(const std::string& directoryPath, const std:
 					std::getline(v, index, '/');// 区切りでインデックスを読んでいく.
 					elementIndices[element] = std::stoi(index);
 				}
+				
+				if (positions.size() < 0 || faceVertex > positions.size()) {
+					assert(false);
+				}
+				
+				if (texcoords.size() < 0 || faceVertex > texcoords.size()) {
+					assert(false);
+				}
+				
+				if (normals.size() < 0 || faceVertex > normals.size()) {
+					assert(false);
+				}
+
+
 				// 要素へのIndexから、実際の要素の値を取得して、頂点を構築する.
 				Vector4 position = positions[elementIndices[0] - 1];
 				Vector2 texcoord = texcoords[elementIndices[1] - 1];

@@ -1,3 +1,9 @@
+#pragma comment(lib,"d3d12.lib")
+#pragma comment(lib,"dxgi.lib")
+#pragma comment(lib,"dxguid.lib")
+#pragma comment(lib,"dxcompiler.lib")
+#pragma comment(lib,"Dbghelp.lib")
+
 #include "GameSystem.h"
 #include "SoundManager.h"
 #include "InputManager.h"
@@ -11,12 +17,13 @@ GameSystem* GameSystem::GetInstance() {
 	return &gameSystem;
 }
 
-LONG __stdcall GameSystem::ExportDump(EXCEPTION_POINTERS* exception){
+LONG __stdcall GameSystem::ExportDump(EXCEPTION_POINTERS* exception) {
 	// 時刻を取得して、時刻を名前に入れたファイルを作成。Dumpsディレクトリ以下に出力.
-	SYSTEMTIME time = {0};
+	SYSTEMTIME time;
+	GetLocalTime(&time);
 	wchar_t filePath[MAX_PATH] = { 0 };
-	CreateDirectory(L"./Dumps",nullptr);
-	StringCchPrintfW(filePath,MAX_PATH, L"./Dumps/%04d-%02d%02d-%02d%02d.dmp",time.wYear,time.wMonth,time.wDay,time.wHour,time.wMinute);
+	CreateDirectory(L"./Dumps", nullptr);
+	StringCchPrintfW(filePath, MAX_PATH, L"./Dumps/%04d-%02d%02d-%02d%02d.dmp", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute);
 	HANDLE dumpFileHandle = CreateFile(filePath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_WRITE | FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
 	// processId(このexeのId)とクラッシュ(例外)の発生したthreadIdを取得.
 	DWORD processId = GetCurrentProcessId();
@@ -27,7 +34,7 @@ LONG __stdcall GameSystem::ExportDump(EXCEPTION_POINTERS* exception){
 	minidumpInfomation.ExceptionPointers = exception;
 	minidumpInfomation.ClientPointers = TRUE;
 	// Dumpを出力する。MiniDumpNormalは最低限の情報を出力するフラグ
-	MiniDumpWriteDump(GetCurrentProcess(), processId, dumpFileHandle, MiniDumpNormal, &minidumpInfomation, nullptr,nullptr);
+	MiniDumpWriteDump(GetCurrentProcess(), processId, dumpFileHandle, MiniDumpNormal, &minidumpInfomation, nullptr, nullptr);
 	// 他に関連付けられているSHE例外ハンドルがあれば実行。通常はプロセスを終了する.
 	return EXCEPTION_EXECUTE_HANDLER;
 }
@@ -70,7 +77,7 @@ void GameSystem::Initialize() {
 	int32_t kClientHeight = Environment::GetInstance()->GetWindowSize().height;
 
 	// ウィンドウサイズを表す構造体に九合アント領域を入れる.
-	RECT wrc{ 0,0,kClientWidth,kClientHeight};
+	RECT wrc{ 0,0,kClientWidth,kClientHeight };
 
 	// クライアント領域をもとに実際のサイズにwrcを変更してもらう.
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
@@ -112,7 +119,7 @@ void GameSystem::Initialize() {
 	// DXGIファクトリーの生成.
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
 
-	hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
+	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
 
 	assert(SUCCEEDED(hr));
 
@@ -588,7 +595,7 @@ void GameSystem::EndFrame() {
 
 
 	// コマンドリストの内容を確定させる。全てのコマンドを積んでからCloseすること.
-	hr = commandList->Close();
+	HRESULT hr = commandList->Close();
 	assert(SUCCEEDED(hr));
 
 	/*=============================================================
@@ -624,7 +631,7 @@ void GameSystem::EndFrame() {
 	assert(SUCCEEDED(hr));
 }
 
-void GameSystem::Finalize(){
+void GameSystem::Finalize() {
 	SoundManager::GetInstance()->Finalize();
 
 	/*=============================================================
@@ -667,7 +674,7 @@ LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPAR
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-std::ofstream GameSystem::CreateLogFile(){
+std::ofstream GameSystem::CreateLogFile() {
 	// ログのディレクトリを用意.
 	std::filesystem::create_directory("logs");
 	// 現在時刻の取得.
@@ -678,7 +685,7 @@ std::ofstream GameSystem::CreateLogFile(){
 	// 日本時間(PCの設定時間)に変換.
 	std::chrono::zoned_time localTime{ std::chrono::current_zone(),nowSeconds };
 	// formatを使って年月日_時分秒の文字列に変換.
-	std::string dateString = std::format("{:%Y%m%d_%H%M%S}",localTime);
+	std::string dateString = std::format("{:%Y%m%d_%H%M%S}", localTime);
 	// 時刻を使ってファイル名を決定.
 	std::string logFilePath = std::string("logs/") + dateString + ".log";
 	// ファイルを作って書き込み準備.
