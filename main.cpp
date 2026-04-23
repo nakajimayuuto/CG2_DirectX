@@ -6,6 +6,10 @@
 // オーディオ類.
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+	/*=============================================================
+	ResourceLeakChecker
+	=============================================================*/
+	D3DResourceLeakChecker resourceLeakChecker;
 
 	GameSystem* system = GameSystem::GetInstance();
 

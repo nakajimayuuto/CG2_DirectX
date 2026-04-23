@@ -41,12 +41,6 @@ LONG __stdcall GameSystem::ExportDump(EXCEPTION_POINTERS* exception) {
 
 void GameSystem::Initialize() {
 	/*=============================================================
-	ResourceLeakChecker
-	=============================================================*/
-
-	resourceLeakChecker = new D3DResourceLeakChecker();
-
-	/*=============================================================
 	CrashHandler系.
 	=============================================================*/
 	// 誰も捕捉しなかった場合に(Unhandled)、補足する関数を登録.
@@ -663,9 +657,6 @@ void GameSystem::Finalize() {
 	CloseWindow(hwnd);
 
 	CoUninitialize();
-
-
-	delete resourceLeakChecker;
 }
 
 LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
