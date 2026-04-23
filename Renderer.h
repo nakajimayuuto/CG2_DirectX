@@ -6,6 +6,7 @@
 #include "TextureManager.h"
 #include "externals/DirectXTex/DirectXTex.h"
 #include "externals/DirectXTex/d3dx12.h"
+
 	namespace Renderer {
 		enum class LightingType {
 			kNone = 0,
@@ -70,6 +71,7 @@
 
 		LightingType GetLightingType() { return static_cast<LightingType>(materialData_->lightingType); };
 	private:
+
 		Material* materialData_ = nullptr;
 
 		TransformationMatrix* wvpData_ = nullptr;
@@ -112,7 +114,11 @@
 		void SetUvTransform(const Transform& transform) { uvTransform_ = transform; };
 
 		void SetSize(Vector2 size);
+
+		Vector2 GetSize() { return size_; };
 	private:
+		Vector2 size_;
+
 		Transform uvTransform_;
 
 		Material* materialData_ = nullptr;

@@ -346,6 +346,8 @@ void Renderer::Sprite::Draw(const Transform& transform) {
 }
 
 void Renderer::Sprite::SetSize(Vector2 size){
+	size_ = size;
+	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 	vertexData[0].position = { 0.0f,size.y,0.0f,1.0f }; // 左下.
 	vertexData[0].texcoord = { 0.0f,1.0f };
 	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
