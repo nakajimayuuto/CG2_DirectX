@@ -110,7 +110,7 @@ void GameScene::Update() {
 	int numberTemp = textureNumber_;
 	ImGui::SliderInt("texture", &textureNumber_, 0, 1);
 
-	if (InputManager::GetInstance()->PressKey(DIK_F3)) {
+	if (InputManager::GetInstance()->TriggerKey(DIK_F3)) {
 		Camera::GetInstance()->ChangeCameraMode();
 	}
 
