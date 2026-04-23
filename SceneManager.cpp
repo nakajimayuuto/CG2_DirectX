@@ -1,7 +1,7 @@
 #include "SceneManager.h"
 #include "GameScene.h"
 SceneManager::~SceneManager(){
-	//currentScene_.release();
+	delete currentScene_;
 }
 
 SceneManager* SceneManager::GetInstance() {

@@ -144,6 +144,11 @@ public:
 	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index);
 
 private:
+	/*=============================================================
+	ResourceLeakChecker
+	=============================================================*/
+	D3DResourceLeakChecker resourceLeakChecker;
+
 	WNDCLASS wc{};
 
 	MSG msg{};
