@@ -41,6 +41,12 @@ LONG __stdcall GameSystem::ExportDump(EXCEPTION_POINTERS* exception) {
 
 void GameSystem::Initialize() {
 	/*=============================================================
+	ResourceLeakChecker
+	=============================================================*/
+
+	resourceLeakChecker = new D3DResourceLeakChecker();
+
+	/*=============================================================
 	CrashHandler系.
 	=============================================================*/
 	// 誰も捕捉しなかった場合に(Unhandled)、補足する関数を登録.
@@ -495,6 +501,9 @@ void GameSystem::Initialize() {
 	assert(SUCCEEDED(hr));
 
 	SoundManager::GetInstance()->Initialize();
+
+	dxcCompiler->Release();
+	dxcUtils->Release();
 }
 
 bool GameSystem::ProcessMessage() {
@@ -649,9 +658,14 @@ void GameSystem::Finalize() {
 	ImGui::DestroyContext();
 #endif // USE_IMGUI
 
+	device.Get()->Release();
+
 	CloseWindow(hwnd);
 
 	CoUninitialize();
+
+
+	delete resourceLeakChecker;
 }
 
 LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
