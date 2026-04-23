@@ -50,8 +50,6 @@ void Camera::DebugUpdate(){
 		useMoving = true;
 	}
 
-	debugTranslate_ = {0.0f,0.0f,0.0f};
-
 	if (useMoving) {
 		if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
 			debugTranslate_.x += 0.05f;
