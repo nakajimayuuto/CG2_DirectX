@@ -2,9 +2,8 @@
 #include "GameSystem.h"
 
 DirectionalLight* DirectionalLight::GetInstance() {
-	//static DirectionalLight instance;
-	//return &instance;
-	return nullptr;
+	static DirectionalLight instance;
+	return &instance;
 };
 
 void DirectionalLight::Initialize() {

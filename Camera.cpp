@@ -3,8 +3,8 @@
 #include "Math.h"
 
 Camera* Camera::GetInstance() {
-	//static Camera instance;
-	//return &instance;
+	static Camera instance;
+	return &instance;
 
 	return nullptr;
 }

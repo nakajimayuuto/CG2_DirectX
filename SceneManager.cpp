@@ -1,13 +1,12 @@
 #include "SceneManager.h"
 #include "GameScene.h"
 SceneManager::~SceneManager(){
-	//currentScene_.release();
+	delete currentScene_;
 }
 
 SceneManager* SceneManager::GetInstance() {
-	//static SceneManager instance;
-	//return &instance;
-	return nullptr;
+	static SceneManager instance;
+	return &instance;
 };
 
 void SceneManager::Initialize() {

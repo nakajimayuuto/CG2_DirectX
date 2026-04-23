@@ -3,9 +3,8 @@
 #include "TextureManager.h"
 
 ModelManager* ModelManager::GetInstance() {
-	//static ModelManager instance;
-	//return &instance;
-	return nullptr;
+	static ModelManager instance;
+	return &instance;
 }
 
 void ModelManager::RegisterObj(const std::string& name, const std::string& directoryPath, const std::string& fileName) {

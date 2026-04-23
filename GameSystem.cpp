@@ -13,9 +13,8 @@
 #include <chrono>
 
 GameSystem* GameSystem::GetInstance() {
-	//static GameSystem gameSystem;
-	//return &gameSystem;
-	return nullptr;
+	static GameSystem gameSystem;
+	return &gameSystem;
 }
 
 LONG __stdcall GameSystem::ExportDump(EXCEPTION_POINTERS* exception) {
@@ -117,7 +116,7 @@ void GameSystem::Initialize() {
 	// ウィンドウを表示する.
 	ShowWindow(hwnd, SW_SHOW);
 
-	//InputManager::GetInstance()->Initialize();
+	InputManager::GetInstance()->Initialize();
 
 	logStream = CreateLogFile();
 
@@ -339,7 +338,7 @@ void GameSystem::Initialize() {
 	scissorRect.top = 0;
 	scissorRect.bottom = kClientHeight;
 
-	//DirectionalLight::GetInstance()->Initialize();
+	DirectionalLight::GetInstance()->Initialize();
 
 	/*=============================================================
 	ImGuiの初期化.
@@ -501,7 +500,7 @@ void GameSystem::Initialize() {
 	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));
 
-	//SoundManager::GetInstance()->Initialize();
+	SoundManager::GetInstance()->Initialize();
 
 	dxcCompiler->Release();
 	dxcUtils->Release();
@@ -524,7 +523,7 @@ bool GameSystem::BeginFrame() {
 		return false;
 	}
 
-	//InputManager::GetInstance()->Update();
+	InputManager::GetInstance()->Update();
 
 #ifdef USE_IMGUI
 	ImGui_ImplDX12_NewFrame();
@@ -642,7 +641,7 @@ void GameSystem::EndFrame() {
 }
 
 void GameSystem::Finalize() {
-	//SoundManager::GetInstance()->Finalize();
+	SoundManager::GetInstance()->Finalize();
 
 	/*=============================================================
 	メモリ解放系.
@@ -658,8 +657,6 @@ void GameSystem::Finalize() {
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 #endif // USE_IMGUI
-
-	device.Get()->Release();
 
 	CloseWindow(hwnd);
 

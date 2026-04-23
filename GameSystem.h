@@ -55,6 +55,7 @@ struct D3DResourceLeakChecker {
 
 class GameSystem {
 
+	D3DResourceLeakChecker resourceLeakChecker;
 	// GameSystemで使うやつ.
 public:
 	static GameSystem* GetInstance();

@@ -1,9 +1,8 @@
 #include "SoundManager.h"
 
 SoundManager* SoundManager::GetInstance() {
-	//static SoundManager instance;
-	//return &instance;
-	return nullptr;
+	static SoundManager instance;
+	return &instance;
 }
 
 void SoundManager::Initialize() {
