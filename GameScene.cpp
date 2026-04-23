@@ -110,19 +110,23 @@ void GameScene::Update() {
 	int numberTemp = textureNumber_;
 	ImGui::SliderInt("texture", &textureNumber_, 0, 1);
 
-	if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
+	if (InputManager::GetInstance()->PressKey(DIK_F3)) {
+		Camera::GetInstance()->ChangeCameraMode();
+	}
+
+	if (InputManager::GetInstance()->PressKey(DIK_D)) {
 		transformSphere.translate.x += 0.02f;
 	}
 	
-	if (InputManager::GetInstance()->PressKey(DIK_LEFT)) {
+	if (InputManager::GetInstance()->PressKey(DIK_A)) {
 		transformSphere.translate.x -= 0.02f;
 	}
 	
-	if (InputManager::GetInstance()->PressKey(DIK_UP)) {
+	if (InputManager::GetInstance()->PressKey(DIK_W)) {
 		transformSphere.translate.z += 0.02f;
 	}
 	
-	if (InputManager::GetInstance()->PressKey(DIK_DOWN)) {
+	if (InputManager::GetInstance()->PressKey(DIK_S)) {
 		transformSphere.translate.z -= 0.02f;
 	}
 

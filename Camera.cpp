@@ -44,18 +44,42 @@ void Camera::Update() {
 
 void Camera::DebugUpdate(){
 	Vector3 debugRotate = { 0.0f,0.0f,0.0f };
-	if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
-		debugRotate.x += Radian(1.0f);
+	bool useMoving = false;
+
+	if (InputManager::GetInstance()->PressKey(DIK_LSHIFT)) {
+		useMoving = true;
 	}
-	if (InputManager::GetInstance()->PressKey(DIK_LEFT)) {
-		debugRotate.x -= Radian(1.0f);
+
+	debugTranslate_ = {0.0f,0.0f,0.0f};
+
+	if (useMoving) {
+		if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
+			debugTranslate_.x += 0.05f;
+		}
+		if (InputManager::GetInstance()->PressKey(DIK_LEFT)) {
+			debugTranslate_.x -= 0.05f;
+		}
+		if (InputManager::GetInstance()->PressKey(DIK_UP)) {
+			debugTranslate_.z += 0.05f;
+		}
+		if (InputManager::GetInstance()->PressKey(DIK_DOWN)) {
+			debugTranslate_.z -= 0.05f;
+		}
+	}else {
+		if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
+			debugRotate.x += Radian(1.0f);
+		}
+		if (InputManager::GetInstance()->PressKey(DIK_LEFT)) {
+			debugRotate.x -= Radian(1.0f);
+		}
+		if (InputManager::GetInstance()->PressKey(DIK_UP)) {
+			debugRotate.y -= Radian(1.0f);
+		}
+		if (InputManager::GetInstance()->PressKey(DIK_DOWN)) {
+			debugRotate.y += Radian(1.0f);
+		}
 	}
-	if (InputManager::GetInstance()->PressKey(DIK_UP)) {
-		debugRotate.y -= Radian(1.0f);
-	}
-	if (InputManager::GetInstance()->PressKey(DIK_DOWN)) {
-		debugRotate.y += Radian(1.0f);
-	}
+	
 
 	Matrix4x4 matRotDelta = Matrix4x4::Identity();
 	matRotDelta *= Matrix4x4::MakeRotateYMatrix(debugRotate.x);
