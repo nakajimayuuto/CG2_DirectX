@@ -5,8 +5,9 @@ SceneManager::~SceneManager(){
 }
 
 SceneManager* SceneManager::GetInstance() {
-	static SceneManager instance;
-	return &instance;
+	//static SceneManager instance;
+	//return &instance;
+	return nullptr;
 };
 
 void SceneManager::Initialize() {

@@ -1,8 +1,9 @@
 #include "TextureManager.h"
 #include "GameSystem.h"
 TextureManager* TextureManager::GetInstance() {
-	static TextureManager instance;
-	return &instance;
+	//static TextureManager instance;
+	//return &instance;
+	return nullptr;
 }
 
 TextureInfo TextureManager::RegisterTexture(const std::string& name, const std::string& filePath){

@@ -13,8 +13,9 @@
 #include <chrono>
 
 GameSystem* GameSystem::GetInstance() {
-	static GameSystem gameSystem;
-	return &gameSystem;
+	//static GameSystem gameSystem;
+	//return &gameSystem;
+	return nullptr;
 }
 
 LONG __stdcall GameSystem::ExportDump(EXCEPTION_POINTERS* exception) {
@@ -44,7 +45,7 @@ void GameSystem::Initialize() {
 	ResourceLeakChecker
 	=============================================================*/
 
-	resourceLeakChecker = new D3DResourceLeakChecker();
+	//resourceLeakChecker = new D3DResourceLeakChecker();
 
 	/*=============================================================
 	CrashHandler系.
@@ -116,7 +117,7 @@ void GameSystem::Initialize() {
 	// ウィンドウを表示する.
 	ShowWindow(hwnd, SW_SHOW);
 
-	InputManager::GetInstance()->Initialize();
+	//InputManager::GetInstance()->Initialize();
 
 	logStream = CreateLogFile();
 
@@ -338,7 +339,7 @@ void GameSystem::Initialize() {
 	scissorRect.top = 0;
 	scissorRect.bottom = kClientHeight;
 
-	DirectionalLight::GetInstance()->Initialize();
+	//DirectionalLight::GetInstance()->Initialize();
 
 	/*=============================================================
 	ImGuiの初期化.
@@ -500,7 +501,7 @@ void GameSystem::Initialize() {
 	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));
 
-	SoundManager::GetInstance()->Initialize();
+	//SoundManager::GetInstance()->Initialize();
 
 	dxcCompiler->Release();
 	dxcUtils->Release();
@@ -523,7 +524,7 @@ bool GameSystem::BeginFrame() {
 		return false;
 	}
 
-	InputManager::GetInstance()->Update();
+	//InputManager::GetInstance()->Update();
 
 #ifdef USE_IMGUI
 	ImGui_ImplDX12_NewFrame();
@@ -641,7 +642,7 @@ void GameSystem::EndFrame() {
 }
 
 void GameSystem::Finalize() {
-	SoundManager::GetInstance()->Finalize();
+	//SoundManager::GetInstance()->Finalize();
 
 	/*=============================================================
 	メモリ解放系.
@@ -665,7 +666,7 @@ void GameSystem::Finalize() {
 	CoUninitialize();
 
 
-	delete resourceLeakChecker;
+	//delete resourceLeakChecker;
 }
 
 LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
@@ -709,7 +710,7 @@ std::ofstream GameSystem::CreateLogFile() {
 }
 
 void GameSystem::Log(const std::string& message) {
-	GameSystem::GetInstance()->GetLogStream() << message << std::endl;
+	//GameSystem::GetInstance()->GetLogStream() << message << std::endl;
 	OutputDebugStringA(message.c_str());
 }
 

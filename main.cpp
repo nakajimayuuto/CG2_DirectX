@@ -6,19 +6,20 @@
 // オーディオ類.
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+	D3DResourceLeakChecker resourceLeakChecker;
 
-	GameSystem* system = GameSystem::GetInstance();
+	GameSystem* system = new GameSystem;
 
 	system->Initialize();
 
-	Camera::GetInstance()->Initialize(static_cast<float>(Environment::GetInstance()->GetWindowSize().width), static_cast<float>(Environment::GetInstance()->GetWindowSize().height));
+	//Camera::GetInstance()->Initialize(static_cast<float>(Environment::GetInstance()->GetWindowSize().width), static_cast<float>(Environment::GetInstance()->GetWindowSize().height));
 
 	/*=============================================================
 	ここから下がゲームの変数.
 	=============================================================*/
 
 
-	SceneManager::GetInstance()->Initialize();
+	//SceneManager::GetInstance()->Initialize();
 
 	// ウィンドウのxボタンが押されるまでループ.
 	while (system->ProcessMessage()) {
@@ -28,20 +29,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			以下にゲームの更新処理を記述.
 			=============================================================*/
 
-			SceneManager::GetInstance()->Update();
+			//SceneManager::GetInstance()->Update();
 
 			/*=============================================================
 			以下にゲームの描画処理を記述.
 			=============================================================*/
 			system->DrawSetup();
 
-			SceneManager::GetInstance()->Draw();
+			//SceneManager::GetInstance()->Draw();
 
 			system->EndFrame();
 		}
 	}
 
 	system->Finalize();
+
+	system = nullptr;
+
+	delete system;
 
 	return 0;
 }

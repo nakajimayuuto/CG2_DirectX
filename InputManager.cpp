@@ -2,8 +2,9 @@
 #include "GameSystem.h"
 
 InputManager* InputManager::GetInstance() {
-	static InputManager instance;
-	return &instance;
+	//static InputManager instance;
+	//return &instance;
+	return nullptr;
 }
 
 void InputManager::Initialize() {
