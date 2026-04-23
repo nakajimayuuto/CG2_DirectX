@@ -176,6 +176,10 @@ void GameScene::Update() {
 	ImGui::SliderFloat2("UVTranslate", reinterpret_cast<float*>(&uvTransformSprite.translate), -640.0f, 1280.0f);
 	uvTransformSprite.rotate.z = Radian(rotate.z);
 
+	Vector2 imSize = testSprite.GetSize();
+	ImGui::SliderFloat2("Size", reinterpret_cast<float*>(&imSize), 0.0f, 1280.0f);
+	testSprite.SetSize(imSize);
+
 	imColor = testSprite.GetColor();
 	ImGui::ColorEdit4("color", reinterpret_cast<float*>(&imColor));
 	testSprite.SetColor(imColor);

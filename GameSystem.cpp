@@ -652,8 +652,6 @@ void GameSystem::Finalize() {
 	ImGui::DestroyContext();
 #endif // USE_IMGUI
 
-	device.Get()->Release();
-
 	CloseWindow(hwnd);
 
 	CoUninitialize();

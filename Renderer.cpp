@@ -310,6 +310,8 @@ void Renderer::Sprite::Initialize(TextureInfo info){
 	indexDataSprite[3] = 1;
 	indexDataSprite[4] = 3;
 	indexDataSprite[5] = 2;
+
+	size_ = { 640.0f,360.0f };
 }
 
 void Renderer::Sprite::Draw(const Transform& transform) {
