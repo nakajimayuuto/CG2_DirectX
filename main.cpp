@@ -1,6 +1,6 @@
 #include "Camera.h"
 #include "GameSystem.h"
-#include "GameScene.h"
+#include "SceneManager.h"
 
 
 // オーディオ類.
@@ -17,8 +17,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ここから下がゲームの変数.
 	=============================================================*/
 
-	GameScene* gameScene = new GameScene();
-	gameScene->Initialize();
+	SceneManager::GetInstance()->Initialize();
 
 	// ウィンドウのxボタンが押されるまでループ.
 	while (system->ProcessMessage()) {
@@ -28,14 +27,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			以下にゲームの更新処理を記述.
 			=============================================================*/
 
-			gameScene->Update();
+			SceneManager::GetInstance()->Update();
 
 			/*=============================================================
 			以下にゲームの描画処理を記述.
 			=============================================================*/
 			system->DrawSetup();
 
-			gameScene->Draw();
+			SceneManager::GetInstance()->Draw();
 
 			system->EndFrame();
 		}

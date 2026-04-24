@@ -13,11 +13,17 @@ class Environment{
 public:
 	static Environment* GetInstance();
 
+	void GameFinished() { isGameFinished_ = true; };
+
+	bool GetIsGameFinished() { return isGameFinished_; }
+
 	LPCWSTR GetWindowTitle() { return kWindowTitle_; };
 	WindowSize GetWindowSize() { return kWindowSize_; };
 
 private:
-	const LPCWSTR kWindowTitle_ = L"CG2WindowClass";
+	const LPCWSTR kWindowTitle_ = L"SaturnCGEngine";
 
 	const WindowSize kWindowSize_ = {1280,720};
+
+	bool isGameFinished_ = false;
 };

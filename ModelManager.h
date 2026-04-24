@@ -29,7 +29,7 @@ public:
 
 	ModelInfo GetModelInfo(const std::string& name);
 private:
-	// ModelManager的n(以下略.
+	// ModelManager的n(以下	略.
 	MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& fileName);
 
 	// ModelManager的な奴に入れる.

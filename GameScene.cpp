@@ -5,6 +5,7 @@
 #include "DirectionalLight.h"
 #include "SoundManager.h"
 #include "InputManager.h"
+#include "Environment.h"
 
 void GameScene::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("test", "Resource", "axis.obj");
@@ -24,6 +25,10 @@ void GameScene::Initialize() {
 }
 
 void GameScene::Update() {
+	if (InputManager::GetInstance()->TriggerKey(DIK_ESCAPE)) {
+		Environment::GetInstance()->GameFinished();
+	}
+
 	// 球のもろもろ.
 #ifdef USE_IMGUI
 	bool isVisible;
@@ -52,7 +57,6 @@ void GameScene::Update() {
 
 	testModel.SetColor(imColor);
 
-	//ImGui::Checkbox("testEnableLighting", reinterpret_cast<bool*>(&testModel.materialData_->lightingType));
 	int imSlider = static_cast<int>(testModel.GetLightingType());
 
 	ImGui::SliderInt("ModelLightingType",&imSlider,0,2);
@@ -106,19 +110,23 @@ void GameScene::Update() {
 	int numberTemp = textureNumber_;
 	ImGui::SliderInt("texture", &textureNumber_, 0, 1);
 
-	if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
+	if (InputManager::GetInstance()->TriggerKey(DIK_F3)) {
+		Camera::GetInstance()->ChangeCameraMode();
+	}
+
+	if (InputManager::GetInstance()->PressKey(DIK_D)) {
 		transformSphere.translate.x += 0.02f;
 	}
 	
-	if (InputManager::GetInstance()->PressKey(DIK_LEFT)) {
+	if (InputManager::GetInstance()->PressKey(DIK_A)) {
 		transformSphere.translate.x -= 0.02f;
 	}
 	
-	if (InputManager::GetInstance()->PressKey(DIK_UP)) {
+	if (InputManager::GetInstance()->PressKey(DIK_W)) {
 		transformSphere.translate.z += 0.02f;
 	}
 	
-	if (InputManager::GetInstance()->PressKey(DIK_DOWN)) {
+	if (InputManager::GetInstance()->PressKey(DIK_S)) {
 		transformSphere.translate.z -= 0.02f;
 	}
 
@@ -171,6 +179,10 @@ void GameScene::Update() {
 	ImGui::SliderFloat("UVRotate", reinterpret_cast<float*>(&rotate.z), -360.0f, 360.0f);
 	ImGui::SliderFloat2("UVTranslate", reinterpret_cast<float*>(&uvTransformSprite.translate), -640.0f, 1280.0f);
 	uvTransformSprite.rotate.z = Radian(rotate.z);
+
+	Vector2 imSize = testSprite.GetSize();
+	ImGui::SliderFloat2("Size", reinterpret_cast<float*>(&imSize), 0.0f, 1280.0f);
+	testSprite.SetSize(imSize);
 
 	imColor = testSprite.GetColor();
 	ImGui::ColorEdit4("color", reinterpret_cast<float*>(&imColor));
