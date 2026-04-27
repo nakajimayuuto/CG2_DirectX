@@ -47,6 +47,7 @@ MaterialData ModelManager::LoadMaterialTemplateFile(const std::string& directory
 	std::string line; // ファイルから読んだ1行を格納するもの.
 	std::string mtlName;
 
+	materialData.matarial.color = { 1.0f,1.0f,1.0f,1.0f };
 
 	// 2. ファイルを開く.
 	std::ifstream file(directoryPath + "/" + fileName); // ファイルを開く.
@@ -127,11 +128,16 @@ std::vector<ModelData>ModelManager::LoadObjFile(const std::string& directoryPath
 			normal.x *= -1.0f;
 			normals.push_back(normal);
 		} else if (identifier == "f") {
-			VertexData triangle[3];
+			VertexData triangle[4];
+			bool useQuad = false;
 			// 面は三角形限定。その他は未対応.
-			for (uint32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
+			for (uint32_t faceVertex = 0; faceVertex < 4; ++faceVertex) {
 				std::string vertexDefinition;
 				s >> vertexDefinition;
+				if (vertexDefinition == "") {
+					break;
+				}
+
 				// 頂点の要素へのIndexは「位置/UV/法線」で格納されているので、分解してIndexを取得する.
 				std::istringstream v(vertexDefinition);
 				uint32_t elementIndices[3];
@@ -159,11 +165,25 @@ std::vector<ModelData>ModelManager::LoadObjFile(const std::string& directoryPath
 				Vector2 texcoord = texcoords[elementIndices[1] - 1];
 				Vector3 normal = normals[elementIndices[2] - 1];
 				triangle[faceVertex] = { position,texcoord,normal };
+
+				if (faceVertex == 3) {
+					useQuad = true;
+				}
 			}
 
-			modelData.vertices.push_back(triangle[2]);
-			modelData.vertices.push_back(triangle[1]);
-			modelData.vertices.push_back(triangle[0]);
+			if (useQuad) {
+				modelData.vertices.push_back(triangle[3]);
+				modelData.vertices.push_back(triangle[2]);
+				modelData.vertices.push_back(triangle[0]);
+				modelData.vertices.push_back(triangle[2]);
+				modelData.vertices.push_back(triangle[1]);
+				modelData.vertices.push_back(triangle[0]);
+			} else {
+				modelData.vertices.push_back(triangle[2]);
+				modelData.vertices.push_back(triangle[1]);
+				modelData.vertices.push_back(triangle[0]);
+			}
+			
 		} else if (identifier == "mtllib") {
 			s >> materialFilename;
 			//// 基本的にObjファイルと同一階層にmtlは存在させるので、ディレクトリ名とファイル名を渡す.

@@ -97,6 +97,9 @@ public:
 	HWND GetHWND() { return hwnd; };
 
 	std::ofstream& GetLogStream() { return logStream; };
+
+	// わからん.
+	void SetCullMode(D3D12_CULL_MODE mode);
 private:
 
 	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -196,6 +199,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource = nullptr;
 
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
 
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
 };

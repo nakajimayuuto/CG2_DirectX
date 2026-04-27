@@ -6,9 +6,10 @@
 #include "SoundManager.h"
 #include "InputManager.h"
 #include "Environment.h"
+#include "GameSystem.h"
 
 void GameScene::Initialize() {
-	ModelManager::GetInstance()->RegisterObj("test", "Resource", "axis.obj");
+	ModelManager::GetInstance()->RegisterObj("test", "Resource", "block.obj");
 	ModelManager::GetInstance()->RegisterObj("testMulti", "Resource", "multiMaterial.obj");
 
 	TextureManager::GetInstance()->RegisterTexture("monster_ball", "Resource/monsterBall.png");
@@ -342,7 +343,9 @@ void GameScene::Update() {
 
 void GameScene::Draw() {
 	testModel.Draw(transformModel);
+	//GameSystem::GetInstance()->SetCullMode(D3D12_CULL_MODE_NONE);
 	testMultiModel.Draw(transformMultiModel);
+	//GameSystem::GetInstance()->SetCullMode(D3D12_CULL_MODE_BACK);
 	testSphere.Draw(transformSphere);
 	testSprite.Draw(transformSprite);
 }

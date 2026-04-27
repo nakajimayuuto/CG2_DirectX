@@ -493,6 +493,73 @@ void Renderer::Sphere::Draw(const Transform& transform) {
 	GameSystem::GetInstance()->GetCommandList()->DrawIndexedInstanced(kSubdivision_ * kSubdivision_ * 6, 1, 0, 0, 0);
 }
 
+void Renderer::Box::Initialize(const TextureInfo& info){
+	isVisible_ = true;
+
+	textureInfo_ = info;
+	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
+	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * 6 * 6);
+
+	// 【MaterialResourceを生成する】
+	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
+	materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+	// マテリアルにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
+	// 今回は赤を書き込んでみる
+	materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	materialData_->lightingType = static_cast<uint32_t>(LightingType::kHalfLambert);
+	materialData_->uvTransform = Matrix4x4::Identity();
+
+	// 【TransformationMatrix】
+	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
+	wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+	// データを書き込む.
+	// 書き込むためのアドレスを取得.
+	wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&wvpData_));
+	// 単位行列を書き込んでおく.
+	wvpData_->WVP = Matrix4x4::Identity();
+	wvpData_->World = Matrix4x4::Identity();
+
+
+	// 【VertexBufferViewを作成する】
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
+	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * 6 * 4);
+	// 1頂点あたりのサイズ.
+	vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+	// 【IndexResourceを生成する】
+	// 実際に頂点リソースを作る.
+	indexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * 6 * 6);
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	indexBufferView_.BufferLocation = indexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズはインデックス6つ分のサイズ.
+	indexBufferView_.SizeInBytes = sizeof(uint32_t) * 6 * 6;
+	// インデックスはuint32_tとする.
+	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+
+
+	// 【Resourceにデータを書き込む】
+
+	// 頂点リソースにデータを書き込む.
+	VertexData* vertexData = nullptr;
+	// 書き込むためのアドレスを取得.
+	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+
+	// インデックスリソースにデータを書き込む.
+	uint32_t* indexData = nullptr;
+	// 書き込むためのアドレスを取得.
+	indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
+
+	vertexData;
+}
+
 void Renderer::Sprite::Initialize(TextureInfo info) {
 	isVisible_ = true;
 
