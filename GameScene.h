@@ -13,6 +13,8 @@ public:
 private:
 	bool isModelAutoMove = false;
 
+	bool isMultiModelAutoMove = false;
+
 	bool isSphereAutoMove = false;
 
 	bool useMonsterBall = true;
@@ -23,11 +25,15 @@ private:
 
 	Renderer::Model testModel = Renderer::Model();
 
+	Renderer::Model testMultiModel = Renderer::Model();
+
 	Renderer::Sphere testSphere = Renderer::Sphere();
 
 	Renderer::Sprite testSprite = Renderer::Sprite();
 
 	Transform transformModel{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+
+	Transform transformMultiModel{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 
 	Transform transformSphere{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 

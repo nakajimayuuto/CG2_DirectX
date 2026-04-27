@@ -1,6 +1,12 @@
 #include "ModelManager.h"
 #include "GameSystem.h"
 #include "TextureManager.h"
+#pragma comment(lib,"d3d12.lib")
+#pragma comment(lib,"dxgi.lib")
+#pragma comment(lib,"dxguid.lib")
+#pragma comment(lib,"dxcompiler.lib")
+#pragma comment(lib,"Dbghelp.lib")
+
 
 ModelManager* ModelManager::GetInstance() {
 	static ModelManager instance;
@@ -13,35 +19,39 @@ void ModelManager::RegisterObj(const std::string& name, const std::string& direc
 	}
 
 	models_[name].modelData = LoadObjFile(directoryPath, fileName);
-	
-	TextureManager::GetInstance()->RegisterTexture(name,models_[name].modelData.material.textureFilePath);
 
-	models_[name].textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo(name).textureSrvHandlesGPU;
+	for (ModelData& data : models_[name].modelData) {
+		TextureManager::GetInstance()->RegisterTexture(name + "_" + data.meshName, data.materialData.textureFilePath);
+
+		data.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo(name + "_" + data.meshName).textureSrvHandlesGPU;
+	}
 }
 
-ModelData ModelManager::GetModelData(const std::string& name) {
-	auto it = models_.find(name);
+//ModelData ModelManager::GetModelData(const std::string& name) {
+//	auto it = models_.find(name);
+//
+//	assert(it != models_.end());
+//	return it->second.modelData;
+//}
 
-	assert(it != models_.end());
-	return it->second.modelData;
-}
-
-ModelInfo ModelManager::GetModelInfo(const std::string& name){
+ModelInfo ModelManager::GetModelInfo(const std::string& name) {
 	auto it = models_.find(name);
 
 	assert(it != models_.end());
 	return it->second;
 }
 
-MaterialData ModelManager::LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& fileName) {
+MaterialData ModelManager::LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& fileName, const std::string& usemtl) {
 	// 1. 中で必要となる変数の宣言.
 	MaterialData materialData; // 構築するModelData.
 	std::string line; // ファイルから読んだ1行を格納するもの.
+	std::string mtlName;
 
 
 	// 2. ファイルを開く.
 	std::ifstream file(directoryPath + "/" + fileName); // ファイルを開く.
 	assert(file.is_open()); // とりあえず開けなかったら止める.
+
 
 
 	// 3. 実際にファイルを読み、MaterialDataを構築していく.
@@ -52,11 +62,20 @@ MaterialData ModelManager::LoadMaterialTemplateFile(const std::string& directory
 
 		// identifierに応じた処理.
 
-		if (identifier == "map_Kd") {
-			std::string textureFilename;
-			s >> textureFilename;
-			// 連結してファイルパスにする.
-			materialData.textureFilePath = directoryPath + "/" + textureFilename;
+		if (identifier == "newmtl") {
+			s >> mtlName;
+		}
+
+		if (mtlName == usemtl) {
+			if (identifier == "map_Kd") {
+				std::string textureFilename;
+				s >> textureFilename;
+				// 連結してファイルパスにする.
+				materialData.textureFilePath = directoryPath + "/" + textureFilename;
+			} else if (identifier == "Kd") {
+				s >> materialData.matarial.color.x >> materialData.matarial.color.y >> materialData.matarial.color.z;
+				materialData.matarial.color.w = 1.0f;
+			}
 		}
 	}
 
@@ -66,14 +85,17 @@ MaterialData ModelManager::LoadMaterialTemplateFile(const std::string& directory
 	return materialData;
 }
 
-ModelData ModelManager::LoadObjFile(const std::string& directoryPath, const std::string& fileName) {
+std::vector<ModelData>ModelManager::LoadObjFile(const std::string& directoryPath, const std::string& fileName) {
 	// 1. 中で必要となる変数の宣言.
 	ModelData modelData; // 構築するModelData.
+	std::vector<ModelData> returnData; // 構築するModelData.
 	std::vector<Vector4> positions; // 位置.
 	std::vector<Vector3> normals; // 法線.
 	std::vector<Vector2> texcoords; // テクスチャ座標.
 	std::string line; // ファイルから読んだ1行を格納するもの.
 
+	// MaterialTemplateLiblaryファイルの名前を取得する.
+	std::string materialFilename;
 
 	// 2. ファイルを開く.
 	std::ifstream file(directoryPath + "/" + fileName); // ファイルを開く.
@@ -94,20 +116,17 @@ ModelData ModelManager::LoadObjFile(const std::string& directoryPath, const std:
 			position.x *= -1.0f;
 			position.w = 1.0f;
 			positions.push_back(position);
-		}
-		else if (identifier == "vt") {
+		} else if (identifier == "vt") {
 			Vector2 texcoord;
 			s >> texcoord.x >> texcoord.y;
 			texcoord.y = 1.0f - texcoord.y;
 			texcoords.push_back(texcoord);
-		}
-		else if (identifier == "vn") {
+		} else if (identifier == "vn") {
 			Vector3 normal;
 			s >> normal.x >> normal.y >> normal.z;
 			normal.x *= -1.0f;
 			normals.push_back(normal);
-		}
-		else if (identifier == "f") {
+		} else if (identifier == "f") {
 			VertexData triangle[3];
 			// 面は三角形限定。その他は未対応.
 			for (uint32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
@@ -121,17 +140,17 @@ ModelData ModelManager::LoadObjFile(const std::string& directoryPath, const std:
 					std::getline(v, index, '/');// 区切りでインデックスを読んでいく.
 					elementIndices[element] = std::stoi(index);
 				}
-				
+
 				if (positions.size() < 0 || faceVertex > positions.size()) {
 					assert(false);
 				}
-				
+
 				if (texcoords.size() < 0 || faceVertex > texcoords.size()) {
 					assert(false);
 				}
-				
+
 				if (normals.size() < 0 || faceVertex > normals.size()) {
-					assert(false);
+					//	assert(false);
 				}
 
 
@@ -145,20 +164,32 @@ ModelData ModelManager::LoadObjFile(const std::string& directoryPath, const std:
 			modelData.vertices.push_back(triangle[2]);
 			modelData.vertices.push_back(triangle[1]);
 			modelData.vertices.push_back(triangle[0]);
-		}
-		else if (identifier == "mtllib") {
-			// MaterialTemplateLiblaryファイルの名前を取得する.
-			std::string materialFilename;
+		} else if (identifier == "mtllib") {
 			s >> materialFilename;
+			//// 基本的にObjファイルと同一階層にmtlは存在させるので、ディレクトリ名とファイル名を渡す.
+			//modelData.materialData = LoadMaterialTemplateFile(directoryPath, materialFilename,);
+		} else if (identifier == "usemtl") {
+			s >> modelData.materialData.textureName;
 			// 基本的にObjファイルと同一階層にmtlは存在させるので、ディレクトリ名とファイル名を渡す.
-			modelData.material = LoadMaterialTemplateFile(directoryPath, materialFilename);
+			modelData.materialData = LoadMaterialTemplateFile(directoryPath, materialFilename, modelData.materialData.textureName);
+		} else if (identifier == "o") {
+			if (positions.size() != 0) {
+				returnData.push_back(modelData);
+
+				modelData.vertices.clear();
+				modelData.materialData.textureFilePath = "";
+				modelData.materialData.textureName = "";
+			}
+
+			s >> modelData.meshName;
 		}
 	}
 
 	// 4. ModelDataを返す.
+	returnData.push_back(modelData);
 
 
-	return modelData;
+	return returnData;
 }
 
 DirectX::ScratchImage ModelManager::LoadTexture(const std::string& filePath) {
@@ -208,21 +239,21 @@ Microsoft::WRL::ComPtr<ID3D12Resource> ModelManager::CreateTextureResource(Micro
 	return resource;
 }
 
-Microsoft::WRL::ComPtr<ID3D12Resource> ModelManager::UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages, Microsoft::WRL::ComPtr<ID3D12Device> device, Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList) {
-
-	std::vector<D3D12_SUBRESOURCE_DATA> subresource;
-	DirectX::PrepareUpload(device.Get(), mipImages.GetImages(), mipImages.GetImageCount(), mipImages.GetMetadata(), subresource);
-	uint64_t intermediateSize = GetRequiredIntermediateSize(texture.Get(), 0, UINT(subresource.size()));
-	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource = GameSystem::CreateBufferResource(device.Get(), intermediateSize);
-	UpdateSubresources(commandList.Get(), texture.Get(), intermediateResource.Get(), 0, 0, UINT(subresource.size()), subresource.data());
-	// Textureへの転用後は利用できるよう、D3D12_RESOURCE_STATE_COPY_DESTからD3D12_RESOURCE_STATE_GENERIC_READへResourceStateを変更する.
-	D3D12_RESOURCE_BARRIER barrier{};
-	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	barrier.Transition.pResource = texture.Get();
-	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
-	commandList->ResourceBarrier(1, &barrier);
-	return intermediateResource;
-}
+//Microsoft::WRL::ComPtr<ID3D12Resource> ModelManager::UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages, Microsoft::WRL::ComPtr<ID3D12Device> device, Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList) {
+//
+//	std::vector<D3D12_SUBRESOURCE_DATA> subresource;
+//	DirectX::PrepareUpload(device.Get(), mipImages.GetImages(), mipImages.GetImageCount(), mipImages.GetMetadata(), subresource);
+//	uint64_t intermediateSize = GetRequiredIntermediateSize(texture.Get(), 0, UINT(subresource.size()));
+//	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource = GameSystem::CreateBufferResource(device.Get(), intermediateSize);
+//	UpdateSubresources(commandList.Get(), texture.Get(), intermediateResource.Get(), 0, 0, UINT(subresource.size()), subresource.data());
+//	// Textureへの転用後は利用できるよう、D3D12_RESOURCE_STATE_COPY_DESTからD3D12_RESOURCE_STATE_GENERIC_READへResourceStateを変更する.
+//	D3D12_RESOURCE_BARRIER barrier{};
+//	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+//	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+//	barrier.Transition.pResource = texture.Get();
+//	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+//	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+//	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
+//	commandList->ResourceBarrier(1, &barrier);
+//	return intermediateResource;
+//}

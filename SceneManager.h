@@ -15,7 +15,7 @@ public:
 
 	void Draw();
 
-	void ChengeSceneUpdate();
+	void ChangeSceneUpdate();
 
 	void ChengeScene(SceneName name);
 private:
