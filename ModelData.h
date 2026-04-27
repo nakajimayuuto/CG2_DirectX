@@ -4,5 +4,5 @@
 #include "Material.h"
 struct ModelData {
 	std::vector<VertexData> vertices;
-	MaterialData material;
+	MaterialData materialData;
 };

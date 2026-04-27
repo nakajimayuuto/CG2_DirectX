@@ -21,7 +21,7 @@ void Renderer::Model::Initialize(const ModelInfo& info) {
 	// 書き込むためのアドレスを取得.
 	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
 	// 今回は赤を書き込んでみる
-	materialData_->color = {1.0f, 1.0f, 1.0f, 1.0f};
+	materialData_->color = modelInfo_.modelData.materialData.matarial.color;
 	materialData_->lightingType = static_cast<uint32_t>(LightingType::kHalfLambert);
 	materialData_->uvTransform = Matrix4x4::Identity();
 	

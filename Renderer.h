@@ -11,7 +11,7 @@
 			kNone = 0,
 			kHalfLambert = 1,
 			kLambert = 2,
-		};
+		};	
 
 	class Model {
 	public:

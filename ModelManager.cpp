@@ -13,8 +13,8 @@ void ModelManager::RegisterObj(const std::string& name, const std::string& direc
 	}
 
 	models_[name].modelData = LoadObjFile(directoryPath, fileName);
-	
-	TextureManager::GetInstance()->RegisterTexture(name,models_[name].modelData.material.textureFilePath);
+
+	TextureManager::GetInstance()->RegisterTexture(name, models_[name].modelData.materialData.textureFilePath);
 
 	models_[name].textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo(name).textureSrvHandlesGPU;
 }
@@ -26,7 +26,7 @@ ModelData ModelManager::GetModelData(const std::string& name) {
 	return it->second.modelData;
 }
 
-ModelInfo ModelManager::GetModelInfo(const std::string& name){
+ModelInfo ModelManager::GetModelInfo(const std::string& name) {
 	auto it = models_.find(name);
 
 	assert(it != models_.end());
@@ -57,6 +57,9 @@ MaterialData ModelManager::LoadMaterialTemplateFile(const std::string& directory
 			s >> textureFilename;
 			// 連結してファイルパスにする.
 			materialData.textureFilePath = directoryPath + "/" + textureFilename;
+		} else if (identifier == "Kd") {
+			s >> materialData.matarial.color.x >> materialData.matarial.color.y >> materialData.matarial.color.z;
+			materialData.matarial.color.w = 1.0f;
 		}
 	}
 
@@ -94,20 +97,17 @@ ModelData ModelManager::LoadObjFile(const std::string& directoryPath, const std:
 			position.x *= -1.0f;
 			position.w = 1.0f;
 			positions.push_back(position);
-		}
-		else if (identifier == "vt") {
+		} else if (identifier == "vt") {
 			Vector2 texcoord;
 			s >> texcoord.x >> texcoord.y;
 			texcoord.y = 1.0f - texcoord.y;
 			texcoords.push_back(texcoord);
-		}
-		else if (identifier == "vn") {
+		} else if (identifier == "vn") {
 			Vector3 normal;
 			s >> normal.x >> normal.y >> normal.z;
 			normal.x *= -1.0f;
 			normals.push_back(normal);
-		}
-		else if (identifier == "f") {
+		} else if (identifier == "f") {
 			VertexData triangle[3];
 			// 面は三角形限定。その他は未対応.
 			for (uint32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
@@ -121,15 +121,15 @@ ModelData ModelManager::LoadObjFile(const std::string& directoryPath, const std:
 					std::getline(v, index, '/');// 区切りでインデックスを読んでいく.
 					elementIndices[element] = std::stoi(index);
 				}
-				
+
 				if (positions.size() < 0 || faceVertex > positions.size()) {
 					assert(false);
 				}
-				
+
 				if (texcoords.size() < 0 || faceVertex > texcoords.size()) {
 					assert(false);
 				}
-				
+
 				if (normals.size() < 0 || faceVertex > normals.size()) {
 					assert(false);
 				}
@@ -145,13 +145,12 @@ ModelData ModelManager::LoadObjFile(const std::string& directoryPath, const std:
 			modelData.vertices.push_back(triangle[2]);
 			modelData.vertices.push_back(triangle[1]);
 			modelData.vertices.push_back(triangle[0]);
-		}
-		else if (identifier == "mtllib") {
+		} else if (identifier == "mtllib") {
 			// MaterialTemplateLiblaryファイルの名前を取得する.
 			std::string materialFilename;
 			s >> materialFilename;
 			// 基本的にObjファイルと同一階層にmtlは存在させるので、ディレクトリ名とファイル名を渡す.
-			modelData.material = LoadMaterialTemplateFile(directoryPath, materialFilename);
+			modelData.materialData = LoadMaterialTemplateFile(directoryPath, materialFilename);
 		}
 	}
 
