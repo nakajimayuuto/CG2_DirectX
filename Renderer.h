@@ -16,7 +16,7 @@
 
 	class Model {
 	public:
-		void Initialize(const ModelInfo& info);
+		void Initialize(const ModelData& data);
 
 		void Draw(const Transform& transform);
 
@@ -24,7 +24,7 @@
 
 		bool GetIsVisible() { return isVisible_; };
 
-		void ChangeTexture(const TextureInfo& info) { modelInfo_.textureSrvHandlesGPU = info.textureSrvHandlesGPU; };
+		void ChangeTexture(const TextureInfo& info) {modelData_.textureSrvHandlesGPU = info.textureSrvHandlesGPU; };
 	
 		void SetColor(Vector4 color) { materialData_->color = color; };
 
@@ -40,7 +40,7 @@
 
 		bool isVisible_ = true;
 
-		ModelInfo modelInfo_;
+		ModelData modelData_;
 
 		Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_ = nullptr;
 
@@ -49,6 +49,17 @@
 		Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_ = nullptr;
 
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
+	};
+
+	class MultiModel {
+	public:
+		void Initialize(const ModelInfo& info);
+
+		void Draw(const Transform& transform);
+	private:
+		std::vector<Model> models;
+
+		uint32_t modelMax_;
 	};
 
 	class Sphere {

@@ -2,15 +2,15 @@
 #include "GameSystem.h"
 #include <vector>
 
-void Renderer::Model::Initialize(const ModelInfo& info) {
+void Renderer::Model::Initialize(const ModelData& data) {
 	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
 
 	isVisible_;
 	isVisible_ = true;
 
-	modelInfo_ = info;
+	modelData_ = data;
 
-	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * modelInfo_.modelData.vertices.size());
+	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * modelData_.vertices.size());
 
 	// 【MaterialResourceを生成する】
 	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
@@ -21,7 +21,7 @@ void Renderer::Model::Initialize(const ModelInfo& info) {
 	// 書き込むためのアドレスを取得.
 	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
 	// 今回は赤を書き込んでみる
-	materialData_->color = modelInfo_.modelData.materialData.matarial.color;
+	materialData_->color = modelData_.materialData.matarial.color;
 	materialData_->lightingType = static_cast<uint32_t>(LightingType::kHalfLambert);
 	materialData_->uvTransform = Matrix4x4::Identity();
 	
@@ -46,7 +46,7 @@ void Renderer::Model::Initialize(const ModelInfo& info) {
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
 	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
 	//vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 4;
-	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * modelInfo_.modelData.vertices.size());
+	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * modelData_.vertices.size());
 	// 1頂点あたりのサイズ.
 	vertexBufferView_.StrideInBytes = sizeof(VertexData);
 
@@ -57,7 +57,7 @@ void Renderer::Model::Initialize(const ModelInfo& info) {
 	VertexData* vertexData = nullptr;
 	// 書き込むためのアドレスを取得.
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	std:memcpy(vertexData, modelInfo_.modelData.vertices.data(), sizeof(VertexData) * modelInfo_.modelData.vertices.size());
+	std:memcpy(vertexData, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
 
 	
 }
@@ -84,11 +84,25 @@ void Renderer::Model::Draw(const Transform& transform){
 	// WVP用のCBufferの場所.
 	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource_->GetGPUVirtualAddress());
 	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootDescriptorTable(2, modelInfo_.textureSrvHandlesGPU);
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootDescriptorTable(2, modelData_.textureSrvHandlesGPU);
 	// DirectionalLight用のCBufferの場所.
 	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-	GameSystem::GetInstance()->GetCommandList()->DrawInstanced(UINT(modelInfo_.modelData.vertices.size()), 1, 0, 0);
+	GameSystem::GetInstance()->GetCommandList()->DrawInstanced(UINT(modelData_.vertices.size()), 1, 0, 0);
+}
+
+void Renderer::MultiModel::Initialize(const ModelInfo& info) {
+	modelMax_ = info.modelData.size();
+	models.resize(modelMax_);
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		models[i].Initialize(info.modelData[i]);
+	}
+}
+
+void Renderer::MultiModel::Draw(const Transform& transform) {
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		models[i].Draw(transform);
+	}
 }
 
 void Renderer::Sphere::Initialize(TextureInfo info){

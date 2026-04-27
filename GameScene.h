@@ -21,7 +21,7 @@ private:
 
 	int soundNumber_ = 0;
 
-	Renderer::Model testModel = Renderer::Model();
+	Renderer::MultiModel testModel = Renderer::MultiModel();
 
 	Renderer::Sphere testSphere = Renderer::Sphere();
 

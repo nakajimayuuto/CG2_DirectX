@@ -12,4 +12,5 @@ struct Material {
 struct MaterialData {
 	Material matarial;
 	std::string textureFilePath;
+	std::string textureName;
 };

@@ -1,5 +1,4 @@
 #pragma once
-#pragma comment(lib,"d3d12.lib")
 
 #include <map>
 #include <string>
@@ -10,13 +9,24 @@
 
 #include <d3d12.h>
 
+#include <Windows.h>
+#include <cstdint>
+#include <string>
+#include <format>
+#include <d3d12.h>
+#include <dxgi1_6.h>
+#include <cassert>
+#include <dxgidebug.h>
+#include <dxcapi.h>
+#include <dbghelp.h>
+
 #include "externals/DirectXTex/DirectXTex.h"
 #include "externals/DirectXTex/d3dx12.h"
 
 struct ModelInfo {
-	ModelData modelData;
+	std::vector<ModelData> modelData;
 
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandlesGPU;
+	uint32_t index;
 };
 
 class ModelManager{
@@ -30,10 +40,10 @@ public:
 	ModelInfo GetModelInfo(const std::string& name);
 private:
 	// ModelManager的n(以下	略.
-	MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& fileName);
+	MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& fileName,const std::string& usemtl);
 
 	// ModelManager的な奴に入れる.
-	ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileName);
+	std::vector<ModelData> LoadObjFile(const std::string& directoryPath, const std::string& fileName);
 
 	// Textureデータを読む(TextureManager的な奴に入れる).
 	static DirectX::ScratchImage LoadTexture(const std::string& filePath);

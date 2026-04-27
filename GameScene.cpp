@@ -8,7 +8,7 @@
 #include "Environment.h"
 
 void GameScene::Initialize() {
-	ModelManager::GetInstance()->RegisterObj("test", "Resource", "axis.obj");
+	ModelManager::GetInstance()->RegisterObj("test", "Resource", "multiMesh.obj");
 
 	TextureManager::GetInstance()->RegisterTexture("monster_ball", "Resource/monsterBall.png");
 	TextureManager::GetInstance()->RegisterTexture("checker", "Resource/uvChecker.png");
@@ -22,6 +22,9 @@ void GameScene::Initialize() {
 	SoundManager::GetInstance()->RegisterSound("Alarm1","Resource/Alarm01.wav");
 	SoundManager::GetInstance()->RegisterSound("Alarm2","Resource/Alarm02.wav");
 	SoundManager::GetInstance()->RegisterSound("Alarm3","Resource/Alarm03.wav");
+
+	testSphere.SetIsVisible(false);
+	testSprite.SetIsVisible(false);
 }
 
 void GameScene::Update() {
@@ -39,11 +42,11 @@ void GameScene::Update() {
 	=============================================================*/
 	ImGui::Begin("Model");
 
-	isVisible = testModel.GetIsVisible();
+	//isVisible = testModel.GetIsVisible();
 
 	ImGui::Checkbox("testModelVisible", reinterpret_cast<bool*>(&isVisible));
 
-	testModel.SetIsVisible(isVisible);
+	//testModel.SetIsVisible(isVisible);
 
 	rotate = Degree(transformModel.rotate);
 	ImGui::SliderFloat3("scale", reinterpret_cast<float*>(&transformModel.scale), 0.0f, 2.0f);
@@ -51,17 +54,19 @@ void GameScene::Update() {
 	ImGui::SliderFloat3("translate", reinterpret_cast<float*>(&transformModel.translate), -5.0f, 5.0f);
 	transformModel.rotate = Radian(rotate);
 
-	Vector4 imColor = testModel.GetColor();
+	Vector4 imColor;
+		//= testModel.GetColor();
 
-	ImGui::ColorEdit4("color", reinterpret_cast<float*>(&imColor));
+	//ImGui::ColorEdit4("color", reinterpret_cast<float*>(&imColor));
 
-	testModel.SetColor(imColor);
+	//testModel.SetColor(imColor);
 
-	int imSlider = static_cast<int>(testModel.GetLightingType());
+	int imSlider;
+		//= static_cast<int>(testModel.GetLightingType());
 
-	ImGui::SliderInt("ModelLightingType",&imSlider,0,2);
+	//ImGui::SliderInt("ModelLightingType",&imSlider,0,2);
 
-	testModel.SetLightingType(static_cast<Renderer::LightingType>(imSlider));
+	//testModel.SetLightingType(static_cast<Renderer::LightingType>(imSlider));
 
 	if (ImGui::Button("AutoMove")) {
 		if (isModelAutoMove) {

@@ -1,6 +1,12 @@
 #include "ModelManager.h"
 #include "GameSystem.h"
 #include "TextureManager.h"
+#pragma comment(lib,"d3d12.lib")
+#pragma comment(lib,"dxgi.lib")
+#pragma comment(lib,"dxguid.lib")
+#pragma comment(lib,"dxcompiler.lib")
+#pragma comment(lib,"Dbghelp.lib")
+
 
 ModelManager* ModelManager::GetInstance() {
 	static ModelManager instance;
@@ -14,17 +20,19 @@ void ModelManager::RegisterObj(const std::string& name, const std::string& direc
 
 	models_[name].modelData = LoadObjFile(directoryPath, fileName);
 
-	TextureManager::GetInstance()->RegisterTexture(name, models_[name].modelData.materialData.textureFilePath);
+	for (ModelData& data : models_[name].modelData) {
+		TextureManager::GetInstance()->RegisterTexture(name + "_" + data.meshName, data.materialData.textureFilePath);
 
-	models_[name].textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo(name).textureSrvHandlesGPU;
+		data.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo(name + "_" + data.meshName).textureSrvHandlesGPU;
+	}
 }
 
-ModelData ModelManager::GetModelData(const std::string& name) {
-	auto it = models_.find(name);
-
-	assert(it != models_.end());
-	return it->second.modelData;
-}
+//ModelData ModelManager::GetModelData(const std::string& name) {
+//	auto it = models_.find(name);
+//
+//	assert(it != models_.end());
+//	return it->second.modelData;
+//}
 
 ModelInfo ModelManager::GetModelInfo(const std::string& name) {
 	auto it = models_.find(name);
@@ -33,7 +41,7 @@ ModelInfo ModelManager::GetModelInfo(const std::string& name) {
 	return it->second;
 }
 
-MaterialData ModelManager::LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& fileName) {
+MaterialData ModelManager::LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& fileName, const std::string& usemtl) {
 	// 1. 中で必要となる変数の宣言.
 	MaterialData materialData; // 構築するModelData.
 	std::string line; // ファイルから読んだ1行を格納するもの.
@@ -52,14 +60,22 @@ MaterialData ModelManager::LoadMaterialTemplateFile(const std::string& directory
 
 		// identifierに応じた処理.
 
-		if (identifier == "map_Kd") {
-			std::string textureFilename;
-			s >> textureFilename;
-			// 連結してファイルパスにする.
-			materialData.textureFilePath = directoryPath + "/" + textureFilename;
-		} else if (identifier == "Kd") {
-			s >> materialData.matarial.color.x >> materialData.matarial.color.y >> materialData.matarial.color.z;
-			materialData.matarial.color.w = 1.0f;
+		std::string mtlName;
+
+		if (identifier == "newmtl") {
+			s >> mtlName;
+		}
+
+		if (mtlName == usemtl) {
+			if (identifier == "map_Kd") {
+				std::string textureFilename;
+				s >> textureFilename;
+				// 連結してファイルパスにする.
+				materialData.textureFilePath = directoryPath + "/" + textureFilename;
+			} else if (identifier == "Kd") {
+				s >> materialData.matarial.color.x >> materialData.matarial.color.y >> materialData.matarial.color.z;
+				materialData.matarial.color.w = 1.0f;
+			}
 		}
 	}
 
@@ -69,14 +85,17 @@ MaterialData ModelManager::LoadMaterialTemplateFile(const std::string& directory
 	return materialData;
 }
 
-ModelData ModelManager::LoadObjFile(const std::string& directoryPath, const std::string& fileName) {
+std::vector<ModelData>ModelManager::LoadObjFile(const std::string& directoryPath, const std::string& fileName) {
 	// 1. 中で必要となる変数の宣言.
 	ModelData modelData; // 構築するModelData.
+	std::vector<ModelData> returnData; // 構築するModelData.
 	std::vector<Vector4> positions; // 位置.
 	std::vector<Vector3> normals; // 法線.
 	std::vector<Vector2> texcoords; // テクスチャ座標.
 	std::string line; // ファイルから読んだ1行を格納するもの.
 
+	// MaterialTemplateLiblaryファイルの名前を取得する.
+	std::string materialFilename;
 
 	// 2. ファイルを開く.
 	std::ifstream file(directoryPath + "/" + fileName); // ファイルを開く.
@@ -131,7 +150,7 @@ ModelData ModelManager::LoadObjFile(const std::string& directoryPath, const std:
 				}
 
 				if (normals.size() < 0 || faceVertex > normals.size()) {
-					assert(false);
+					//	assert(false);
 				}
 
 
@@ -146,18 +165,33 @@ ModelData ModelManager::LoadObjFile(const std::string& directoryPath, const std:
 			modelData.vertices.push_back(triangle[1]);
 			modelData.vertices.push_back(triangle[0]);
 		} else if (identifier == "mtllib") {
-			// MaterialTemplateLiblaryファイルの名前を取得する.
-			std::string materialFilename;
 			s >> materialFilename;
+			//// 基本的にObjファイルと同一階層にmtlは存在させるので、ディレクトリ名とファイル名を渡す.
+			//modelData.materialData = LoadMaterialTemplateFile(directoryPath, materialFilename,);
+		} else if (identifier == "usemtl") {
+			s >> modelData.materialData.textureName;
 			// 基本的にObjファイルと同一階層にmtlは存在させるので、ディレクトリ名とファイル名を渡す.
-			modelData.materialData = LoadMaterialTemplateFile(directoryPath, materialFilename);
+			modelData.materialData = LoadMaterialTemplateFile(directoryPath, materialFilename,modelData.materialData.textureName);
+		} else if (identifier == "o") {
+			if (positions.size() != 0) {
+				s >> modelData.meshName;
+				returnData.push_back(modelData);
+
+				positions.clear();
+				texcoords.clear();
+				normals.clear();
+				modelData.vertices.clear();
+				modelData.materialData.textureFilePath = "";
+				modelData.materialData.textureName = "";
+			}
 		}
 	}
 
 	// 4. ModelDataを返す.
+	returnData.push_back(modelData);
 
 
-	return modelData;
+	return returnData;
 }
 
 DirectX::ScratchImage ModelManager::LoadTexture(const std::string& filePath) {
