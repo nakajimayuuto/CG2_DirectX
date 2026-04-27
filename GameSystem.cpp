@@ -495,6 +495,9 @@ void GameSystem::Initialize() {
 	assert(SUCCEEDED(hr));
 
 	SoundManager::GetInstance()->Initialize();
+
+	dxcCompiler->Release();
+	dxcUtils->Release();
 }
 
 bool GameSystem::ProcessMessage() {

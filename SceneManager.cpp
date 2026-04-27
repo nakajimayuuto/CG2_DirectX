@@ -1,7 +1,7 @@
 #include "SceneManager.h"
 #include "GameScene.h"
 SceneManager::~SceneManager(){
-	//currentScene_.release();
+	delete currentScene_;
 }
 
 SceneManager* SceneManager::GetInstance() {
@@ -14,7 +14,7 @@ void SceneManager::Initialize() {
 }
 
 void SceneManager::Update() {
-	ChengeSceneUpdate();
+	ChangeSceneUpdate();
 
 	currentScene_->Update();
 }
@@ -23,7 +23,7 @@ void SceneManager::Draw() {
 	currentScene_->Draw();
 }
 
-void SceneManager::ChengeSceneUpdate(){
+void SceneManager::ChangeSceneUpdate(){
 	if (!isSceneChange_) {
 		return;
 	}
