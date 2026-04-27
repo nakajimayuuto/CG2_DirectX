@@ -8,7 +8,7 @@
 #include "Environment.h"
 
 void GameScene::Initialize() {
-	ModelManager::GetInstance()->RegisterObj("test", "Resource", "multiMesh.obj");
+	ModelManager::GetInstance()->RegisterObj("test", "Resource", "axis.obj");
 
 	TextureManager::GetInstance()->RegisterTexture("monster_ball", "Resource/monsterBall.png");
 	TextureManager::GetInstance()->RegisterTexture("checker", "Resource/uvChecker.png");
@@ -25,6 +25,7 @@ void GameScene::Initialize() {
 
 	testSphere.SetIsVisible(false);
 	testSprite.SetIsVisible(false);
+	transformModel.rotate.y = Radian(90.0f);
 }
 
 void GameScene::Update() {
@@ -81,6 +82,10 @@ void GameScene::Update() {
 
 	ImGui::Text("AutoMove : %s", isModelAutoMove ? "true" : "false");
 	ImGui::End();
+
+	if (transformModel.rotate.y > 90.0f) {
+		transformModel.rotate = transformModel.rotate;
+	}
 
 
 	/*=============================================================

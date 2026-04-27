@@ -45,11 +45,13 @@ MaterialData ModelManager::LoadMaterialTemplateFile(const std::string& directory
 	// 1. 中で必要となる変数の宣言.
 	MaterialData materialData; // 構築するModelData.
 	std::string line; // ファイルから読んだ1行を格納するもの.
+	std::string mtlName;
 
 
 	// 2. ファイルを開く.
 	std::ifstream file(directoryPath + "/" + fileName); // ファイルを開く.
 	assert(file.is_open()); // とりあえず開けなかったら止める.
+
 
 
 	// 3. 実際にファイルを読み、MaterialDataを構築していく.
@@ -59,8 +61,6 @@ MaterialData ModelManager::LoadMaterialTemplateFile(const std::string& directory
 		s >> identifier; // 先頭の識別子を読む.
 
 		// identifierに応じた処理.
-
-		std::string mtlName;
 
 		if (identifier == "newmtl") {
 			s >> mtlName;
@@ -171,19 +171,17 @@ std::vector<ModelData>ModelManager::LoadObjFile(const std::string& directoryPath
 		} else if (identifier == "usemtl") {
 			s >> modelData.materialData.textureName;
 			// 基本的にObjファイルと同一階層にmtlは存在させるので、ディレクトリ名とファイル名を渡す.
-			modelData.materialData = LoadMaterialTemplateFile(directoryPath, materialFilename,modelData.materialData.textureName);
+			modelData.materialData = LoadMaterialTemplateFile(directoryPath, materialFilename, modelData.materialData.textureName);
 		} else if (identifier == "o") {
 			if (positions.size() != 0) {
-				s >> modelData.meshName;
 				returnData.push_back(modelData);
 
-				positions.clear();
-				texcoords.clear();
-				normals.clear();
 				modelData.vertices.clear();
 				modelData.materialData.textureFilePath = "";
 				modelData.materialData.textureName = "";
 			}
+
+			s >> modelData.meshName;
 		}
 	}
 
@@ -241,21 +239,21 @@ Microsoft::WRL::ComPtr<ID3D12Resource> ModelManager::CreateTextureResource(Micro
 	return resource;
 }
 
-Microsoft::WRL::ComPtr<ID3D12Resource> ModelManager::UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages, Microsoft::WRL::ComPtr<ID3D12Device> device, Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList) {
-
-	std::vector<D3D12_SUBRESOURCE_DATA> subresource;
-	DirectX::PrepareUpload(device.Get(), mipImages.GetImages(), mipImages.GetImageCount(), mipImages.GetMetadata(), subresource);
-	uint64_t intermediateSize = GetRequiredIntermediateSize(texture.Get(), 0, UINT(subresource.size()));
-	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource = GameSystem::CreateBufferResource(device.Get(), intermediateSize);
-	UpdateSubresources(commandList.Get(), texture.Get(), intermediateResource.Get(), 0, 0, UINT(subresource.size()), subresource.data());
-	// Textureへの転用後は利用できるよう、D3D12_RESOURCE_STATE_COPY_DESTからD3D12_RESOURCE_STATE_GENERIC_READへResourceStateを変更する.
-	D3D12_RESOURCE_BARRIER barrier{};
-	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	barrier.Transition.pResource = texture.Get();
-	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
-	commandList->ResourceBarrier(1, &barrier);
-	return intermediateResource;
-}
+//Microsoft::WRL::ComPtr<ID3D12Resource> ModelManager::UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages, Microsoft::WRL::ComPtr<ID3D12Device> device, Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList) {
+//
+//	std::vector<D3D12_SUBRESOURCE_DATA> subresource;
+//	DirectX::PrepareUpload(device.Get(), mipImages.GetImages(), mipImages.GetImageCount(), mipImages.GetMetadata(), subresource);
+//	uint64_t intermediateSize = GetRequiredIntermediateSize(texture.Get(), 0, UINT(subresource.size()));
+//	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource = GameSystem::CreateBufferResource(device.Get(), intermediateSize);
+//	UpdateSubresources(commandList.Get(), texture.Get(), intermediateResource.Get(), 0, 0, UINT(subresource.size()), subresource.data());
+//	// Textureへの転用後は利用できるよう、D3D12_RESOURCE_STATE_COPY_DESTからD3D12_RESOURCE_STATE_GENERIC_READへResourceStateを変更する.
+//	D3D12_RESOURCE_BARRIER barrier{};
+//	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+//	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+//	barrier.Transition.pResource = texture.Get();
+//	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+//	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+//	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
+//	commandList->ResourceBarrier(1, &barrier);
+//	return intermediateResource;
+//}
