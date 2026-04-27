@@ -9,11 +9,13 @@
 
 void GameScene::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("test", "Resource", "axis.obj");
+	ModelManager::GetInstance()->RegisterObj("testMulti", "Resource", "multiMaterial.obj");
 
 	TextureManager::GetInstance()->RegisterTexture("monster_ball", "Resource/monsterBall.png");
 	TextureManager::GetInstance()->RegisterTexture("checker", "Resource/uvChecker.png");
 
 	testModel.Initialize(ModelManager::GetInstance()->GetModelInfo("test"));
+	testMultiModel.Initialize(ModelManager::GetInstance()->GetModelInfo("testMulti"));
 
 	testSphere.Initialize(TextureManager::GetInstance()->GetTextureInfo("monster_ball"));
 
@@ -25,7 +27,8 @@ void GameScene::Initialize() {
 
 	testSphere.SetIsVisible(false);
 	testSprite.SetIsVisible(false);
-	transformModel.rotate.y = Radian(90.0f);
+	testModel.SetIsVisible(false);
+	transformMultiModel.rotate.y = Radian(180.0f);
 }
 
 void GameScene::Update() {
@@ -43,11 +46,11 @@ void GameScene::Update() {
 	=============================================================*/
 	ImGui::Begin("Model");
 
-	//isVisible = testModel.GetIsVisible();
+	isVisible = testModel.GetIsVisible();
 
 	ImGui::Checkbox("testModelVisible", reinterpret_cast<bool*>(&isVisible));
 
-	//testModel.SetIsVisible(isVisible);
+	testModel.SetIsVisible(isVisible);
 
 	rotate = Degree(transformModel.rotate);
 	ImGui::SliderFloat3("scale", reinterpret_cast<float*>(&transformModel.scale), 0.0f, 2.0f);
@@ -55,19 +58,25 @@ void GameScene::Update() {
 	ImGui::SliderFloat3("translate", reinterpret_cast<float*>(&transformModel.translate), -5.0f, 5.0f);
 	transformModel.rotate = Radian(rotate);
 
-	Vector4 imColor;
-		//= testModel.GetColor();
+	Transform imUvTransform = testModel.GetUvTransform();
+	rotate = Degree(imUvTransform.rotate);
+	ImGui::SliderFloat2("UVScale", reinterpret_cast<float*>(&imUvTransform.scale), 0.0f, 2.0f);
+	ImGui::SliderFloat("UVRotate", reinterpret_cast<float*>(&rotate.z), -360.0f, 360.0f);
+	ImGui::SliderFloat2("UVTranslate", reinterpret_cast<float*>(&imUvTransform.translate), -640.0f, 1280.0f);
+	imUvTransform.rotate.z = Radian(rotate.z);
+	testModel.SetUvTransform(imUvTransform);
 
-	//ImGui::ColorEdit4("color", reinterpret_cast<float*>(&imColor));
+	Vector4 imColor = testModel.GetColor();
 
-	//testModel.SetColor(imColor);
+	ImGui::ColorEdit4("color", reinterpret_cast<float*>(&imColor));
 
-	int imSlider;
-		//= static_cast<int>(testModel.GetLightingType());
+	testModel.SetColor(imColor);
 
-	//ImGui::SliderInt("ModelLightingType",&imSlider,0,2);
+	int imSlider = static_cast<int>(testModel.GetLightingType());
 
-	//testModel.SetLightingType(static_cast<Renderer::LightingType>(imSlider));
+	ImGui::SliderInt("ModelLightingType",&imSlider,0,2);
+
+	testModel.SetLightingType(static_cast<Renderer::LightingType>(imSlider));
 
 	if (ImGui::Button("AutoMove")) {
 		if (isModelAutoMove) {
@@ -83,9 +92,69 @@ void GameScene::Update() {
 	ImGui::Text("AutoMove : %s", isModelAutoMove ? "true" : "false");
 	ImGui::End();
 
-	if (transformModel.rotate.y > 90.0f) {
-		transformModel.rotate = transformModel.rotate;
+	/*=============================================================
+	MultiModelのデバッグ.
+	=============================================================*/
+	ImGui::Begin("MultiModel");
+
+	isVisible = testMultiModel.GetIsVisible();
+
+	ImGui::Checkbox("testModelVisible", reinterpret_cast<bool*>(&isVisible));
+
+	testMultiModel.SetIsVisible(isVisible);
+
+	rotate = Degree(transformMultiModel.rotate);
+	ImGui::SliderFloat3("scale", reinterpret_cast<float*>(&transformMultiModel.scale), 0.0f, 2.0f);
+	ImGui::SliderFloat3("rotate", reinterpret_cast<float*>(&rotate), -180.0f, 540.0f);
+	ImGui::SliderFloat3("translate", reinterpret_cast<float*>(&transformMultiModel.translate), -5.0f, 5.0f);
+	transformMultiModel.rotate = Radian(rotate);
+
+	imUvTransform = testMultiModel.GetUvTransform("Plane");
+	rotate = Degree(imUvTransform.rotate);
+	ImGui::SliderFloat2("PlaneUVScale", reinterpret_cast<float*>(&imUvTransform.scale), 0.0f, 2.0f);
+	ImGui::SliderFloat("PlaneUVRotate", reinterpret_cast<float*>(&rotate.z), -360.0f, 360.0f);
+	ImGui::SliderFloat2("PlaneUVTranslate", reinterpret_cast<float*>(&imUvTransform.translate), -640.0f, 1280.0f);
+	imUvTransform.rotate.z = Radian(rotate.z);
+	testMultiModel.SetUvTransform(imUvTransform, "Plane");
+
+	imColor = testMultiModel.GetColor("Plane");
+
+	ImGui::ColorEdit4("PlaneColor", reinterpret_cast<float*>(&imColor));
+
+	testMultiModel.SetColor(imColor, "Plane");
+
+	imUvTransform = testMultiModel.GetUvTransform("Cube");
+	rotate = Degree(imUvTransform.rotate);
+	ImGui::SliderFloat2("CubeUVScale", reinterpret_cast<float*>(&imUvTransform.scale), 0.0f, 2.0f);
+	ImGui::SliderFloat("CubeUVRotate", reinterpret_cast<float*>(&rotate.z), -360.0f, 360.0f);
+	ImGui::SliderFloat2("CubeUVTranslate", reinterpret_cast<float*>(&imUvTransform.translate), -640.0f, 1280.0f);
+	imUvTransform.rotate.z = Radian(rotate.z);
+	testMultiModel.SetUvTransform(imUvTransform, "Cube");
+
+	imColor = testMultiModel.GetColor("Cube");
+
+	ImGui::ColorEdit4("CubeColor", reinterpret_cast<float*>(&imColor));
+
+	testMultiModel.SetColor(imColor, "Cube");
+
+	imSlider = static_cast<int>(testMultiModel.GetLightingType());
+
+	ImGui::SliderInt("ModelLightingType", &imSlider, 0, 2);
+
+	testMultiModel.SetLightingType(static_cast<Renderer::LightingType>(imSlider));
+
+	if (ImGui::Button("AutoMove")) {
+		if (isMultiModelAutoMove) {
+			isMultiModelAutoMove = false;
+		} else {
+			isMultiModelAutoMove = true;
+		}
+
+		transformMultiModel.rotate = { 0.0f,Radian(180.0f),0.0f };
 	}
+
+	ImGui::Text("AutoMove : %s", isMultiModelAutoMove ? "true" : "false");
+	ImGui::End();
 
 
 	/*=============================================================
@@ -252,6 +321,14 @@ void GameScene::Update() {
 		}
 	}
 
+	if (isMultiModelAutoMove) {
+		transformMultiModel.rotate.y += 0.03f;
+
+		if (transformMultiModel.rotate.y >= Radian(540.0f)) {
+			transformMultiModel.rotate.y -= Radian(360.0f);
+		}
+	}
+
 	if (isSphereAutoMove) {
 		transformSphere.rotate.y += 0.03f;
 
@@ -265,6 +342,7 @@ void GameScene::Update() {
 
 void GameScene::Draw() {
 	testModel.Draw(transformModel);
+	testMultiModel.Draw(transformMultiModel);
 	testSphere.Draw(transformSphere);
 	testSprite.Draw(transformSprite);
 }

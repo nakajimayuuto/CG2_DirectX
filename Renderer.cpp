@@ -2,115 +2,368 @@
 #include "GameSystem.h"
 #include <vector>
 
-void Renderer::Model::Initialize(const ModelData& data) {
-	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
+//void Renderer::Model::Initialize(const ModelData& data) {
+//	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
+//
+//	isVisible_;
+//	isVisible_ = true;
+//
+//	modelData_ = data;
+//
+//	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * modelData_.vertices.size());
+//
+//	// 【MaterialResourceを生成する】
+//	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
+//	//Microsoft::WRL::ComPtr<ID3D12Resource> materialResource 
+//	materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+//	// マテリアルにデータを書き込む.
+//	//Material* materialData = nullptr;
+//	// 書き込むためのアドレスを取得.
+//	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
+//	// 今回は赤を書き込んでみる
+//	materialData_->color = modelData_.materialData.matarial.color;
+//	materialData_->lightingType = static_cast<uint32_t>(LightingType::kHalfLambert);
+//	materialData_->uvTransform = Matrix4x4::Identity();
+//
+//	// 【TransformationMatrix】
+//	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
+//	//Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource 
+//	wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+//	// データを書き込む.
+//	//TransformationMatrix* wvpData = nullptr;
+//	// 書き込むためのアドレスを取得.
+//	wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&wvpData_));
+//	// 単位行列を書き込んでおく.
+//	wvpData_->WVP = Matrix4x4::Identity();
+//	wvpData_->World = Matrix4x4::Identity();
+//
+//
+//	// 【VertexBufferViewを作成する】
+//
+//	// 頂点バッファビューを作成する.
+//	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+//	// リソースの先頭のアドレスから使う.
+//	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
+//	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
+//	//vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 4;
+//	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * modelData_.vertices.size());
+//	// 1頂点あたりのサイズ.
+//	vertexBufferView_.StrideInBytes = sizeof(VertexData);
+//
+//
+//	// 【Resourceにデータを書き込む】
+//
+//	// 頂点リソースにデータを書き込む.
+//	VertexData* vertexData = nullptr;
+//	// 書き込むためのアドレスを取得.
+//	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+//std:memcpy(vertexData, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
+//
+//
+//}
+//
+//void Renderer::Model::Draw(const Transform& transform) {
+//	if (!isVisible_) {
+//		return;
+//	}
+//
+//	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform);
+//
+//	wvpData_->World = worldMatrix;
+//	wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+//
+//	/*=============================================================
+//	三角形の描画のコマンド.
+//	=============================================================*/
+//	GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_); // VBVを設定.
+//	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
+//	GameSystem::GetInstance()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+//	// CBufferの場所を設定.
+//	// マテリアル用のCBufferの場所.
+//	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
+//	// WVP用のCBufferの場所.
+//	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource_->GetGPUVirtualAddress());
+//	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
+//	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootDescriptorTable(2, modelData_.textureSrvHandlesGPU);
+//	// DirectionalLight用のCBufferの場所.
+//	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
+//	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
+//	GameSystem::GetInstance()->GetCommandList()->DrawInstanced(UINT(modelData_.vertices.size()), 1, 0, 0);
+//}
 
-	isVisible_;
-	isVisible_ = true;
+void Renderer::Model::Initialize(const ModelInfo& info) {
+	modelMax_ = info.modelData.size();
 
-	modelData_ = data;
+	materialData_.resize(modelMax_);
+	isVisible_.resize(modelMax_);
+	modelData_.resize(modelMax_);
+	wvpData_.resize(modelMax_);
+	vertexResource_.resize(modelMax_);
+	materialResource_.resize(modelMax_);
+	uvTransform_.resize(modelMax_);
+	wvpResource_.resize(modelMax_);
+	vertexBufferView_.resize(modelMax_);
 
-	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * modelData_.vertices.size());
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
 
-	// 【MaterialResourceを生成する】
-	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> materialResource 
-	materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
-	// マテリアルにデータを書き込む.
-	//Material* materialData = nullptr;
-	// 書き込むためのアドレスを取得.
-	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
-	// 今回は赤を書き込んでみる
-	materialData_->color = modelData_.materialData.matarial.color;
-	materialData_->lightingType = static_cast<uint32_t>(LightingType::kHalfLambert);
-	materialData_->uvTransform = Matrix4x4::Identity();
-	
-	// 【TransformationMatrix】
-	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource 
-	wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
-	// データを書き込む.
-	//TransformationMatrix* wvpData = nullptr;
-	// 書き込むためのアドレスを取得.
-	wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&wvpData_));
-	// 単位行列を書き込んでおく.
-	wvpData_->WVP = Matrix4x4::Identity();
-	wvpData_->World = Matrix4x4::Identity();
+		isVisible_[i] = true;
 
+		modelData_[i] = info.modelData[i];
 
-	// 【VertexBufferViewを作成する】
+		vertexResource_[i] = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * modelData_[i].vertices.size());
 
-	// 頂点バッファビューを作成する.
-	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-	// リソースの先頭のアドレスから使う.
-	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
-	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
-	//vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 4;
-	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * modelData_.vertices.size());
-	// 1頂点あたりのサイズ.
-	vertexBufferView_.StrideInBytes = sizeof(VertexData);
+		// 【MaterialResourceを生成する】
+		// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
+		//Microsoft::WRL::ComPtr<ID3D12Resource> materialResource 
+		materialResource_[i] = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+		// マテリアルにデータを書き込む.
+		//Material* materialData = nullptr;
+		// 書き込むためのアドレスを取得.
+		materialResource_[i]->Map(0, nullptr, reinterpret_cast<void**>(&materialData_[i]));
+		// 今回は赤を書き込んでみる
+		materialData_[i]->color = modelData_[i].materialData.matarial.color;
+		materialData_[i]->lightingType = static_cast<uint32_t>(LightingType::kHalfLambert);
+		materialData_[i]->uvTransform = Matrix4x4::Identity();
+
+		// 【TransformationMatrix】
+		// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
+		//Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource 
+		wvpResource_[i] = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+		// データを書き込む.
+		//TransformationMatrix* wvpData = nullptr;
+		// 書き込むためのアドレスを取得.
+		wvpResource_[i]->Map(0, nullptr, reinterpret_cast<void**>(&wvpData_[i]));
+		// 単位行列を書き込んでおく.
+		wvpData_[i]->WVP = Matrix4x4::Identity();
+		wvpData_[i]->World = Matrix4x4::Identity();
+		uvTransform_[i].Initialize();
 
 
-	// 【Resourceにデータを書き込む】
+		// 【VertexBufferViewを作成する】
 
-	// 頂点リソースにデータを書き込む.
-	VertexData* vertexData = nullptr;
-	// 書き込むためのアドレスを取得.
-	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	std:memcpy(vertexData, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
+		// 頂点バッファビューを作成する.
+		//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+		// リソースの先頭のアドレスから使う.
+		vertexBufferView_[i].BufferLocation = vertexResource_[i]->GetGPUVirtualAddress();
+		// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
+		//vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 4;
+		vertexBufferView_[i].SizeInBytes = UINT(sizeof(VertexData) * modelData_[i].vertices.size());
+		// 1頂点あたりのサイズ.
+		vertexBufferView_[i].StrideInBytes = sizeof(VertexData);
 
-	
+
+		// 【Resourceにデータを書き込む】
+
+		// 頂点リソースにデータを書き込む.
+		VertexData* vertexData = nullptr;
+		// 書き込むためのアドレスを取得.
+		vertexResource_[i]->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	std:memcpy(vertexData, modelData_[i].vertices.data(), sizeof(VertexData) * modelData_[i].vertices.size());
+	}
 }
 
-void Renderer::Model::Draw(const Transform& transform){
-	if (!isVisible_) {
+void Renderer::Model::Draw(const Transform& transform) {
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		if (!isVisible_[i]) {
+			return;
+		}
+
+		Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform);
+
+		wvpData_[i]->World = worldMatrix;
+		wvpData_[i]->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+
+		materialData_[i]->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransform_[i]);
+
+		/*=============================================================
+		三角形の描画のコマンド.
+		=============================================================*/
+		GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_[i]); // VBVを設定.
+		// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
+		GameSystem::GetInstance()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		// CBufferの場所を設定.
+		// マテリアル用のCBufferの場所.
+		GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource_[i]->GetGPUVirtualAddress());
+		// WVP用のCBufferの場所.
+		GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource_[i]->GetGPUVirtualAddress());
+		// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
+		GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootDescriptorTable(2, modelData_[i].textureSrvHandlesGPU);
+		// DirectionalLight用のCBufferの場所.
+		GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
+		// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
+		GameSystem::GetInstance()->GetCommandList()->DrawInstanced(UINT(modelData_[i].vertices.size()), 1, 0, 0);
+	}
+}
+
+void Renderer::Model::SetIsVisible(bool isVisible) {
+	if (modelMax_ == 1) {
+		isVisible_[0] = isVisible;
 		return;
 	}
-	
-	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform);
 
-	wvpData_->World = worldMatrix;
-	wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
-
-	/*=============================================================
-	三角形の描画のコマンド.
-	=============================================================*/
-	GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_); // VBVを設定.
-	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
-	GameSystem::GetInstance()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	// CBufferの場所を設定.
-	// マテリアル用のCBufferの場所.
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
-	// WVP用のCBufferの場所.
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource_->GetGPUVirtualAddress());
-	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootDescriptorTable(2, modelData_.textureSrvHandlesGPU);
-	// DirectionalLight用のCBufferの場所.
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-	GameSystem::GetInstance()->GetCommandList()->DrawInstanced(UINT(modelData_.vertices.size()), 1, 0, 0);
-}
-
-void Renderer::MultiModel::Initialize(const ModelInfo& info) {
-	modelMax_ = info.modelData.size();
-	models.resize(modelMax_);
 	for (uint32_t i = 0; i < modelMax_; i++) {
-		models[i].Initialize(info.modelData[i]);
+		isVisible_[i] = isVisible;
 	}
 }
 
-void Renderer::MultiModel::Draw(const Transform& transform) {
+void Renderer::Model::SetIsVisible(bool isVisible, const std::string& meshName) {
 	for (uint32_t i = 0; i < modelMax_; i++) {
-		models[i].Draw(transform);
+		if (modelData_[i].meshName != meshName) {
+			continue;
+		}
+
+		isVisible_[i] = isVisible;
+		break;
+	}
+};
+
+bool Renderer::Model::GetIsVisible() {
+	if (modelMax_ == 1) {
+		return isVisible_[0];
+	}
+};
+
+bool Renderer::Model::GetIsVisible(const std::string& meshName) {
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		if (modelData_[i].meshName != meshName) {
+			continue;
+		}
+
+		return isVisible_[i];
+	}
+};
+
+void Renderer::Model::ChangeTexture(const TextureInfo& info) {
+	if (modelMax_ == 1) {
+		modelData_[0].textureSrvHandlesGPU = info.textureSrvHandlesGPU;
+		return;
+	}
+
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		modelData_[i].textureSrvHandlesGPU = info.textureSrvHandlesGPU;
+	}
+};
+
+void Renderer::Model::ChangeTexture(const TextureInfo& info, const std::string& meshName) {
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		if (modelData_[i].meshName != meshName) {
+			continue;
+		}
+
+		modelData_[i].textureSrvHandlesGPU = info.textureSrvHandlesGPU;
+		break;
+	}
+};
+
+void Renderer::Model::SetColor(Vector4 color) {
+	if (modelMax_ == 1) {
+		materialData_[0]->color = color;
+		return;
+	}
+
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		materialData_[i]->color = color;
+	}
+};
+void Renderer::Model::SetColor(Vector4 color, const std::string& meshName) {
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		if (modelData_[i].meshName != meshName) {
+			continue;
+		}
+
+		materialData_[i]->color = color;
+		break;
+	}
+};
+
+Vector4 Renderer::Model::GetColor() {
+	return materialData_[0]->color;
+};
+Vector4 Renderer::Model::GetColor(const std::string& meshName) {
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		if (modelData_[i].meshName != meshName) {
+			continue;
+		}
+
+		return materialData_[i]->color;
+	}
+};
+
+void Renderer::Model::SetUvTransform(const Transform& uvTransform) {
+	if (modelMax_ == 1) {
+		uvTransform_[0] = uvTransform;
+		return;
+	}
+
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		uvTransform_[i] = uvTransform;
+	}
+};
+void Renderer::Model::SetUvTransform(const Transform& uvTransform, const std::string& meshName){
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		if (modelData_[i].meshName != meshName) {
+			continue;
+		}
+
+		uvTransform_[i] = uvTransform;
+		break;
 	}
 }
 
-void Renderer::Sphere::Initialize(TextureInfo info){
+Transform Renderer::Model::GetUvTransform() {
+	return uvTransform_[0];
+};
+Transform Renderer::Model::GetUvTransform(const std::string& meshName){
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		if (modelData_[i].meshName != meshName) {
+			continue;
+		}
+
+		return uvTransform_[i];
+	}
+};
+
+void Renderer::Model::SetLightingType(LightingType type) {
+	if (modelMax_ == 1) {
+		materialData_[0]->lightingType = static_cast<int32_t>(type);
+		return;
+	}
+
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		materialData_[i]->lightingType = static_cast<int32_t>(type);
+	}
+};
+void Renderer::Model::SetLightingType(LightingType type, const std::string& meshName) {
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		if (modelData_[i].meshName != meshName) {
+			continue;
+		}
+
+		materialData_[i]->lightingType = static_cast<int32_t>(type);
+		break;
+	}
+};
+
+Renderer::LightingType Renderer::Model::GetLightingType() {
+	return static_cast<LightingType>(materialData_[0]->lightingType);
+};
+Renderer::LightingType Renderer::Model::GetLightingType(const std::string& meshName) {
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		if (modelData_[i].meshName != meshName) {
+			continue;
+		}
+
+		return static_cast<LightingType>(materialData_[i]->lightingType);
+	}
+};
+
+void Renderer::Sphere::Initialize(TextureInfo info) {
 	isVisible_ = true;
 
 	textureInfo_ = info;
 	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
-	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(),sizeof(VertexData) * kSubdivision_ * kSubdivision_ * 6);
+	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * kSubdivision_ * kSubdivision_ * 6);
 
 	// 【MaterialResourceを生成する】
 	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
@@ -215,7 +468,7 @@ void Renderer::Sphere::Draw(const Transform& transform) {
 	if (!isVisible_) {
 		return;
 	}
-	
+
 	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform);
 
 	wvpData_->World = worldMatrix;
@@ -237,10 +490,10 @@ void Renderer::Sphere::Draw(const Transform& transform) {
 	// DirectionalLight用のCBufferの場所.
 	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-	GameSystem::GetInstance()->GetCommandList()->DrawIndexedInstanced(kSubdivision_* kSubdivision_ * 6, 1, 0, 0,0);
+	GameSystem::GetInstance()->GetCommandList()->DrawIndexedInstanced(kSubdivision_ * kSubdivision_ * 6, 1, 0, 0, 0);
 }
 
-void Renderer::Sprite::Initialize(TextureInfo info){
+void Renderer::Sprite::Initialize(TextureInfo info) {
 	isVisible_ = true;
 
 	textureInfo_ = info;
@@ -355,13 +608,13 @@ void Renderer::Sprite::Draw(const Transform& transform) {
 	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureInfo_.textureSrvHandlesGPU);
 	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-	GameSystem::GetInstance()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0,0);
+	GameSystem::GetInstance()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 
-	
+
 }
 
-void Renderer::Sprite::SetSize(Vector2 size){
+void Renderer::Sprite::SetSize(Vector2 size) {
 	size_ = size;
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 	vertexData[0].position = { 0.0f,size.y,0.0f,1.0f }; // 左下.
