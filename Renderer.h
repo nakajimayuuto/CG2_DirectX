@@ -150,7 +150,9 @@ namespace Renderer {
 	};
 
 	class Box {
+	public:
 		void Initialize(const TextureInfo& info);
+		void Initialize();
 
 		void Draw(const Transform& transform);
 
@@ -158,7 +160,7 @@ namespace Renderer {
 
 		bool GetIsVisible() { return isVisible_; };
 
-		void ChangeTexture(const TextureInfo& info) { textureInfo_.textureSrvHandlesGPU = info.textureSrvHandlesGPU; };
+		void ChangeTexture(const TextureInfo& info) { modelData_.textureSrvHandlesGPU = info.textureSrvHandlesGPU; };
 
 		void SetColor(Vector4 color) { materialData_->color = color; };
 
@@ -175,19 +177,17 @@ namespace Renderer {
 
 		bool isVisible_;
 
-		TextureInfo textureInfo_;
+		ModelData modelData_;
 
-		Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_ = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_;
 
-		Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_ = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_;
 
-		Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_ = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_;
 
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
 
-		Microsoft::WRL::ComPtr<ID3D12Resource> indexResource_ = nullptr;
-
-		D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
+		Transform uvTransform_;
 	};
 
 	class Sprite {

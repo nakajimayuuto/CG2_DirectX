@@ -31,6 +31,8 @@ private:
 
 	Renderer::Sprite testSprite = Renderer::Sprite();
 
+	Renderer::Box testBox = Renderer::Box();
+
 	Transform transformModel{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 
 	Transform transformMultiModel{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };

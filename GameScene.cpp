@@ -9,7 +9,7 @@
 #include "GameSystem.h"
 
 void GameScene::Initialize() {
-	ModelManager::GetInstance()->RegisterObj("test", "Resource", "block.obj");
+	ModelManager::GetInstance()->RegisterObj("test", "Resource", "axis.obj");
 	ModelManager::GetInstance()->RegisterObj("testMulti", "Resource", "multiMaterial.obj");
 
 	TextureManager::GetInstance()->RegisterTexture("monster_ball", "Resource/monsterBall.png");

@@ -495,6 +495,8 @@ void GameSystem::Initialize() {
 
 	SoundManager::GetInstance()->Initialize();
 
+	ModelManager::GetInstance()->RegisterObj("block_template","Resource/block","block.obj");
+
 	dxcCompiler->Release();
 	dxcUtils->Release();
 }
