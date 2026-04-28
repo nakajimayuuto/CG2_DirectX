@@ -21,6 +21,10 @@ void ModelManager::RegisterObj(const std::string& name, const std::string& direc
 	models_[name].modelData = LoadObjFile(directoryPath, fileName);
 
 	for (ModelData& data : models_[name].modelData) {
+		if (data.materialData.textureFilePath == "") {
+			data.textureSrvHandlesGPU = D3D12_GPU_DESCRIPTOR_HANDLE(0);
+			continue;
+		}
 		TextureManager::GetInstance()->RegisterTexture(name + "_" + data.meshName, data.materialData.textureFilePath);
 
 		data.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo(name + "_" + data.meshName).textureSrvHandlesGPU;
@@ -144,6 +148,11 @@ std::vector<ModelData>ModelManager::LoadObjFile(const std::string& directoryPath
 				for (uint32_t element = 0; element < 3; ++element) {
 					std::string index;
 					std::getline(v, index, '/');// 区切りでインデックスを読んでいく.
+					if (index == "") {
+						elementIndices[element] = -1024;
+						continue;
+					}
+
 					elementIndices[element] = std::stoi(index);
 				}
 
@@ -152,7 +161,7 @@ std::vector<ModelData>ModelManager::LoadObjFile(const std::string& directoryPath
 				}
 
 				if (texcoords.size() < 0 || faceVertex > texcoords.size()) {
-					assert(false);
+					//assert(false);
 				}
 
 				if (normals.size() < 0 || faceVertex > normals.size()) {
@@ -161,9 +170,22 @@ std::vector<ModelData>ModelManager::LoadObjFile(const std::string& directoryPath
 
 
 				// 要素へのIndexから、実際の要素の値を取得して、頂点を構築する.
-				Vector4 position = positions[elementIndices[0] - 1];
-				Vector2 texcoord = texcoords[elementIndices[1] - 1];
-				Vector3 normal = normals[elementIndices[2] - 1];
+				Vector4 position = {0.0f,0.0f,0.0f,0.0f};
+				Vector2 texcoord = {0.0f,0.0f};
+				Vector3 normal = {0.0f,0.0f,0.0f};
+
+				if (elementIndices[0] != -1024) {
+					position = positions[elementIndices[0] - 1];
+				}
+
+				if (elementIndices[1] != -1024) {
+					texcoord = texcoords[elementIndices[1] - 1];
+				}
+				
+				if (elementIndices[2] != -1024) {
+					normal = normals[elementIndices[2] - 1];
+				}
+
 				triangle[faceVertex] = { position,texcoord,normal };
 
 				if (faceVertex == 3) {
@@ -183,7 +205,7 @@ std::vector<ModelData>ModelManager::LoadObjFile(const std::string& directoryPath
 				modelData.vertices.push_back(triangle[1]);
 				modelData.vertices.push_back(triangle[0]);
 			}
-			
+
 		} else if (identifier == "mtllib") {
 			s >> materialFilename;
 			//// 基本的にObjファイルと同一階層にmtlは存在させるので、ディレクトリ名とファイル名を渡す.

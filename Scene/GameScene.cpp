@@ -8,7 +8,7 @@
 #include "../Environment.h"
 
 void GameScene::Initialize() {
-	ModelManager::GetInstance()->RegisterObj("test", "Resource", "axis.obj");
+	ModelManager::GetInstance()->RegisterObj("test", "Resource/Evaluation", "axis.obj");
 	testModel.Initialize(ModelManager::GetInstance()->GetModelInfo("test"));
 }
 
@@ -18,6 +18,14 @@ void GameScene::Update() {
 	}
 
 	Camera::GetInstance()->Update();
+
+	Vector4 imColor = testModel.GetColor();
+
+	ImGui::Begin("Color");
+	ImGui::ColorEdit4("modelColor",reinterpret_cast<float*>(&imColor.x));
+	ImGui::End();
+
+	testModel.SetColor(imColor);
 }
 
 void GameScene::Draw() {
