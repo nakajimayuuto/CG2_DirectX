@@ -100,6 +100,8 @@ public:
 	void SetCullMode(D3D12_CULL_MODE mode);
 
 	void CreatePipeline(D3D12_CULL_MODE cullMode);
+
+	void AdaptPipeline();
 private:
 
 	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);

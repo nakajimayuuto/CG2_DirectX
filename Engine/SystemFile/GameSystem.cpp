@@ -511,11 +511,21 @@ void GameSystem::CreatePipeline(D3D12_CULL_MODE cullMode){
 	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));
 
-	commandList->SetGraphicsRootSignature(rootSignature.Get());
-	commandList->SetPipelineState(graphicsPipelineState.Get()); // PS0を設定.
-
 	dxcCompiler->Release();
 	dxcUtils->Release();
+}
+
+void GameSystem::AdaptPipeline(){
+	// 描画用のDescriptorHeapの設定.
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { srvDescriptorHeap.Get() };
+	commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
+
+
+	commandList->RSSetViewports(1, &viewport); // Viewportを設定.
+	commandList->RSSetScissorRects(1, &scissorRect); // Scissorを設定.
+	// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
+	commandList->SetGraphicsRootSignature(rootSignature.Get());
+	//commandList->SetPipelineState(graphicsPipelineState.Get()); // PS0を設定.
 }
 
 bool GameSystem::ProcessMessage() {
