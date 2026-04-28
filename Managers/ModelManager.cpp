@@ -22,7 +22,6 @@ void ModelManager::RegisterObj(const std::string& name, const std::string& direc
 
 	for (ModelData& data : models_[name].modelData) {
 		if (data.materialData.textureFilePath == "") {
-			data.textureSrvHandlesGPU = D3D12_GPU_DESCRIPTOR_HANDLE(0);
 			continue;
 		}
 		TextureManager::GetInstance()->RegisterTexture(name + "_" + data.meshName, data.materialData.textureFilePath);

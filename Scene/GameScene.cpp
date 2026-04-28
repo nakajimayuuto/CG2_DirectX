@@ -8,7 +8,7 @@
 #include "../Environment.h"
 
 void GameScene::Initialize() {
-	ModelManager::GetInstance()->RegisterObj("test", "Resource/Evaluation", "axis.obj");
+	ModelManager::GetInstance()->RegisterObj("test", "Resource/Evaluation", "suzanne.obj");
 	testModel.Initialize(ModelManager::GetInstance()->GetModelInfo("test"));
 }
 

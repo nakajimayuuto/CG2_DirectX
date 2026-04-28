@@ -7,6 +7,8 @@
 #include "GameSystem.h"
 #include "../../Managers/SoundManager.h"
 #include "../../Managers/InputManager.h"
+#include "../../Managers/TextureManager.h"
+#include "../../Managers/ModelManager.h"
 #include "../../Environment.h"
 #include <strsafe.h>
 #include <filesystem>
@@ -296,41 +298,10 @@ void GameSystem::Initialize() {
 	assert(fenceEvent != nullptr);
 
 
+
 	/*=============================================================
-	DXCの初期化.
+	DirectionalLightの初期化.
 	=============================================================*/
-	// dxcCompilerを初期化.
-	IDxcUtils* dxcUtils = nullptr;
-	IDxcCompiler3* dxcCompiler = nullptr;
-	hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
-	assert(SUCCEEDED(hr));
-	hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler));
-	assert(SUCCEEDED(hr));
-
-	// 現時点でincludeはしないが、includeに対応するための設定を行っておく.
-	IDxcIncludeHandler* includeHandler = nullptr;
-	hr = dxcUtils->CreateDefaultIncludeHandler(&includeHandler);
-	assert(SUCCEEDED(hr));
-
-	//
-	// もともとPSOがあった場所(03_01にて変更).
-	//
-
-	// 【ビューポート】
-	// クライアント領域のサイズと一緒にして画面全体に表示.
-	viewport.Width = static_cast<FLOAT>(kClientWidth);
-	viewport.Height = static_cast<FLOAT>(kClientHeight);
-	viewport.TopLeftX = 0;
-	viewport.TopLeftY = 0;
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-
-	// 【シザー矩形】
-	// 基本的にビューポートと同じ矩形が構成されるようにする.
-	scissorRect.left = 0;
-	scissorRect.right = kClientWidth;
-	scissorRect.top = 0;
-	scissorRect.bottom = kClientHeight;
 
 	DirectionalLight::GetInstance()->Initialize();
 
@@ -351,10 +322,57 @@ void GameSystem::Initialize() {
 	ImGuiIO& io = ImGui::GetIO();
 	io.Fonts->Build();
 #endif // USE_IMGUI
+
+	CreatePipeline(D3D12_CULL_MODE_BACK);
+
+	SoundManager::GetInstance()->Initialize();
+
+	ModelManager::GetInstance()->RegisterObj("block_template","Resource/block","block.obj");
+
+	TextureManager::GetInstance()->RegisterTexture("white_template","Resource/white_template.png");
+}
+
+void GameSystem::CreatePipeline(D3D12_CULL_MODE cullMode){
+	/*=============================================================
+	DXCの初期化.
+	=============================================================*/
+	// dxcCompilerを初期化.
+	IDxcUtils* dxcUtils = nullptr;
+	IDxcCompiler3* dxcCompiler = nullptr;
+	HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
+	assert(SUCCEEDED(hr));
+	hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler));
+	assert(SUCCEEDED(hr));
+
+	// 現時点でincludeはしないが、includeに対応するための設定を行っておく.
+	IDxcIncludeHandler* includeHandler = nullptr;
+	hr = dxcUtils->CreateDefaultIncludeHandler(&includeHandler);
+	assert(SUCCEEDED(hr));
+
+	//
+	// もともとPSOがあった場所(03_01にて変更).
+	//
+
+	// 【ビューポート】
+	// クライアント領域のサイズと一緒にして画面全体に表示.
+	viewport.Width = static_cast<FLOAT>(Environment::GetInstance()->GetWindowSize().width);
+	viewport.Height = static_cast<FLOAT>(Environment::GetInstance()->GetWindowSize().height);
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+
+	// 【シザー矩形】
+	// 基本的にビューポートと同じ矩形が構成されるようにする.
+	scissorRect.left = 0;
+	scissorRect.right = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().width);
+	scissorRect.top = 0;
+	scissorRect.bottom = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().height);
+
 	/*=============================================================
 	DepthStencilTextureをつくる
 	=============================================================*/
-	depthStencilResource = CreateDepthStencilTextureResource(device, kClientWidth, kClientHeight);
+	depthStencilResource = CreateDepthStencilTextureResource(device, static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().width), static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().height));
 
 	// DSV用のヒープでディスクリプタ数は1。DSVはShader内で触れるものではないので、ShaderVisibleはfalse.
 	dsvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
@@ -458,7 +476,7 @@ void GameSystem::Initialize() {
 	// 【RasterizerStateの設定を行う】
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
 	// 裏面(時計回り)を表示しない.
-	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
+	rasterizerDesc.CullMode = cullMode;
 	// 三角形の中を塗りつぶす.
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
@@ -493,9 +511,8 @@ void GameSystem::Initialize() {
 	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));
 
-	SoundManager::GetInstance()->Initialize();
-
-	ModelManager::GetInstance()->RegisterObj("block_template","Resource/block","block.obj");
+	commandList->SetGraphicsRootSignature(rootSignature.Get());
+	commandList->SetPipelineState(graphicsPipelineState.Get()); // PS0を設定.
 
 	dxcCompiler->Release();
 	dxcUtils->Release();

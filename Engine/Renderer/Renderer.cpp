@@ -137,6 +137,10 @@ void Renderer::Model::Initialize(const ModelInfo& info) {
 
 		modelData_[i] = info.modelData[i];
 
+		if (modelData_[i].materialData.textureFilePath == "") {
+			modelData_[i].textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesGPU;
+		}
+
 		vertexResource_[i] = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * modelData_[i].vertices.size());
 
 		// 【MaterialResourceを生成する】

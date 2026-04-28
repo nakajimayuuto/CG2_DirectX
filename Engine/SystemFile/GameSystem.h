@@ -31,8 +31,6 @@
 #include "../../externals/DirectXTex/DirectXTex.h"
 #include "../../externals/DirectXTex/d3dx12.h"
 
-#include "../../Managers/ModelManager.h"
-
 #ifdef USE_IMGUI
 #include "../../externals/imgui/imgui.h"
 #include "../../externals/imgui/imgui_impl_dx12.h"
@@ -100,6 +98,8 @@ public:
 
 	// わからん.
 	void SetCullMode(D3D12_CULL_MODE mode);
+
+	void CreatePipeline(D3D12_CULL_MODE cullMode);
 private:
 
 	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
