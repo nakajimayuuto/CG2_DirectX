@@ -1,5 +1,6 @@
 #include "SceneManager.h"
-#include "GameScene.h"
+#include "../Scene/GameScene.h"
+
 SceneManager::~SceneManager(){
 	delete currentScene_;
 }
@@ -10,6 +11,7 @@ SceneManager* SceneManager::GetInstance() {
 };
 
 void SceneManager::Initialize() {
+	currentScene_ = new GameScene();
 	currentScene_->Initialize();
 }
 

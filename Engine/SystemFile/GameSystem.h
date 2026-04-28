@@ -12,31 +12,31 @@
 #include <dbghelp.h>
 #include <vector>
 #include <numbers>
-#include "Vector4.h"
-#include "Vertex.h"
-#include "Matrix4x4.h"
-#include "Transform.h"
-#include "Camera.h"
-#include "Math.h"
-#include "Environment.h"
+#include "../Math/Vector4.h"
+#include "../Math/Vertex.h"
+#include "../Math/Matrix4x4.h"
+#include "../Math/Transform.h"
+#include "../Renderer/Camera.h"
+#include "../Math/Math.h"
+#include "../../Environment.h"
 
-#include "Material.h"
-#include "DirectionalLight.h"
+#include "../Renderer/Material.h"
+#include "../Renderer/DirectionalLight.h"
 #include "Convert.h"
 
-#include "ModelData.h"
+#include "../Renderer/ModelData.h"
 #include <fstream>
 #include <sstream>
 
-#include "externals/DirectXTex/DirectXTex.h"
-#include "externals/DirectXTex/d3dx12.h"
+#include "../../externals/DirectXTex/DirectXTex.h"
+#include "../../externals/DirectXTex/d3dx12.h"
 
-#include "ModelManager.h"
+#include "../../Managers/ModelManager.h"
 
 #ifdef USE_IMGUI
-#include "externals/imgui/imgui.h"
-#include "externals/imgui/imgui_impl_dx12.h"
-#include "externals/imgui/imgui_impl_win32.h"
+#include "../../externals/imgui/imgui.h"
+#include "../../externals/imgui/imgui_impl_dx12.h"
+#include "../../externals/imgui/imgui_impl_win32.h"
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #endif // USE_IMGUI
 struct D3DResourceLeakChecker {

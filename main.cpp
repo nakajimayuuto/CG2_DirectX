@@ -1,6 +1,6 @@
-#include "Camera.h"
-#include "GameSystem.h"
-#include "SceneManager.h"
+#include "./Engine/Renderer/Camera.h"
+#include "./Engine/SystemFile/GameSystem.h"
+#include "./Managers/SceneManager.h"
 
 
 // オーディオ類.

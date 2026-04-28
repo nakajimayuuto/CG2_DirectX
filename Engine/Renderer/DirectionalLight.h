@@ -1,10 +1,10 @@
 #pragma once
-#include "Vector4.h"
-#include "Vector3.h"
+#include "../Math/Vector4.h"
+#include "../Math/Vector3.h"
 #include <d3d12.h>
 
-#include "externals/DirectXTex/DirectXTex.h"
-#include "externals/DirectXTex/d3dx12.h"
+#include "../../externals/DirectXTex/DirectXTex.h"
+#include "../../externals/DirectXTex/d3dx12.h"
 
 struct DirectionalLightData {
 	Vector4 color; // ライトの色.

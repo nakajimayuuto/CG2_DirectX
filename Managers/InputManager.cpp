@@ -1,5 +1,8 @@
 #include "InputManager.h"
-#include "GameSystem.h"
+#include "../Engine/SystemFile/GameSystem.h"
+
+#pragma comment(lib,"dinput8.lib")
+#pragma comment(lib,"dxguid.lib")
 
 InputManager* InputManager::GetInstance() {
 	static InputManager instance;

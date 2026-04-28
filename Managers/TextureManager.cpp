@@ -1,5 +1,5 @@
 #include "TextureManager.h"
-#include "GameSystem.h"
+#include "../Engine/SystemFile/GameSystem.h"
 TextureManager* TextureManager::GetInstance() {
 	static TextureManager instance;
 	return &instance;

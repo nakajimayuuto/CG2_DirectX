@@ -1,7 +1,9 @@
 #pragma once
 #include <memory>
-#include "IScene.h"
-#include "GameScene.h"
+#include "../Scene/IScene.h"
+//#include "../Scene/GameScene.h"
+
+class GameScene;
 
 class SceneManager{
 public:
@@ -19,7 +21,7 @@ public:
 
 	void ChengeScene(SceneName name);
 private:
-	GameScene* currentScene_ = new GameScene();
+	IScene* currentScene_ = nullptr;
 
 	SceneName sceneName_;
 

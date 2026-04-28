@@ -5,9 +5,9 @@
 #pragma comment(lib,"Dbghelp.lib")
 
 #include "GameSystem.h"
-#include "SoundManager.h"
-#include "InputManager.h"
-#include "Environment.h"
+#include "../../Managers/SoundManager.h"
+#include "../../Managers/InputManager.h"
+#include "../../Environment.h"
 #include <strsafe.h>
 #include <filesystem>
 #include <chrono>
@@ -464,10 +464,10 @@ void GameSystem::Initialize() {
 
 	// Shaderをコンパイルする.
 	// 【VertexShader】
-	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob = CompileShader(L"Object3d.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
+	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob = CompileShader(L"./Engine/Renderer/Object3d.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(vertexShaderBlob != nullptr);
 	// 【PixelShader】
-	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = CompileShader(L"Object3d.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = CompileShader(L"./Engine/Renderer/Object3d.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(pixelShaderBlob != nullptr);
 
 	// 【PSO】

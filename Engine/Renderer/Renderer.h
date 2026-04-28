@@ -2,10 +2,10 @@
 
 #include <Windows.h>
 #include <cstdint>
-#include "ModelManager.h"
-#include "TextureManager.h"
-#include "externals/DirectXTex/DirectXTex.h"
-#include "externals/DirectXTex/d3dx12.h"
+#include "../../Managers/ModelManager.h"
+#include "../../Managers/TextureManager.h"
+#include "../../externals/DirectXTex/DirectXTex.h"
+#include "../../externals/DirectXTex/d3dx12.h"
 
 namespace Renderer {
 	enum class LightingType {
@@ -14,45 +14,9 @@ namespace Renderer {
 		kLambert = 2,
 	};
 
-	//class Model {
-	//public:
-	//	void Initialize(const ModelData& data);
-	//
-	//	void Draw(const Transform& transform);
-	//
-	//	void SetIsVisible(bool isVisible) { isVisible_ = isVisible; };
-	//
-	//	bool GetIsVisible() { return isVisible_; };
-	//
-	//	void ChangeTexture(const TextureInfo& info) { modelData_.textureSrvHandlesGPU = info.textureSrvHandlesGPU; };
-	//
-	//	void SetColor(Vector4 color) { materialData_->color = color; };
-	//
-	//	Vector4 GetColor() { return materialData_->color; };
-	//
-	//	void SetLightingType(LightingType type) { materialData_->lightingType = static_cast<uint32_t>(type); };
-	//
-	//	LightingType GetLightingType() { return static_cast<LightingType>(materialData_->lightingType); };
-	//private:
-	//	Material* materialData_ = nullptr;
-	//
-	//	TransformationMatrix* wvpData_ = nullptr;
-	//
-	//	bool isVisible_ = true;
-	//
-	//	ModelData modelData_;
-	//
-	//	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_ = nullptr;
-	//
-	//	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_ = nullptr;
-	//
-	//	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_ = nullptr;
-	//
-	//	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
-	//};
-
 	class Model {
 	public:
+		~Model();
 		void Initialize(const ModelInfo& info);
 
 		void Draw(const Transform& transform);

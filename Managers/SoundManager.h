@@ -4,7 +4,7 @@
 #include <fstream>
 #include <assert.h>
 #include <map>
-#include "externals/DirectXTex/d3dx12.h"
+#include "../externals/DirectXTex/d3dx12.h"
 
 // チャンクヘッダ.
 struct ChunkHeader {

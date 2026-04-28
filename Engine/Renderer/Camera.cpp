@@ -1,6 +1,6 @@
 #include "Camera.h"
-#include "InputManager.h"
-#include "Math.h"
+#include "../../Managers/InputManager.h"
+#include "../Math/Math.h"
 
 Camera* Camera::GetInstance() {
 	static Camera instance;

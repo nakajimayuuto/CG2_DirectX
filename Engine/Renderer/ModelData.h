@@ -1,10 +1,10 @@
 #pragma once
 #include <vector>
-#include "Vertex.h"
+#include "../Math/Vertex.h"
 #include "Material.h"
 
-#include "externals/DirectXTex/DirectXTex.h"
-#include "externals/DirectXTex/d3dx12.h"
+#include "../../externals/DirectXTex/DirectXTex.h"
+#include "../../externals/DirectXTex/d3dx12.h"
 struct ModelData {
 	std::vector<VertexData> vertices;
 	MaterialData materialData;

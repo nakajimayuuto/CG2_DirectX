@@ -2,7 +2,7 @@
 
 #include <map>
 #include <string>
-#include "ModelData.h"
+#include "../Engine/Renderer/ModelData.h"
 #include <fstream>
 #include <sstream>
 
@@ -20,8 +20,8 @@
 #include <dxcapi.h>
 #include <dbghelp.h>
 
-#include "externals/DirectXTex/DirectXTex.h"
-#include "externals/DirectXTex/d3dx12.h"
+#include "../externals/DirectXTex/DirectXTex.h"
+#include "../externals/DirectXTex/d3dx12.h"
 
 struct ModelInfo {
 	std::vector<ModelData> modelData;

@@ -1,5 +1,5 @@
 #include "DirectionalLight.h"
-#include "GameSystem.h"
+#include "../SystemFile/GameSystem.h"
 
 DirectionalLight* DirectionalLight::GetInstance() {
 	static DirectionalLight instance;

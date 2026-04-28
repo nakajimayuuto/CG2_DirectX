@@ -1,5 +1,5 @@
 #include "Renderer.h"
-#include "GameSystem.h"
+#include "../SystemFile/GameSystem.h"
 #include <vector>
 
 //void Renderer::Model::Initialize(const ModelData& data) {
@@ -90,6 +90,32 @@
 //	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
 //	GameSystem::GetInstance()->GetCommandList()->DrawInstanced(UINT(modelData_.vertices.size()), 1, 0, 0);
 //}
+
+Renderer::Model::~Model(){
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		delete materialData_[i];
+
+		delete wvpData_[i];
+	}
+	materialData_.clear();
+
+	wvpData_.clear();
+
+	isVisible_.clear();
+
+	modelData_.clear();
+
+	vertexResource_.clear();
+
+	materialResource_.clear();
+
+	wvpResource_.clear();
+
+	vertexBufferView_.clear();
+
+	uvTransform_.clear();
+
+}
 
 void Renderer::Model::Initialize(const ModelInfo& info) {
 	modelMax_ = info.modelData.size();

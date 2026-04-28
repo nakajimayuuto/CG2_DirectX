@@ -5,8 +5,8 @@
 #include <map>
 #include <d3d12.h>
 
-#include "externals/DirectXTex/DirectXTex.h"
-#include "externals/DirectXTex/d3dx12.h"
+#include "../externals/DirectXTex/DirectXTex.h"
+#include "../externals/DirectXTex/d3dx12.h"
 
 struct TextureInfo {
 	uint32_t number;

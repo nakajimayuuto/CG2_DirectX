@@ -1,10 +1,12 @@
 #pragma once
-#include "Renderer.h"
-#include "ModelManager.h"
+//#include "../Engine/Renderer/Renderer.h"
+//#include "../Managers/ModelManager.h"
+#include "../Satlib.h"
 #include "IScene.h"
 
 class GameScene : public IScene{
 public:
+	~GameScene();
 	void Initialize() override;
 
 	void Update() override;
@@ -23,7 +25,7 @@ private:
 
 	int soundNumber_ = 0;
 
-	Renderer::Model testModel = Renderer::Model();
+	Renderer::Model testModel;
 
 	Renderer::Model testMultiModel = Renderer::Model();
 
