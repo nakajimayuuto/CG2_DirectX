@@ -6,10 +6,9 @@
 #include "../Managers/SoundManager.h"
 #include "../Managers/InputManager.h"
 #include "../Environment.h"
-#include "../Engine/SystemFile/GameSystem.h"
+
 void GameScene::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("test", "Resource", "axis.obj");
-	
 	testModel.Initialize(ModelManager::GetInstance()->GetModelInfo("test"));
 }
 
@@ -18,7 +17,7 @@ void GameScene::Update() {
 		Environment::GetInstance()->GameFinished();
 	}
 
-	//Camera::GetInstance()->Update();
+	Camera::GetInstance()->Update();
 }
 
 void GameScene::Draw() {

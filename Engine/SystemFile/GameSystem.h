@@ -150,7 +150,7 @@ private:
 	/*=============================================================
 	ResourceLeakChecker
 	=============================================================*/
-	D3DResourceLeakChecker resourceLeakChecker;
+	static D3DResourceLeakChecker resourceLeakChecker;
 
 	WNDCLASS wc{};
 
