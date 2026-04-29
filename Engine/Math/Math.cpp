@@ -72,6 +72,14 @@ float Clamp(float clamping, float min, float max) {
 	return clamp;
 };
 
+Vector3 Clamp(Vector3 clamping, Vector3 min, Vector3 max) {
+	Vector3 result;
+	result.x = Clamp(clamping.x, min.x, max.x);
+	result.y = Clamp(clamping.y, min.y, max.y);
+	result.z = Clamp(clamping.z, min.z, max.z);
+
+	return result;
+};
 
 Vector2 Component(Vector2 vector2Start, Vector2 vector2End) {
 

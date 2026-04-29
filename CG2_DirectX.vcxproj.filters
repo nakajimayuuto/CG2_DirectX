@@ -106,6 +106,9 @@
     <Filter Include="Engine\Math\Collision">
       <UniqueIdentifier>{1dfd031b-db0d-47ab-8a1a-d1ee4eb473be}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Math\Shape">
+      <UniqueIdentifier>{3cd1682a-debb-4790-b96d-316406bf45af}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -206,6 +209,12 @@
     </ClCompile>
     <ClCompile Include="Engine\Math\Beats.cpp">
       <Filter>Engine\Math\Beats</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Math\Collision.cpp">
+      <Filter>Engine\Math\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Math\Shape.cpp">
+      <Filter>Engine\Math\Shape</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -316,6 +325,12 @@
     </ClInclude>
     <ClInclude Include="Engine\Math\Beats.h">
       <Filter>Engine\Math\Beats</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Math\Collision.h">
+      <Filter>Engine\Math\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Math\Shape.h">
+      <Filter>Engine\Math\Shape</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

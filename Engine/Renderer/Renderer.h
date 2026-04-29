@@ -69,7 +69,7 @@ namespace Renderer {
 		std::vector<Transform> uvTransform_;
 	};
 
-	class Sphere {
+	class ModelSphere {
 	public:
 		void Initialize(TextureInfo info);
 
@@ -113,7 +113,7 @@ namespace Renderer {
 		D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
 	};
 
-	class Box {
+	class ModelBox {
 	public:
 		void Initialize(const TextureInfo& info);
 		void Initialize();

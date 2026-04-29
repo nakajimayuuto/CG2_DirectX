@@ -388,7 +388,7 @@ Renderer::LightingType Renderer::Model::GetLightingType(const std::string& meshN
 	}
 };
 
-void Renderer::Sphere::Initialize(TextureInfo info) {
+void Renderer::ModelSphere::Initialize(TextureInfo info) {
 	isVisible_ = true;
 
 	textureInfo_ = info;
@@ -494,7 +494,7 @@ void Renderer::Sphere::Initialize(TextureInfo info) {
 	}
 }
 
-void Renderer::Sphere::Draw(const Transform& transform) {
+void Renderer::ModelSphere::Draw(const Transform& transform) {
 	if (!isVisible_) {
 		return;
 	}
@@ -523,7 +523,7 @@ void Renderer::Sphere::Draw(const Transform& transform) {
 	GameSystem::GetInstance()->GetCommandList()->DrawIndexedInstanced(kSubdivision_ * kSubdivision_ * 6, 1, 0, 0, 0);
 }
 
-void Renderer::Box::Initialize(const TextureInfo& info) {
+void Renderer::ModelBox::Initialize(const TextureInfo& info) {
 	isVisible_ = true;
 	modelData_ = ModelManager::GetInstance()->GetModelInfo("block_template").modelData[0];
 	modelData_.textureSrvHandlesGPU = info.textureSrvHandlesGPU;
@@ -568,7 +568,7 @@ void Renderer::Box::Initialize(const TextureInfo& info) {
 std:memcpy(vertexData, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
 }
 
-void Renderer::Box::Initialize() {
+void Renderer::ModelBox::Initialize() {
 	isVisible_ = true;
 	uvTransform_.Initialize();
 	modelData_ = ModelManager::GetInstance()->GetModelInfo("block_template").modelData[0];
@@ -613,7 +613,7 @@ void Renderer::Box::Initialize() {
 	std:memcpy(vertexData, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
 }
 
-void Renderer::Box::Draw(const Transform& transform) {
+void Renderer::ModelBox::Draw(const Transform& transform) {
 	if (!isVisible_) {
 		return;
 	}

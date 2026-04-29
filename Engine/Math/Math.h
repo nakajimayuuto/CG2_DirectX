@@ -56,6 +56,8 @@ Vector3 Degree(Vector3 radian);
 /// <returns></returns>
 float Clamp(float clamping, float min, float max);
 
+Vector3 Clamp(Vector3 clamping, Vector3 min, Vector3 max);
+
 /// <summary>
 /// ベクトルの成分を取得する
 /// </summary>

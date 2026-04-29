@@ -29,11 +29,11 @@ private:
 
 	Renderer::Model testMultiModel = Renderer::Model();
 
-	Renderer::Sphere testSphere = Renderer::Sphere();
+	Renderer::ModelSphere testSphere = Renderer::ModelSphere();
 
 	Renderer::Sprite testSprite = Renderer::Sprite();
 
-	Renderer::Box testBox = Renderer::Box();
+	Renderer::ModelBox testBox = Renderer::ModelBox();
 
 	Transform transformModel{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 

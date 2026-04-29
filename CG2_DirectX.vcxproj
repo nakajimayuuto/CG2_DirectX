@@ -16,10 +16,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Math\Beats.cpp" />
+    <ClCompile Include="Engine\Math\Collision.cpp" />
     <ClCompile Include="Engine\Math\Easing.cpp" />
     <ClCompile Include="Engine\Math\Math.cpp" />
     <ClCompile Include="Engine\Math\Matrix4x4.cpp" />
     <ClCompile Include="Engine\Math\Random.cpp" />
+    <ClCompile Include="Engine\Math\Shape.cpp" />
     <ClCompile Include="Engine\Math\Transform.cpp" />
     <ClCompile Include="Engine\Math\Vector2.cpp" />
     <ClCompile Include="Engine\Math\Vector3.cpp" />
@@ -77,10 +79,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Math\Beats.h" />
+    <ClInclude Include="Engine\Math\Collision.h" />
     <ClInclude Include="Engine\Math\Easing.h" />
     <ClInclude Include="Engine\Math\Math.h" />
     <ClInclude Include="Engine\Math\Matrix4x4.h" />
     <ClInclude Include="Engine\Math\Random.h" />
+    <ClInclude Include="Engine\Math\Shape.h" />
     <ClInclude Include="Engine\Math\Transform.h" />
     <ClInclude Include="Engine\Math\Vector2.h" />
     <ClInclude Include="Engine\Math\Vector3.h" />
