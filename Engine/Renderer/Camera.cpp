@@ -63,6 +63,12 @@ void Camera::DebugUpdate(){
 		if (InputManager::GetInstance()->PressKey(DIK_DOWN)) {
 			debugTranslate_.z -= 0.05f;
 		}
+		if (InputManager::GetInstance()->PressKey(DIK_SPACE)) {
+			debugTranslate_.y += 0.05f;
+		}
+		if (InputManager::GetInstance()->PressKey(DIK_LCONTROL)) {
+			debugTranslate_.y -= 0.05f;
+		}
 	}else {
 		if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
 			debugRotate.x += Radian(1.0f);

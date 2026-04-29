@@ -37,6 +37,10 @@ void GameScene::Initialize() {
 
 	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
 		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+			if (i % 2 == j % 2) {
+				continue;
+			}
+
 			modelBlocks_[i][j] = new Renderer::ModelBox();
 			modelBlocks_[i][j]->Initialize();
 
@@ -50,6 +54,11 @@ void GameScene::Initialize() {
 }
 
 void GameScene::Update() {
+#ifdef _DEBUG
+	if (InputManager::GetInstance()->TriggerKey(DIK_F3)) {
+		Camera::GetInstance()->ChangeCameraMode();
+	}
+#endif // _DEBUG
 
 	player_->Update();
 
@@ -61,6 +70,10 @@ void GameScene::Draw() {
 
 	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
 		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+			if (!modelBlocks_[i][j]) {
+				continue;
+			}
+
 			modelBlocks_[i][j]->Draw(*transformBlocks_[i][j]);
 		}
 	}
