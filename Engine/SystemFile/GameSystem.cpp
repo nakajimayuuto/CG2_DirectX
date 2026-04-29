@@ -10,6 +10,7 @@
 #include "../../Managers/TextureManager.h"
 #include "../../Managers/ModelManager.h"
 #include "../../Environment.h"
+#include "../Math/Random.h"
 #include <strsafe.h>
 #include <filesystem>
 #include <chrono>
@@ -326,6 +327,8 @@ void GameSystem::Initialize() {
 	CreatePipeline(D3D12_CULL_MODE_BACK);
 
 	SoundManager::GetInstance()->Initialize();
+
+	Random::GetInstance()->Initialize();
 
 	ModelManager::GetInstance()->RegisterObj("block_template","Resource/block","block.obj");
 

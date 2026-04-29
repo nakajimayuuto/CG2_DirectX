@@ -1,8 +1,12 @@
 #pragma once
 #include "./Engine/SystemFile/GameSystem.h"
 #include "./Engine/SystemFile/ImGui.h"
+#include "./Engine/SystemFile/DeltaTime.h"
 
 #include "./Engine/Math/Math.h"
+#include "./Engine/Math/Easing.h"
+#include "./Engine/Math/Random.h"
+#include "./Engine/Math/Beats.h"
 
 #include "./Engine/Renderer/Renderer.h"
 #include "./Engine/Renderer/Camera.h"

@@ -91,6 +91,21 @@
     <Filter Include="Engine\Renderer\DirectionalLight">
       <UniqueIdentifier>{6edd4377-3868-4a94-a6a6-8568a1bb10e9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Math\Random">
+      <UniqueIdentifier>{927df35e-b544-4329-91ac-b7b3e12297d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Math\Easing">
+      <UniqueIdentifier>{9ecab8b1-0c03-498d-86e3-69de0ab6959b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\SystemFile\DeltaTime">
+      <UniqueIdentifier>{83201067-ab5b-4c56-a3c2-5ec679544482}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Math\Beats">
+      <UniqueIdentifier>{77379ffb-6fe8-432b-b65e-5ee57bc407a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Math\Collision">
+      <UniqueIdentifier>{1dfd031b-db0d-47ab-8a1a-d1ee4eb473be}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -179,6 +194,18 @@
     </ClCompile>
     <ClCompile Include="Scene\GameScene.cpp">
       <Filter>Scene\GameScene</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Math\Random.cpp">
+      <Filter>Engine\Math\Random</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Math\Easing.cpp">
+      <Filter>Engine\Math\Easing</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\SystemFile\DeltaTime.cpp">
+      <Filter>Engine\SystemFile\DeltaTime</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Math\Beats.cpp">
+      <Filter>Engine\Math\Beats</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -277,6 +304,18 @@
     </ClInclude>
     <ClInclude Include="Scene\IScene.h">
       <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Math\Random.h">
+      <Filter>Engine\Math\Random</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Math\Easing.h">
+      <Filter>Engine\Math\Easing</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\SystemFile\DeltaTime.h">
+      <Filter>Engine\SystemFile\DeltaTime</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Math\Beats.h">
+      <Filter>Engine\Math\Beats</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

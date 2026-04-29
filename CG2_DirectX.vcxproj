@@ -15,8 +15,11 @@
     <Text Include="externals\imgui\LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\Math\Beats.cpp" />
+    <ClCompile Include="Engine\Math\Easing.cpp" />
     <ClCompile Include="Engine\Math\Math.cpp" />
     <ClCompile Include="Engine\Math\Matrix4x4.cpp" />
+    <ClCompile Include="Engine\Math\Random.cpp" />
     <ClCompile Include="Engine\Math\Transform.cpp" />
     <ClCompile Include="Engine\Math\Vector2.cpp" />
     <ClCompile Include="Engine\Math\Vector3.cpp" />
@@ -26,6 +29,7 @@
     <ClCompile Include="Engine\Renderer\DirectionalLight.cpp" />
     <ClCompile Include="Engine\Renderer\Renderer.cpp" />
     <ClCompile Include="Engine\SystemFile\Convert.cpp" />
+    <ClCompile Include="Engine\SystemFile\DeltaTime.cpp" />
     <ClCompile Include="Engine\SystemFile\GameSystem.cpp" />
     <ClCompile Include="Environment.cpp" />
     <ClCompile Include="externals\imgui\imgui.cpp">
@@ -72,8 +76,11 @@
     <ClCompile Include="Scene\GameScene.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\Math\Beats.h" />
+    <ClInclude Include="Engine\Math\Easing.h" />
     <ClInclude Include="Engine\Math\Math.h" />
     <ClInclude Include="Engine\Math\Matrix4x4.h" />
+    <ClInclude Include="Engine\Math\Random.h" />
     <ClInclude Include="Engine\Math\Transform.h" />
     <ClInclude Include="Engine\Math\Vector2.h" />
     <ClInclude Include="Engine\Math\Vector3.h" />
@@ -85,6 +92,7 @@
     <ClInclude Include="Engine\Renderer\ModelData.h" />
     <ClInclude Include="Engine\Renderer\Renderer.h" />
     <ClInclude Include="Engine\SystemFile\Convert.h" />
+    <ClInclude Include="Engine\SystemFile\DeltaTime.h" />
     <ClInclude Include="Engine\SystemFile\GameSystem.h" />
     <ClInclude Include="Engine\SystemFile\ImGui.h" />
     <ClInclude Include="Environment.h" />
