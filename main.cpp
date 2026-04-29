@@ -1,6 +1,6 @@
-#include "Camera.h"
-#include "GameSystem.h"
-#include "SceneManager.h"
+#include "./Engine/Renderer/Camera.h"
+#include "./Engine/SystemFile/GameSystem.h"
+#include "./Managers/SceneManager.h"
 
 
 // オーディオ類.
@@ -10,6 +10,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	GameSystem* system = GameSystem::GetInstance();
 
 	system->Initialize();
+
+
+		
+
+
 
 	Camera::GetInstance()->Initialize(static_cast<float>(Environment::GetInstance()->GetWindowSize().width), static_cast<float>(Environment::GetInstance()->GetWindowSize().height));
 
