@@ -20,10 +20,15 @@ GameScene::~GameScene(){
 }
 
 void GameScene::Initialize() {
+	ModelManager::GetInstance()->RegisterObj("skydome","Resource/skydome","skydome.obj");
+	ModelManager::GetInstance()->RegisterObj("player","Resource/player","player.obj");
 	TextureManager::GetInstance()->RegisterTexture("uvChecker","Resource/uvChecker.png");
 
 	player_ = new Player();
 	player_->Initialize();
+
+	skydome_ = new Skydome();
+	skydome_->Initialize();
 
 	// 要素数を変更する.
 	transformBlocks_.resize(kNumBlockVirtical);
@@ -61,12 +66,14 @@ void GameScene::Update() {
 #endif // _DEBUG
 
 	player_->Update();
+	skydome_->Update();
 
 	Camera::GetInstance()->Update();
 }
 
 void GameScene::Draw() {
 	player_->Draw();
+	skydome_->Draw();
 
 	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
 		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {

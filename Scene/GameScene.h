@@ -3,6 +3,7 @@
 #include "IScene.h"
 
 #include "../Player.h"
+#include "../Skydome.h"
 #include <vector>
 
 class GameScene : public IScene{
@@ -25,5 +26,7 @@ private:
 	std::vector<std::vector<Renderer::ModelBox*>> modelBlocks_;
 
 	Player* player_ = nullptr;
+
+	Skydome* skydome_ = nullptr;
 };
 

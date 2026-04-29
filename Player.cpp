@@ -2,7 +2,7 @@
 
 void Player::Initialize() {
 	transform_.Initialize();
-	model_.Initialize(TextureManager::GetInstance()->GetTextureInfo("uvChecker"));
+	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
 }
 
 void Player::Update() {

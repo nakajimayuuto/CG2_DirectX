@@ -1,9 +1,6 @@
 #pragma once
 #include "Satlib.h"
-/// <summary>
-/// 自キャラ
-/// </summary>
-class Player{
+class Skydome{
 public:
 	void Initialize();
 
