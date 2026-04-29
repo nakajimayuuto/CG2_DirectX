@@ -10,7 +10,7 @@ Camera* Camera::GetInstance() {
 void Camera::Initialize(float windowWidth, float windowHeight) {
 	scale_ = { 1.0f,1.0f,1.0f };
 	rotate_ = { 0.0f,0.0f,0.0f };
-	translate_ = { 0.0f,0.0f,-10.0f };
+	translate_ = { 0.0f,0.0f,-50.0f };
 
 	windowWidth_ = windowWidth;
 	windowHeight_ = windowHeight;
