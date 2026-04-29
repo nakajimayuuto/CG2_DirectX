@@ -1,5 +1,7 @@
 #include "SceneManager.h"
 #include "../Scene/GameScene.h"
+#include "InputManager.h"
+#include "../Environment.h"
 
 SceneManager::~SceneManager(){
 	delete currentScene_;
@@ -16,6 +18,10 @@ void SceneManager::Initialize() {
 }
 
 void SceneManager::Update() {
+	if (InputManager::GetInstance()->TriggerKey(DIK_ESCAPE)) {
+		Environment::GetInstance()->GameFinished();
+	}
+
 	ChangeSceneUpdate();
 
 	currentScene_->Update();
