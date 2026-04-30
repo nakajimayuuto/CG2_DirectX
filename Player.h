@@ -51,13 +51,16 @@ private:
 	void MapCollisionDown(CollisionMapInfo& info);
 	void MapCollisionRight(CollisionMapInfo& info);
 	void MapCollisionLeft(CollisionMapInfo& info);
+
 	// 3 判定結果を反映して移動.
 	void CollisionMoveUpdate(const CollisionMapInfo& info);
+
 	// 4 天井に接触している場合の処理.
 	void CellingCollisionUpdate(const CollisionMapInfo& info);
 
-
+	// 7 旋回制御.
 	void TurningControl();
+
 
 	Vector3 CornerPosition(const Vector3& center, Corner corner);
 private:
