@@ -11,6 +11,8 @@ public:
 
 	void Draw();
 private:
+	void MovingUpdate();
+
 	void TurningControl();
 private:
 	enum class LRDirection {
@@ -25,6 +27,13 @@ private:
 
 	Transform transform_;
 	Vector3 velocity_ = {};
+
+	// ジャンプ.
+	static inline const float kGravityAcceleration = 0.098f;
+	static inline const float kLimitFallSpeed = 1.0f;
+	static inline const float kJumpAcceleration = 1.0f;
+
+	bool onGround_ = true;
 
 	// 旋回制御.
 	static inline const float kTimeTurn = 0.3f;

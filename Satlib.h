@@ -1,4 +1,5 @@
 #pragma once
+#define NOMINMAX
 #include "./Engine/SystemFile/GameSystem.h"
 #include "./Engine/SystemFile/ImGui.h"
 #include "./Engine/SystemFile/DeltaTime.h"
