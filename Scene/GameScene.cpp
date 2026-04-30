@@ -29,14 +29,15 @@ void GameScene::Initialize() {
 
 	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(1,18);
 
+	mapChipField_ = new MapChipField();
+	mapChipField_->LoadMapChipCsv("Resource/map/block.csv");
+
 	player_ = new Player();
 	player_->Initialize(playerPosition);
+	player_->SetMapChipField(mapChipField_);
 
 	skydome_ = new Skydome();
 	skydome_->Initialize();
-
-	mapChipField_ = new MapChipField();
-	mapChipField_->LoadMapChipCsv("Resource/map/block.csv");
 
 	cameraController_ = new CameraController();
 	cameraController_->SetTarget(player_);

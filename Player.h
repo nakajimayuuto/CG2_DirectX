@@ -1,5 +1,8 @@
 #pragma once
 #include "Satlib.h"
+
+class MapChipField;
+
 /// <summary>
 /// 自キャラ
 /// </summary>
@@ -11,18 +14,53 @@ public:
 
 	void Draw();
 
+	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; };
+
 	Transform GetTransform() { return transform_; };
 
 	Vector3 GetVelocity() { return velocity_; };
 private:
-	void MovingUpdate();
+	enum Corner {
+		kRightBottom,
+		kLeftBottom,
+		kRightTop,
+		kLeftTop,
 
-	void TurningControl();
-private:
+		kNumCornter,
+	};
+
 	enum class LRDirection {
 		kRight,
 		kLeft,
 	};
+
+	struct CollisionMapInfo {
+		bool isCellingCollision = false;
+		bool isLanding = false;
+		bool isWallCollision = false;
+		Vector3 movementAmount;
+	};
+
+	// 1 移動入力.
+	void MovingUpdate();
+
+	// 2 移動量を加味して衝突判定を処理.
+	void MapCollision(CollisionMapInfo& info);
+
+	void MapCollisionUp(CollisionMapInfo& info);
+	void MapCollisionDown(CollisionMapInfo& info);
+	void MapCollisionRight(CollisionMapInfo& info);
+	void MapCollisionLeft(CollisionMapInfo& info);
+	// 3 判定結果を反映して移動.
+	void CollisionMoveUpdate(const CollisionMapInfo& info);
+	// 4 天井に接触している場合の処理.
+	void CellingCollisionUpdate(const CollisionMapInfo& info);
+
+
+	void TurningControl();
+
+	Vector3 CornerPosition(const Vector3& center, Corner corner);
+private:
 
 	// 移動.
 	static inline const float kAcceletation = 0.02f;
@@ -33,9 +71,9 @@ private:
 	Vector3 velocity_ = {};
 
 	// ジャンプ.
-	static inline const float kGravityAcceleration = 0.098f;
-	static inline const float kLimitFallSpeed = 1.0f;
-	static inline const float kJumpAcceleration = 1.0f;
+	static inline const float kGravityAcceleration = 0.01f;
+	static inline const float kLimitFallSpeed = 0.3f;
+	static inline const float kJumpAcceleration = 0.2f;
 
 	bool onGround_ = true;
 
@@ -45,6 +83,15 @@ private:
 	LRDirection lrDirection_ = LRDirection::kRight;
 	float turnFirstRotationY_ = 0.0f;
 	float turnTimer_ = 0.0f;
+
+	// マップチップ.
+	MapChipField* mapChipField_ = nullptr;
+
+	static inline const float kWidth = 0.8f;
+	static inline const float kHeight = 0.8f;
+
+	static inline const float kBlank = 0.2f;
+
 
 	// 描画.
 	Renderer::Model model_;

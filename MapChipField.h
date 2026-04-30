@@ -47,4 +47,8 @@ public:
 
 	Vector3 GetMapChipPositionByIndex(uint32_t xIndex, uint32_t yIndex);
 
+	IndexSet GetMapChipIndexSetByPosition(const Vector3& position);
+
+	Rect GetRectByIndex(uint32_t xIndex, uint32_t yIndex);
+
 };
