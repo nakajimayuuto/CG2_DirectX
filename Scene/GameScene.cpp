@@ -17,6 +17,9 @@ GameScene::~GameScene() {
 	modelBlocks_.clear();
 
 	delete player_;
+	delete skydome_;
+	delete mapChipField_;
+	delete cameraController_;
 }
 
 void GameScene::Initialize() {
@@ -34,6 +37,11 @@ void GameScene::Initialize() {
 
 	mapChipField_ = new MapChipField();
 	mapChipField_->LoadMapChipCsv("Resource/map/block.csv");
+
+	cameraController_ = new CameraController();
+	cameraController_->SetTarget(player_);
+	cameraController_->SetMovableArea({11.5f,100.0f,6.5f,100.0f});
+	cameraController_->Initialize();
 
 	GenerateBlocks();
 }
@@ -76,7 +84,7 @@ void GameScene::Update() {
 	player_->Update();
 	skydome_->Update();
 
-	Camera::GetInstance()->Update();
+	cameraController_->Update();
 }
 
 void GameScene::Draw() {

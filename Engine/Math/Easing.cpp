@@ -64,6 +64,20 @@ float Easing(float before, float after, float time, float timeMax, EaseType type
 	return (1.0f - easedTime) * before + easedTime * after;
 }
 
+float Lerp(float before, float after, float time) {
+	return (1.0f - time) * before + time * after;
+}
+
+Vector3 Lerp(Vector3 before, Vector3 after, float time) {
+	Vector3 result = before;
+
+	result.x = Lerp(before.x, after.x, time);
+	result.y = Lerp(before.y, after.y, time);
+	result.z = Lerp(before.z, after.z, time);
+
+	return result;
+}
+
 int Easing(int before, int after, float time, float timeMax, EaseType type){
 	return static_cast<int>(Easing(static_cast<float>(before), static_cast<float>(after), time, timeMax, type));
 }

@@ -118,6 +118,9 @@
     <Filter Include="ソース ファイル\MapChip">
       <UniqueIdentifier>{93a252bb-5f47-493b-bf24-3520384d0620}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\CameraController">
+      <UniqueIdentifier>{4a26ff88-a7b3-4639-a2a0-bb182fd8f2aa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -233,6 +236,9 @@
     </ClCompile>
     <ClCompile Include="MapChipField.cpp">
       <Filter>ソース ファイル\MapChip</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraController.cpp">
+      <Filter>ソース ファイル\CameraController</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -358,6 +364,9 @@
     </ClInclude>
     <ClInclude Include="MapChipField.h">
       <Filter>ソース ファイル\MapChip</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraController.h">
+      <Filter>ソース ファイル\CameraController</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

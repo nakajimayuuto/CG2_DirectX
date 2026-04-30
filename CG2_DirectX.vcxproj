@@ -15,6 +15,7 @@
     <Text Include="externals\imgui\LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CameraController.cpp" />
     <ClCompile Include="Engine\Math\Beats.cpp" />
     <ClCompile Include="Engine\Math\Collision.cpp" />
     <ClCompile Include="Engine\Math\Easing.cpp" />
@@ -81,6 +82,7 @@
     <ClCompile Include="Skydome.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CameraController.h" />
     <ClInclude Include="Engine\Math\Beats.h" />
     <ClInclude Include="Engine\Math\Collision.h" />
     <ClInclude Include="Engine\Math\Easing.h" />

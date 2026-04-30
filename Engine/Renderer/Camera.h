@@ -43,6 +43,10 @@ public:
 
 	void SetRotate(Vector3 rotate) { rotate_ = rotate; };
 
+	void SetTransform(const Transform& transform) { scale_ = transform.scale; rotate_ = transform.rotate; translate_ = transform.translate; };
+
+	Vector3 GetPosition() { return translate_; };
+
 	Vector3 GetCameraVector3(Vector3 vector3,Matrix4x4 matrix);
 
 	Matrix4x4 GetWorldViewProjectionMatrix(Matrix4x4 matrix);

@@ -10,6 +10,10 @@ public:
 	void Update();
 
 	void Draw();
+
+	Transform GetTransform() { return transform_; };
+
+	Vector3 GetVelocity() { return velocity_; };
 private:
 	void MovingUpdate();
 
