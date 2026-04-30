@@ -1,7 +1,7 @@
 #include "GameScene.h"
 #include "../Satlib.h"
 
-GameScene::~GameScene(){
+GameScene::~GameScene() {
 	for (std::vector<Transform*>& transformBlockLine : transformBlocks_) {
 		for (Transform* transformBlock : transformBlockLine) {
 			delete transformBlock;
@@ -20,9 +20,9 @@ GameScene::~GameScene(){
 }
 
 void GameScene::Initialize() {
-	ModelManager::GetInstance()->RegisterObj("skydome","Resource/skydome","skydome.obj");
-	ModelManager::GetInstance()->RegisterObj("player","Resource/player","player.obj");
-	TextureManager::GetInstance()->RegisterTexture("uvChecker","Resource/uvChecker.png");
+	ModelManager::GetInstance()->RegisterObj("skydome", "Resource/skydome", "skydome.obj");
+	ModelManager::GetInstance()->RegisterObj("player", "Resource/player", "player.obj");
+	TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resource/uvChecker.png");
 
 	player_ = new Player();
 	player_->Initialize();
@@ -30,30 +30,36 @@ void GameScene::Initialize() {
 	skydome_ = new Skydome();
 	skydome_->Initialize();
 
+	mapChipField_ = new MapChipField();
+	mapChipField_->LoadMapChipCsv("Resource/map/block.csv");
+
+	GenerateBlocks();
+}
+
+void GameScene::GenerateBlocks() {
 	// 要素数を変更する.
+	kNumBlockVirtical = mapChipField_->GetNumBlockVirtical();
+	kNumBlockHorizontal = mapChipField_->GetNumBlockHorizontal();
+
 	transformBlocks_.resize(kNumBlockVirtical);
 	modelBlocks_.resize(kNumBlockVirtical);
 	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
 		// 1列の要素数を設定(横方向のブロック数).
 		transformBlocks_[i].resize(kNumBlockHorizontal);
 		modelBlocks_[i].resize(kNumBlockHorizontal);
-		
+
 	}
 
 	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
 		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
-			if (i % 2 == j % 2) {
-				continue;
+			if (mapChipField_->GetMapChipTypeByIndex(j,i) == MapChipType::kBlock) {
+				modelBlocks_[i][j] = new Renderer::ModelBox();
+				modelBlocks_[i][j]->Initialize();
+
+				transformBlocks_[i][j] = new Transform();
+				transformBlocks_[i][j]->Initialize();
+				transformBlocks_[i][j]->translate = mapChipField_->GetMapChipPositionByIndex(j,i);
 			}
-
-			modelBlocks_[i][j] = new Renderer::ModelBox();
-			modelBlocks_[i][j]->Initialize();
-
-
-			transformBlocks_[i][j] = new Transform();
-			transformBlocks_[i][j]->Initialize();
-			transformBlocks_[i][j]->translate.x = kBlockWidth * i;
-			transformBlocks_[i][j]->translate.y = kBlockHeight * j;
 		}
 	}
 }

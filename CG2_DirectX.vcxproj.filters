@@ -115,6 +115,9 @@
     <Filter Include="ソース ファイル\Skydome">
       <UniqueIdentifier>{0796cce0-396f-4bd1-a3c9-81b2863b3e50}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\MapChip">
+      <UniqueIdentifier>{93a252bb-5f47-493b-bf24-3520384d0620}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -227,6 +230,9 @@
     </ClCompile>
     <ClCompile Include="Skydome.cpp">
       <Filter>ソース ファイル\Skydome</Filter>
+    </ClCompile>
+    <ClCompile Include="MapChipField.cpp">
+      <Filter>ソース ファイル\MapChip</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -349,6 +355,9 @@
     </ClInclude>
     <ClInclude Include="Skydome.h">
       <Filter>ソース ファイル\Skydome</Filter>
+    </ClInclude>
+    <ClInclude Include="MapChipField.h">
+      <Filter>ソース ファイル\MapChip</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
