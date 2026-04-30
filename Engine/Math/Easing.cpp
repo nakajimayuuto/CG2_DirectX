@@ -12,20 +12,20 @@ float Easing(float before, float after, int time, int timeMax, EaseType type) {
 		easedTime = x;
 		break;
 	case EaseType::kEaseIn:
-		easedTime = powf(x, 2.0f);
+		easedTime = pow(x, 2.0f);
 		break;
 	case EaseType::kEaseOut:
-		easedTime = 1.0f - powf(1.0f - x, 3.0f);
+		easedTime = 1.0f - pow(1.0f - x, 3.0f);
 		break;
 	case EaseType::kEaseInOut:
-		easedTime = -(cosf(static_cast<float>(M_PI) * x) - 1.0f) / 2.0f;
+		easedTime = -(cos(std::numbers::pi_v<float> * x) - 1.0f) / 2.0f;
 		break;
 	case EaseType::kEaseInBack:
 
-		easedTime = c3 * powf(x, 3.0f) - c1 * powf(x, 2.0f);
+		easedTime = c3 * pow(x, 3.0f) - c1 * pow(x, 2.0f);
 		break;
 	case EaseType::kEaseOutBack:
-		easedTime = 1.0f + c3 * powf(x - 1.0f, 3.0f) + c1 * powf(x - 1.0f, 2.0f);
+		easedTime = 1.0f + c3 * pow(x - 1.0f, 3.0f) + c1 * pow(x - 1.0f, 2.0f);
 		break;
 	}
 
@@ -44,20 +44,20 @@ float Easing(float before, float after, float time, float timeMax, EaseType type
 		easedTime = x;
 		break;
 	case EaseType::kEaseIn:
-		easedTime = powf(x, 2.0f);
+		easedTime = pow(x, 2.0f);
 		break;
 	case EaseType::kEaseOut:
-		easedTime = 1.0f - powf(1.0f - x, 3.0f);
+		easedTime = 1.0f - pow(1.0f - x, 3.0f);
 		break;
 	case EaseType::kEaseInOut:
-		easedTime = -(cosf(static_cast<float>(M_PI) * x) - 1.0f) / 2.0f;
+		easedTime = -(cos(std::numbers::pi_v<float> * x) - 1.0f) / 2.0f;
 		break;
 	case EaseType::kEaseInBack:
 
-		easedTime = c3 * powf(x, 3.0f) - c1 * powf(x, 2.0f);
+		easedTime = c3 * pow(x, 3.0f) - c1 * pow(x, 2.0f);
 		break;
 	case EaseType::kEaseOutBack:
-		easedTime = 1.0f + c3 * powf(x - 1.0f, 3.0f) + c1 * powf(x - 1.0f, 2.0f);
+		easedTime = 1.0f + c3 * pow(x - 1.0f, 3.0f) + c1 * pow(x - 1.0f, 2.0f);
 		break;
 	}
 	

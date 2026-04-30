@@ -24,8 +24,10 @@ void GameScene::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("player", "Resource/player", "player.obj");
 	TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resource/uvChecker.png");
 
+	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(1,18);
+
 	player_ = new Player();
-	player_->Initialize();
+	player_->Initialize(playerPosition);
 
 	skydome_ = new Skydome();
 	skydome_->Initialize();

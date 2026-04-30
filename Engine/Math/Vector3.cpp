@@ -37,6 +37,34 @@ Vector3 Vector3::operator*(const Vector3& v1){
 	return result;
 }
 
+Vector3 Vector3::operator+=(const Vector3& v1){
+	x += v1.x;
+	y += v1.y;
+	z += v1.z;
+	return *this;
+}
+
+Vector3 Vector3::operator-=(const Vector3& v1){
+	x -= v1.x;
+	y -= v1.y;
+	z -= v1.z;
+	return *this;
+}
+
+Vector3 Vector3::operator*=(float scalar){
+	x *= scalar;
+	y *= scalar;
+	z *= scalar;
+	return *this;
+}
+
+Vector3 Vector3::operator*=(const Vector3& v1){
+	x *= v1.x;
+	y *= v1.y;
+	z *= v1.z;
+	return *this;
+}
+
 float Vector3::Dot(const Vector3& v1) {
 	return (x * v1.x) + (y * v1.y) + (z * v1.z);
 }
