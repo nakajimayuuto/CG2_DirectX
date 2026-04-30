@@ -58,6 +58,12 @@ private:
 	// 4 天井に接触している場合の処理.
 	void CellingCollisionUpdate(const CollisionMapInfo& info);
 
+	// 5 壁に接触している場合の処理.
+	void IsHitWallUpdate(const CollisionMapInfo& info);
+
+	// 6 接地状態の切り替え.
+	void IsGroundUpdate(const CollisionMapInfo& info);
+
 	// 7 旋回制御.
 	void TurningControl();
 
@@ -68,15 +74,15 @@ private:
 	// 移動.
 	static inline const float kAcceletation = 0.02f;
 	static inline const float kAttenuation = 0.25f;
-	static inline const float kLimitRunSpeed = 1.0f;
+	static inline const float kLimitRunSpeed = 0.5f;
 
 	Transform transform_;
 	Vector3 velocity_ = {};
 
 	// ジャンプ.
 	static inline const float kGravityAcceleration = 0.01f;
-	static inline const float kLimitFallSpeed = 0.3f;
-	static inline const float kJumpAcceleration = 0.2f;
+	static inline const float kLimitFallSpeed = 0.4f;
+	static inline const float kJumpAcceleration = 0.3f;
 
 	bool onGround_ = true;
 
@@ -94,6 +100,10 @@ private:
 	static inline const float kHeight = 0.8f;
 
 	static inline const float kBlank = 0.2f;
+
+	static inline const float kAttenuationLanding = 0.01f;
+
+	static inline const float kAttenuationWall = 0.1f;
 
 
 	// 描画.
