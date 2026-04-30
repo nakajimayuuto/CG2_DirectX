@@ -282,7 +282,7 @@ void Player::MapCollisionLeft(CollisionMapInfo& info) {
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionNew[kLeftTop]);
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVirtical() - 1 - indexSet.yIndex);
 	//mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex - 1, mapChipField_->GetNumBlockVirtical() - 1 - indexSet.yIndex);
-	// && mapChipTypeNext != MapChipType::kBlock
+	// && mapChipTypeNext != MapChipType::kBlock	
 
 	if (mapChipType == MapChipType::kBlock) {
 		hit = true;
