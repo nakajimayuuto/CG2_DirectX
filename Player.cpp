@@ -6,10 +6,22 @@ void Player::Initialize(const Vector3& position) {
 	transform_.Initialize();
 	transform_.translate = position;
 	transform_.rotate.y = Radian(90.0f);
+	transform_.rotate.x = Radian(45.0f);
+	//transform_.rotate.z = Radian(45.0f);
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
+
+	isKirDeathAnimation_ = false;
+	kirAnimationTimer_ = 0.0f;
+	kirAnimationPhase_ = KirAnimationPhase::kStop;
 }
 
 void Player::Update() {
+	if (isKirDeathAnimation_) {
+		KirDeathAnimationUpdate();
+
+		return;
+	}
+
 	MovingUpdate();
 
 	CollisionMapInfo collisionMapInfo;
@@ -388,6 +400,39 @@ void Player::TurningControl() {
 	}
 }
 
+void Player::KirDeathAnimationUpdate() {
+	switch (kirAnimationPhase_) {
+	case Player::KirAnimationPhase::kStop:
+		kirAnimationTimer_ += 1.0f / 60.0f;
+
+		if (kirAnimationTimer_ >= 0.7f) {
+			kirAnimationTimer_ = 0.0f;
+			velocity_ += Vector3(0.0f, kJumpAcceleration, 0.0f);
+			kirAnimationPhase_ = KirAnimationPhase::kAnimation;
+			SoundManager::GetInstance()->SoundPlayWave(SoundManager::GetInstance()->GetSoundData("free_k"));
+		}
+		break;
+	case Player::KirAnimationPhase::kAnimation:
+
+		// 落下速度.
+		velocity_ += Vector3(0.0f, -kGravityAcceleration, 0.0f);
+		// 速度制限.
+		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
+
+		if (kirAnimationTimer_ >= 3.0f) {
+			kirAnimationTimer_ = 0.0f;
+			kirAnimationPhase_ = KirAnimationPhase::kFinish;
+		}
+
+		transform_.rotate.y += Radian(1.0f);
+		transform_.rotate.z += Radian(5.0f);
+		transform_.translate += velocity_;
+		break;
+	case Player::KirAnimationPhase::kFinish:
+		break;
+	}
+}
+
 Vector3 Player::CornerPosition(const Vector3& center, Corner corner) {
 	Vector3 offsetTable[kNumCornter] = {
 		{+kWidth / 2.0f, -kHeight / 2.0f, 0.0f},
@@ -401,4 +446,10 @@ Vector3 Player::CornerPosition(const Vector3& center, Corner corner) {
 
 void Player::Draw() {
 	model_.Draw(transform_);
+}
+
+void Player::ScrollCollision(CollisionMapInfo& info) {
+	MapCollision(info);
+
+	CollisionMoveUpdate(info);
 }

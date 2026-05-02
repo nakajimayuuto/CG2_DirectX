@@ -27,6 +27,8 @@ void GameScene::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("player", "Resource/player", "player.obj");
 	TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resource/uvChecker.png");
 
+	SoundManager::GetInstance()->RegisterSound("free_k","Resource/free_k.wav");
+
 	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(1,18);
 
 	mapChipField_ = new MapChipField();
@@ -43,6 +45,7 @@ void GameScene::Initialize() {
 	cameraController_->SetTarget(player_);
 	cameraController_->SetMovableArea({11.5f,100.0f,6.5f,100.0f});
 	cameraController_->Initialize();
+	cameraController_->SetMode(CameraController::Mode::kForcedScroll);
 
 	GenerateBlocks();
 }
@@ -79,6 +82,10 @@ void GameScene::Update() {
 #ifdef _DEBUG
 	if (InputManager::GetInstance()->TriggerKey(DIK_F3)) {
 		Camera::GetInstance()->ChangeCameraMode();
+	}
+
+	if (InputManager::GetInstance()->TriggerKey(DIK_R)) {
+		Initialize();
 	}
 #endif // _DEBUG
 

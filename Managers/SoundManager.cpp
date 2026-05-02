@@ -83,6 +83,13 @@ SoundData SoundManager::SoundLoadWave(const char* fileName) {
 		file.read(reinterpret_cast<char*>(&data), sizeof(data));
 	}
 
+	if (strncmp(data.id, "LIST", 4) == 0) {
+		// 読み取り位置をJUNKチャンクの終わりまで進める.
+		file.seekg(data.size, std::ios_base::cur);
+		// 再読み込み.
+		file.read(reinterpret_cast<char*>(&data), sizeof(data));
+	}
+
 	if (strncmp(data.id, "data", 4) != 0) {
 		assert(false);
 	}

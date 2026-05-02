@@ -8,6 +8,13 @@ class MapChipField;
 /// </summary>
 class Player{
 public:
+	struct CollisionMapInfo {
+		bool isCellingCollision = false;
+		bool isLanding = false;
+		bool isWallCollision = false;
+		Vector3 movementAmount;
+	};
+
 	void Initialize(const Vector3& position);
 
 	void Update();
@@ -19,6 +26,14 @@ public:
 	Transform GetTransform() { return transform_; };
 
 	Vector3 GetVelocity() { return velocity_; };
+
+	void SetTransform(Transform transform) { transform_ = transform; };
+
+	void SetPosition(Vector3 position) { transform_.translate = position; };
+
+	void ScrollCollision(CollisionMapInfo& info);
+
+	void PlayKDeathMotion() { isKirDeathAnimation_ = true; };
 private:
 	enum Corner {
 		kRightBottom,
@@ -32,13 +47,6 @@ private:
 	enum class LRDirection {
 		kRight,
 		kLeft,
-	};
-
-	struct CollisionMapInfo {
-		bool isCellingCollision = false;
-		bool isLanding = false;
-		bool isWallCollision = false;
-		Vector3 movementAmount;
 	};
 
 	// 1 移動入力.
@@ -67,6 +75,8 @@ private:
 	// 7 旋回制御.
 	void TurningControl();
 
+
+	void KirDeathAnimationUpdate();
 
 	Vector3 CornerPosition(const Vector3& center, Corner corner);
 private:
@@ -105,6 +115,22 @@ private:
 
 	static inline const float kAttenuationWall = 0.1f;
 
+
+
+
+
+	// デスアニメーション.
+	enum class KirAnimationPhase {
+		kStop,
+		kAnimation,
+		kFinish,
+	};
+	
+	bool isKirDeathAnimation_ = false;
+
+	float kirAnimationTimer_ = 0.0f;
+
+	KirAnimationPhase kirAnimationPhase_ = KirAnimationPhase::kStop;
 
 	// 描画.
 	Renderer::Model model_;
