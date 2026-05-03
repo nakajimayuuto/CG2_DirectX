@@ -6,8 +6,6 @@ void Player::Initialize(const Vector3& position) {
 	transform_.Initialize();
 	transform_.translate = position;
 	transform_.rotate.y = Radian(90.0f);
-	transform_.rotate.x = Radian(45.0f);
-	//transform_.rotate.z = Radian(45.0f);
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
 
 	isKirDeathAnimation_ = false;
@@ -407,7 +405,7 @@ void Player::KirDeathAnimationUpdate() {
 
 		if (kirAnimationTimer_ >= 0.7f) {
 			kirAnimationTimer_ = 0.0f;
-			velocity_ += Vector3(0.0f, kJumpAcceleration, 0.0f);
+			velocity_ = Vector3(0.0f, kJumpAcceleration, 0.0f);
 			kirAnimationPhase_ = KirAnimationPhase::kAnimation;
 			SoundManager::GetInstance()->SoundPlayWave(SoundManager::GetInstance()->GetSoundData("free_k"));
 		}
@@ -424,8 +422,6 @@ void Player::KirDeathAnimationUpdate() {
 			kirAnimationPhase_ = KirAnimationPhase::kFinish;
 		}
 
-		transform_.rotate.y += Radian(1.0f);
-		transform_.rotate.z += Radian(5.0f);
 		transform_.translate += velocity_;
 		break;
 	case Player::KirAnimationPhase::kFinish:
