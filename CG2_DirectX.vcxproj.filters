@@ -121,6 +121,9 @@
     <Filter Include="ソース ファイル\CameraController">
       <UniqueIdentifier>{4a26ff88-a7b3-4639-a2a0-bb182fd8f2aa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Enemy">
+      <UniqueIdentifier>{769dc18f-3561-4c2e-99e3-161c09476da9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -239,6 +242,9 @@
     </ClCompile>
     <ClCompile Include="CameraController.cpp">
       <Filter>ソース ファイル\CameraController</Filter>
+    </ClCompile>
+    <ClCompile Include="Enemy.cpp">
+      <Filter>ソース ファイル\Enemy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -367,6 +373,9 @@
     </ClInclude>
     <ClInclude Include="CameraController.h">
       <Filter>ソース ファイル\CameraController</Filter>
+    </ClInclude>
+    <ClInclude Include="Enemy.h">
+      <Filter>ソース ファイル\Enemy</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

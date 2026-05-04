@@ -3,6 +3,7 @@
 #include "IScene.h"
 
 #include "../Player.h"
+#include "../Enemy.h"
 #include "../Skydome.h"
 #include "../MapChipField.h"
 #include "../CameraController.h"
@@ -21,7 +22,7 @@ private:
 
 private:
 	// 要素数.
-	uint32_t kNumBlockVirtical = 20;
+	uint32_t kNumBlockVertical = 20;
 	uint32_t kNumBlockHorizontal = 10;
 	// ブロック1個分の横幅.
 	const float kBlockWidth = 1.0f;
@@ -31,6 +32,8 @@ private:
 	std::vector<std::vector<Renderer::ModelBox*>> modelBlocks_;
 
 	Player* player_ = nullptr;
+
+	Enemy* enemy_ = nullptr;
 
 	Skydome* skydome_ = nullptr;
 
