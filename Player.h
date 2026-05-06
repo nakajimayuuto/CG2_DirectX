@@ -41,6 +41,8 @@ public:
 
 	AABB GetAABB();
 
+	bool GetIsDead() { return isDead_; };
+
 	void OnCollision(const Enemy* enemy);
 private:
 	enum Corner {
@@ -123,7 +125,8 @@ private:
 
 	static inline const float kAttenuationWall = 0.1f;
 
-
+	// 死亡判定.
+	bool isDead_ = false;
 
 
 

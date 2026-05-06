@@ -4,11 +4,15 @@
 
 class DeathParticle {
 public:
-	void Initialize(Vector3 position);
+	void Initialize();
 
 	void Update();
 
 	void Draw();
+
+	void Start(const Vector3& position);
+
+	bool GetIsFinished() { return isFinished_; };
 private:
 	// パーティクルの量.
 	static inline const uint32_t kNumParticles = 8;

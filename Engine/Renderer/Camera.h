@@ -35,6 +35,8 @@ public:
 
 	void Initialize(float windowWidth, float windowHeight);
 
+	void Initialize();
+
 	void Update();
 
 	void DebugUpdate();

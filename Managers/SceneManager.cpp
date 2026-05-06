@@ -1,5 +1,6 @@
 #include "SceneManager.h"
 #include "../Scene/GameScene.h"
+#include "../Scene/TitleScene.h"
 #include "InputManager.h"
 #include "../Environment.h"
 
@@ -13,7 +14,8 @@ SceneManager* SceneManager::GetInstance() {
 };
 
 void SceneManager::Initialize() {
-	currentScene_ = new GameScene();
+	//currentScene_ = new GameScene();
+	currentScene_ = new TitleScene();
 	currentScene_->Initialize();
 }
 
@@ -39,6 +41,10 @@ void SceneManager::ChangeSceneUpdate(){
 	switch (sceneName_) {
 	case SceneName::kGameScene:
 		currentScene_ = new GameScene();
+		currentScene_->Initialize();
+		break;
+	case SceneName::kTitleScene:
+		currentScene_ = new TitleScene();
 		currentScene_->Initialize();
 		break;
 	}

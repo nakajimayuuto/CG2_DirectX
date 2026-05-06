@@ -127,6 +127,9 @@
     <Filter Include="ソース ファイル\DeathParticle">
       <UniqueIdentifier>{9b838689-8d7a-4560-b2a8-7c2f47afa7d1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scene\TitleScene">
+      <UniqueIdentifier>{ead472b8-843e-4969-b926-0525d14069fc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -251,6 +254,9 @@
     </ClCompile>
     <ClCompile Include="DeathParticle.cpp">
       <Filter>ソース ファイル\DeathParticle</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\TitleScene.cpp">
+      <Filter>Scene\TitleScene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -385,6 +391,9 @@
     </ClInclude>
     <ClInclude Include="DeathParticle.h">
       <Filter>ソース ファイル\DeathParticle</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\TitleScene.h">
+      <Filter>Scene\TitleScene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

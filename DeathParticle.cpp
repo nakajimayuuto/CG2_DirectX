@@ -1,13 +1,12 @@
 #include "DeathParticle.h"
 
-void DeathParticle::Initialize(Vector3 position){
+void DeathParticle::Initialize(){
 	for (uint32_t i = 0; i < kNumParticles; i++) {
 		models_[i].Initialize(ModelManager::GetInstance()->GetModelInfo("death_particle"));
 		transforms_[i].Initialize();
-		transforms_[i].translate = position;
 	}
 
-	isFinished_ = false;
+	isFinished_ = true;
 
 	counter_ = 0.0f;
 
@@ -52,4 +51,17 @@ void DeathParticle::Draw(){
 	for (uint32_t i = 0; i < kNumParticles; i++) {
 		models_[i].Draw(transforms_[i]);
 	}
+}
+
+void DeathParticle::Start(const Vector3& position){
+	for (uint32_t i = 0; i < kNumParticles; i++) {
+		transforms_[i].Initialize();
+		transforms_[i].translate = position;
+	}
+
+	isFinished_ = false;
+
+	counter_ = 0.0f;
+
+	color_ = { 1.0f,1.0f,1.0f,1.0f };
 }

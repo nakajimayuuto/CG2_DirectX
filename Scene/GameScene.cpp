@@ -60,8 +60,9 @@ void GameScene::Initialize() {
 	skydome_->Initialize();
 
 	deathParticle_ = new DeathParticle;
-	deathParticle_->Initialize(playerPosition);
+	deathParticle_->Initialize();
 
+	Camera::GetInstance()->Initialize();
 	cameraController_ = new CameraController();
 	cameraController_->SetTarget(player_);
 	cameraController_->SetMovableArea({ 11.5f,100.0f,6.5f,100.0f });
@@ -69,6 +70,8 @@ void GameScene::Initialize() {
 	cameraController_->SetMode(CameraController::Mode::kFollow);
 
 	GenerateBlocks();
+
+	phase_ = Phase::kPlay;
 }
 
 void GameScene::GenerateBlocks() {
@@ -120,19 +123,38 @@ void GameScene::Update() {
 	}
 #endif // _DEBUG
 
-	player_->Update();
+	switch (phase_){
+	case GameScene::Phase::kPlay:
+		skydome_->Update();
 
-	deathParticle_->Update();
+		player_->Update();
 
-	for (Enemy* enemy : enemies_) {
-		enemy->Update();
+		for (Enemy* enemy : enemies_) {
+			enemy->Update();
+		}
+
+		cameraController_->Update();
+
+		ChangePhase();
+
+		CheckAllCollision();
+		break;
+	case GameScene::Phase::kDeath:
+		skydome_->Update();
+
+		deathParticle_->Update();
+
+		for (Enemy* enemy : enemies_) {
+			enemy->Update();
+		}
+
+		Camera::GetInstance()->Update();
+
+		if (deathParticle_ && deathParticle_->GetIsFinished()) {
+			SceneManager::GetInstance()->ChengeScene(SceneName::kTitleScene);
+		}
+		break;
 	}
-
-	skydome_->Update();
-
-	cameraController_->Update();
-
-	CheckAllCollision();
 }
 
 void GameScene::Draw() {
@@ -155,4 +177,24 @@ void GameScene::Draw() {
 	}
 
 	deathParticle_->Draw();
+}
+
+void GameScene::ChangePhase() {
+	if (!player_->GetIsDead()) {
+		return;
+	}
+
+	Vector3 deathParticlePosition;
+
+	switch (phase_){
+	case GameScene::Phase::kPlay:
+		phase_ = Phase::kDeath;
+
+		deathParticlePosition = player_->GetTransform().translate;
+
+		deathParticle_->Start(deathParticlePosition);
+		break;
+	case GameScene::Phase::kDeath:
+		break;
+	}
 }

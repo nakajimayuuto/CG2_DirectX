@@ -22,7 +22,14 @@ private:
 	void GenerateBlocks();
 
 	void CheckAllCollision();
+
+	void ChangePhase();
 private:
+	enum class Phase {
+		kPlay, // ゲームプレイ.
+		kDeath, // デス演出.
+	};
+
 	// 要素数.
 	uint32_t kNumBlockVertical = 20;
 	uint32_t kNumBlockHorizontal = 10;
@@ -38,6 +45,8 @@ private:
 	static inline const uint32_t kEnemyMax = 3;
 
 	std::list<Enemy*> enemies_;
+
+	Phase phase_;
 
 	Skydome* skydome_ = nullptr;
 

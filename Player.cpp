@@ -11,9 +11,15 @@ void Player::Initialize(const Vector3& position) {
 	isKirDeathAnimation_ = false;
 	kirAnimationTimer_ = 0.0f;
 	kirAnimationPhase_ = KirAnimationPhase::kStop;
+
+	isDead_ = false;
 }
 
 void Player::Update() {
+	if (isDead_) {
+		return;
+	}
+
 	if (isKirDeathAnimation_) {
 		KirDeathAnimationUpdate();
 
@@ -441,6 +447,10 @@ Vector3 Player::CornerPosition(const Vector3& center, Corner corner) {
 }
 
 void Player::Draw() {
+	if (isDead_) {
+		return;
+	}
+
 	model_.Draw(transform_);
 }
 
@@ -476,5 +486,6 @@ AABB Player::GetAABB(){
 
 void Player::OnCollision(const Enemy* enemy) {
 	(void)enemy;
-	velocity_ += Vector3(0.0f, 1.0f, 0.0f);
+	//velocity_ += Vector3(0.0f, 1.0f, 0.0f);
+	isDead_ = true;
 }
