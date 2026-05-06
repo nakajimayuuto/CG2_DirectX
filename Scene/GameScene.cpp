@@ -136,15 +136,13 @@ void GameScene::Update() {
 }
 
 void GameScene::Draw() {
+	skydome_->Draw();
+	
 	player_->Draw();
-
-	deathParticle_->Draw();
 	
 	for (Enemy* enemy : enemies_) {
 		enemy->Draw();
 	}
-
-	skydome_->Draw();
 
 	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
 		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
@@ -155,4 +153,6 @@ void GameScene::Draw() {
 			modelBlocks_[i][j]->Draw(*transformBlocks_[i][j]);
 		}
 	}
+
+	deathParticle_->Draw();
 }

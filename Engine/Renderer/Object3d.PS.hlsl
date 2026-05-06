@@ -33,12 +33,14 @@ PixelShaderOutput main(VertexShaderOutput input){
         float NdotL = dot(normalize(input.normal),-gDirectionalLight.direction);
         float cos = pow(NdotL * 0.5f + 0.5f,2.0f);
         
-        output.color = gMaterial.color * textureColor * gDirectionalLight.color * cos * gDirectionalLight.intensity;
+        output.color = gMaterial.color * textureColor * (gDirectionalLight.color * cos * gDirectionalLight.intensity);
+        output.color[3] = gMaterial.color[3] * textureColor[3];
     }else if (gMaterial.lightingType == 2){
         // Lambert Model
         float cos = saturate(dot(normalize(input.normal), -gDirectionalLight.direction));
         
-        output.color = gMaterial.color * textureColor * gDirectionalLight.color * cos * gDirectionalLight.intensity;
+        output.color = gMaterial.color * textureColor * (gDirectionalLight.color * cos * gDirectionalLight.intensity);
+        output.color[3] = gMaterial.color[3] * textureColor[3];
     }else{
         output.color = gMaterial.color * textureColor;
     }

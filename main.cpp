@@ -27,6 +27,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			以下にゲームの更新処理を記述.
 			=============================================================*/
 
+			ImGui::Begin("DirectionalLight");
+
+			Vector3 dire = DirectionalLight::GetInstance()->GetDirectionalLightData()->direction;
+
+			ImGui::SliderFloat3("direction", reinterpret_cast<float*>(&dire.x),-1.0f,1.0f);
+
+			DirectionalLight::GetInstance()->GetDirectionalLightData()->direction = dire.Normalize();
+
+			ImGui::End();
+
 			SceneManager::GetInstance()->Update();
 
 			/*=============================================================
