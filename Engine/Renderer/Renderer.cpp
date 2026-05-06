@@ -199,11 +199,13 @@ void Renderer::Model::ChangeTexture(const TextureInfo& info, const std::string& 
 void Renderer::Model::SetColor(Vector4 color) {
 	if (modelMax_ == 1) {
 		materialData_[0]->color = color;
+		materialResource_[0]->Map(0, nullptr, reinterpret_cast<void**>(&materialData_[0]));
 		return;
 	}
 
 	for (uint32_t i = 0; i < modelMax_; i++) {
 		materialData_[i]->color = color;
+		materialResource_[i]->Map(0, nullptr, reinterpret_cast<void**>(&materialData_[i]));
 	}
 };
 void Renderer::Model::SetColor(Vector4 color, const std::string& meshName) {

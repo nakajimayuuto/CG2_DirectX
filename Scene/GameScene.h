@@ -7,6 +7,7 @@
 #include "../Skydome.h"
 #include "../MapChipField.h"
 #include "../CameraController.h"
+#include "../DeathParticle.h"
 #include <vector>
 
 class GameScene : public IScene{
@@ -43,5 +44,7 @@ private:
 	MapChipField* mapChipField_ = nullptr;
 
 	CameraController* cameraController_ = nullptr;
+
+	DeathParticle* deathParticle_ = nullptr;
 };
 

@@ -124,6 +124,9 @@
     <Filter Include="ソース ファイル\Enemy">
       <UniqueIdentifier>{769dc18f-3561-4c2e-99e3-161c09476da9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\DeathParticle">
+      <UniqueIdentifier>{9b838689-8d7a-4560-b2a8-7c2f47afa7d1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -245,6 +248,9 @@
     </ClCompile>
     <ClCompile Include="Enemy.cpp">
       <Filter>ソース ファイル\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="DeathParticle.cpp">
+      <Filter>ソース ファイル\DeathParticle</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -376,6 +382,9 @@
     </ClInclude>
     <ClInclude Include="Enemy.h">
       <Filter>ソース ファイル\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="DeathParticle.h">
+      <Filter>ソース ファイル\DeathParticle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

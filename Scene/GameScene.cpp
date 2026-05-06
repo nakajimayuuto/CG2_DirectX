@@ -26,12 +26,14 @@ GameScene::~GameScene() {
 	delete skydome_;
 	delete mapChipField_;
 	delete cameraController_;
+	delete deathParticle_;
 }
 
 void GameScene::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("skydome", "Resource/skydome", "skydome.obj");
 	ModelManager::GetInstance()->RegisterObj("player", "Resource/player", "player.obj");
 	ModelManager::GetInstance()->RegisterObj("enemy", "Resource/enemy", "enemy.obj");
+	ModelManager::GetInstance()->RegisterObj("death_particle", "Resource/death_particle", "death_particle.obj");
 	TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resource/uvChecker.png");
 
 	SoundManager::GetInstance()->RegisterSound("free_k", "Resource/free_k.wav");
@@ -56,6 +58,9 @@ void GameScene::Initialize() {
 
 	skydome_ = new Skydome();
 	skydome_->Initialize();
+
+	deathParticle_ = new DeathParticle;
+	deathParticle_->Initialize(playerPosition);
 
 	cameraController_ = new CameraController();
 	cameraController_->SetTarget(player_);
@@ -117,6 +122,8 @@ void GameScene::Update() {
 
 	player_->Update();
 
+	deathParticle_->Update();
+
 	for (Enemy* enemy : enemies_) {
 		enemy->Update();
 	}
@@ -130,6 +137,8 @@ void GameScene::Update() {
 
 void GameScene::Draw() {
 	player_->Draw();
+
+	deathParticle_->Draw();
 	
 	for (Enemy* enemy : enemies_) {
 		enemy->Draw();
