@@ -1,5 +1,7 @@
 #pragma once
 #include "Satlib.h"
+class Player;
+
 class Enemy{
 public:
 	void Initialize(const Vector3& position);
@@ -7,6 +9,12 @@ public:
 	void Update();
 
 	void Draw();
+
+	Vector3	GetWorldPosition();
+
+	AABB GetAABB();
+
+	void OnCollision(const Player* player);
 private:
 	void WalkAnimationUpdate();
 private:
@@ -14,6 +22,10 @@ private:
 	static inline const float kWalkSpeed = 0.01f;
 
 	Vector3 velocity_ = {};
+
+	// 当たり判定.
+	static inline const float kWidth = 0.8f;
+	static inline const float kHeight = 0.8f;
 
 	// アニメーション.
 	// 最初の角度.

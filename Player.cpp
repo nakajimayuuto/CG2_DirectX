@@ -449,3 +449,32 @@ void Player::ScrollCollision(CollisionMapInfo& info) {
 
 	CollisionMoveUpdate(info);
 }
+
+Vector3 Player::GetWorldPosition(){
+	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform_);
+	
+	Vector3 worldPos;
+
+	worldPos.x = worldMatrix.matrix[3][0];
+	worldPos.y = worldMatrix.matrix[3][1];
+	worldPos.z = worldMatrix.matrix[3][2];
+
+
+	return worldPos;
+}
+
+AABB Player::GetAABB(){
+	Vector3 worldPos = GetWorldPosition();
+
+	AABB aabb;
+
+	aabb.min = {worldPos.x - kWidth / 2.0f,worldPos.y - kHeight / 2.0f,worldPos.z - kWidth / 2.0f};
+	aabb.max = {worldPos.x + kWidth / 2.0f,worldPos.y + kHeight / 2.0f,worldPos.z + kWidth / 2.0f};
+
+	return aabb;
+}
+
+void Player::OnCollision(const Enemy* enemy) {
+	(void)enemy;
+	velocity_ += Vector3(0.0f, 1.0f, 0.0f);
+}

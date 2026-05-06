@@ -3,6 +3,8 @@
 
 class MapChipField;
 
+class Enemy;
+
 /// <summary>
 /// 自キャラ
 /// </summary>
@@ -34,6 +36,12 @@ public:
 	void ScrollCollision(CollisionMapInfo& info);
 
 	void PlayKDeathMotion() { isKirDeathAnimation_ = true; };
+	
+	Vector3	GetWorldPosition();
+
+	AABB GetAABB();
+
+	void OnCollision(const Enemy* enemy);
 private:
 	enum Corner {
 		kRightBottom,

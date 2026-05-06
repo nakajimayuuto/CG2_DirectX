@@ -20,6 +20,7 @@ public:
 private:
 	void GenerateBlocks();
 
+	void CheckAllCollision();
 private:
 	// 要素数.
 	uint32_t kNumBlockVertical = 20;
@@ -33,7 +34,9 @@ private:
 
 	Player* player_ = nullptr;
 
-	Enemy* enemy_ = nullptr;
+	static inline const uint32_t kEnemyMax = 3;
+
+	std::list<Enemy*> enemies_;
 
 	Skydome* skydome_ = nullptr;
 

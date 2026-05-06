@@ -17,7 +17,12 @@ GameScene::~GameScene() {
 	modelBlocks_.clear();
 
 	delete player_;
-	delete enemy_;
+	
+	for (Enemy* enemy : enemies_) {
+		delete enemy;
+	}
+	enemies_.clear();
+
 	delete skydome_;
 	delete mapChipField_;
 	delete cameraController_;
@@ -29,9 +34,9 @@ void GameScene::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("enemy", "Resource/enemy", "enemy.obj");
 	TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resource/uvChecker.png");
 
-	SoundManager::GetInstance()->RegisterSound("free_k","Resource/free_k.wav");
+	SoundManager::GetInstance()->RegisterSound("free_k", "Resource/free_k.wav");
 
-	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(1,18);
+	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(1, 18);
 
 	mapChipField_ = new MapChipField();
 	mapChipField_->LoadMapChipCsv("Resource/map/block.csv");
@@ -40,19 +45,23 @@ void GameScene::Initialize() {
 	player_->Initialize(playerPosition);
 	player_->SetMapChipField(mapChipField_);
 
-	Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(6, 18);
+	enemies_.clear();
+	for (int32_t i = 0; i < kEnemyMax; i++) {
+		Enemy* newEnemy_ = new Enemy();
+		Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(12 + (2 * i), 18 - i);
+		newEnemy_->Initialize(enemyPosition);
 
-	enemy_ = new Enemy();
-	enemy_->Initialize(enemyPosition);
+		enemies_.push_back(newEnemy_);
+	}
 
 	skydome_ = new Skydome();
 	skydome_->Initialize();
 
 	cameraController_ = new CameraController();
 	cameraController_->SetTarget(player_);
-	cameraController_->SetMovableArea({11.5f,100.0f,6.5f,100.0f});
+	cameraController_->SetMovableArea({ 11.5f,100.0f,6.5f,100.0f });
 	cameraController_->Initialize();
-	cameraController_->SetMode(CameraController::Mode::kFollow);	
+	cameraController_->SetMode(CameraController::Mode::kFollow);
 
 	GenerateBlocks();
 }
@@ -73,16 +82,26 @@ void GameScene::GenerateBlocks() {
 
 	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
 		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
-			if (mapChipField_->GetMapChipTypeByIndex(j,i) == MapChipType::kBlock) {
+			if (mapChipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
 				modelBlocks_[i][j] = new Renderer::ModelBox();
 				modelBlocks_[i][j]->Initialize();
 
 				transformBlocks_[i][j] = new Transform();
 				transformBlocks_[i][j]->Initialize();
-				transformBlocks_[i][j]->translate = mapChipField_->GetMapChipPositionByIndex(j,i);
+				transformBlocks_[i][j]->translate = mapChipField_->GetMapChipPositionByIndex(j, i);
 			}
 		}
 	}
+}
+
+void GameScene::CheckAllCollision(){
+	for (Enemy* enemy : enemies_) {
+		if (Collision::AABBToAABB(player_->GetAABB(),enemy->GetAABB())) {
+			player_->OnCollision(enemy);
+			enemy->OnCollision(player_);
+		}
+	}
+
 }
 
 void GameScene::Update() {
@@ -97,15 +116,25 @@ void GameScene::Update() {
 #endif // _DEBUG
 
 	player_->Update();
-	enemy_->Update();
+
+	for (Enemy* enemy : enemies_) {
+		enemy->Update();
+	}
+
 	skydome_->Update();
 
 	cameraController_->Update();
+
+	CheckAllCollision();
 }
 
 void GameScene::Draw() {
 	player_->Draw();
-	enemy_->Draw();
+	
+	for (Enemy* enemy : enemies_) {
+		enemy->Draw();
+	}
+
 	skydome_->Draw();
 
 	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
