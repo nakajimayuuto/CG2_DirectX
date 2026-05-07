@@ -8,6 +8,7 @@
 #include "../MapChipField.h"
 #include "../CameraController.h"
 #include "../DeathParticle.h"
+#include "../Fade.h"
 #include <vector>
 
 class GameScene : public IScene{
@@ -26,8 +27,10 @@ private:
 	void ChangePhase();
 private:
 	enum class Phase {
+		kFadeIn, // フェードイン.
 		kPlay, // ゲームプレイ.
 		kDeath, // デス演出.
+		kFadeOut, // フェードアウト.
 	};
 
 	// 要素数.
@@ -55,5 +58,7 @@ private:
 	CameraController* cameraController_ = nullptr;
 
 	DeathParticle* deathParticle_ = nullptr;
+
+	Fade* fade_ = nullptr;
 };
 

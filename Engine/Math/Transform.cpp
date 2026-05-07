@@ -13,3 +13,13 @@ void Transform::Initialize(){
 	translate.y = 0.0f;
 	translate.z = 0.0f;
 }
+
+void Transform2D::Initialize(){
+	scale.x = 1.0f;
+	scale.y = 1.0f;
+
+	rotate = 0.0f;
+
+	translate.x = 0.0f;
+	translate.y = 0.0f;
+}

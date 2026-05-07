@@ -69,9 +69,13 @@ void GameScene::Initialize() {
 	cameraController_->Initialize();
 	cameraController_->SetMode(CameraController::Mode::kFollow);
 
+	fade_ = new Fade();
+	fade_->Initialize();
+	fade_->Start(Fade::Status::FadeIn, 1.0f);
+
 	GenerateBlocks();
 
-	phase_ = Phase::kPlay;
+	phase_ = Phase::kFadeIn;
 }
 
 void GameScene::GenerateBlocks() {
@@ -124,6 +128,21 @@ void GameScene::Update() {
 #endif // _DEBUG
 
 	switch (phase_){
+	case GameScene::Phase::kFadeIn:
+		skydome_->Update();
+
+		for (Enemy* enemy : enemies_) {
+			enemy->Update();
+		}
+
+		fade_->Update();
+
+		if (fade_->GetIsFinished()) {
+			phase_ = Phase::kPlay;
+		}
+
+		cameraController_->Update();
+		break;
 	case GameScene::Phase::kPlay:
 		skydome_->Update();
 
@@ -151,8 +170,26 @@ void GameScene::Update() {
 		Camera::GetInstance()->Update();
 
 		if (deathParticle_ && deathParticle_->GetIsFinished()) {
+
+			fade_->Start(Fade::Status::FadeOut, 1.0f);
+			phase_ = Phase::kFadeOut;
+		}
+		break;
+	case GameScene::Phase::kFadeOut:
+		skydome_->Update();
+
+		deathParticle_->Update();
+
+		for (Enemy* enemy : enemies_) {
+			enemy->Update();
+		}
+
+		if (fade_->GetIsFinished()) {
 			SceneManager::GetInstance()->ChengeScene(SceneName::kTitleScene);
 		}
+
+		fade_->Update();
+		Camera::GetInstance()->Update();
 		break;
 	}
 }
@@ -177,6 +214,8 @@ void GameScene::Draw() {
 	}
 
 	deathParticle_->Draw();
+
+	fade_->Draw();
 }
 
 void GameScene::ChangePhase() {
