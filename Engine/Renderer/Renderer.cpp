@@ -2,11 +2,11 @@
 #include "../SystemFile/GameSystem.h"
 #include <vector>
 Renderer::Model::~Model(){
-	for (uint32_t i = 0; i < modelMax_; i++) {
-		delete materialData_[i];
-
-		delete wvpData_[i];
-	}
+	//for (uint32_t i = 0; i < modelMax_; i++) {
+	//	delete materialData_[i];
+	//
+	//	delete wvpData_[i];
+	//}
 	materialData_.clear();
 
 	wvpData_.clear();

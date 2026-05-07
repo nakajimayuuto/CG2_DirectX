@@ -4,7 +4,7 @@
 #include "InputManager.h"
 #include "../Environment.h"
 
-SceneManager::~SceneManager(){
+SceneManager::~SceneManager() {
 	delete currentScene_;
 }
 
@@ -14,8 +14,12 @@ SceneManager* SceneManager::GetInstance() {
 };
 
 void SceneManager::Initialize() {
-	//currentScene_ = new GameScene();
 	currentScene_ = new TitleScene();
+
+#ifdef _DEBUG
+	currentScene_ = new GameScene();
+#endif // _DEBUG
+
 	currentScene_->Initialize();
 }
 
@@ -33,7 +37,7 @@ void SceneManager::Draw() {
 	currentScene_->Draw();
 }
 
-void SceneManager::ChangeSceneUpdate(){
+void SceneManager::ChangeSceneUpdate() {
 	if (!isSceneChange_) {
 		return;
 	}
@@ -52,7 +56,7 @@ void SceneManager::ChangeSceneUpdate(){
 	isSceneChange_ = false;
 }
 
-void SceneManager::ChengeScene(SceneName name){
+void SceneManager::ChengeScene(SceneName name) {
 	sceneName_ = name;
 	isSceneChange_ = true;
 }

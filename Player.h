@@ -9,7 +9,7 @@ class Enemy;
 /// <summary>
 /// 自キャラ
 /// </summary>
-class Player{
+class Player {
 public:
 	struct CollisionMapInfo {
 		bool isCellingCollision = false;
@@ -37,7 +37,7 @@ public:
 	void ScrollCollision(CollisionMapInfo& info);
 
 	void PlayKDeathMotion() { isKirDeathAnimation_ = true; };
-	
+
 	Vector3	GetWorldPosition();
 
 	AABB GetAABB();
@@ -45,6 +45,8 @@ public:
 	bool GetIsDead() { return isDead_; };
 
 	void OnCollision(const Enemy* enemy);
+
+	bool IsAttack() const;
 private:
 	enum Corner {
 		kRightBottom,
@@ -103,7 +105,7 @@ private:
 
 	void BehaviorRootInitialize();
 	void BehaviorRootUpdate();
-	
+
 	// Attack.
 	void BehaviorAttackInitialize();
 	void BehaviorAttackUpdate();
@@ -131,9 +133,9 @@ private:
 
 	static inline const float kAttackDashSpeed = 0.6f;
 
-	std::array<Renderer::Model,2> attackEffectModel_;
+	std::array<Renderer::Model, 2> attackEffectModel_;
 
-	std::array<Transform,2> attackEffectTransform_;
+	std::array<Transform, 2> attackEffectTransform_;
 
 
 
@@ -181,7 +183,7 @@ private:
 		kAnimation,
 		kFinish,
 	};
-	
+
 	bool isKirDeathAnimation_ = false;
 
 	float kirAnimationTimer_ = 0.0f;

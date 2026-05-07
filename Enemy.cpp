@@ -10,12 +10,83 @@ void Enemy::Initialize(const Vector3& position) {
 	velocity_ = { -kWalkSpeed,0.0f,0.0f };
 
 	walkTimer_ = 0.0f;
+
+	isCollisionDisable_ = false;
 }
 
 void Enemy::Update() {
+	if (behaviorRequest_ != Behavior::kUnknown) {
+		behavior_ = behaviorRequest_;
+
+		switch (behavior_) {
+		case Enemy::Behavior::kRoot:
+			BehaviorRootInitialize();
+			break;
+		case Enemy::Behavior::kDeathAnimation:
+			BehaviorDeathAnimationInitialize();
+			break;
+		}
+
+		behaviorRequest_ = Behavior::kUnknown;
+	}
+
+	switch (behavior_) {
+	case Enemy::Behavior::kRoot:
+		BehaviorRootUpdate();
+		break;
+	case Enemy::Behavior::kDeathAnimation:
+		BehaviorDeathAnimationUpdate();
+		break;
+	}
+}
+
+void Enemy::BehaviorRootInitialize() {
+}
+
+void Enemy::BehaviorRootUpdate() {
 	transform_.translate += velocity_;
 
 	WalkAnimationUpdate();
+}
+
+void Enemy::BehaviorDeathAnimationInitialize() {
+	deathAnimationPhase_ = DeathAnimationPhase::kSpin;
+
+	deathAnimationParameter_ = 0.0f;
+
+	velocity_ = { 0.0f ,-0.05f,0.0f};
+
+	isCollisionDisable_ = true;
+}
+
+void Enemy::BehaviorDeathAnimationUpdate() {
+	float spinSpeed;
+	deathAnimationParameter_ += 1.0f / 60.0f;
+
+	switch (deathAnimationPhase_){
+	case Enemy::DeathAnimationPhase::kSpin:
+		spinSpeed = Easing(5.0f, 0.0f, deathAnimationParameter_, kDeathAnimationParameterSpin, EaseType::kEaseOut);
+
+		transform_.rotate.y += spinSpeed;
+
+		if (deathAnimationParameter_ >= kDeathAnimationParameterSpin) {
+			deathAnimationPhase_ = DeathAnimationPhase::kShrink;
+			deathAnimationParameter_ = 0.0f;
+		}
+		break;
+	case Enemy::DeathAnimationPhase::kShrink:
+		transform_.scale = Easing({ 1.0f,1.0f,1.0f }, {0.0f,0.0f,0.0f}, deathAnimationParameter_, kDeathAnimationParameterShrink, EaseType::kEaseOut);
+		transform_.translate += velocity_;
+
+		if (deathAnimationParameter_ >= kDeathAnimationParameterShrink) {
+			deathAnimationPhase_ = DeathAnimationPhase::kDeath;
+			deathAnimationParameter_ = 0.0f;
+		}
+		break;
+	case Enemy::DeathAnimationPhase::kDeath:
+		isDead_ = true;
+		break;
+	}
 }
 
 void Enemy::Draw() {
@@ -47,7 +118,14 @@ AABB Enemy::GetAABB() {
 }
 
 void Enemy::OnCollision(const Player* player) {
-	(void)player;
+	if (behavior_ == Behavior::kDeathAnimation) {
+		return;
+	}
+
+	if (player->IsAttack()) {
+		behaviorRequest_ = Behavior::kDeathAnimation;
+		//isDead_ = true;
+	}
 }
 
 void Enemy::WalkAnimationUpdate() {

@@ -24,7 +24,10 @@ private:
 
 	void CheckAllCollision();
 
+	void EnemyRemoveCheck();
+
 	void ChangePhase();
+
 private:
 	enum class Phase {
 		kFadeIn, // フェードイン.

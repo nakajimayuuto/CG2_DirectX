@@ -14,10 +14,52 @@ public:
 
 	AABB GetAABB();
 
+	bool GetIsDead() { return isDead_; };
+
+	bool GetIsCollisionDisable() { return isCollisionDisable_; };
+
 	void OnCollision(const Player* player);
 private:
+	enum class Behavior {
+		kUnknown, // リクエスト無し.
+		kRoot, // 通常状態.
+		kDeathAnimation, // 攻撃中.
+	};
+
 	void WalkAnimationUpdate();
+
+	// 【Behavior】
+	// Root.
+
+	void BehaviorRootInitialize();
+	void BehaviorRootUpdate();
+
+	//DeathAnimation.
+	void BehaviorDeathAnimationInitialize();
+	void BehaviorDeathAnimationUpdate();
 private:
+	/*===========================================================
+	Behavior.
+	===========================================================*/
+	Behavior behavior_ = Behavior::kRoot;
+	Behavior behaviorRequest_ = Behavior::kUnknown;
+
+	// DeathAnimation.
+
+	enum class DeathAnimationPhase {
+		kSpin, // 回転.
+		kShrink, // 収縮.
+		kDeath, // フラグ変更.
+	};
+
+	DeathAnimationPhase deathAnimationPhase_;
+
+	float deathAnimationParameter_ = 0.0f;
+	static inline const float kDeathAnimationParameterSpin = 1.0f;
+	static inline const float kDeathAnimationParameterShrink = 0.5f;
+
+	bool isCollisionDisable_ = false;
+
 	// 移動.
 	static inline const float kWalkSpeed = 0.01f;
 
@@ -38,6 +80,9 @@ private:
 	float walkTimer_ = 0.0f;
 
 
+
+	// 死亡判定.
+	bool isDead_ = false;
 
 	Renderer::Model model_;
 

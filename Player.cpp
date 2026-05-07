@@ -577,6 +577,14 @@ Vector3 Player::CornerPosition(const Vector3& center, Corner corner) {
 	return static_cast<Vector3>(center) + offsetTable[static_cast<uint32_t>(corner)];
 }
 
+bool Player::IsAttack() const{
+	if (behavior_ == Behavior::kAttack) {
+		return true;
+	}
+
+	return false;
+}
+
 void Player::Draw() {
 	if (isDead_) {
 		return;
@@ -625,6 +633,10 @@ AABB Player::GetAABB() {
 
 void Player::OnCollision(const Enemy* enemy) {
 	(void)enemy;
-	//velocity_ += Vector3(0.0f, 1.0f, 0.0f);
+
+	if (IsAttack()) {
+		return;
+	}
+
 	isDead_ = true;
 }

@@ -17,7 +17,7 @@ GameScene::~GameScene() {
 	modelBlocks_.clear();
 
 	delete player_;
-	
+
 	for (Enemy* enemy : enemies_) {
 		delete enemy;
 	}
@@ -109,14 +109,28 @@ void GameScene::GenerateBlocks() {
 	}
 }
 
-void GameScene::CheckAllCollision(){
+void GameScene::CheckAllCollision() {
 	for (Enemy* enemy : enemies_) {
-		if (Collision::AABBToAABB(player_->GetAABB(),enemy->GetAABB())) {
+		if (enemy->GetIsCollisionDisable()) {
+			continue;
+		}
+
+		if (Collision::AABBToAABB(player_->GetAABB(), enemy->GetAABB())) {
 			player_->OnCollision(enemy);
 			enemy->OnCollision(player_);
 		}
 	}
 
+}
+
+void GameScene::EnemyRemoveCheck() {
+	enemies_.remove_if([](Enemy* enemy) {
+		if (enemy->GetIsDead()) {
+			delete enemy;
+			return true;
+		}
+		return false;
+		});
 }
 
 void GameScene::Update() {
@@ -130,7 +144,7 @@ void GameScene::Update() {
 	}
 #endif // _DEBUG
 
-	switch (phase_){
+	switch (phase_) {
 	case GameScene::Phase::kFadeIn:
 		skydome_->Update();
 
@@ -160,6 +174,8 @@ void GameScene::Update() {
 		ChangePhase();
 
 		CheckAllCollision();
+
+		EnemyRemoveCheck();
 		break;
 	case GameScene::Phase::kDeath:
 		skydome_->Update();
@@ -199,8 +215,8 @@ void GameScene::Update() {
 
 void GameScene::Draw() {
 	skydome_->Draw();
-	
-	
+
+
 	for (Enemy* enemy : enemies_) {
 		enemy->Draw();
 	}
@@ -229,7 +245,7 @@ void GameScene::ChangePhase() {
 
 	Vector3 deathParticlePosition;
 
-	switch (phase_){
+	switch (phase_) {
 	case GameScene::Phase::kPlay:
 		phase_ = Phase::kDeath;
 
