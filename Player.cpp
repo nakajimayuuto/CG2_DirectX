@@ -76,6 +76,8 @@ void Player::BehaviorRootUpdate() {
 	IsGroundUpdate(collisionMapInfo);
 
 	TurningControl();
+
+	CheckFallVoid();
 }
 
 void Player::BehaviorAttackInitialize() {
@@ -134,20 +136,6 @@ void Player::BehaviorAttackUpdate() {
 		break;
 	}
 
-	for (uint32_t i = 0; i < 2; i++) {
-		attackEffectTransform_[i].scale = {1.0f,1.0f,1.0f};
-		attackEffectTransform_[i].scale = {1.0f,1.0f,1.0f};
-		attackEffectTransform_[i].translate = transform_.translate;
-		attackEffectTransform_[i].translate = transform_.translate;
-		attackEffectTransform_[i].rotate = transform_.rotate;
-		attackEffectTransform_[i].rotate = transform_.rotate;
-	}
-
-	attackEffectTransform_[0].rotate.z += Radian(0.0f);
-	attackEffectTransform_[0].rotate.y += Radian(90.0f);
-	attackEffectTransform_[1].rotate.z += Radian(180.0f);
-	attackEffectTransform_[1].rotate.y += Radian(270.0f);
-
 	CollisionMapInfo collisionMapInfo;
 
 	collisionMapInfo.movementAmount = velocity_;
@@ -163,6 +151,22 @@ void Player::BehaviorAttackUpdate() {
 	IsGroundUpdate(collisionMapInfo);
 
 	TurningControl();
+
+	CheckFallVoid();
+
+	for (uint32_t i = 0; i < 2; i++) {
+		attackEffectTransform_[i].scale = { 1.2f,1.2f,1.2f };
+		attackEffectTransform_[i].scale = { 1.2f,1.2f,1.2f };
+		attackEffectTransform_[i].translate = transform_.translate;
+		attackEffectTransform_[i].translate = transform_.translate;
+		attackEffectTransform_[i].rotate = transform_.rotate;
+		attackEffectTransform_[i].rotate = transform_.rotate;
+	}
+
+	attackEffectTransform_[0].rotate.z += Radian(0.0f);
+	attackEffectTransform_[0].rotate.y += Radian(90.0f);
+	attackEffectTransform_[1].rotate.z += Radian(180.0f);
+	attackEffectTransform_[1].rotate.y += Radian(270.0f);
 }
 
 void Player::MovingUpdate() {
@@ -227,25 +231,26 @@ void Player::MovingUpdate() {
 		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
 	}
 
-	bool landing = false;
-	if (velocity_.y < 0.0f) {
-		if (transform_.translate.y <= 1.0f) {
-			landing = true;
-		}
-	}
-
-	if (onGround_) {
-		if (velocity_.y > 0.0f) {
-			onGround_ = false;
-		}
-	} else {
-		if (landing) {
-			transform_.translate.y = 1.0f;
-			velocity_.x *= (1.0f - kAttenuation);
-			velocity_.y = 0.0f;
-			onGround_ = true;
-		}
-	}
+	// 多分いらない.
+	//bool landing = false;
+	//if (velocity_.y < 0.0f) {
+	//	if (transform_.translate.y <= 1.0f) {
+	//		landing = true;
+	//	}
+	//}
+	//
+	//if (onGround_) {
+	//	if (velocity_.y > 0.0f) {
+	//		onGround_ = false;
+	//	}
+	//} else {
+	//	if (landing) {
+	//		transform_.translate.y = 1.0f;
+	//		velocity_.x *= (1.0f - kAttenuation);
+	//		velocity_.y = 0.0f;
+	//		onGround_ = true;
+	//	}
+	//}
 
 	//transform_.translate += velocity_;
 }
@@ -524,6 +529,12 @@ void Player::TurningControl() {
 	}
 }
 
+void Player::CheckFallVoid(){
+	if (transform_.translate.y <= -2.0f) {
+		isDead_ = true;
+	}
+}
+
 void Player::KirDeathAnimationUpdate() {
 	switch (kirAnimationPhase_) {
 	case Player::KirAnimationPhase::kStop:
@@ -574,7 +585,7 @@ void Player::Draw() {
 	model_.Draw(transform_);
 
 	if (behavior_ == Behavior::kAttack) {
-		if (attackPhase_ == AttackPhase::kDash) {
+		if (attackPhase_ == AttackPhase::kDash || attackPhase_ == AttackPhase::kLingeringSound) {
 			for (uint32_t i = 0; i < 2; i++) {
 				attackEffectModel_[i].Draw(attackEffectTransform_[i]);
 			}

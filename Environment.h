@@ -21,7 +21,7 @@ public:
 	WindowSize GetWindowSize() { return kWindowSize_; };
 
 private:
-	const LPCWSTR kWindowTitle_ = L"SaturnCGEngine";
+	const LPCWSTR kWindowTitle_ = L"AL3";
 
 	const WindowSize kWindowSize_ = {1280,720};
 

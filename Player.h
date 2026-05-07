@@ -92,6 +92,7 @@ private:
 	// 7 旋回制御.
 	void TurningControl();
 
+	void CheckFallVoid();
 
 	void KirDeathAnimationUpdate();
 

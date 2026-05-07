@@ -200,7 +200,6 @@ void GameScene::Update() {
 void GameScene::Draw() {
 	skydome_->Draw();
 	
-	player_->Draw();
 	
 	for (Enemy* enemy : enemies_) {
 		enemy->Draw();
@@ -215,6 +214,8 @@ void GameScene::Draw() {
 			modelBlocks_[i][j]->Draw(*transformBlocks_[i][j]);
 		}
 	}
+
+	player_->Draw();
 
 	deathParticle_->Draw();
 
