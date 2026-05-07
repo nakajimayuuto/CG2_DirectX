@@ -16,6 +16,35 @@ void Player::Initialize(const Vector3& position) {
 }
 
 void Player::Update() {
+	if (behaviorRequest_ != Behavior::kUnknown) {
+		behavior_ = behaviorRequest_;
+
+		switch (behavior_) {
+		case Player::Behavior::kRoot:
+			BehaviorRootInitialize();
+			break;
+		case Player::Behavior::kAttack:
+			BehaviorAttackInitialize();
+			break;
+		}
+
+		behaviorRequest_ = Behavior::kUnknown;
+	}
+
+	switch (behavior_) {
+	case Player::Behavior::kRoot:
+		BehaviorRootUpdate();
+		break;
+	case Player::Behavior::kAttack:
+		BehaviorAttackUpdate();
+		break;
+	}
+}
+
+void Player::BehaviorRootInitialize() {
+}
+
+void Player::BehaviorRootUpdate() {
 	if (isDead_) {
 		return;
 	}
@@ -26,7 +55,98 @@ void Player::Update() {
 		return;
 	}
 
+	if (InputManager::GetInstance()->TriggerKey(DIK_SPACE)) {
+		behaviorRequest_ = Behavior::kAttack;
+	}
+
 	MovingUpdate();
+
+	CollisionMapInfo collisionMapInfo;
+
+	collisionMapInfo.movementAmount = velocity_;
+
+	MapCollision(collisionMapInfo);
+
+	CollisionMoveUpdate(collisionMapInfo);
+
+	CellingCollisionUpdate(collisionMapInfo);
+
+	IsHitWallUpdate(collisionMapInfo);
+
+	IsGroundUpdate(collisionMapInfo);
+
+	TurningControl();
+}
+
+void Player::BehaviorAttackInitialize() {
+	attackParameter_ = 0.0f;
+	attackPhase_ = AttackPhase::kCharge;
+	velocity_ = { 0.0f ,0.0f,0.0f };
+
+	for (uint32_t i = 0; i < 2; i++) {
+		attackEffectModel_[i].Initialize(ModelManager::GetInstance()->GetModelInfo("plane"));
+		attackEffectModel_[i].ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("player_attack_effect"));
+
+		attackEffectTransform_[i].Initialize();
+		attackEffectTransform_[i] = transform_;
+	}
+}
+
+void Player::BehaviorAttackUpdate() {
+	attackParameter_ += 1.0f / 60.0f;
+
+	switch (attackPhase_) {
+	case Player::AttackPhase::kCharge:
+		transform_.scale.z = Easing(1.0f, 0.3f, attackParameter_, kAttackParameterCharge, EaseType::kEaseOut);
+		transform_.scale.y = Easing(1.0f, 1.6f, attackParameter_, kAttackParameterCharge, EaseType::kEaseOut);
+
+		if (attackParameter_ >= kAttackParameterCharge) {
+			attackPhase_ = AttackPhase::kDash;
+			attackParameter_ = 0.0f;
+		}
+		break;
+	case Player::AttackPhase::kDash:
+		transform_.scale.z = Easing(0.3f, 1.3f, attackParameter_, kAttackParameterDash, EaseType::kEaseOut);
+		transform_.scale.y = Easing(1.6f, 0.7f, attackParameter_, kAttackParameterDash, EaseType::kEaseOut);
+
+		if (attackParameter_ >= kAttackParameterDash) {
+			attackPhase_ = AttackPhase::kLingeringSound;
+			attackParameter_ = 0.0f;
+		}
+
+		switch (lrDirection_) {
+		case Player::LRDirection::kRight:
+			velocity_.x = kAttackDashSpeed;
+			break;
+		case Player::LRDirection::kLeft:
+			velocity_.x = -kAttackDashSpeed;
+			break;
+		}
+		break;
+	case Player::AttackPhase::kLingeringSound:
+		transform_.scale.z = Easing(1.3f, 1.0f, attackParameter_, kAttackParameterLingeringSound, EaseType::kEaseOut);
+		transform_.scale.y = Easing(0.7f, 1.0f, attackParameter_, kAttackParameterLingeringSound, EaseType::kEaseOut);
+
+		if (attackParameter_ >= kAttackParameterLingeringSound) {
+			behaviorRequest_ = Behavior::kRoot;
+			attackParameter_ = 0.0f;
+		}
+		break;
+	}
+
+	for (uint32_t i = 0; i < 2; i++) {
+		attackEffectTransform_[i].scale = {1.0f,1.0f,1.0f};
+		attackEffectTransform_[i].scale = {1.0f,1.0f,1.0f};
+		attackEffectTransform_[i].translate = transform_.translate;
+		attackEffectTransform_[i].translate = transform_.translate;
+		attackEffectTransform_[i].rotate = transform_.rotate;
+		attackEffectTransform_[i].rotate = transform_.rotate;
+	}
+
+	attackEffectTransform_[0].rotate.z += Radian(0.0f);
+	attackEffectTransform_[0].rotate.y += Radian(90.0f);
+	attackEffectTransform_[1].rotate.z += Radian(180.0f);
+	attackEffectTransform_[1].rotate.y += Radian(270.0f);
 
 	CollisionMapInfo collisionMapInfo;
 
@@ -452,6 +572,14 @@ void Player::Draw() {
 	}
 
 	model_.Draw(transform_);
+
+	if (behavior_ == Behavior::kAttack) {
+		if (attackPhase_ == AttackPhase::kDash) {
+			for (uint32_t i = 0; i < 2; i++) {
+				attackEffectModel_[i].Draw(attackEffectTransform_[i]);
+			}
+		}
+	}
 }
 
 void Player::ScrollCollision(CollisionMapInfo& info) {
@@ -460,9 +588,9 @@ void Player::ScrollCollision(CollisionMapInfo& info) {
 	CollisionMoveUpdate(info);
 }
 
-Vector3 Player::GetWorldPosition(){
+Vector3 Player::GetWorldPosition() {
 	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform_);
-	
+
 	Vector3 worldPos;
 
 	worldPos.x = worldMatrix.matrix[3][0];
@@ -473,13 +601,13 @@ Vector3 Player::GetWorldPosition(){
 	return worldPos;
 }
 
-AABB Player::GetAABB(){
+AABB Player::GetAABB() {
 	Vector3 worldPos = GetWorldPosition();
 
 	AABB aabb;
 
-	aabb.min = {worldPos.x - kWidth / 2.0f,worldPos.y - kHeight / 2.0f,worldPos.z - kWidth / 2.0f};
-	aabb.max = {worldPos.x + kWidth / 2.0f,worldPos.y + kHeight / 2.0f,worldPos.z + kWidth / 2.0f};
+	aabb.min = { worldPos.x - kWidth / 2.0f,worldPos.y - kHeight / 2.0f,worldPos.z - kWidth / 2.0f };
+	aabb.max = { worldPos.x + kWidth / 2.0f,worldPos.y + kHeight / 2.0f,worldPos.z + kWidth / 2.0f };
 
 	return aabb;
 }

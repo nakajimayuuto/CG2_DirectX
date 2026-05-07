@@ -33,8 +33,11 @@ void GameScene::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("skydome", "Resource/skydome", "skydome.obj");
 	ModelManager::GetInstance()->RegisterObj("player", "Resource/player", "player.obj");
 	ModelManager::GetInstance()->RegisterObj("enemy", "Resource/enemy", "enemy.obj");
+	ModelManager::GetInstance()->RegisterObj("plane", "Resource", "plane.obj");
+
 	ModelManager::GetInstance()->RegisterObj("death_particle", "Resource/death_particle", "death_particle.obj");
 	TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resource/uvChecker.png");
+	TextureManager::GetInstance()->RegisterTexture("player_attack_effect", "Resource/player/player_attack_effect.png");
 
 	SoundManager::GetInstance()->RegisterSound("free_k", "Resource/free_k.wav");
 

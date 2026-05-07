@@ -1,5 +1,6 @@
 #pragma once
 #include "Satlib.h"
+#include <array>
 
 class MapChipField;
 
@@ -59,6 +60,12 @@ private:
 		kLeft,
 	};
 
+	enum class Behavior {
+		kUnknown, // リクエスト無し.
+		kRoot, // 通常状態.
+		kAttack, // 攻撃中.
+	};
+
 	// 1 移動入力.
 	void MovingUpdate();
 
@@ -89,12 +96,51 @@ private:
 	void KirDeathAnimationUpdate();
 
 	Vector3 CornerPosition(const Vector3& center, Corner corner);
+
+	// 【Behavior】
+	// Root.
+
+	void BehaviorRootInitialize();
+	void BehaviorRootUpdate();
+	
+	// Attack.
+	void BehaviorAttackInitialize();
+	void BehaviorAttackUpdate();
 private:
+	/*===========================================================
+	Behavior.
+	===========================================================*/
+	Behavior behavior_ = Behavior::kRoot;
+	Behavior behaviorRequest_ = Behavior::kUnknown;
+
+	// Attack.
+
+	enum class AttackPhase {
+		kCharge, // 溜め.
+		kDash, // 突進.
+		kLingeringSound, // 余韻.
+	};
+
+	AttackPhase attackPhase_;
+
+	float attackParameter_ = 0.0f;
+	static inline const float kAttackParameterCharge = 0.05f;
+	static inline const float kAttackParameterDash = 0.2f;
+	static inline const float kAttackParameterLingeringSound = 0.05f;
+
+	static inline const float kAttackDashSpeed = 0.6f;
+
+	std::array<Renderer::Model,2> attackEffectModel_;
+
+	std::array<Transform,2> attackEffectTransform_;
+
+
+
 
 	// 移動.
 	static inline const float kAcceletation = 0.02f;
-	static inline const float kAttenuation = 0.25f;
-	static inline const float kLimitRunSpeed = 0.5f;
+	static inline const float kAttenuation = 0.1f;
+	static inline const float kLimitRunSpeed = 0.25f;
 
 	Transform transform_;
 	Vector3 velocity_ = {};
@@ -128,8 +174,6 @@ private:
 	// 死亡判定.
 	bool isDead_ = false;
 
-
-
 	// デスアニメーション.
 	enum class KirAnimationPhase {
 		kStop,
@@ -142,6 +186,7 @@ private:
 	float kirAnimationTimer_ = 0.0f;
 
 	KirAnimationPhase kirAnimationPhase_ = KirAnimationPhase::kStop;
+
 
 	// 描画.
 	Renderer::Model model_;
