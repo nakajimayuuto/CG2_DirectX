@@ -4,7 +4,7 @@
 class Player;
 class GameScene;
 
-class Enemy final : public BaseEnemy{
+class ShieldEnemy final : public BaseEnemy{
 public:
 	void Initialize(const Vector3& position) override;
 
@@ -20,6 +20,11 @@ private:
 		kUnknown, // リクエスト無し.
 		kRoot, // 通常状態.
 		kDeathAnimation, // 攻撃中.
+	};
+
+	enum class LRDirection {
+		kRight,
+		kLeft,
 	};
 
 	void WalkAnimationUpdate();
@@ -72,5 +77,7 @@ private:
 	static inline const float kWalkMotionTime = 1.0f;
 
 	float walkTimer_ = 0.0f;
+
+	LRDirection lrDirection_ = LRDirection::kLeft;
 
 };

@@ -12,10 +12,16 @@ void Player::Initialize(const Vector3& position) {
 	kirAnimationTimer_ = 0.0f;
 	kirAnimationPhase_ = KirAnimationPhase::kStop;
 
+	isKnockbackRequest_ = false;
 	isDead_ = false;
 }
 
 void Player::Update() {
+	if (isKnockbackRequest_) {
+		behaviorRequest_ = Behavior::kKnockback;
+		isKnockbackRequest_ = false;
+	}
+
 	if (behaviorRequest_ != Behavior::kUnknown) {
 		behavior_ = behaviorRequest_;
 
@@ -25,6 +31,9 @@ void Player::Update() {
 			break;
 		case Player::Behavior::kAttack:
 			BehaviorAttackInitialize();
+			break;
+		case Player::Behavior::kKnockback:
+			BehaviorKnockbackInitialize();
 			break;
 		}
 
@@ -37,6 +46,9 @@ void Player::Update() {
 		break;
 	case Player::Behavior::kAttack:
 		BehaviorAttackUpdate();
+		break;
+	case Player::Behavior::kKnockback:
+		BehaviorKnockbackUpdate();
 		break;
 	}
 }
@@ -169,6 +181,50 @@ void Player::BehaviorAttackUpdate() {
 	attackEffectTransform_[0].rotate.y += Radian(90.0f);
 	attackEffectTransform_[1].rotate.z += Radian(180.0f);
 	attackEffectTransform_[1].rotate.y += Radian(270.0f);
+}
+
+void Player::BehaviorKnockbackInitialize() {
+	velocity_ = { 0.0f,0.0f,0.0f };
+
+	transform_.scale = { 1.0f,1.0f,1.0f };
+
+	if (lrDirection_ == LRDirection::kRight) {
+		velocity_.x = -kKnockBackPower;
+	} else {
+		velocity_.x = kKnockBackPower;
+	}
+}
+
+void Player::BehaviorKnockbackUpdate() {
+	velocity_.x *= (1.0f - kKnockBackAttenuation);
+
+	CollisionMapInfo collisionMapInfo;
+
+	collisionMapInfo.movementAmount = velocity_;
+
+	MapCollision(collisionMapInfo);
+
+	CollisionMoveUpdate(collisionMapInfo);
+
+	CellingCollisionUpdate(collisionMapInfo);
+
+	IsHitWallUpdate(collisionMapInfo);
+
+	IsGroundUpdate(collisionMapInfo);
+
+	TurningControl();
+
+	CheckFallVoid();
+
+	if (lrDirection_ == LRDirection::kRight) {
+		if (velocity_.x > -kLimitRunSpeed) {
+			behaviorRequest_ = Behavior::kRoot;
+		}
+	} else {
+		if (velocity_.x < kLimitRunSpeed) {
+			behaviorRequest_ = Behavior::kRoot;
+		}
+	}
 }
 
 void Player::MovingUpdate() {
@@ -531,7 +587,7 @@ void Player::TurningControl() {
 	}
 }
 
-void Player::CheckFallVoid(){
+void Player::CheckFallVoid() {
 	if (transform_.translate.y <= -2.0f) {
 		isDead_ = true;
 	}
@@ -579,7 +635,7 @@ Vector3 Player::CornerPosition(const Vector3& center, Corner corner) {
 	return static_cast<Vector3>(center) + offsetTable[static_cast<uint32_t>(corner)];
 }
 
-bool Player::IsAttack() const{
+bool Player::IsAttack() const {
 	if (behavior_ == Behavior::kAttack) {
 		return true;
 	}
@@ -609,7 +665,7 @@ void Player::ScrollCollision(CollisionMapInfo& info) {
 	CollisionMoveUpdate(info);
 }
 
-Vector3 Player::GetWorldPosition() const{
+Vector3 Player::GetWorldPosition() const {
 	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform_);
 
 	Vector3 worldPos;

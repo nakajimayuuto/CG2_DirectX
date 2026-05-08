@@ -294,6 +294,12 @@
     <ClCompile Include="BaseEffect.cpp">
       <Filter>ソース ファイル\Effects\BaseEffect</Filter>
     </ClCompile>
+    <ClCompile Include="ShieldEnemy.cpp">
+      <Filter>ソース ファイル\Enemies\ShieldEnemy</Filter>
+    </ClCompile>
+    <ClCompile Include="GuardEffect.cpp">
+      <Filter>ソース ファイル\Effects\GuardEffect</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -442,6 +448,12 @@
     </ClInclude>
     <ClInclude Include="BaseEffect.h">
       <Filter>ソース ファイル\Effects\BaseEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="ShieldEnemy.h">
+      <Filter>ソース ファイル\Enemies\ShieldEnemy</Filter>
+    </ClInclude>
+    <ClInclude Include="GuardEffect.h">
+      <Filter>ソース ファイル\Effects\GuardEffect</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

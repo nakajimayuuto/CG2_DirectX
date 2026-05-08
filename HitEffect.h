@@ -21,7 +21,7 @@ private:
 	// 中心円.
 	Renderer::Model model_;
 
-	Transform transformCircle_;
+	Transform transform_;
 
 	// 楕円.
 	static inline const uint32_t kEllipseMax = 3;

@@ -75,6 +75,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Fade.cpp" />
+    <ClCompile Include="GuardEffect.cpp" />
     <ClCompile Include="HitEffect.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Managers\InputManager.cpp" />
@@ -86,6 +87,7 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Scene\GameScene.cpp" />
     <ClCompile Include="Scene\TitleScene.cpp" />
+    <ClCompile Include="ShieldEnemy.cpp" />
     <ClCompile Include="Skydome.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -125,6 +127,7 @@
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
     <ClInclude Include="Fade.h" />
+    <ClInclude Include="GuardEffect.h" />
     <ClInclude Include="HitEffect.h" />
     <ClInclude Include="Managers\InputManager.h" />
     <ClInclude Include="Managers\ModelManager.h" />
@@ -137,6 +140,7 @@
     <ClInclude Include="Scene\GameScene.h" />
     <ClInclude Include="Scene\IScene.h" />
     <ClInclude Include="Scene\TitleScene.h" />
+    <ClInclude Include="ShieldEnemy.h" />
     <ClInclude Include="Skydome.h" />
   </ItemGroup>
   <ItemGroup>

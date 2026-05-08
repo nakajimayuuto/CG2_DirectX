@@ -3,7 +3,6 @@
 #include "IScene.h"
 
 #include "../Player.h"
-#include "../Enemy.h"
 #include "../BaseEnemy.h"
 #include "../Skydome.h"
 #include "../MapChipField.h"
@@ -23,7 +22,7 @@ public:
 
 	void Draw() override;
 
-	void CreateHitEffect(Vector3 position);
+	void CreateEffect(Vector3 position, BaseEffect::EffectType type);
 private:
 	void GenerateBlocks();
 

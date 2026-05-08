@@ -1,5 +1,7 @@
 #include "GameScene.h"
 #include "../Satlib.h"
+#include "../Enemy.h"
+#include "../ShieldEnemy.h"
 
 GameScene::~GameScene() {
 	for (std::vector<Transform*>& transformBlockLine : transformBlocks_) {
@@ -38,12 +40,14 @@ void GameScene::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("skydome", "Resource/skydome", "skydome.obj");
 	ModelManager::GetInstance()->RegisterObj("player", "Resource/player", "player.obj");
 	ModelManager::GetInstance()->RegisterObj("enemy", "Resource/enemy", "enemy.obj");
+	ModelManager::GetInstance()->RegisterObj("shield_enemy", "Resource/shield_enemy", "shield_enemy.obj");
 	ModelManager::GetInstance()->RegisterObj("plane", "Resource", "plane.obj");
 	ModelManager::GetInstance()->RegisterObj("hit_effect_plane", "Resource/HitEffectPlane", "hit_effect_plane.obj");
 
 	ModelManager::GetInstance()->RegisterObj("death_particle", "Resource/death_particle", "death_particle.obj");
 	TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resource/uvChecker.png");
 	TextureManager::GetInstance()->RegisterTexture("player_attack_effect", "Resource/player/player_attack_effect.png");
+	TextureManager::GetInstance()->RegisterTexture("guard_effect_plane", "Resource/HitEffectPlane/guard_effect_plane.png");
 
 	SoundManager::GetInstance()->RegisterSound("free_k", "Resource/free_k.wav");
 
@@ -60,6 +64,14 @@ void GameScene::Initialize() {
 	for (int32_t i = 0; i < kEnemyMax; i++) {
 		Enemy* newEnemy_ = new Enemy();
 		Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(12 + (2 * i), 18 - i);
+		newEnemy_->Initialize(enemyPosition);
+
+		enemies_.push_back(newEnemy_);
+	}
+
+	for (int32_t i = 0; i < kEnemyMax; i++) {
+		ShieldEnemy* newEnemy_ = new ShieldEnemy();
+		Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(20 + (2 * i), 18 - i);
 		newEnemy_->Initialize(enemyPosition);
 
 		enemies_.push_back(newEnemy_);
@@ -292,7 +304,7 @@ void GameScene::ChangePhase() {
 	}
 }
 
-void GameScene::CreateHitEffect(Vector3 position){
-	BaseEffect* newHitEffect = BaseEffect::Create(position,HitEffect::EffectType::kHit);
+void GameScene::CreateEffect(Vector3 position, BaseEffect::EffectType type){
+	BaseEffect* newHitEffect = BaseEffect::Create(position,type);
 	hitEffects_.push_back(newHitEffect);
 }

@@ -1,5 +1,6 @@
 #include "BaseEffect.h"
 #include "HitEffect.h"
+#include "GuardEffect.h"
 
 BaseEffect* BaseEffect::Create(Vector3 position, EffectType type) {
 	BaseEffect* instance = nullptr;
@@ -9,7 +10,7 @@ BaseEffect* BaseEffect::Create(Vector3 position, EffectType type) {
 		instance = new HitEffect();
 		break;
 	case BaseEffect::EffectType::kGuard:
-		//instance = new GuardEffect();
+		instance = new GuardEffect();
 		break;
 	}
 

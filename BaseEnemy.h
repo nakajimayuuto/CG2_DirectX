@@ -11,7 +11,7 @@ public:
 
 	virtual void Draw() = 0;
 
-	virtual void OnCollision(GameScene* scene, const Player* player) = 0;
+	virtual void OnCollision(GameScene* scene, Player* player) = 0;
 
 	virtual AABB GetAABB() = 0;
 

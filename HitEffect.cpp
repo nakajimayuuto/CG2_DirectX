@@ -3,8 +3,8 @@ void HitEffect::Initialize(Vector3 position){
 	ModelInfo effectInfo = ModelManager::GetInstance()->GetModelInfo("hit_effect_plane");
 	model_.Initialize(effectInfo);
 	model_.SetLightingType(Renderer::LightingType::kNone);
-	transformCircle_.Initialize();
-	transformCircle_.translate = position;
+	transform_.Initialize();
+	transform_.translate = position;
 
 	for (Renderer::Model& model : ellipseModels_) {
 		model.Initialize(effectInfo);
@@ -61,7 +61,7 @@ void HitEffect::Update(){
 		break;
 	}
 
-	transformCircle_.scale = scale;
+	transform_.scale = scale;
 
 	for (Transform& transform : ellipseTransforms_) {
 		transform.scale.x = scale.x * kEllipseWidth;
@@ -71,7 +71,7 @@ void HitEffect::Update(){
 }
 
 void HitEffect::Draw(){
-	model_.Draw(transformCircle_);
+	model_.Draw(transform_);
 
 	for (uint32_t i = 0; i < kEllipseMax; i++) {
 		ellipseModels_[i].Draw(ellipseTransforms_[i]);

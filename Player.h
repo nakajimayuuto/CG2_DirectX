@@ -18,6 +18,11 @@ public:
 		Vector3 movementAmount;
 	};
 
+	enum class LRDirection {
+		kRight,
+		kLeft,
+	};
+
 	void Initialize(const Vector3& position);
 
 	void Update();
@@ -46,7 +51,11 @@ public:
 
 	void OnCollision(const BaseEnemy* enemy);
 
+	LRDirection GetLRDirection()const { return lrDirection_; };
+
 	bool IsAttack() const;
+
+	void KnockBackRequest() { isKnockbackRequest_ = true;};
 private:
 	enum Corner {
 		kRightBottom,
@@ -57,15 +66,11 @@ private:
 		kNumCornter,
 	};
 
-	enum class LRDirection {
-		kRight,
-		kLeft,
-	};
-
 	enum class Behavior {
 		kUnknown, // リクエスト無し.
 		kRoot, // 通常状態.
 		kAttack, // 攻撃中.
+		kKnockback, // ノックバック.
 	};
 
 	// 1 移動入力.
@@ -109,6 +114,10 @@ private:
 	// Attack.
 	void BehaviorAttackInitialize();
 	void BehaviorAttackUpdate();
+
+	// Attack.
+	void BehaviorKnockbackInitialize();
+	void BehaviorKnockbackUpdate();
 private:
 	/*===========================================================
 	Behavior.
@@ -137,8 +146,11 @@ private:
 
 	std::array<Transform, 2> attackEffectTransform_;
 
-
-
+	// KnockBack.
+	bool isKnockbackRequest_ = false;
+	static inline const float kKnockBackPower = 1.0f;
+	static inline const float kKnockBackAttenuation = 0.1f;
+	
 
 	// 移動.
 	static inline const float kAcceletation = 0.02f;
