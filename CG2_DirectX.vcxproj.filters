@@ -133,6 +133,9 @@
     <Filter Include="ソース ファイル\Fade">
       <UniqueIdentifier>{594a337a-5cf2-4d82-8cd2-356d6010dad4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\HitEffect">
+      <UniqueIdentifier>{8292d0b9-64f9-4eb7-88f6-67f6c3eb12ac}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -263,6 +266,9 @@
     </ClCompile>
     <ClCompile Include="Fade.cpp">
       <Filter>ソース ファイル\Fade</Filter>
+    </ClCompile>
+    <ClCompile Include="HitEffect.cpp">
+      <Filter>ソース ファイル\HitEffect</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -403,6 +409,9 @@
     </ClInclude>
     <ClInclude Include="Fade.h">
       <Filter>ソース ファイル\Fade</Filter>
+    </ClInclude>
+    <ClInclude Include="HitEffect.h">
+      <Filter>ソース ファイル\HitEffect</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -12,6 +12,7 @@ void TitleScene::Initialize() {
 	playerModel_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
 	playerTransform_.Initialize();
 	playerTransform_.rotate.y = Radian(-210.0f);
+	playerTransform_.rotate.y = Radian(0.0f);
 
 	Camera::GetInstance()->Initialize();
 	Camera::GetInstance()->SetPosition({ 0.0f,0.0f,-15.0f });

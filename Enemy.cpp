@@ -1,5 +1,6 @@
 #include "Enemy.h"
 #include "Player.h"
+#include "./Scene/GameScene.h"
 
 void Enemy::Initialize(const Vector3& position) {
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("enemy"));
@@ -117,14 +118,16 @@ AABB Enemy::GetAABB() {
 	return aabb;
 }
 
-void Enemy::OnCollision(const Player* player) {
+void Enemy::OnCollision(GameScene* scene, const Player* player) {
 	if (behavior_ == Behavior::kDeathAnimation) {
 		return;
 	}
 
 	if (player->IsAttack()) {
 		behaviorRequest_ = Behavior::kDeathAnimation;
-		//isDead_ = true;
+		
+		Vector3 effectPos = ((GetWorldPosition() + player->GetWorldPosition())) * 0.5f;
+		scene->CreateHitEffect(effectPos);
 	}
 }
 

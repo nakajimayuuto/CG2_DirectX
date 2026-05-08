@@ -23,6 +23,11 @@ GameScene::~GameScene() {
 	}
 	enemies_.clear();
 
+	for (HitEffect* hitEffect : hitEffects_) {
+		delete hitEffect;
+	}
+	hitEffects_.clear();
+
 	delete skydome_;
 	delete mapChipField_;
 	delete cameraController_;
@@ -34,6 +39,7 @@ void GameScene::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("player", "Resource/player", "player.obj");
 	ModelManager::GetInstance()->RegisterObj("enemy", "Resource/enemy", "enemy.obj");
 	ModelManager::GetInstance()->RegisterObj("plane", "Resource", "plane.obj");
+	ModelManager::GetInstance()->RegisterObj("hit_effect_plane", "Resource/HitEffectPlane", "hit_effect_plane.obj");
 
 	ModelManager::GetInstance()->RegisterObj("death_particle", "Resource/death_particle", "death_particle.obj");
 	TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resource/uvChecker.png");
@@ -58,6 +64,8 @@ void GameScene::Initialize() {
 
 		enemies_.push_back(newEnemy_);
 	}
+
+	hitEffects_.clear();
 
 	skydome_ = new Skydome();
 	skydome_->Initialize();
@@ -117,7 +125,7 @@ void GameScene::CheckAllCollision() {
 
 		if (Collision::AABBToAABB(player_->GetAABB(), enemy->GetAABB())) {
 			player_->OnCollision(enemy);
-			enemy->OnCollision(player_);
+			enemy->OnCollision(this,player_);
 		}
 	}
 
@@ -169,6 +177,10 @@ void GameScene::Update() {
 			enemy->Update();
 		}
 
+		for (HitEffect* hitEffect : hitEffects_) {
+			hitEffect->Update();
+		}
+
 		cameraController_->Update();
 
 		ChangePhase();
@@ -186,6 +198,10 @@ void GameScene::Update() {
 			enemy->Update();
 		}
 
+		for (HitEffect* hitEffect : hitEffects_) {
+			hitEffect->Update();
+		}
+
 		Camera::GetInstance()->Update();
 
 		if (deathParticle_ && deathParticle_->GetIsFinished()) {
@@ -201,6 +217,10 @@ void GameScene::Update() {
 
 		for (Enemy* enemy : enemies_) {
 			enemy->Update();
+		}
+
+		for (HitEffect* hitEffect : hitEffects_) {
+			hitEffect->Update();
 		}
 
 		if (fade_->GetIsFinished()) {
@@ -235,6 +255,10 @@ void GameScene::Draw() {
 
 	deathParticle_->Draw();
 
+	for (HitEffect* hitEffect : hitEffects_) {
+		hitEffect->Draw();
+	}
+
 	fade_->Draw();
 }
 
@@ -256,4 +280,9 @@ void GameScene::ChangePhase() {
 	case GameScene::Phase::kDeath:
 		break;
 	}
+}
+
+void GameScene::CreateHitEffect(Vector3 position){
+	HitEffect* newHitEffect = HitEffect::Create(position);
+	hitEffects_.push_back(newHitEffect);
 }

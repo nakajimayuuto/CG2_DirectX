@@ -607,7 +607,7 @@ void Player::ScrollCollision(CollisionMapInfo& info) {
 	CollisionMoveUpdate(info);
 }
 
-Vector3 Player::GetWorldPosition() {
+Vector3 Player::GetWorldPosition() const{
 	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform_);
 
 	Vector3 worldPos;

@@ -38,7 +38,7 @@ public:
 
 	void PlayKDeathMotion() { isKirDeathAnimation_ = true; };
 
-	Vector3	GetWorldPosition();
+	Vector3	GetWorldPosition()const;
 
 	AABB GetAABB();
 

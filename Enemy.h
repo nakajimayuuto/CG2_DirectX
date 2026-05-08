@@ -1,6 +1,7 @@
 #pragma once
 #include "Satlib.h"
 class Player;
+class GameScene;
 
 class Enemy{
 public:
@@ -18,7 +19,7 @@ public:
 
 	bool GetIsCollisionDisable() { return isCollisionDisable_; };
 
-	void OnCollision(const Player* player);
+	void OnCollision(GameScene* scene,const Player* player);
 private:
 	enum class Behavior {
 		kUnknown, // リクエスト無し.

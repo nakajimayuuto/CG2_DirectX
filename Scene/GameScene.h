@@ -9,6 +9,7 @@
 #include "../CameraController.h"
 #include "../DeathParticle.h"
 #include "../Fade.h"
+#include "../HitEffect.h"
 #include <vector>
 
 class GameScene : public IScene{
@@ -19,6 +20,8 @@ public:
 	void Update() override;
 
 	void Draw() override;
+
+	void CreateHitEffect(Vector3 position);
 private:
 	void GenerateBlocks();
 
@@ -51,6 +54,8 @@ private:
 	static inline const uint32_t kEnemyMax = 3;
 
 	std::list<Enemy*> enemies_;
+
+	std::list<HitEffect*> hitEffects_;
 
 	Phase phase_;
 
