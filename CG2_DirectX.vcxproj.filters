@@ -121,9 +121,6 @@
     <Filter Include="ソース ファイル\CameraController">
       <UniqueIdentifier>{4a26ff88-a7b3-4639-a2a0-bb182fd8f2aa}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Enemy">
-      <UniqueIdentifier>{769dc18f-3561-4c2e-99e3-161c09476da9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\DeathParticle">
       <UniqueIdentifier>{9b838689-8d7a-4560-b2a8-7c2f47afa7d1}</UniqueIdentifier>
     </Filter>
@@ -135,6 +132,18 @@
     </Filter>
     <Filter Include="ソース ファイル\HitEffect">
       <UniqueIdentifier>{8292d0b9-64f9-4eb7-88f6-67f6c3eb12ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Enemies">
+      <UniqueIdentifier>{769dc18f-3561-4c2e-99e3-161c09476da9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Enemies\BaseEnemy">
+      <UniqueIdentifier>{8b6207df-5983-4871-bdca-13494d8929fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Enemies\Enemy">
+      <UniqueIdentifier>{78304bd5-5230-4601-ad18-c6b17e7225f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Enemies\ShieldEnemy">
+      <UniqueIdentifier>{29b092bb-536e-4756-b075-825b09b15c2a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -255,9 +264,6 @@
     <ClCompile Include="CameraController.cpp">
       <Filter>ソース ファイル\CameraController</Filter>
     </ClCompile>
-    <ClCompile Include="Enemy.cpp">
-      <Filter>ソース ファイル\Enemy</Filter>
-    </ClCompile>
     <ClCompile Include="DeathParticle.cpp">
       <Filter>ソース ファイル\DeathParticle</Filter>
     </ClCompile>
@@ -269,6 +275,12 @@
     </ClCompile>
     <ClCompile Include="HitEffect.cpp">
       <Filter>ソース ファイル\HitEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="Enemy.cpp">
+      <Filter>ソース ファイル\Enemies\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseEnemy.cpp">
+      <Filter>ソース ファイル\Enemies\BaseEnemy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -398,9 +410,6 @@
     <ClInclude Include="CameraController.h">
       <Filter>ソース ファイル\CameraController</Filter>
     </ClInclude>
-    <ClInclude Include="Enemy.h">
-      <Filter>ソース ファイル\Enemy</Filter>
-    </ClInclude>
     <ClInclude Include="DeathParticle.h">
       <Filter>ソース ファイル\DeathParticle</Filter>
     </ClInclude>
@@ -412,6 +421,12 @@
     </ClInclude>
     <ClInclude Include="HitEffect.h">
       <Filter>ソース ファイル\HitEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="Enemy.h">
+      <Filter>ソース ファイル\Enemies\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseEnemy.h">
+      <Filter>ソース ファイル\Enemies\BaseEnemy</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
