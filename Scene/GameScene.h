@@ -29,6 +29,8 @@ private:
 
 	void EnemyRemoveCheck();
 
+	void HitEffectRemoveCheck();
+
 	void ChangePhase();
 
 private:

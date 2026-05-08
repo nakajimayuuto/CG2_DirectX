@@ -141,6 +141,16 @@ void GameScene::EnemyRemoveCheck() {
 		});
 }
 
+void GameScene::HitEffectRemoveCheck(){
+	hitEffects_.remove_if([](HitEffect* hitEffect_) {
+		if (hitEffect_->GetIsDelete()) {
+			delete hitEffect_;
+			return true;
+		}
+		return false;
+		});
+}
+
 void GameScene::Update() {
 #ifdef _DEBUG
 	if (InputManager::GetInstance()->TriggerKey(DIK_F3)) {

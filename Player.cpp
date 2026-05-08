@@ -88,6 +88,8 @@ void Player::BehaviorAttackInitialize() {
 	for (uint32_t i = 0; i < 2; i++) {
 		attackEffectModel_[i].Initialize(ModelManager::GetInstance()->GetModelInfo("plane"));
 		attackEffectModel_[i].ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("player_attack_effect"));
+		attackEffectModel_[i].SetLightingType(Renderer::LightingType::kNone);
+
 
 		attackEffectTransform_[i].Initialize();
 		attackEffectTransform_[i] = transform_;
