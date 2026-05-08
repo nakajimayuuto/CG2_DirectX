@@ -5,82 +5,24 @@ class GameScene;
 
 class BaseEnemy {
 public:
-	virtual void Initialize(const Vector3& position);
+	virtual void Initialize(const Vector3& position) = 0;
 
-	virtual void Update();
+	virtual void Update() = 0;
 
-	virtual void Draw();
+	virtual void Draw() = 0;
+
+	virtual void OnCollision(GameScene* scene, const Player* player) = 0;
+
+	virtual AABB GetAABB() = 0;
 
 	Vector3	GetWorldPosition();
-
-	AABB GetAABB();
 
 	bool GetIsDead() { return isDead_; };
 
 	bool GetIsCollisionDisable() { return isCollisionDisable_; };
 
-	void OnCollision(GameScene* scene, const Player* player);
 protected:
-	enum class Behavior {
-		kUnknown, // リクエスト無し.
-		kRoot, // 通常状態.
-		kDeathAnimation, // 攻撃中.
-	};
-
-	virtual void WalkAnimationUpdate();
-
-	// 【Behavior】
-	// Root.
-
-	virtual void BehaviorRootInitialize();
-	virtual void BehaviorRootUpdate();
-
-	//DeathAnimation.
-	virtual void BehaviorDeathAnimationInitialize();
-	virtual void BehaviorDeathAnimationUpdate();
-private:
-	/*===========================================================
-	Behavior.
-	===========================================================*/
-	Behavior behavior_ = Behavior::kRoot;
-	Behavior behaviorRequest_ = Behavior::kUnknown;
-
-	// DeathAnimation.
-
-	enum class DeathAnimationPhase {
-		kSpin, // 回転.
-		kShrink, // 収縮.
-		kDeath, // フラグ変更.
-	};
-
-	DeathAnimationPhase deathAnimationPhase_;
-
-	float deathAnimationParameter_ = 0.0f;
-	static inline const float kDeathAnimationParameterSpin = 1.0f;
-	static inline const float kDeathAnimationParameterShrink = 0.5f;
-
 	bool isCollisionDisable_ = false;
-
-	// 移動.
-	static inline const float kWalkSpeed = 0.01f;
-
-	Vector3 velocity_ = {};
-
-	// 当たり判定.
-	static inline const float kWidth = 0.8f;
-	static inline const float kHeight = 0.8f;
-
-	// アニメーション.
-	// 最初の角度.
-	static inline const float kWalkMotionAngleStart = -15.0f;
-	// 最後の角度.
-	static inline const float kWalkMotionAngleEnd = 15.0f;
-	// アニメーションの周期	(秒).
-	static inline const float kWalkMotionTime = 1.0f;
-
-	float walkTimer_ = 0.0f;
-
-
 
 	// 死亡判定.
 	bool isDead_ = false;

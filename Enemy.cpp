@@ -94,17 +94,13 @@ void Enemy::Draw() {
 	model_.Draw(transform_);
 }
 
-Vector3 Enemy::GetWorldPosition() {
-	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform_);
+void Enemy::WalkAnimationUpdate() {
+	walkTimer_ += 1.0f / 60.0f;
 
-	Vector3 worldPos;
+	float param = sin((2.0f * std::numbers::pi_v<float>) * walkTimer_ / kWalkMotionTime);
+	float degree = kWalkMotionAngleStart + kWalkMotionAngleEnd * (param + 1.0f) / 2.0f;
+	transform_.rotate.x = Radian(degree);
 
-	worldPos.x = worldMatrix.matrix[3][0];
-	worldPos.y = worldMatrix.matrix[3][1];
-	worldPos.z = worldMatrix.matrix[3][2];
-
-
-	return worldPos;
 }
 
 AABB Enemy::GetAABB() {
@@ -118,24 +114,15 @@ AABB Enemy::GetAABB() {
 	return aabb;
 }
 
-void Enemy::OnCollision(GameScene* scene, const Player* player) {
+void  Enemy::OnCollision(GameScene* scene, const Player* player) {
 	if (behavior_ == Behavior::kDeathAnimation) {
 		return;
 	}
 
 	if (player->IsAttack()) {
 		behaviorRequest_ = Behavior::kDeathAnimation;
-		
+
 		Vector3 effectPos = ((GetWorldPosition() + player->GetWorldPosition())) * 0.5f;
 		scene->CreateHitEffect(effectPos);
 	}
-}
-
-void Enemy::WalkAnimationUpdate() {
-	walkTimer_ += 1.0f / 60.0f;
-
-	float param = sin((2.0f * std::numbers::pi_v<float>) * walkTimer_ / kWalkMotionTime);
-	float degree = kWalkMotionAngleStart + kWalkMotionAngleEnd * (param + 1.0f) / 2.0f;
-	transform_.rotate.x = Radian(degree);
-
 }

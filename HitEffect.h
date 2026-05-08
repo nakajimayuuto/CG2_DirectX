@@ -1,19 +1,16 @@
 #pragma once
 #include "Satlib.h"
+#include "BaseEffect.h"
 #include <assert.h>
 #include <array>
 
-class HitEffect{
+class HitEffect final : public BaseEffect{
 public:
-	static HitEffect* Create(Vector3 position);
+	void Initialize(Vector3 position) override;
 
-	void Initialize(Vector3 position);
+	void Update() override;
 
-	void Update();
-
-	void Draw();
-
-	bool GetIsDelete() { return isDelete_; };
+	void Draw() override;
 private:
 	enum class Status {
 		kSpread, // 拡大.
@@ -41,7 +38,5 @@ private:
 	float animationParameter_ = 0.0f;
 	static inline const float kAnimationParameterSpread = 0.1f;
 	static inline const float kAnimationParameterShrink = 0.4f;
-
-	bool isDelete_ = false;
 };
 

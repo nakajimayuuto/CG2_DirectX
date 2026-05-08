@@ -1,14 +1,4 @@
 #include "HitEffect.h"
-
-HitEffect* HitEffect::Create(Vector3 position){
-	HitEffect* instance = new HitEffect();
-	assert(instance);
-
-	instance->Initialize(position);
-
-	return instance;
-}
-
 void HitEffect::Initialize(Vector3 position){
 	ModelInfo effectInfo = ModelManager::GetInstance()->GetModelInfo("hit_effect_plane");
 	model_.Initialize(effectInfo);

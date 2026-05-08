@@ -4,7 +4,7 @@
 
 class MapChipField;
 
-class Enemy;
+class BaseEnemy;
 
 /// <summary>
 /// 自キャラ
@@ -44,7 +44,7 @@ public:
 
 	bool GetIsDead() { return isDead_; };
 
-	void OnCollision(const Enemy* enemy);
+	void OnCollision(const BaseEnemy* enemy);
 
 	bool IsAttack() const;
 private:

@@ -633,7 +633,7 @@ AABB Player::GetAABB() {
 	return aabb;
 }
 
-void Player::OnCollision(const Enemy* enemy) {
+void Player::OnCollision(const BaseEnemy* enemy) {
 	(void)enemy;
 
 	if (IsAttack()) {

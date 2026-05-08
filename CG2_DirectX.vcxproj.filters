@@ -130,9 +130,6 @@
     <Filter Include="ソース ファイル\Fade">
       <UniqueIdentifier>{594a337a-5cf2-4d82-8cd2-356d6010dad4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\HitEffect">
-      <UniqueIdentifier>{8292d0b9-64f9-4eb7-88f6-67f6c3eb12ac}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\Enemies">
       <UniqueIdentifier>{769dc18f-3561-4c2e-99e3-161c09476da9}</UniqueIdentifier>
     </Filter>
@@ -144,6 +141,18 @@
     </Filter>
     <Filter Include="ソース ファイル\Enemies\ShieldEnemy">
       <UniqueIdentifier>{29b092bb-536e-4756-b075-825b09b15c2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Effects">
+      <UniqueIdentifier>{8292d0b9-64f9-4eb7-88f6-67f6c3eb12ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Effects\HitEffect">
+      <UniqueIdentifier>{7c6b181e-39e8-45c6-86ef-f88de8dfbcac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Effects\GuardEffect">
+      <UniqueIdentifier>{2f30b48f-159c-4e78-be84-c382ca59991b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Effects\BaseEffect">
+      <UniqueIdentifier>{ff738d12-3434-4e0a-91ef-d980cc348a18}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -273,14 +282,17 @@
     <ClCompile Include="Fade.cpp">
       <Filter>ソース ファイル\Fade</Filter>
     </ClCompile>
-    <ClCompile Include="HitEffect.cpp">
-      <Filter>ソース ファイル\HitEffect</Filter>
-    </ClCompile>
     <ClCompile Include="Enemy.cpp">
       <Filter>ソース ファイル\Enemies\Enemy</Filter>
     </ClCompile>
     <ClCompile Include="BaseEnemy.cpp">
       <Filter>ソース ファイル\Enemies\BaseEnemy</Filter>
+    </ClCompile>
+    <ClCompile Include="HitEffect.cpp">
+      <Filter>ソース ファイル\Effects\HitEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseEffect.cpp">
+      <Filter>ソース ファイル\Effects\BaseEffect</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -419,14 +431,17 @@
     <ClInclude Include="Fade.h">
       <Filter>ソース ファイル\Fade</Filter>
     </ClInclude>
-    <ClInclude Include="HitEffect.h">
-      <Filter>ソース ファイル\HitEffect</Filter>
-    </ClInclude>
     <ClInclude Include="Enemy.h">
       <Filter>ソース ファイル\Enemies\Enemy</Filter>
     </ClInclude>
     <ClInclude Include="BaseEnemy.h">
       <Filter>ソース ファイル\Enemies\BaseEnemy</Filter>
+    </ClInclude>
+    <ClInclude Include="HitEffect.h">
+      <Filter>ソース ファイル\Effects\HitEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseEffect.h">
+      <Filter>ソース ファイル\Effects\BaseEffect</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

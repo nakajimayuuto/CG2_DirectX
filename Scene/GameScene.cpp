@@ -18,12 +18,12 @@ GameScene::~GameScene() {
 
 	delete player_;
 
-	for (Enemy* enemy : enemies_) {
+	for (BaseEnemy* enemy : enemies_) {
 		delete enemy;
 	}
 	enemies_.clear();
 
-	for (HitEffect* hitEffect : hitEffects_) {
+	for (BaseEffect* hitEffect : hitEffects_) {
 		delete hitEffect;
 	}
 	hitEffects_.clear();
@@ -118,7 +118,7 @@ void GameScene::GenerateBlocks() {
 }
 
 void GameScene::CheckAllCollision() {
-	for (Enemy* enemy : enemies_) {
+	for (BaseEnemy* enemy : enemies_) {
 		if (enemy->GetIsCollisionDisable()) {
 			continue;
 		}
@@ -132,7 +132,7 @@ void GameScene::CheckAllCollision() {
 }
 
 void GameScene::EnemyRemoveCheck() {
-	enemies_.remove_if([](Enemy* enemy) {
+	enemies_.remove_if([](BaseEnemy* enemy) {
 		if (enemy->GetIsDead()) {
 			delete enemy;
 			return true;
@@ -142,7 +142,7 @@ void GameScene::EnemyRemoveCheck() {
 }
 
 void GameScene::HitEffectRemoveCheck(){
-	hitEffects_.remove_if([](HitEffect* hitEffect_) {
+	hitEffects_.remove_if([](BaseEffect* hitEffect_) {
 		if (hitEffect_->GetIsDelete()) {
 			delete hitEffect_;
 			return true;
@@ -166,7 +166,7 @@ void GameScene::Update() {
 	case GameScene::Phase::kFadeIn:
 		skydome_->Update();
 
-		for (Enemy* enemy : enemies_) {
+		for (BaseEnemy* enemy : enemies_) {
 			enemy->Update();
 		}
 
@@ -183,11 +183,11 @@ void GameScene::Update() {
 
 		player_->Update();
 
-		for (Enemy* enemy : enemies_) {
+		for (BaseEnemy* enemy : enemies_) {
 			enemy->Update();
 		}
 
-		for (HitEffect* hitEffect : hitEffects_) {
+		for (BaseEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
 		}
 
@@ -204,11 +204,11 @@ void GameScene::Update() {
 
 		deathParticle_->Update();
 
-		for (Enemy* enemy : enemies_) {
+		for (BaseEnemy* enemy : enemies_) {
 			enemy->Update();
 		}
 
-		for (HitEffect* hitEffect : hitEffects_) {
+		for (BaseEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
 		}
 
@@ -225,11 +225,11 @@ void GameScene::Update() {
 
 		deathParticle_->Update();
 
-		for (Enemy* enemy : enemies_) {
+		for (BaseEnemy* enemy : enemies_) {
 			enemy->Update();
 		}
 
-		for (HitEffect* hitEffect : hitEffects_) {
+		for (BaseEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
 		}
 
@@ -247,7 +247,7 @@ void GameScene::Draw() {
 	skydome_->Draw();
 
 
-	for (Enemy* enemy : enemies_) {
+	for (BaseEnemy* enemy : enemies_) {
 		enemy->Draw();
 	}
 
@@ -265,7 +265,7 @@ void GameScene::Draw() {
 
 	deathParticle_->Draw();
 
-	for (HitEffect* hitEffect : hitEffects_) {
+	for (BaseEffect* hitEffect : hitEffects_) {
 		hitEffect->Draw();
 	}
 
@@ -293,6 +293,6 @@ void GameScene::ChangePhase() {
 }
 
 void GameScene::CreateHitEffect(Vector3 position){
-	HitEffect* newHitEffect = HitEffect::Create(position);
+	BaseEffect* newHitEffect = BaseEffect::Create(position,HitEffect::EffectType::kHit);
 	hitEffects_.push_back(newHitEffect);
 }

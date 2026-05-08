@@ -1,25 +1,20 @@
 #pragma once
 #include "Satlib.h"
+#include "BaseEnemy.h"
 class Player;
 class GameScene;
 
-class Enemy{
+class Enemy final : public BaseEnemy{
 public:
-	void Initialize(const Vector3& position);
+	void Initialize(const Vector3& position) override;
 
-	void Update();
+	void Update() override;
 
-	void Draw();
+	void Draw() override;
 
-	Vector3	GetWorldPosition();
+	void OnCollision(GameScene* scene, const Player* player) override;
 
-	AABB GetAABB();
-
-	bool GetIsDead() { return isDead_; };
-
-	bool GetIsCollisionDisable() { return isCollisionDisable_; };
-
-	void OnCollision(GameScene* scene,const Player* player);
+	AABB GetAABB() override;
 private:
 	enum class Behavior {
 		kUnknown, // リクエスト無し.
@@ -59,8 +54,6 @@ private:
 	static inline const float kDeathAnimationParameterSpin = 1.0f;
 	static inline const float kDeathAnimationParameterShrink = 0.5f;
 
-	bool isCollisionDisable_ = false;
-
 	// 移動.
 	static inline const float kWalkSpeed = 0.01f;
 
@@ -79,14 +72,5 @@ private:
 	static inline const float kWalkMotionTime = 1.0f;
 
 	float walkTimer_ = 0.0f;
-
-
-
-	// 死亡判定.
-	bool isDead_ = false;
-
-	Renderer::Model model_;
-
-	Transform transform_;
 
 };

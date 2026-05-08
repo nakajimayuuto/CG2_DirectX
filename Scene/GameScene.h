@@ -4,12 +4,14 @@
 
 #include "../Player.h"
 #include "../Enemy.h"
+#include "../BaseEnemy.h"
 #include "../Skydome.h"
 #include "../MapChipField.h"
 #include "../CameraController.h"
 #include "../DeathParticle.h"
 #include "../Fade.h"
 #include "../HitEffect.h"
+#include "../BaseEffect.h"
 #include <vector>
 
 class GameScene : public IScene{
@@ -55,9 +57,9 @@ private:
 
 	static inline const uint32_t kEnemyMax = 3;
 
-	std::list<Enemy*> enemies_;
+	std::list<BaseEnemy*> enemies_;
 
-	std::list<HitEffect*> hitEffects_;
+	std::list<BaseEffect*> hitEffects_;
 
 	Phase phase_;
 
