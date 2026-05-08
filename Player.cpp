@@ -73,23 +73,7 @@ void Player::BehaviorRootUpdate() {
 
 	MovingUpdate();
 
-	CollisionMapInfo collisionMapInfo;
-
-	collisionMapInfo.movementAmount = velocity_;
-
-	MapCollision(collisionMapInfo);
-
-	CollisionMoveUpdate(collisionMapInfo);
-
-	CellingCollisionUpdate(collisionMapInfo);
-
-	IsHitWallUpdate(collisionMapInfo);
-
-	IsGroundUpdate(collisionMapInfo);
-
-	TurningControl();
-
-	CheckFallVoid();
+	MapCollision();
 }
 
 void Player::BehaviorAttackInitialize() {
@@ -150,23 +134,7 @@ void Player::BehaviorAttackUpdate() {
 		break;
 	}
 
-	CollisionMapInfo collisionMapInfo;
-
-	collisionMapInfo.movementAmount = velocity_;
-
-	MapCollision(collisionMapInfo);
-
-	CollisionMoveUpdate(collisionMapInfo);
-
-	CellingCollisionUpdate(collisionMapInfo);
-
-	IsHitWallUpdate(collisionMapInfo);
-
-	IsGroundUpdate(collisionMapInfo);
-
-	TurningControl();
-
-	CheckFallVoid();
+	MapCollision();
 
 	for (uint32_t i = 0; i < 2; i++) {
 		attackEffectTransform_[i].scale = { 1.2f,1.2f,1.2f };
@@ -188,43 +156,52 @@ void Player::BehaviorKnockbackInitialize() {
 
 	transform_.scale = { 1.0f,1.0f,1.0f };
 
-	if (lrDirection_ == LRDirection::kRight) {
-		velocity_.x = -kKnockBackPower;
-	} else {
-		velocity_.x = kKnockBackPower;
-	}
+	knockbackPhase_ = KnockbackPhase::kBack;
+
+	knockbackParameter_ = 0.0f;
+
+	//if (lrDirection_ == LRDirection::kRight) {
+	//	velocity_.x = -kKnockBackPower;
+	//} else {
+	//	velocity_.x = kKnockBackPower;
+	//}
 }
 
 void Player::BehaviorKnockbackUpdate() {
-	velocity_.x *= (1.0f - kKnockBackAttenuation);
+	knockbackParameter_ += 1.0f / 60.0f;
+	//velocity_.x *= (1.0f - kKnockBackAttenuation);
 
-	CollisionMapInfo collisionMapInfo;
-
-	collisionMapInfo.movementAmount = velocity_;
-
-	MapCollision(collisionMapInfo);
-
-	CollisionMoveUpdate(collisionMapInfo);
-
-	CellingCollisionUpdate(collisionMapInfo);
-
-	IsHitWallUpdate(collisionMapInfo);
-
-	IsGroundUpdate(collisionMapInfo);
-
-	TurningControl();
-
-	CheckFallVoid();
-
-	if (lrDirection_ == LRDirection::kRight) {
-		if (velocity_.x > -kLimitRunSpeed) {
-			behaviorRequest_ = Behavior::kRoot;
+	switch (knockbackPhase_){
+	case Player::KnockbackPhase::kBack:
+		if (lrDirection_ == LRDirection::kRight) {
+			velocity_.x = Easing(-1.0f, 0.0f, knockbackParameter_, kKnockbackParameterBack, EaseType::kEaseOut);
+		} else {
+			velocity_.x = Easing(1.0f, 0.0f, knockbackParameter_, kKnockbackParameterBack, EaseType::kEaseOut);
 		}
-	} else {
-		if (velocity_.x < kLimitRunSpeed) {
-			behaviorRequest_ = Behavior::kRoot;
+
+		transform_.scale.z = Easing(1.0f, 0.3f, knockbackParameter_, kKnockbackParameterBack, EaseType::kEaseOut);
+		transform_.scale.y = Easing(1.0f, 1.6f, knockbackParameter_, kKnockbackParameterBack, EaseType::kEaseOut);
+
+		if (knockbackParameter_ >= kKnockbackParameterBack) {
+			knockbackPhase_ = KnockbackPhase::kStop;
+			knockbackParameter_ = 0.0f;
 		}
+
+		break;
+	case Player::KnockbackPhase::kStop:
+		transform_.scale.z = Easing(0.3f, 1.0f, knockbackParameter_, kKnockbackParameterStop, EaseType::kEaseOut);
+		transform_.scale.y = Easing(1.6f, 1.0f, knockbackParameter_, kKnockbackParameterStop, EaseType::kEaseOut);
+
+		if (knockbackParameter_ >= kKnockbackParameterStop) {
+			behaviorRequest_ = Behavior::kRoot;
+			knockbackParameter_ = 0.0f;
+		}
+		break;
 	}
+
+	MapCollision();
+
+	
 }
 
 void Player::MovingUpdate() {
@@ -591,6 +568,26 @@ void Player::CheckFallVoid() {
 	if (transform_.translate.y <= -2.0f) {
 		isDead_ = true;
 	}
+}
+
+void Player::MapCollision(){
+	CollisionMapInfo collisionMapInfo;
+
+	collisionMapInfo.movementAmount = velocity_;
+
+	MapCollision(collisionMapInfo);
+
+	CollisionMoveUpdate(collisionMapInfo);
+
+	CellingCollisionUpdate(collisionMapInfo);
+
+	IsHitWallUpdate(collisionMapInfo);
+
+	IsGroundUpdate(collisionMapInfo);
+
+	TurningControl();
+
+	CheckFallVoid();
 }
 
 void Player::KirDeathAnimationUpdate() {

@@ -101,6 +101,8 @@ private:
 
 	void CheckFallVoid();
 
+	void MapCollision();
+
 	void KirDeathAnimationUpdate();
 
 	Vector3 CornerPosition(const Vector3& center, Corner corner);
@@ -147,9 +149,20 @@ private:
 	std::array<Transform, 2> attackEffectTransform_;
 
 	// KnockBack.
+
+	enum class KnockbackPhase {
+		kBack, // 溜め.
+		kStop, // 突進.
+	};
+
+	KnockbackPhase knockbackPhase_;
+
 	bool isKnockbackRequest_ = false;
-	static inline const float kKnockBackPower = 1.0f;
-	static inline const float kKnockBackAttenuation = 0.1f;
+	//static inline const float kKnockBackPower = 1.0f;
+	//static inline const float kKnockBackAttenuation = 0.1f;
+	float knockbackParameter_ = 0.0f;
+	static inline const float kKnockbackParameterBack = 0.2f;
+	static inline const float kKnockbackParameterStop = 0.2f;
 	
 
 	// 移動.

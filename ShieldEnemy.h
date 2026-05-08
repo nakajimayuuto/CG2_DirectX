@@ -20,6 +20,7 @@ private:
 		kUnknown, // リクエスト無し.
 		kRoot, // 通常状態.
 		kDeathAnimation, // 攻撃中.
+		kGuard, // ガード.
 	};
 
 	enum class LRDirection {
@@ -38,6 +39,10 @@ private:
 	//DeathAnimation.
 	void BehaviorDeathAnimationInitialize();
 	void BehaviorDeathAnimationUpdate();
+
+	//Guard.
+	void BehaviorGuardInitialize();
+	void BehaviorGuardUpdate();
 private:
 	/*===========================================================
 	Behavior.
@@ -58,6 +63,18 @@ private:
 	float deathAnimationParameter_ = 0.0f;
 	static inline const float kDeathAnimationParameterSpin = 1.0f;
 	static inline const float kDeathAnimationParameterShrink = 0.5f;
+
+	enum class GuardPhase {
+		kSpin, // 回転.
+		kShrink, // 収縮.
+		kDeath, // フラグ変更.
+	};
+
+	GuardPhase guardPhase_;
+
+	float guardParameter_ = 0.0f;
+	static inline const float kGuardParameterBack = 0.2f;
+	static inline const float kGuardParameterStop = 0.1f;
 
 	// 移動.
 	static inline const float kWalkSpeed = 0.01f;

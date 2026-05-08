@@ -96,6 +96,13 @@ void ShieldEnemy::BehaviorDeathAnimationUpdate() {
 	}
 }
 
+void ShieldEnemy::BehaviorGuardInitialize(){
+	
+}
+
+void ShieldEnemy::BehaviorGuardUpdate(){
+}
+
 void ShieldEnemy::Draw() {
 	model_.Draw(transform_);
 }
