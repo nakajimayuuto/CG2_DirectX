@@ -42,6 +42,8 @@ void SceneManager::ChangeSceneUpdate() {
 		return;
 	}
 
+	delete currentScene_;
+
 	switch (sceneName_) {
 	case SceneName::kGameScene:
 		currentScene_ = new GameScene();
@@ -58,5 +60,9 @@ void SceneManager::ChangeSceneUpdate() {
 
 void SceneManager::ChengeScene(SceneName name) {
 	sceneName_ = name;
+	isSceneChange_ = true;
+}
+
+void SceneManager::ReloadScene(){
 	isSceneChange_ = true;
 }

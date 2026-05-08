@@ -19,6 +19,8 @@ public:
 	void ChangeSceneUpdate();
 
 	void ChengeScene(SceneName name);
+
+	void ReloadScene();
 private:
 	IScene* currentScene_ = nullptr;
 

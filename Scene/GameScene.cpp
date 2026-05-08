@@ -51,31 +51,11 @@ void GameScene::Initialize() {
 
 	SoundManager::GetInstance()->RegisterSound("free_k", "Resource/free_k.wav");
 
-	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(1, 18);
 
 	mapChipField_ = new MapChipField();
 	mapChipField_->LoadMapChipCsv("Resource/map/block.csv");
 
-	player_ = new Player();
-	player_->Initialize(playerPosition);
-	player_->SetMapChipField(mapChipField_);
-
-	enemies_.clear();
-	for (int32_t i = 0; i < kEnemyMax; i++) {
-		Enemy* newEnemy_ = new Enemy();
-		Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(12 + (2 * i), 18 - i);
-		newEnemy_->Initialize(enemyPosition);
-
-		enemies_.push_back(newEnemy_);
-	}
-
-	for (int32_t i = 0; i < kEnemyMax; i++) {
-		ShieldEnemy* newEnemy_ = new ShieldEnemy();
-		Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(20 + (2 * i), 18 - i);
-		newEnemy_->Initialize(enemyPosition);
-
-		enemies_.push_back(newEnemy_);
-	}
+	GenerateFieldObjects();
 
 	hitEffects_.clear();
 
@@ -96,12 +76,10 @@ void GameScene::Initialize() {
 	fade_->Initialize();
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
 
-	GenerateBlocks();
-
 	phase_ = Phase::kFadeIn;
 }
 
-void GameScene::GenerateBlocks() {
+void GameScene::GenerateFieldObjects() {
 	// 要素数を変更する.
 	kNumBlockVertical = mapChipField_->GetNumBlockVirtical();
 	kNumBlockHorizontal = mapChipField_->GetNumBlockHorizontal();
@@ -114,16 +92,43 @@ void GameScene::GenerateBlocks() {
 		modelBlocks_[i].resize(kNumBlockHorizontal);
 
 	}
+	
+	BaseEnemy* newEnemy;
 
 	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
 		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
-			if (mapChipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
+			switch (mapChipField_->GetMapChipTypeByIndex(j, i)){
+			case MapChipType::kBlock:
 				modelBlocks_[i][j] = new Renderer::ModelBox();
 				modelBlocks_[i][j]->Initialize();
 
 				transformBlocks_[i][j] = new Transform();
 				transformBlocks_[i][j]->Initialize();
 				transformBlocks_[i][j]->translate = mapChipField_->GetMapChipPositionByIndex(j, i);
+				break;
+			case MapChipType::kPlayer:
+				assert(player_ == nullptr && "自キャラを二重に配置しようとしています");
+				player_ = new Player();
+				player_->Initialize(mapChipField_->GetMapChipPositionByIndex(j, i));
+				player_->SetMapChipField(mapChipField_);
+				break;
+			case MapChipType::kEnemy:
+				uint8_t subID = mapChipField_->GetMapChipSubIDByIndex(j,i);
+				switch (subID){
+				case 0:
+					newEnemy = new Enemy();
+					newEnemy->Initialize(mapChipField_->GetMapChipPositionByIndex(j, i));
+
+					enemies_.push_back(newEnemy);
+					break;
+				case 1:
+					newEnemy = new ShieldEnemy();
+					newEnemy->Initialize(mapChipField_->GetMapChipPositionByIndex(j, i));
+
+					enemies_.push_back(newEnemy);
+					break;
+				}
+				break;
 			}
 		}
 	}
@@ -170,7 +175,7 @@ void GameScene::Update() {
 	}
 
 	if (InputManager::GetInstance()->TriggerKey(DIK_R)) {
-		Initialize();
+		SceneManager::GetInstance()->ReloadScene();
 	}
 #endif // _DEBUG
 
@@ -210,6 +215,8 @@ void GameScene::Update() {
 		CheckAllCollision();
 
 		EnemyRemoveCheck();
+
+		HitEffectRemoveCheck();
 		break;
 	case GameScene::Phase::kDeath:
 		skydome_->Update();
@@ -223,6 +230,8 @@ void GameScene::Update() {
 		for (BaseEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
 		}
+
+		HitEffectRemoveCheck();
 
 		Camera::GetInstance()->Update();
 
@@ -244,6 +253,8 @@ void GameScene::Update() {
 		for (BaseEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
 		}
+
+		HitEffectRemoveCheck();
 
 		if (fade_->GetIsFinished()) {
 			SceneManager::GetInstance()->ChengeScene(SceneName::kTitleScene);

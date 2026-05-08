@@ -24,7 +24,7 @@ public:
 
 	void CreateEffect(Vector3 position, BaseEffect::EffectType type);
 private:
-	void GenerateBlocks();
+	void GenerateFieldObjects();
 
 	void CheckAllCollision();
 
@@ -33,7 +33,6 @@ private:
 	void HitEffectRemoveCheck();
 
 	void ChangePhase();
-
 private:
 	enum class Phase {
 		kFadeIn, // フェードイン.
