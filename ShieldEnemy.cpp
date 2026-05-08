@@ -32,6 +32,9 @@ void ShieldEnemy::Update() {
 		case ShieldEnemy::Behavior::kDeathAnimation:
 			BehaviorDeathAnimationInitialize();
 			break;
+		case ShieldEnemy::Behavior::kGuard:
+			BehaviorGuardInitialize();
+			break;
 		}
 
 		behaviorRequest_ = Behavior::kUnknown;
@@ -44,10 +47,15 @@ void ShieldEnemy::Update() {
 	case ShieldEnemy::Behavior::kDeathAnimation:
 		BehaviorDeathAnimationUpdate();
 		break;
+	case ShieldEnemy::Behavior::kGuard:
+		BehaviorGuardUpdate();
+		break;
 	}
 }
 
 void ShieldEnemy::BehaviorRootInitialize() {
+
+	velocity_ = { -kWalkSpeed,0.0f,0.0f };
 }
 
 void ShieldEnemy::BehaviorRootUpdate() {
@@ -96,11 +104,39 @@ void ShieldEnemy::BehaviorDeathAnimationUpdate() {
 	}
 }
 
-void ShieldEnemy::BehaviorGuardInitialize(){
-	
+void ShieldEnemy::BehaviorGuardInitialize() {
+	guardPhase_ = GuardPhase::kBack;
+
+	guardParameter_ = 0.0f;
 }
 
-void ShieldEnemy::BehaviorGuardUpdate(){
+void ShieldEnemy::BehaviorGuardUpdate() {
+	guardParameter_ += 1.0f / 60.0f;
+
+	switch (guardPhase_) {
+	case ShieldEnemy::GuardPhase::kBack:
+		if (lrDirection_ == LRDirection::kRight) {
+			velocity_.x = Easing(-0.1f, 0.0f, guardParameter_, kGuardParameterBack, EaseType::kEaseOut);
+		} else {
+			velocity_.x = Easing(0.1f, 0.0f, guardParameter_, kGuardParameterBack, EaseType::kEaseOut);
+		}
+
+		transform_.rotate.x = Easing(0.0f, Radian(-15.0f), guardParameter_, kGuardParameterBack, EaseType::kEaseIn);
+
+		if (guardParameter_ >= kGuardParameterBack) {
+			guardPhase_ = GuardPhase::kStop;
+			guardParameter_ = 0.0f;
+		}
+		break;
+	case ShieldEnemy::GuardPhase::kStop:
+		transform_.rotate.x = Easing(Radian(-15.0f), 0.0f, guardParameter_, kGuardParameterStop, EaseType::kEaseOut);
+
+		if (guardParameter_ >= kGuardParameterStop) {
+			behaviorRequest_ = Behavior::kRoot;
+			guardParameter_ = 0.0f;
+		}
+		break;
+	}
 }
 
 void ShieldEnemy::Draw() {
@@ -112,7 +148,7 @@ void ShieldEnemy::WalkAnimationUpdate() {
 
 	float param = sin((2.0f * std::numbers::pi_v<float>) * walkTimer_ / kWalkMotionTime);
 	float degree = kWalkMotionAngleStart + kWalkMotionAngleEnd * (param + 1.0f) / 2.0f;
-	transform_.rotate.x = Radian(degree);
+	transform_.rotate.y = Radian(degree - 90.0f);
 
 }
 
@@ -139,6 +175,8 @@ void ShieldEnemy::OnCollision(GameScene* scene, Player* player) {
 			(player->GetLRDirection() == Player::LRDirection::kLeft && lrDirection_ == LRDirection::kRight)) {
 			scene->CreateEffect(effectPos, BaseEffect::EffectType::kGuard);
 			player->KnockBackRequest();
+
+			behaviorRequest_ = Behavior::kGuard;
 			return;
 		}
 

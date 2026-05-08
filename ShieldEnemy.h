@@ -65,9 +65,8 @@ private:
 	static inline const float kDeathAnimationParameterShrink = 0.5f;
 
 	enum class GuardPhase {
-		kSpin, // 回転.
-		kShrink, // 収縮.
-		kDeath, // フラグ変更.
+		kBack, // 後退.
+		kStop, // 停止.
 	};
 
 	GuardPhase guardPhase_;

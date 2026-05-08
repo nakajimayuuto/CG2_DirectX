@@ -159,6 +159,7 @@ void Player::BehaviorKnockbackInitialize() {
 	knockbackPhase_ = KnockbackPhase::kBack;
 
 	knockbackParameter_ = 0.0f;
+	onGround_ = false;
 
 	//if (lrDirection_ == LRDirection::kRight) {
 	//	velocity_.x = -kKnockBackPower;
@@ -171,13 +172,15 @@ void Player::BehaviorKnockbackUpdate() {
 	knockbackParameter_ += 1.0f / 60.0f;
 	//velocity_.x *= (1.0f - kKnockBackAttenuation);
 
-	switch (knockbackPhase_){
+	switch (knockbackPhase_) {
 	case Player::KnockbackPhase::kBack:
 		if (lrDirection_ == LRDirection::kRight) {
 			velocity_.x = Easing(-1.0f, 0.0f, knockbackParameter_, kKnockbackParameterBack, EaseType::kEaseOut);
 		} else {
 			velocity_.x = Easing(1.0f, 0.0f, knockbackParameter_, kKnockbackParameterBack, EaseType::kEaseOut);
 		}
+
+		velocity_.y = Easing(0.2f, 0.0f, knockbackParameter_, kKnockbackParameterBack, EaseType::kEaseOut);
 
 		transform_.scale.z = Easing(1.0f, 0.3f, knockbackParameter_, kKnockbackParameterBack, EaseType::kEaseOut);
 		transform_.scale.y = Easing(1.0f, 1.6f, knockbackParameter_, kKnockbackParameterBack, EaseType::kEaseOut);
@@ -199,9 +202,16 @@ void Player::BehaviorKnockbackUpdate() {
 		break;
 	}
 
+	if (!onGround_) {
+		// 落下速度.
+		velocity_ += Vector3(0.0f, -kGravityAcceleration, 0.0f);
+		// 速度制限.
+		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
+	}
+
 	MapCollision();
 
-	
+
 }
 
 void Player::MovingUpdate() {
@@ -570,7 +580,7 @@ void Player::CheckFallVoid() {
 	}
 }
 
-void Player::MapCollision(){
+void Player::MapCollision() {
 	CollisionMapInfo collisionMapInfo;
 
 	collisionMapInfo.movementAmount = velocity_;
