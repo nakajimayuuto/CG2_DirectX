@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "MapChipField.h"
 #include <array>
+#include "./GlobalVariables.h"
 
 void Player::Initialize(const Vector3& position) {
 	transform_.Initialize();
@@ -14,6 +15,14 @@ void Player::Initialize(const Vector3& position) {
 
 	isKnockbackRequest_ = false;
 	isDead_ = false;
+
+	const char* groupName = "Player";
+	
+	GlobalVariables::GetInstance()->CreateGroup(groupName);
+
+	GlobalVariables::GetInstance()->SetValue(groupName,"TestInt",90);
+	GlobalVariables::GetInstance()->SetValue(groupName,"TestFloat",90.0f);
+	GlobalVariables::GetInstance()->SetValue(groupName, "TestVector3", {90.0f,90.0f,90.0f});
 }
 
 void Player::Update() {

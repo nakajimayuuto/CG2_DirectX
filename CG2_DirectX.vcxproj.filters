@@ -160,6 +160,9 @@
     <Filter Include="Environment\Debug">
       <UniqueIdentifier>{811bb14a-9d71-4a64-a43c-0b78203a8323}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Environment\GlobalVariables">
+      <UniqueIdentifier>{122a944f-4b7d-44ee-8aa2-273b5c094344}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -311,6 +314,9 @@
     </ClCompile>
     <ClCompile Include="Debug.cpp">
       <Filter>Environment\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GlobalVariables.cpp">
+      <Filter>Environment\GlobalVariables</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -472,6 +478,9 @@
     </ClInclude>
     <ClInclude Include="Debug.h">
       <Filter>Environment\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalVariables.h">
+      <Filter>Environment\GlobalVariables</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

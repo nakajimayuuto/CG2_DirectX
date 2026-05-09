@@ -1,6 +1,4 @@
-#include "./Engine/Renderer/Camera.h"
-#include "./Engine/SystemFile/GameSystem.h"
-#include "./Managers/SceneManager.h"
+#include "Satlib.h"
 #include "./Managers/StageManager.h"
 
 
@@ -39,6 +37,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//DirectionalLight::GetInstance()->GetDirectionalLightData()->direction = dire.Normalize();
 			//
 			//ImGui::End();
+
+			GlobalVariables::GetInstance()->Update();
 
 			SceneManager::GetInstance()->Update();
 
