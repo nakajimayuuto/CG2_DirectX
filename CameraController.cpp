@@ -47,12 +47,6 @@ void CameraController::ForcedScrollUpdate() {
 	cameraPosition_.y = std::min(cameraPosition_.y, movableArea_.top);
 
 	Vector3 pos = target_->GetTransform().translate;
-	
-	ImGui::Begin("aaa");
-
-	ImGui::Text("player:%f camera:%f", pos.x, cameraPosition_.x);
-
-	ImGui::End();
 
 	if (pos.x <= cameraPosition_.x - kCameraEndBlank_) {
 		Player::CollisionMapInfo scrollmapChipInfo;

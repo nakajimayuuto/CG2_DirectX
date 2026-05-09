@@ -35,7 +35,6 @@ SoundData SoundManager::GetSoundData(const std::string& name){
 }
 
 SoundData SoundManager::SoundLoadWave(const char* fileName) {
-	HRESULT result;
 	// 1. ファイルオープン.
 
 	// ファイル入力ストリームのインスタンス.

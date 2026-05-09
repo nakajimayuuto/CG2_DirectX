@@ -154,6 +154,12 @@
     <Filter Include="ソース ファイル\Effects\BaseEffect">
       <UniqueIdentifier>{ff738d12-3434-4e0a-91ef-d980cc348a18}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Managers\StageManager">
+      <UniqueIdentifier>{87a2fe2f-0519-408e-ab1e-44d0d869fb68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Environment\Debug">
+      <UniqueIdentifier>{811bb14a-9d71-4a64-a43c-0b78203a8323}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -299,6 +305,12 @@
     </ClCompile>
     <ClCompile Include="GuardEffect.cpp">
       <Filter>ソース ファイル\Effects\GuardEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\StageManager.cpp">
+      <Filter>Managers\StageManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug.cpp">
+      <Filter>Environment\Debug</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -454,6 +466,12 @@
     </ClInclude>
     <ClInclude Include="GuardEffect.h">
       <Filter>ソース ファイル\Effects\GuardEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\StageManager.h">
+      <Filter>Managers\StageManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Debug.h">
+      <Filter>Environment\Debug</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

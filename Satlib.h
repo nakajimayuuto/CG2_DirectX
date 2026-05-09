@@ -3,6 +3,7 @@
 #include "./Engine/SystemFile/GameSystem.h"
 #include "./Engine/SystemFile/ImGui.h"
 #include "./Engine/SystemFile/DeltaTime.h"
+#include "./Debug.h"
 
 #include "./Engine/Math/Math.h"
 #include "./Engine/Math/Shape.h"

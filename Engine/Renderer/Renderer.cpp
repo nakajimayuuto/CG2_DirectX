@@ -1,7 +1,7 @@
 #include "Renderer.h"
 #include "../SystemFile/GameSystem.h"
 #include <vector>
-Renderer::Model::~Model(){
+Renderer::Model::~Model() {
 	//for (uint32_t i = 0; i < modelMax_; i++) {
 	//	delete materialData_[i];
 	//
@@ -28,7 +28,7 @@ Renderer::Model::~Model(){
 }
 
 void Renderer::Model::Initialize(const ModelInfo& info) {
-	modelMax_ = info.modelData.size();
+	modelMax_ = static_cast<uint32_t>(info.modelData.size());
 
 	materialData_.resize(modelMax_);
 	isVisible_.resize(modelMax_);
@@ -99,7 +99,7 @@ void Renderer::Model::Initialize(const ModelInfo& info) {
 		VertexData* vertexData = nullptr;
 		// 書き込むためのアドレスを取得.
 		vertexResource_[i]->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	std:memcpy(vertexData, modelData_[i].vertices.data(), sizeof(VertexData) * modelData_[i].vertices.size());
+		memcpy(vertexData, modelData_[i].vertices.data(), sizeof(VertexData) * modelData_[i].vertices.size());
 	}
 }
 
@@ -478,7 +478,7 @@ void Renderer::ModelBox::Initialize(const TextureInfo& info) {
 	VertexData* vertexData = nullptr;
 	// 書き込むためのアドレスを取得.
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-std:memcpy(vertexData, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
+	memcpy(vertexData, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
 }
 
 void Renderer::ModelBox::Initialize() {
@@ -523,7 +523,7 @@ void Renderer::ModelBox::Initialize() {
 	VertexData* vertexData = nullptr;
 	// 書き込むためのアドレスを取得.
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	std:memcpy(vertexData, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
+	memcpy(vertexData, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
 }
 
 void Renderer::ModelBox::Draw(const Transform& transform) {
@@ -646,7 +646,7 @@ void Renderer::Sprite::Initialize(TextureInfo info) {
 	size_ = { 640.0f,360.0f };
 }
 
-void Renderer::Sprite::Initialize(){
+void Renderer::Sprite::Initialize() {
 	isVisible_ = true;
 
 	textureInfo_ = TextureManager::GetInstance()->GetTextureInfo("white_template");
@@ -767,7 +767,7 @@ void Renderer::Sprite::Draw(const Transform& transform) {
 
 }
 
-void Renderer::Sprite::Draw(const Transform2D& transform){
+void Renderer::Sprite::Draw(const Transform2D& transform) {
 	Transform transform3D;
 	transform3D.scale.x = transform.scale.x;
 	transform3D.scale.y = transform.scale.y;
@@ -778,7 +778,7 @@ void Renderer::Sprite::Draw(const Transform2D& transform){
 	transform3D.translate.x = transform.translate.x;
 	transform3D.translate.y = transform.translate.y;
 	transform3D.translate.z = 0.0f;
-;
+	;
 	Draw(transform3D);
 }
 
@@ -787,12 +787,12 @@ void Renderer::Sprite::SetSize(Vector2 size) {
 	AdaptationSize();
 }
 
-void Renderer::Sprite::SetSize(WindowSize windowSize){
-	size_ = {static_cast<float>(windowSize.width),static_cast<float>(windowSize.height) };
+void Renderer::Sprite::SetSize(WindowSize windowSize) {
+	size_ = { static_cast<float>(windowSize.width),static_cast<float>(windowSize.height) };
 	AdaptationSize();
 }
 
-void Renderer::Sprite::AdaptationSize(){
+void Renderer::Sprite::AdaptationSize() {
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 	vertexData[0].position = { 0.0f,size_.y,0.0f,1.0f }; // 左下.
 	vertexData[0].texcoord = { 0.0f,1.0f };

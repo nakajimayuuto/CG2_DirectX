@@ -2,6 +2,7 @@
 #include "../Satlib.h"
 #include "../Enemy.h"
 #include "../ShieldEnemy.h"
+#include "../Managers/StageManager.h"
 
 GameScene::~GameScene() {
 	for (std::vector<Transform*>& transformBlockLine : transformBlocks_) {
@@ -51,9 +52,7 @@ void GameScene::Initialize() {
 
 	SoundManager::GetInstance()->RegisterSound("free_k", "Resource/free_k.wav");
 
-
-	mapChipField_ = new MapChipField();
-	mapChipField_->LoadMapChipCsv("Resource/map/block.csv");
+	CreateStage();
 
 	GenerateFieldObjects();
 
@@ -77,6 +76,17 @@ void GameScene::Initialize() {
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
 
 	phase_ = Phase::kFadeIn;
+}
+
+void GameScene::CreateStage(){
+
+	const StageData& stageData = StageManager::GetInstance()->GetCurrentStageData();	
+
+	std::string stageFileName = "Resource/map/" + stageData.name + ".csv";
+
+	mapChipField_ = new MapChipField();
+
+	mapChipField_->LoadMapChipCsv(stageFileName);
 }
 
 void GameScene::GenerateFieldObjects() {

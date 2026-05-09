@@ -19,6 +19,7 @@
     <ClCompile Include="BaseEnemy.cpp" />
     <ClCompile Include="CameraController.cpp" />
     <ClCompile Include="DeathParticle.cpp" />
+    <ClCompile Include="Debug.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="Engine\Math\Beats.cpp" />
     <ClCompile Include="Engine\Math\Collision.cpp" />
@@ -82,6 +83,7 @@
     <ClCompile Include="Managers\ModelManager.cpp" />
     <ClCompile Include="Managers\SceneManager.cpp" />
     <ClCompile Include="Managers\SoundManager.cpp" />
+    <ClCompile Include="Managers\StageManager.cpp" />
     <ClCompile Include="Managers\TextureManager.cpp" />
     <ClCompile Include="MapChipField.cpp" />
     <ClCompile Include="Player.cpp" />
@@ -95,6 +97,7 @@
     <ClInclude Include="BaseEnemy.h" />
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="DeathParticle.h" />
+    <ClInclude Include="Debug.h" />
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="Engine\Math\Beats.h" />
     <ClInclude Include="Engine\Math\Collision.h" />
@@ -133,6 +136,7 @@
     <ClInclude Include="Managers\ModelManager.h" />
     <ClInclude Include="Managers\SceneManager.h" />
     <ClInclude Include="Managers\SoundManager.h" />
+    <ClInclude Include="Managers\StageManager.h" />
     <ClInclude Include="Managers\TextureManager.h" />
     <ClInclude Include="MapChipField.h" />
     <ClInclude Include="Player.h" />

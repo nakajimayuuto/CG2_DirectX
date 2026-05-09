@@ -3,6 +3,7 @@
 #include "../Scene/TitleScene.h"
 #include "InputManager.h"
 #include "../Environment.h"
+#include "../Debug.h"
 
 SceneManager::~SceneManager() {
 	delete currentScene_;
@@ -17,6 +18,7 @@ void SceneManager::Initialize() {
 	currentScene_ = new TitleScene();
 
 #ifdef _DEBUG
+	Debug::GetInstance()->LoadDebugSettings();
 	currentScene_ = new GameScene();
 #endif // _DEBUG
 
@@ -46,6 +48,7 @@ void SceneManager::ChangeSceneUpdate() {
 
 	switch (sceneName_) {
 	case SceneName::kGameScene:
+
 		currentScene_ = new GameScene();
 		currentScene_->Initialize();
 		break;

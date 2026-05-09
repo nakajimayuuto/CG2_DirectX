@@ -24,6 +24,8 @@ public:
 
 	void CreateEffect(Vector3 position, BaseEffect::EffectType type);
 private:
+	void CreateStage();
+
 	void GenerateFieldObjects();
 
 	void CheckAllCollision();
