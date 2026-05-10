@@ -31,8 +31,10 @@
     <ClCompile Include="Engine\Renderer\DirectionalLight.cpp" />
     <ClCompile Include="Engine\Renderer\Renderer.cpp" />
     <ClCompile Include="Engine\SystemFile\Convert.cpp" />
+    <ClCompile Include="Engine\SystemFile\Debug.cpp" />
     <ClCompile Include="Engine\SystemFile\DeltaTime.cpp" />
     <ClCompile Include="Engine\SystemFile\GameSystem.cpp" />
+    <ClCompile Include="Engine\SystemFile\GlobalVariables.cpp" />
     <ClCompile Include="Environment.cpp" />
     <ClCompile Include="externals\imgui\imgui.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -77,6 +79,7 @@
     <ClCompile Include="Managers\TextureManager.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Scene\GameScene.cpp" />
+    <ClCompile Include="Scene\TitleScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Math\Beats.h" />
@@ -97,8 +100,10 @@
     <ClInclude Include="Engine\Renderer\ModelData.h" />
     <ClInclude Include="Engine\Renderer\Renderer.h" />
     <ClInclude Include="Engine\SystemFile\Convert.h" />
+    <ClInclude Include="Engine\SystemFile\Debug.h" />
     <ClInclude Include="Engine\SystemFile\DeltaTime.h" />
     <ClInclude Include="Engine\SystemFile\GameSystem.h" />
+    <ClInclude Include="Engine\SystemFile\GlobalVariables.h" />
     <ClInclude Include="Engine\SystemFile\ImGui.h" />
     <ClInclude Include="Environment.h" />
     <ClInclude Include="externals\imgui\imconfig.h" />
@@ -118,6 +123,7 @@
     <ClInclude Include="Satlib.h" />
     <ClInclude Include="Scene\GameScene.h" />
     <ClInclude Include="Scene\IScene.h" />
+    <ClInclude Include="Scene\TitleScene.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
@@ -170,6 +176,12 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(ProjectDir)\externals\nlohmann;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(ProjectDir)\externals\nlohmann;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>

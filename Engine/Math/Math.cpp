@@ -1,7 +1,7 @@
 #include "Math.h"
 
 float Length(Vector2 vector2) {
-	float length = sqrtf(powf(vector2.x, 2.0f) + powf(vector2.y, 2.0f));
+	float length = sqrt(pow(vector2.x, 2.0f) + pow(vector2.y, 2.0f));
 
 	return length;
 };
@@ -25,7 +25,7 @@ Vector2 Normalize(Vector2 vector2) {
 
 float Radian(float degree) {
 
-	float radian = degree * (float(M_PI) / 180.0f);
+	float radian = degree * (std::numbers::pi_v<float> / 180.0f);
 
 	return radian;
 }
@@ -33,7 +33,7 @@ float Radian(float degree) {
 
 float Degree(float radian) {
 
-	float degree = radian * (180.0f / float(M_PI));
+	float degree = radian * (180.0f / std::numbers::pi_v<float>);
 
 	return degree;
 }
@@ -108,14 +108,14 @@ float CrossProduct(Vector2 vector2v1, Vector2 vector2v2) {
 Vector2 Rotate(Vector2 pos, Vector2 centerPos, float theta) {
 
 	Vector2 newPos;
-	newPos.x = (pos.x * cosf(Radian(theta))) - pos.y * sinf(Radian(theta)) + centerPos.x;
-	newPos.y = (pos.x * sinf(Radian(theta))) - pos.y * cosf(Radian(theta)) + centerPos.y;
+	newPos.x = (pos.x * cos(Radian(theta))) - pos.y * sin(Radian(theta)) + centerPos.x;
+	newPos.y = (pos.x * sin(Radian(theta))) - pos.y * cos(Radian(theta)) + centerPos.y;
 
 	return newPos;
 }
 
 float Rotate(float pos, float centerPos, float theta) {
-	return (pos * cosf(Radian(theta))) - pos * sinf(Radian(theta)) + centerPos;
+	return (pos * cos(Radian(theta))) - pos * sin(Radian(theta)) + centerPos;
 }
 
 float VectorToRadian(Vector2 vector) {
@@ -124,17 +124,17 @@ float VectorToRadian(Vector2 vector) {
 	float dotProduct = DotProduct(vector, { 1.0f,0.0f });
 
 	if (vector.y < 0.0f) {
-		return -acosf(dotProduct / (lengthV1 * lengthV2));
+		return -acos(dotProduct / (lengthV1 * lengthV2));
 	}
 
-	return acosf(dotProduct / (lengthV1 * lengthV2));
+	return acos(dotProduct / (lengthV1 * lengthV2));
 }
 
 Vector2 RadianToVector(float radian) {
 
 	Vector2 vector2 = {
-		cosf(Degree(radian) * static_cast<float>(M_PI) / 180.0f),
-		sinf(Degree(radian) * static_cast<float>(M_PI) / 180.0f)
+		cos(Degree(radian) * std::numbers::pi_v<float> / 180.0f),
+		sin(Degree(radian) * std::numbers::pi_v<float> / 180.0f)
 	};
 
 	return Normalize(vector2);
@@ -148,17 +148,17 @@ float VectorToDegree(Vector2 vector) {
 	float dotProduct = DotProduct(vector, { 1.0f,0.0f });
 
 	if (vector.y < 0.0f) {
-		return -Degree(acosf(dotProduct / (lengthV1 * lengthV2)));
+		return -Degree(acos(dotProduct / (lengthV1 * lengthV2)));
 	}
 
-	return Degree(acosf(dotProduct / (lengthV1 * lengthV2)));
+	return Degree(acos(dotProduct / (lengthV1 * lengthV2)));
 }
 
 Vector2 DegreeToVector(float degree) {
 
 	Vector2 vector2 = {
-		cosf(degree * static_cast<float>(M_PI) / 180.0f),
-		sinf(degree * static_cast<float>(M_PI) / 180.0f)
+		cos(degree * std::numbers::pi_v<float> / 180.0f),
+		sin(degree * std::numbers::pi_v<float> / 180.0f)
 	};
 
 	return Normalize(vector2);

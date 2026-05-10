@@ -644,11 +644,11 @@ Matrix4x4 Matrix4x4::MakeRotateZMatrix(float radian) {
 }
 
 Matrix4x4 Matrix4x4::MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate) {
-	return MakeScaleMatrix(scale) * MakeRotateXMatrix(rotate.x) * MakeRotateYMatrix(rotate.y) * MakeRotateZMatrix(rotate.z) * MakeTranslateMatrix(translate);
+	return MakeScaleMatrix(scale) * (MakeRotateXMatrix(rotate.x) * MakeRotateYMatrix(rotate.y) * MakeRotateZMatrix(rotate.z)) * MakeTranslateMatrix(translate);
 }
 
 Matrix4x4 Matrix4x4::MakeAffineMatrix(const Transform& transform){
-	return MakeScaleMatrix(transform.scale) * MakeRotateXMatrix(transform.rotate.x) * MakeRotateYMatrix(transform.rotate.y) * MakeRotateZMatrix(transform.rotate.z) * MakeTranslateMatrix(transform.translate);
+	return MakeScaleMatrix(transform.scale) * (MakeRotateXMatrix(transform.rotate.x) * MakeRotateYMatrix(transform.rotate.y) * MakeRotateZMatrix(transform.rotate.z)) * MakeTranslateMatrix(transform.translate);
 }
 
 Matrix4x4 Matrix4x4::MakeOrthographicMatrix(Vertex4 vertex4, float zNear, float zFar) {

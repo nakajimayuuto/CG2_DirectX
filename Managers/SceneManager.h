@@ -1,7 +1,6 @@
 #pragma once
 #include <memory>
 #include "../Scene/IScene.h"
-//#include "../Scene/GameScene.h"
 
 class GameScene;
 
@@ -20,6 +19,8 @@ public:
 	void ChangeSceneUpdate();
 
 	void ChengeScene(SceneName name);
+
+	void ReloadScene();
 private:
 	IScene* currentScene_ = nullptr;
 

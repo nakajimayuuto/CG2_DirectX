@@ -4,8 +4,10 @@
 #include <cstdint>
 #include "../../Managers/ModelManager.h"
 #include "../../Managers/TextureManager.h"
+#include "../../Environment.h"
 #include "../../externals/DirectXTex/DirectXTex.h"
 #include "../../externals/DirectXTex/d3dx12.h"
+#include "../SystemFile/GameSystem.h"
 
 namespace Renderer {
 	enum class LightingType {
@@ -47,6 +49,8 @@ namespace Renderer {
 
 		LightingType GetLightingType();
 		LightingType GetLightingType(const std::string& meshName);
+
+		void SetBlendMode(BlendMode blendMode) { blendMode_ = blendMode; };
 	private:
 		uint32_t modelMax_;
 
@@ -67,6 +71,8 @@ namespace Renderer {
 		std::vector<D3D12_VERTEX_BUFFER_VIEW> vertexBufferView_{};
 
 		std::vector<Transform> uvTransform_;
+
+		BlendMode blendMode_;
 	};
 
 	class ModelSphere {
@@ -111,6 +117,8 @@ namespace Renderer {
 		Microsoft::WRL::ComPtr<ID3D12Resource> indexResource_ = nullptr;
 
 		D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
+
+		BlendMode blendMode_;
 	};
 
 	class ModelBox {
@@ -152,13 +160,18 @@ namespace Renderer {
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
 
 		Transform uvTransform_;
+
+		BlendMode blendMode_;
 	};
 
 	class Sprite {
 	public:
 		void Initialize(TextureInfo info);
+		void Initialize();
 
 		void Draw(const Transform& transform);
+
+		void Draw(const Transform2D& transform);
 
 		void SetIsVisible(bool isVisible) { isVisible_ = isVisible; };
 
@@ -173,8 +186,11 @@ namespace Renderer {
 		void SetUvTransform(const Transform& transform) { uvTransform_ = transform; }
 
 		void SetSize(Vector2 size);
+		void SetSize(WindowSize windowSize);
 
 		Vector2 GetSize() { return size_; };
+	private:
+		void AdaptationSize();
 	private:
 		Vector2 size_;
 

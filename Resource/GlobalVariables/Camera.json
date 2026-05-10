@@ -1,0 +1,14 @@
+{
+    "Camera": {
+        "FarClip": 100.0,
+        "FovY": 0.44999998807907104,
+        "MaxDepth": 1.0,
+        "MinDepth": 0.0,
+        "NearClip": 0.10000000149011612,
+        "ViewportLeftTop": [
+            0.0,
+            0.0,
+            0.0
+        ]
+    }
+}

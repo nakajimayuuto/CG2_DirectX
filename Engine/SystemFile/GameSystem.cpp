@@ -11,6 +11,7 @@
 #include "../../Managers/ModelManager.h"
 #include "../../Environment.h"
 #include "../Math/Random.h"
+#include "GlobalVariables.h"
 #include <strsafe.h>
 #include <filesystem>
 #include <chrono>
@@ -324,18 +325,24 @@ void GameSystem::Initialize() {
 	io.Fonts->Build();
 #endif // USE_IMGUI
 
-	CreatePipeline(D3D12_CULL_MODE_BACK);
+	for (uint32_t i = 0; i < static_cast<uint32_t>(BlendMode::kCount); i++) {
+		CreatePipeline(static_cast<BlendMode>(i));
+	}
 
 	SoundManager::GetInstance()->Initialize();
 
 	Random::GetInstance()->Initialize();
 
-	ModelManager::GetInstance()->RegisterObj("block_template","Resource/block","block.obj");
+	ModelManager::GetInstance()->RegisterObj("block_template", "Resource/block", "block.obj");
 
-	TextureManager::GetInstance()->RegisterTexture("white_template","Resource/white_template.png");
+	TextureManager::GetInstance()->RegisterTexture("white_template", "Resource/white_template.png");
+
+	GlobalVariables::GetInstance()->LoadFiles();
+
+	RegisterGlobalVariables();
 }
 
-void GameSystem::CreatePipeline(D3D12_CULL_MODE cullMode){
+void GameSystem::CreatePipeline(BlendMode blendMode) {
 	/*=============================================================
 	DXCの初期化.
 	=============================================================*/
@@ -450,7 +457,7 @@ void GameSystem::CreatePipeline(D3D12_CULL_MODE cullMode){
 		assert(false);
 	}
 	// バイナリを元に生成.
-	hr = device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
+	hr = device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&pipeline_[static_cast<uint32_t>(blendMode)].rootSignature));
 	assert(SUCCEEDED(hr));
 
 	// 【InputLayout】
@@ -474,12 +481,59 @@ void GameSystem::CreatePipeline(D3D12_CULL_MODE cullMode){
 	// 【BlendState設定】
 	D3D12_BLEND_DESC blendDesc{};
 	// 全ての色要素を書き込む.
+	// AL3_05_10にて透明度が反映さえる変更を加えた.
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	blendDesc.AlphaToCoverageEnable = FALSE;
+	blendDesc.IndependentBlendEnable = FALSE;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	blendDesc.RenderTarget[0].BlendEnable = true;
+
+	switch (blendMode) {
+	case BlendMode::kNormal:
+	case BlendMode::kNormalCullNone:
+		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+		break;
+	case BlendMode::kAdd:
+		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+		break;
+	case BlendMode::kSubtract:
+		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;
+		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+		break;
+	case BlendMode::kMultily:
+		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_SRC_COLOR;
+		break;
+	case BlendMode::kScreen:
+		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+		break;
+	default:
+		blendDesc.RenderTarget[0].BlendEnable = false;
+		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+		break;
+	}
+
 
 	// 【RasterizerStateの設定を行う】
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
 	// 裏面(時計回り)を表示しない.
-	rasterizerDesc.CullMode = cullMode;
+	if (blendMode == BlendMode::kNormalCullNone) {
+		rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+	} else {
+		rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
+	}
 	// 三角形の中を塗りつぶす.
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
@@ -492,7 +546,7 @@ void GameSystem::CreatePipeline(D3D12_CULL_MODE cullMode){
 	assert(pixelShaderBlob != nullptr);
 
 	// 【PSO】
-	graphicsPipelineStateDesc.pRootSignature = rootSignature.Get(); // RootSignature.
+	graphicsPipelineStateDesc.pRootSignature = pipeline_[static_cast<uint32_t>(blendMode)].rootSignature.Get(); // RootSignature.
 	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc; // InputLayout.
 	graphicsPipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(),vertexShaderBlob->GetBufferSize() }; // VertexShader.
 	graphicsPipelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(),pixelShaderBlob->GetBufferSize() }; // PixelShader.
@@ -511,14 +565,22 @@ void GameSystem::CreatePipeline(D3D12_CULL_MODE cullMode){
 	graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	// 実際に生成.
-	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
+	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&pipeline_[static_cast<uint32_t>(blendMode)].graphicsPipelineState));
 	assert(SUCCEEDED(hr));
 
-	commandList->SetGraphicsRootSignature(rootSignature.Get());
-	commandList->SetPipelineState(graphicsPipelineState.Get()); // PS0を設定.
+	commandList->SetGraphicsRootSignature(pipeline_[static_cast<uint32_t>(blendMode)].rootSignature.Get());
+	commandList->SetPipelineState(pipeline_[static_cast<uint32_t>(blendMode)].graphicsPipelineState.Get()); // PS0を設定.
 
 	dxcCompiler->Release();
 	dxcUtils->Release();
+}
+
+void GameSystem::SetPipeline(BlendMode blendMode) {
+	commandList->RSSetViewports(1, &viewport); // Viewportを設定.
+	commandList->RSSetScissorRects(1, &scissorRect); // Scissorを設定.
+	// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
+	commandList->SetGraphicsRootSignature(pipeline_[static_cast<uint32_t>(blendMode)].rootSignature.Get());
+	commandList->SetPipelineState(pipeline_[static_cast<uint32_t>(blendMode)].graphicsPipelineState.Get()); // PS0を設定.
 }
 
 bool GameSystem::ProcessMessage() {
@@ -549,6 +611,8 @@ bool GameSystem::BeginFrame() {
 	// 指定した深度で画面全体をクリアする.
 	dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
+	ApplyGlobalVariables();
 
 	return true;
 }
@@ -598,8 +662,8 @@ void GameSystem::DrawSetup() {
 	commandList->RSSetViewports(1, &viewport); // Viewportを設定.
 	commandList->RSSetScissorRects(1, &scissorRect); // Scissorを設定.
 	// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
-	commandList->SetGraphicsRootSignature(rootSignature.Get());
-	commandList->SetPipelineState(graphicsPipelineState.Get()); // PS0を設定.
+	commandList->SetGraphicsRootSignature(pipeline_[static_cast<uint32_t>(BlendMode::kNormal)].rootSignature.Get());
+	commandList->SetPipelineState(pipeline_[static_cast<uint32_t>(BlendMode::kNormal)].graphicsPipelineState.Get()); // PS0を設定.
 }
 
 void GameSystem::EndFrame() {
@@ -678,20 +742,15 @@ void GameSystem::Finalize() {
 	CoUninitialize();
 }
 
-void GameSystem::SetCullMode(D3D12_CULL_MODE mode){
-	// 【RasterizerStateの設定を行う】
-	D3D12_RASTERIZER_DESC rasterizerDesc{};
-	// 裏面(時計回り)を表示しない.
-	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
-	// 三角形の中を塗りつぶす.
-	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+void GameSystem::RegisterGlobalVariables() {
+	Camera::GetInstance()->RegisterGlobalVariables();
+	DirectionalLight::GetInstance()->RegisterGlobalVariables();
+};
 
-	// 【PSO】
-	graphicsPipelineStateDesc.RasterizerState = rasterizerDesc; // RasterizerState.
-	// 実際に生成.
-	HRESULT hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
-	assert(SUCCEEDED(hr));
-}
+void GameSystem::ApplyGlobalVariables() {
+	Camera::GetInstance()->ApplyGlobalVariables();
+	DirectionalLight::GetInstance()->ApplyGlobalVariables();
+};
 
 LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 #ifdef USE_IMGUI

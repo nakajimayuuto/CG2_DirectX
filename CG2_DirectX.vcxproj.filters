@@ -109,8 +109,14 @@
     <Filter Include="Engine\Math\Shape">
       <UniqueIdentifier>{3cd1682a-debb-4790-b96d-316406bf45af}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Player">
-      <UniqueIdentifier>{e9c1a177-6832-4c73-bb7f-900505189842}</UniqueIdentifier>
+    <Filter Include="Engine\SystemFile\GlobalVariables">
+      <UniqueIdentifier>{7dbc8a98-498e-4fff-abd2-05e597946a6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\SystemFile\Debug">
+      <UniqueIdentifier>{4b1105c9-fff6-4a45-9f33-cfcb6e3cf94f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene\TitleScene">
+      <UniqueIdentifier>{b5ab3c07-8cbf-405a-b63f-1a53b445a335}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -219,8 +225,14 @@
     <ClCompile Include="Engine\Math\Shape.cpp">
       <Filter>Engine\Math\Shape</Filter>
     </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>ソース ファイル\Player</Filter>
+    <ClCompile Include="Engine\SystemFile\GlobalVariables.cpp">
+      <Filter>Engine\SystemFile\GlobalVariables</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\SystemFile\Debug.cpp">
+      <Filter>Engine\SystemFile\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\TitleScene.cpp">
+      <Filter>Scene\TitleScene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -338,8 +350,14 @@
     <ClInclude Include="Engine\Math\Shape.h">
       <Filter>Engine\Math\Shape</Filter>
     </ClInclude>
-    <ClInclude Include="Player.h">
-      <Filter>ソース ファイル\Player</Filter>
+    <ClInclude Include="Engine\SystemFile\GlobalVariables.h">
+      <Filter>Engine\SystemFile\GlobalVariables</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\SystemFile\Debug.h">
+      <Filter>Engine\SystemFile\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\TitleScene.h">
+      <Filter>Scene\TitleScene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

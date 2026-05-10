@@ -1,5 +1,4 @@
 #include "Renderer.h"
-#include "../SystemFile/GameSystem.h"
 #include <vector>
 Renderer::Model::~Model(){
 	for (uint32_t i = 0; i < modelMax_; i++) {
@@ -28,7 +27,9 @@ Renderer::Model::~Model(){
 }
 
 void Renderer::Model::Initialize(const ModelInfo& info) {
-	modelMax_ = info.modelData.size();
+	modelMax_ = static_cast<uint32_t>(info.modelData.size());
+
+	blendMode_ = BlendMode::kNormal;
 
 	materialData_.resize(modelMax_);
 	isVisible_.resize(modelMax_);
@@ -99,7 +100,7 @@ void Renderer::Model::Initialize(const ModelInfo& info) {
 		VertexData* vertexData = nullptr;
 		// 書き込むためのアドレスを取得.
 		vertexResource_[i]->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	std:memcpy(vertexData, modelData_[i].vertices.data(), sizeof(VertexData) * modelData_[i].vertices.size());
+		memcpy(vertexData, modelData_[i].vertices.data(), sizeof(VertexData) * modelData_[i].vertices.size());
 	}
 }
 
@@ -116,23 +117,27 @@ void Renderer::Model::Draw(const Transform& transform) {
 
 		materialData_[i]->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransform_[i]);
 
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = GameSystem::GetInstance()->GetCommandList();
+
 		/*=============================================================
 		三角形の描画のコマンド.
 		=============================================================*/
-		GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_[i]); // VBVを設定.
+		GameSystem::GetInstance()->SetPipeline(blendMode_);
+
+		commandList->IASetVertexBuffers(0, 1, &vertexBufferView_[i]); // VBVを設定.
 		// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
-		GameSystem::GetInstance()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		// CBufferの場所を設定.
 		// マテリアル用のCBufferの場所.
-		GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource_[i]->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootConstantBufferView(0, materialResource_[i]->GetGPUVirtualAddress());
 		// WVP用のCBufferの場所.
-		GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource_[i]->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootConstantBufferView(1, wvpResource_[i]->GetGPUVirtualAddress());
 		// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
-		GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootDescriptorTable(2, modelData_[i].textureSrvHandlesGPU);
+		commandList->SetGraphicsRootDescriptorTable(2, modelData_[i].textureSrvHandlesGPU);
 		// DirectionalLight用のCBufferの場所.
-		GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
 		// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-		GameSystem::GetInstance()->GetCommandList()->DrawInstanced(UINT(modelData_[i].vertices.size()), 1, 0, 0);
+		commandList->DrawInstanced(UINT(modelData_[i].vertices.size()), 1, 0, 0);
 	}
 }
 
@@ -199,11 +204,13 @@ void Renderer::Model::ChangeTexture(const TextureInfo& info, const std::string& 
 void Renderer::Model::SetColor(Vector4 color) {
 	if (modelMax_ == 1) {
 		materialData_[0]->color = color;
+		materialResource_[0]->Map(0, nullptr, reinterpret_cast<void**>(&materialData_[0]));
 		return;
 	}
 
 	for (uint32_t i = 0; i < modelMax_; i++) {
 		materialData_[i]->color = color;
+		materialResource_[i]->Map(0, nullptr, reinterpret_cast<void**>(&materialData_[i]));
 	}
 };
 void Renderer::Model::SetColor(Vector4 color, const std::string& meshName) {
@@ -299,6 +306,8 @@ Renderer::LightingType Renderer::Model::GetLightingType(const std::string& meshN
 };
 
 void Renderer::ModelSphere::Initialize(TextureInfo info) {
+	blendMode_ = BlendMode::kNormal;
+
 	isVisible_ = true;
 
 	textureInfo_ = info;
@@ -416,6 +425,8 @@ void Renderer::ModelSphere::Draw(const Transform& transform) {
 	/*=============================================================
 	三角形の描画のコマンド.
 	=============================================================*/
+	GameSystem::GetInstance()->SetPipeline(blendMode_);
+
 	GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_); // VBVを設定.
 	GameSystem::GetInstance()->GetCommandList()->IASetIndexBuffer(&indexBufferView_); // IBVを設定.
 	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
@@ -476,10 +487,12 @@ void Renderer::ModelBox::Initialize(const TextureInfo& info) {
 	VertexData* vertexData = nullptr;
 	// 書き込むためのアドレスを取得.
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-std:memcpy(vertexData, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
+	memcpy(vertexData, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
 }
 
 void Renderer::ModelBox::Initialize() {
+	blendMode_ = BlendMode::kNormal;
+
 	isVisible_ = true;
 	uvTransform_.Initialize();
 	modelData_ = ModelManager::GetInstance()->GetModelInfo("block_template").modelData[0];
@@ -521,7 +534,7 @@ void Renderer::ModelBox::Initialize() {
 	VertexData* vertexData = nullptr;
 	// 書き込むためのアドレスを取得.
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	std:memcpy(vertexData, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
+	memcpy(vertexData, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
 }
 
 void Renderer::ModelBox::Draw(const Transform& transform) {
@@ -539,6 +552,8 @@ void Renderer::ModelBox::Draw(const Transform& transform) {
 	/*=============================================================
 	三角形の描画のコマンド.
 	=============================================================*/
+	GameSystem::GetInstance()->SetPipeline(blendMode_);
+
 	GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_); // VBVを設定.
 	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
 	GameSystem::GetInstance()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -560,6 +575,94 @@ void Renderer::Sprite::Initialize(TextureInfo info) {
 	isVisible_ = true;
 
 	textureInfo_ = info;
+	/*=============================================================
+	Sprite用のResourceとView.
+	=============================================================*/
+	// 【VertexResourceを生成する】
+	// 実際に頂点リソースを作る.
+	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * 4);
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ.
+	vertexBufferView_.SizeInBytes = sizeof(VertexData) * 4;
+	// 1頂点あたりのサイズ.
+	vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+	// 【IndexResourceを生成する】
+	// 実際に頂点リソースを作る.
+	indexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * 6);
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	indexBufferView_.BufferLocation = indexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズはインデックス6つ分のサイズ.
+	indexBufferView_.SizeInBytes = sizeof(uint32_t) * 6;
+	// インデックスはuint32_tとする.
+	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+
+
+	// 【MaterialResourceを生成する】
+	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
+	//Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceSprite
+	materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+	// マテリアルにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
+	// 今回は赤を書き込んでみる
+	materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	materialData_->lightingType = static_cast<uint32_t>(LightingType::kNone);
+	materialData_->uvTransform = Matrix4x4::Identity();
+
+	// 【TransformationMatrix】
+	//Sprite用のTransformationMatrixを作る。Matrix4x4 1つ分のサイズを用意する.
+	transformationMatrixResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+	// データを書き込む.
+	// 書き込むためのアドレスを取得.
+	transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_));
+	// 単位行列を書き込んでおく.
+	transformationMatrixData_->WVP = Matrix4x4::Identity();
+	transformationMatrixData_->World = Matrix4x4::Identity();
+
+	// 【Resourceにデータを書き込む】
+
+	// 頂点リソースにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	// 1枚目の三角形.
+	vertexData[0].position = { 0.0f,360.0f,0.0f,1.0f }; // 左下.
+	vertexData[0].texcoord = { 0.0f,1.0f };
+	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f }; // 左上.
+	vertexData[1].texcoord = { 0.0f,0.0f };
+	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[2].position = { 640.0f,360.0f,0.0f,1.0f }; // 右下.
+	vertexData[2].texcoord = { 1.0f,1.0f };
+	vertexData[2].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[3].position = { 640.0f,0.0f,0.0f,1.0f }; // 右上.
+	vertexData[3].texcoord = { 1.0f,0.0f };
+	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
+
+	// インデックスリソースにデータを書き込む.
+	uint32_t* indexDataSprite = nullptr;
+	// 書き込むためのアドレスを取得.
+	indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
+	// 1枚目の三角形.
+	indexDataSprite[0] = 0;
+	indexDataSprite[1] = 1;
+	indexDataSprite[2] = 2;
+	indexDataSprite[3] = 1;
+	indexDataSprite[4] = 3;
+	indexDataSprite[5] = 2;
+
+	size_ = { 640.0f,360.0f };
+}
+
+void Renderer::Sprite::Initialize() {
+	isVisible_ = true;
+
+	textureInfo_ = TextureManager::GetInstance()->GetTextureInfo("white_template");
 	/*=============================================================
 	Sprite用のResourceとView.
 	=============================================================*/
@@ -677,19 +780,43 @@ void Renderer::Sprite::Draw(const Transform& transform) {
 
 }
 
+void Renderer::Sprite::Draw(const Transform2D& transform) {
+	Transform transform3D;
+	transform3D.scale.x = transform.scale.x;
+	transform3D.scale.y = transform.scale.y;
+	transform3D.scale.z = 1.0f;
+	transform3D.rotate.x = transform.rotate;
+	transform3D.rotate.y = 0.0f;
+	transform3D.rotate.z = 0.0f;
+	transform3D.translate.x = transform.translate.x;
+	transform3D.translate.y = transform.translate.y;
+	transform3D.translate.z = 0.0f;
+	;
+	Draw(transform3D);
+}
+
 void Renderer::Sprite::SetSize(Vector2 size) {
 	size_ = size;
+	AdaptationSize();
+}
+
+void Renderer::Sprite::SetSize(WindowSize windowSize) {
+	size_ = { static_cast<float>(windowSize.width),static_cast<float>(windowSize.height) };
+	AdaptationSize();
+}
+
+void Renderer::Sprite::AdaptationSize() {
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	vertexData[0].position = { 0.0f,size.y,0.0f,1.0f }; // 左下.
+	vertexData[0].position = { 0.0f,size_.y,0.0f,1.0f }; // 左下.
 	vertexData[0].texcoord = { 0.0f,1.0f };
 	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
 	vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f }; // 左上.
 	vertexData[1].texcoord = { 0.0f,0.0f };
 	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[2].position = { size.x,size.y,0.0f,1.0f }; // 右下.
+	vertexData[2].position = { size_.x,size_.y,0.0f,1.0f }; // 右下.
 	vertexData[2].texcoord = { 1.0f,1.0f };
 	vertexData[2].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[3].position = { size.x,0.0f,0.0f,1.0f }; // 右上.
+	vertexData[3].position = { size_.x,0.0f,0.0f,1.0f }; // 右上.
 	vertexData[3].texcoord = { 1.0f,0.0f };
 	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
 }

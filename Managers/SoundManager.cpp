@@ -35,7 +35,6 @@ SoundData SoundManager::GetSoundData(const std::string& name){
 }
 
 SoundData SoundManager::SoundLoadWave(const char* fileName) {
-	HRESULT result;
 	// 1. ファイルオープン.
 
 	// ファイル入力ストリームのインスタンス.
@@ -77,6 +76,13 @@ SoundData SoundManager::SoundLoadWave(const char* fileName) {
 	file.read(reinterpret_cast<char*>(&data), sizeof(data));
 	// JUNKチャンクを検出した場合.
 	if (strncmp(data.id, "JUNK", 4) == 0) {
+		// 読み取り位置をJUNKチャンクの終わりまで進める.
+		file.seekg(data.size, std::ios_base::cur);
+		// 再読み込み.
+		file.read(reinterpret_cast<char*>(&data), sizeof(data));
+	}
+
+	if (strncmp(data.id, "LIST", 4) == 0) {
 		// 読み取り位置をJUNKチャンクの終わりまで進める.
 		file.seekg(data.size, std::ios_base::cur);
 		// 再読み込み.

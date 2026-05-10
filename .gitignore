@@ -367,3 +367,6 @@ imgui.ini
 
 *.dmp
 Dumps/
+
+DebugSettings.ini
+/DebugSettings.ini

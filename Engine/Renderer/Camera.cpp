@@ -1,6 +1,7 @@
 #include "Camera.h"
 #include "../../Managers/InputManager.h"
 #include "../Math/Math.h"
+#include "../SystemFile/GlobalVariables.h"
 
 Camera* Camera::GetInstance() {
 	static Camera instance;
@@ -10,10 +11,31 @@ Camera* Camera::GetInstance() {
 void Camera::Initialize(float windowWidth, float windowHeight) {
 	scale_ = { 1.0f,1.0f,1.0f };
 	rotate_ = { 0.0f,0.0f,0.0f };
-	translate_ = { 0.0f,0.0f,-10.0f };
+	translate_ = { 0.0f,0.0f,-50.0f };
 
 	windowWidth_ = windowWidth;
 	windowHeight_ = windowHeight;
+
+	fovY_ = 0.45f;
+	viewportLeftTop_ = { 0.0f,0.0f,0.0f };
+	nearClip_ = 0.1f;
+	farClip_ = 100.0f;
+	minDepth_ = 0.0f;
+	maxDepth_ = 1.0f;
+
+	// 【デバッグカメラ用】
+	useDebugCamera_ = false;
+
+	debugScale_ = { 1.0f,1.0f,1.0f };
+	debugTranslate_ = { 0.0f,0.0f,-10.0f };
+
+	debugMatRot_ = Matrix4x4::MakeAffineMatrix(debugScale_,rotate_,debugTranslate_);
+}
+
+void Camera::Initialize() {
+	scale_ = { 1.0f,1.0f,1.0f };
+	rotate_ = { 0.0f,0.0f,0.0f };
+	translate_ = { 0.0f,0.0f,-50.0f };
 
 	fovY_ = 0.45f;
 	viewportLeftTop_ = { 0.0f,0.0f,0.0f };
@@ -62,6 +84,12 @@ void Camera::DebugUpdate(){
 		}
 		if (InputManager::GetInstance()->PressKey(DIK_DOWN)) {
 			debugTranslate_.z -= 0.05f;
+		}
+		if (InputManager::GetInstance()->PressKey(DIK_SPACE)) {
+			debugTranslate_.y += 0.05f;
+		}
+		if (InputManager::GetInstance()->PressKey(DIK_LCONTROL)) {
+			debugTranslate_.y -= 0.05f;
 		}
 	}else {
 		if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
@@ -123,3 +151,29 @@ void Camera::ChangeCameraMode(){
 		useDebugCamera_ = true;
 	}
 }
+
+void Camera::RegisterGlobalVariables() {
+	const std::string& groupName = "Camera";
+
+	GlobalVariables::GetInstance()->CreateGroup(groupName);
+	// 【デバッグカメラ用】
+	useDebugCamera_ = false;
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "FovY", fovY_);
+	GlobalVariables::GetInstance()->AddValue(groupName, "ViewportLeftTop", viewportLeftTop_);
+	GlobalVariables::GetInstance()->AddValue(groupName, "NearClip", nearClip_);
+	GlobalVariables::GetInstance()->AddValue(groupName, "FarClip", farClip_);
+	GlobalVariables::GetInstance()->AddValue(groupName, "MinDepth", minDepth_);
+	GlobalVariables::GetInstance()->AddValue(groupName, "MaxDepth", maxDepth_);
+};
+
+void Camera::ApplyGlobalVariables() {
+	const std::string& groupName = "Camera";
+
+	fovY_ = GlobalVariables::GetInstance()->GetFloatValue(groupName, "FovY");
+	viewportLeftTop_ = GlobalVariables::GetInstance()->GetVector3Value(groupName, "ViewportLeftTop");
+	nearClip_ = GlobalVariables::GetInstance()->GetFloatValue(groupName, "NearClip");
+	farClip_ = GlobalVariables::GetInstance()->GetFloatValue(groupName, "FarClip");
+	minDepth_ = GlobalVariables::GetInstance()->GetFloatValue(groupName, "MinDepth");
+	maxDepth_ = GlobalVariables::GetInstance()->GetFloatValue(groupName, "MaxDepth");
+};

@@ -35,6 +35,8 @@ public:
 
 	void Initialize(float windowWidth, float windowHeight);
 
+	void Initialize();
+
 	void Update();
 
 	void DebugUpdate();
@@ -42,6 +44,10 @@ public:
 	void SetPosition(Vector3 vector3) { translate_ = vector3; }
 
 	void SetRotate(Vector3 rotate) { rotate_ = rotate; };
+
+	void SetTransform(const Transform& transform) { scale_ = transform.scale; rotate_ = transform.rotate; translate_ = transform.translate; };
+
+	Vector3 GetPosition() { return translate_; };
 
 	Vector3 GetCameraVector3(Vector3 vector3,Matrix4x4 matrix);
 
@@ -52,5 +58,8 @@ public:
 	void ChangeCameraMode();
 
 	bool GetUseDebugCamera() { return useDebugCamera_; };
+
+	void RegisterGlobalVariables();
+	void ApplyGlobalVariables();
 };
 

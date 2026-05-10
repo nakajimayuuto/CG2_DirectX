@@ -1,6 +1,4 @@
-#include "./Engine/Renderer/Camera.h"
-#include "./Engine/SystemFile/GameSystem.h"
-#include "./Managers/SceneManager.h"
+#include "Satlib.h"
 
 
 // オーディオ類.
@@ -9,6 +7,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	GameSystem* system = GameSystem::GetInstance();
 
+	Camera::GetInstance()->Initialize(static_cast<float>(Environment::GetInstance()->GetWindowSize().width), static_cast<float>(Environment::GetInstance()->GetWindowSize().height));
+	
 	system->Initialize();
 
 
@@ -16,7 +16,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-	Camera::GetInstance()->Initialize(static_cast<float>(Environment::GetInstance()->GetWindowSize().width), static_cast<float>(Environment::GetInstance()->GetWindowSize().height));
 
 	/*=============================================================
 	ここから下がゲームの変数.
@@ -31,6 +30,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			/*=============================================================
 			以下にゲームの更新処理を記述.
 			=============================================================*/
+
+			GlobalVariables::GetInstance()->Update();
 
 			SceneManager::GetInstance()->Update();
 
