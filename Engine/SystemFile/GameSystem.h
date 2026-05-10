@@ -71,6 +71,9 @@ public:
 
 	void Finalize();
 
+	void RegisterGlobalVariables();
+	void ApplyGlobalVariables();
+
 	Microsoft::WRL::ComPtr<ID3D12Device> GetDevice() { return device; };
 
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> GetCommandList() { return commandList; };
@@ -105,9 +108,6 @@ private:
 	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 	std::ofstream CreateLogFile();
-
-	void RegisterGlobalVariables();
-	void ApplyGlobalVariables();
 
 public:
 	// ログを表示する.
