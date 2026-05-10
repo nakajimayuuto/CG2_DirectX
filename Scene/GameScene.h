@@ -2,6 +2,8 @@
 #include "../Satlib.h"
 #include "IScene.h"
 
+#include "../Player.h"
+
 class GameScene : public IScene{
 public:
 	~GameScene();
@@ -11,5 +13,6 @@ public:
 
 	void Draw() override;
 private:
+	Player* player_ = nullptr;
 };
 
