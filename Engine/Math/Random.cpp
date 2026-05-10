@@ -2,14 +2,14 @@
 #include <algorithm>
 
 Random* Random::GetInstance() {
-	Random instance;
+	static Random instance;
 	return &instance;
 }
 
 void Random::Initialize() {
-	std::random_device seed_gen;
-	std::uint32_t seed = seed_gen();
-	engine.seed(seed);
+	std::random_device seedGen;
+	//std::uint32_t seed = seed_gen();
+	engine.seed(seedGen());
 }
 
 Vector3 Random::RandomVector3(Vector3 min, Vector3 max) {

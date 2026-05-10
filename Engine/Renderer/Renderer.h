@@ -4,6 +4,7 @@
 #include <cstdint>
 #include "../../Managers/ModelManager.h"
 #include "../../Managers/TextureManager.h"
+#include "../../Environment.h"
 #include "../../externals/DirectXTex/DirectXTex.h"
 #include "../../externals/DirectXTex/d3dx12.h"
 
@@ -157,8 +158,11 @@ namespace Renderer {
 	class Sprite {
 	public:
 		void Initialize(TextureInfo info);
+		void Initialize();
 
 		void Draw(const Transform& transform);
+
+		void Draw(const Transform2D& transform);
 
 		void SetIsVisible(bool isVisible) { isVisible_ = isVisible; };
 
@@ -173,8 +177,11 @@ namespace Renderer {
 		void SetUvTransform(const Transform& transform) { uvTransform_ = transform; }
 
 		void SetSize(Vector2 size);
+		void SetSize(WindowSize windowSize);
 
 		Vector2 GetSize() { return size_; };
+	private:
+		void AdaptationSize();
 	private:
 		Vector2 size_;
 

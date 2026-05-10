@@ -10,10 +10,31 @@ Camera* Camera::GetInstance() {
 void Camera::Initialize(float windowWidth, float windowHeight) {
 	scale_ = { 1.0f,1.0f,1.0f };
 	rotate_ = { 0.0f,0.0f,0.0f };
-	translate_ = { 0.0f,0.0f,-10.0f };
+	translate_ = { 0.0f,0.0f,-50.0f };
 
 	windowWidth_ = windowWidth;
 	windowHeight_ = windowHeight;
+
+	fovY_ = 0.45f;
+	viewportLeftTop_ = { 0.0f,0.0f,0.0f };
+	nearClip_ = 0.1f;
+	farClip_ = 100.0f;
+	minDepth_ = 0.0f;
+	maxDepth_ = 1.0f;
+
+	// 【デバッグカメラ用】
+	useDebugCamera_ = false;
+
+	debugScale_ = { 1.0f,1.0f,1.0f };
+	debugTranslate_ = { 0.0f,0.0f,-10.0f };
+
+	debugMatRot_ = Matrix4x4::MakeAffineMatrix(debugScale_,rotate_,debugTranslate_);
+}
+
+void Camera::Initialize() {
+	scale_ = { 1.0f,1.0f,1.0f };
+	rotate_ = { 0.0f,0.0f,0.0f };
+	translate_ = { 0.0f,0.0f,-50.0f };
 
 	fovY_ = 0.45f;
 	viewportLeftTop_ = { 0.0f,0.0f,0.0f };
@@ -62,6 +83,12 @@ void Camera::DebugUpdate(){
 		}
 		if (InputManager::GetInstance()->PressKey(DIK_DOWN)) {
 			debugTranslate_.z -= 0.05f;
+		}
+		if (InputManager::GetInstance()->PressKey(DIK_SPACE)) {
+			debugTranslate_.y += 0.05f;
+		}
+		if (InputManager::GetInstance()->PressKey(DIK_LCONTROL)) {
+			debugTranslate_.y -= 0.05f;
 		}
 	}else {
 		if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {

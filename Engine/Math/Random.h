@@ -14,6 +14,6 @@ public:
 
 	bool Probability(float percent);
 private:
-	std::mt19937 engine;
+	std::mt19937_64 engine;
 };
 	

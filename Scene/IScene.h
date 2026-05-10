@@ -1,6 +1,7 @@
 #pragma once
 enum class SceneName {
 	kGameScene,
+	kTitleScene,
 };
 
 class IScene {

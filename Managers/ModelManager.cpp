@@ -26,6 +26,7 @@ void ModelManager::RegisterObj(const std::string& name, const std::string& direc
 		}
 		TextureManager::GetInstance()->RegisterTexture(name + "_" + data.meshName, data.materialData.textureFilePath);
 
+
 		data.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo(name + "_" + data.meshName).textureSrvHandlesGPU;
 	}
 }
@@ -104,7 +105,7 @@ std::vector<ModelData>ModelManager::LoadObjFile(const std::string& directoryPath
 	// 2. ファイルを開く.
 	std::ifstream file(directoryPath + "/" + fileName); // ファイルを開く.
 	assert(file.is_open()); // とりあえず開けなかったら止める.
-
+	bool isUsemtl = false;
 
 	// 3. 実際にファイルを読み、ModelDataを構築していく.
 	while (std::getline(file, line)) {
@@ -210,6 +211,7 @@ std::vector<ModelData>ModelManager::LoadObjFile(const std::string& directoryPath
 			//// 基本的にObjファイルと同一階層にmtlは存在させるので、ディレクトリ名とファイル名を渡す.
 			//modelData.materialData = LoadMaterialTemplateFile(directoryPath, materialFilename,);
 		} else if (identifier == "usemtl") {
+			isUsemtl = true;
 			s >> modelData.materialData.textureName;
 			// 基本的にObjファイルと同一階層にmtlは存在させるので、ディレクトリ名とファイル名を渡す.
 			modelData.materialData = LoadMaterialTemplateFile(directoryPath, materialFilename, modelData.materialData.textureName);
@@ -224,6 +226,10 @@ std::vector<ModelData>ModelManager::LoadObjFile(const std::string& directoryPath
 
 			s >> modelData.meshName;
 		}
+	}
+
+	if (!isUsemtl) {
+		modelData.materialData.matarial.color = { 1.0f,1.0f,1.0f,1.0f };
 	}
 
 	// 4. ModelDataを返す.

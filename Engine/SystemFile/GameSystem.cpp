@@ -11,6 +11,7 @@
 #include "../../Managers/ModelManager.h"
 #include "../../Environment.h"
 #include "../Math/Random.h"
+#include "GlobalVariables.h"
 #include <strsafe.h>
 #include <filesystem>
 #include <chrono>
@@ -330,12 +331,14 @@ void GameSystem::Initialize() {
 
 	Random::GetInstance()->Initialize();
 
-	ModelManager::GetInstance()->RegisterObj("block_template","Resource/block","block.obj");
+	ModelManager::GetInstance()->RegisterObj("block_template", "Resource/block", "block.obj");
 
-	TextureManager::GetInstance()->RegisterTexture("white_template","Resource/white_template.png");
+	TextureManager::GetInstance()->RegisterTexture("white_template", "Resource/white_template.png");
+
+	GlobalVariables::GetInstance()->LoadFiles();
 }
 
-void GameSystem::CreatePipeline(D3D12_CULL_MODE cullMode){
+void GameSystem::CreatePipeline(D3D12_CULL_MODE cullMode) {
 	/*=============================================================
 	DXCの初期化.
 	=============================================================*/
@@ -474,7 +477,18 @@ void GameSystem::CreatePipeline(D3D12_CULL_MODE cullMode){
 	// 【BlendState設定】
 	D3D12_BLEND_DESC blendDesc{};
 	// 全ての色要素を書き込む.
+	// AL3_05_10にて透明度が反映さえる変更を加えた.
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	blendDesc.AlphaToCoverageEnable = FALSE;
+	blendDesc.IndependentBlendEnable = FALSE;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	blendDesc.RenderTarget[0].BlendEnable = true;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+
 
 	// 【RasterizerStateの設定を行う】
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
@@ -678,7 +692,7 @@ void GameSystem::Finalize() {
 	CoUninitialize();
 }
 
-void GameSystem::SetCullMode(D3D12_CULL_MODE mode){
+void GameSystem::SetCullMode(D3D12_CULL_MODE mode) {
 	// 【RasterizerStateの設定を行う】
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
 	// 裏面(時計回り)を表示しない.
