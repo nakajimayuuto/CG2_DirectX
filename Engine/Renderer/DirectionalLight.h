@@ -21,6 +21,9 @@ public:
 	Microsoft::WRL::ComPtr<ID3D12Resource> GetDirectionalLightResource() { return directionalLightResource; };
 
 	DirectionalLightData* GetDirectionalLightData() { return directionalLightData; };
+
+	void RegisterGlobalVariables();
+	void ApplyGlobalVariables();
 private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource = nullptr;
 

@@ -1,6 +1,7 @@
 #include "Camera.h"
 #include "../../Managers/InputManager.h"
 #include "../Math/Math.h"
+#include "../SystemFile/GlobalVariables.h"
 
 Camera* Camera::GetInstance() {
 	static Camera instance;
@@ -150,3 +151,29 @@ void Camera::ChangeCameraMode(){
 		useDebugCamera_ = true;
 	}
 }
+
+void Camera::RegisterGlobalVariables() {
+	const std::string& groupName = "Camera";
+
+	GlobalVariables::GetInstance()->CreateGroup(groupName);
+	// 【デバッグカメラ用】
+	useDebugCamera_ = false;
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "FovY", fovY_);
+	GlobalVariables::GetInstance()->AddValue(groupName, "ViewportLeftTop", viewportLeftTop_);
+	GlobalVariables::GetInstance()->AddValue(groupName, "NearClip", nearClip_);
+	GlobalVariables::GetInstance()->AddValue(groupName, "FarClip", farClip_);
+	GlobalVariables::GetInstance()->AddValue(groupName, "MinDepth", minDepth_);
+	GlobalVariables::GetInstance()->AddValue(groupName, "MaxDepth", maxDepth_);
+};
+
+void Camera::ApplyGlobalVariables() {
+	const std::string& groupName = "Camera";
+
+	fovY_ = GlobalVariables::GetInstance()->GetFloatValue(groupName, "FovY");
+	viewportLeftTop_ = GlobalVariables::GetInstance()->GetVector3Value(groupName, "ViewportLeftTop");
+	nearClip_ = GlobalVariables::GetInstance()->GetFloatValue(groupName, "NearClip");
+	farClip_ = GlobalVariables::GetInstance()->GetFloatValue(groupName, "FarClip");
+	minDepth_ = GlobalVariables::GetInstance()->GetFloatValue(groupName, "MinDepth");
+	maxDepth_ = GlobalVariables::GetInstance()->GetFloatValue(groupName, "MaxDepth");
+};

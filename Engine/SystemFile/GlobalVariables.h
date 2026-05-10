@@ -1,9 +1,10 @@
 #pragma once
 #include "../Math/Vector3.h"
+#include "../Math/Vector4.h"
 #include <variant>
 #include <map>
 #include <string>
-#include "../../externals/nlohmann/json.hpp"
+#include "json.hpp"
 
 using json = nlohmann::json;
 
@@ -21,14 +22,17 @@ public:
 	void SetValue(const std::string& groupName, const std::string& key,int32_t value);
 	void SetValue(const std::string& groupName, const std::string& key,float value);
 	void SetValue(const std::string& groupName, const std::string& key,const Vector3& value);
+	void SetValue(const std::string& groupName, const std::string& key,const Vector4& value);
 
 	void AddValue(const std::string& groupName, const std::string& key,int32_t value);
 	void AddValue(const std::string& groupName, const std::string& key,float value);
 	void AddValue(const std::string& groupName, const std::string& key,const Vector3& value);
+	void AddValue(const std::string& groupName, const std::string& key,const Vector4& value);
 
 	int32_t GetIntValue(const std::string& groupName, const std::string& key);
 	float GetFloatValue(const std::string& groupName, const std::string& key);
 	Vector3 GetVector3Value(const std::string& groupName, const std::string& key);
+	Vector4 GetVector4Value(const std::string& groupName, const std::string& key);
 
 	/// <summary>
 	/// ファイルに書き出し.
@@ -52,7 +56,7 @@ private:
 private:
 	const std::string kDirectoryPath = "Resource/GlobalVariables/";
 
-	using Item = std::variant<int32_t, float, Vector3>;
+	using Item = std::variant<int32_t, float, Vector3,Vector4>;
 
 	using Group = std::map<std::string, Item>;
 

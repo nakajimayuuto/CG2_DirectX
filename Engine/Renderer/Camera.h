@@ -58,5 +58,8 @@ public:
 	void ChangeCameraMode();
 
 	bool GetUseDebugCamera() { return useDebugCamera_; };
+
+	void RegisterGlobalVariables();
+	void ApplyGlobalVariables();
 };
 

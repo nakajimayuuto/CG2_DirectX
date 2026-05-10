@@ -336,6 +336,8 @@ void GameSystem::Initialize() {
 	TextureManager::GetInstance()->RegisterTexture("white_template", "Resource/white_template.png");
 
 	GlobalVariables::GetInstance()->LoadFiles();
+
+	RegisterGlobalVariables();
 }
 
 void GameSystem::CreatePipeline(D3D12_CULL_MODE cullMode) {
@@ -564,6 +566,8 @@ bool GameSystem::BeginFrame() {
 	dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
+	ApplyGlobalVariables();	
+
 	return true;
 }
 
@@ -691,6 +695,16 @@ void GameSystem::Finalize() {
 
 	CoUninitialize();
 }
+
+void GameSystem::RegisterGlobalVariables() {
+	Camera::GetInstance()->RegisterGlobalVariables();
+	DirectionalLight::GetInstance()->RegisterGlobalVariables();
+};
+
+void GameSystem::ApplyGlobalVariables() {
+	Camera::GetInstance()->ApplyGlobalVariables();
+	DirectionalLight::GetInstance()->ApplyGlobalVariables();
+};
 
 void GameSystem::SetCullMode(D3D12_CULL_MODE mode) {
 	// 【RasterizerStateの設定を行う】

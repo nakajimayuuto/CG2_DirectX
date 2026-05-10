@@ -106,6 +106,9 @@ private:
 
 	std::ofstream CreateLogFile();
 
+	void RegisterGlobalVariables();
+	void ApplyGlobalVariables();
+
 public:
 	// ログを表示する.
 	static void Log(const std::string& message);

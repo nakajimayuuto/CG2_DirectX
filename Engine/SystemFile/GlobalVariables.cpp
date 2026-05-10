@@ -7,9 +7,11 @@
 GlobalVariables* GlobalVariables::GetInstance() {
 	static GlobalVariables instance;
 	return &instance;
-}
+}	
 
 void GlobalVariables::Update() {
+#ifdef _DEBUG
+
 	if (!ImGui::Begin("GlobalVariables", nullptr, ImGuiWindowFlags_MenuBar)) {
 		ImGui::End();
 		return;
@@ -42,6 +44,9 @@ void GlobalVariables::Update() {
 			} else if (std::holds_alternative<Vector3>(item)) {
 				Vector3* ptr = std::get_if<Vector3>(&item);
 				ImGui::SliderFloat3(itemName.c_str(), reinterpret_cast<float*>(ptr), 0, 100);
+			}else if (std::holds_alternative<Vector4>(item)) {
+				Vector4* ptr = std::get_if<Vector4>(&item);
+				ImGui::SliderFloat4(itemName.c_str(), reinterpret_cast<float*>(ptr), 0, 100);
 			}
 		}
 
@@ -58,6 +63,8 @@ void GlobalVariables::Update() {
 
 	ImGui::EndMenuBar();
 	ImGui::End();
+
+#endif // _DEBUG
 }
 
 void GlobalVariables::CreateGroup(const std::string& groupName) {
@@ -81,6 +88,14 @@ void GlobalVariables::SetValue(const std::string& groupName, const std::string& 
 }
 
 void GlobalVariables::SetValue(const std::string& groupName, const std::string& key, const Vector3& value) {
+	Group& group = datas_[groupName];
+
+	Item newItem{};
+	newItem = value;
+	group[key] = newItem;
+}
+
+void GlobalVariables::SetValue(const std::string& groupName, const std::string& key, const Vector4& value){
 	Group& group = datas_[groupName];
 
 	Item newItem{};
@@ -115,6 +130,19 @@ void GlobalVariables::AddValue(const std::string& groupName, const std::string& 
 }
 
 void GlobalVariables::AddValue(const std::string& groupName, const std::string& key, const Vector3& value){
+	Group& group = datas_[groupName];
+
+	std::map<std::string, Item>::iterator itItem = group.find(key);
+
+	// 未登録チェック.
+	if (itItem != group.end()) {
+		return;
+	}
+
+	SetValue(groupName, key, value);
+}
+
+void GlobalVariables::AddValue(const std::string& groupName, const std::string& key, const Vector4& value){
 	Group& group = datas_[groupName];
 
 	std::map<std::string, Item>::iterator itItem = group.find(key);
@@ -184,6 +212,25 @@ Vector3 GlobalVariables::GetVector3Value(const std::string& groupName, const std
 	return std::get<Vector3>(item);
 }
 
+Vector4 GlobalVariables::GetVector4Value(const std::string& groupName, const std::string& key){
+	// グループを検索.
+	std::map<std::string, Group>::iterator itGroup = datas_.find(groupName);
+
+	// 未登録チェック.
+	assert(itGroup != datas_.end());
+
+	Group& group = datas_.at(groupName);
+
+	std::map<std::string, Item>::iterator itItem = group.find(key);
+
+	// 未登録チェック.
+	assert(itItem != group.end());
+
+	Item& item = itItem->second;
+
+	return std::get<Vector4>(item);
+}
+
 void GlobalVariables::SaveFile(const std::string& groupName){
 	// グループを検索.
 	std::map<std::string, Group>::iterator itGroup = datas_.find(groupName);
@@ -211,6 +258,9 @@ void GlobalVariables::SaveFile(const std::string& groupName){
 		} else if (std::holds_alternative<Vector3>(item)) {
 			Vector3 value = std::get<Vector3>(item);
 			root[groupName][itemName] = json::array({value.x,value.y,value.z});
+		} else if (std::holds_alternative<Vector4>(item)) {
+			Vector4 value = std::get<Vector4>(item);
+			root[groupName][itemName] = json::array({ value.x,value.y,value.z,value.w });
 		}
 
 	}
@@ -307,6 +357,9 @@ void GlobalVariables::LoadFile(const std::string& groupName){
 			SetValue(groupName, itemName, value);
 		} else if (itItem->is_array() && itItem->size() == 3) {
 			Vector3 value = {itItem->at(0),itItem->at(1) ,itItem->at(2) };
+			SetValue(groupName, itemName, value);
+		} else if (itItem->is_array() && itItem->size() == 4) {
+			Vector4 value = {itItem->at(0),itItem->at(1) ,itItem->at(2),itItem->at(3) };
 			SetValue(groupName, itemName, value);
 		}
 
