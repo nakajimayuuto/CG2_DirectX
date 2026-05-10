@@ -1,0 +1,23 @@
+#pragma once
+#include <windows.h>
+#include <time.h>
+
+class DeltaTime{
+private:
+	clock_t frameTime;
+	clock_t preFrameTime;
+	
+
+	float deltaTime;
+public:
+	DeltaTime() { Initialize(); };
+
+	void Initialize();
+
+	void Update();
+
+	float GetDeltaTime() const { return deltaTime; };
+
+	float GetDeltaTimePerFrame() const { return deltaTime * 60.0f; };
+};
+

@@ -1,6 +1,5 @@
-#include "Camera.h"
-#include "GameSystem.h"
-#include "SceneManager.h"
+#include "Satlib.h"
+#include "./Managers/StageManager.h"
 
 
 // オーディオ類.
@@ -10,6 +9,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	GameSystem* system = GameSystem::GetInstance();
 
 	system->Initialize();
+
+	StageManager::GetInstance()->LoadStageDataFile();
 
 	Camera::GetInstance()->Initialize(static_cast<float>(Environment::GetInstance()->GetWindowSize().width), static_cast<float>(Environment::GetInstance()->GetWindowSize().height));
 
@@ -26,6 +27,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			/*=============================================================
 			以下にゲームの更新処理を記述.
 			=============================================================*/
+
+			//ImGui::Begin("DirectionalLight");
+			//
+			//Vector3 dire = DirectionalLight::GetInstance()->GetDirectionalLightData()->direction;
+			//
+			//ImGui::SliderFloat3("direction", reinterpret_cast<float*>(&dire.x),-1.0f,1.0f);
+			//
+			//DirectionalLight::GetInstance()->GetDirectionalLightData()->direction = dire.Normalize();
+			//
+			//ImGui::End();
+
+			GlobalVariables::GetInstance()->Update();
 
 			SceneManager::GetInstance()->Update();
 
