@@ -7,12 +7,23 @@ GameScene::~GameScene(){
 
 void GameScene::Initialize() {
 	TextureManager::GetInstance()->RegisterTexture("uvChecker","Resource/uvChecker.png");
+	TextureManager::GetInstance()->RegisterTexture("player_texture","Resource/player/player.png");
 
 	player_ = new Player();
 	player_->Initialize();
 }
 
 void GameScene::Update() {
+#ifdef _DEBUG
+	if (InputManager::GetInstance()->TriggerKey(DIK_F3)) {
+		Camera::GetInstance()->ChangeCameraMode();
+	}
+
+	if (InputManager::GetInstance()->TriggerKey(DIK_R)) {
+		SceneManager::GetInstance()->ReloadScene();
+	}
+#endif // _DEBUG
+
 
 	player_->Update();
 
