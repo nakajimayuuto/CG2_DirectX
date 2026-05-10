@@ -16,5 +16,9 @@ private:
 	Renderer::Model testModel_;
 
 	Transform testTransform_;
+
+	Renderer::Model testModel2_;
+	
+	Transform testTransform2_;
 };
 

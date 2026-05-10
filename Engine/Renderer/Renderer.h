@@ -7,6 +7,7 @@
 #include "../../Environment.h"
 #include "../../externals/DirectXTex/DirectXTex.h"
 #include "../../externals/DirectXTex/d3dx12.h"
+#include "../SystemFile/GameSystem.h"
 
 namespace Renderer {
 	enum class LightingType {
@@ -48,6 +49,8 @@ namespace Renderer {
 
 		LightingType GetLightingType();
 		LightingType GetLightingType(const std::string& meshName);
+
+		void SetBlendMode(BlendMode blendMode) { blendMode_ = blendMode; };
 	private:
 		uint32_t modelMax_;
 
@@ -68,6 +71,8 @@ namespace Renderer {
 		std::vector<D3D12_VERTEX_BUFFER_VIEW> vertexBufferView_{};
 
 		std::vector<Transform> uvTransform_;
+
+		BlendMode blendMode_;
 	};
 
 	class ModelSphere {
@@ -112,6 +117,8 @@ namespace Renderer {
 		Microsoft::WRL::ComPtr<ID3D12Resource> indexResource_ = nullptr;
 
 		D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
+
+		BlendMode blendMode_;
 	};
 
 	class ModelBox {
@@ -153,6 +160,8 @@ namespace Renderer {
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
 
 		Transform uvTransform_;
+
+		BlendMode blendMode_;
 	};
 
 	class Sprite {

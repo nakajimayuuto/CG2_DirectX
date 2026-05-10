@@ -51,6 +51,14 @@ struct D3DResourceLeakChecker {
 	}
 };
 
+enum class BlendMode {
+	kNone,
+	kNormal,
+	kNormalCullNone,
+
+	kCount,
+};
+
 class GameSystem {
 
 	// GameSystemで使うやつ.
@@ -99,10 +107,15 @@ public:
 
 	std::ofstream& GetLogStream() { return logStream; };
 
-	// わからん.
-	void SetCullMode(D3D12_CULL_MODE mode);
+	struct Pipeline {
+		Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
+	};
 
-	void CreatePipeline(D3D12_CULL_MODE cullMode);
+	// シェーダーの設定はここでやる.
+	void CreatePipeline(BlendMode blendMode);
+
+	void SetPipeline(BlendMode blendMode);
 private:
 
 	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -201,10 +214,12 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource = nullptr;
 
-	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
+	//Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
+	//
+	//Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
 
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
+	Pipeline pipeline_[static_cast<uint32_t>(BlendMode::kCount)];
 };
 
