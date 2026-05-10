@@ -56,6 +56,10 @@ public:
 	bool IsAttack() const;
 
 	void KnockBackRequest() { isKnockbackRequest_ = true;};
+
+
+	static void RegisterGlobalVariables();
+	static void ApplyGlobalVariables();
 private:
 	enum Corner {
 		kRightBottom,
@@ -138,11 +142,11 @@ private:
 	AttackPhase attackPhase_;
 
 	float attackParameter_ = 0.0f;
-	static inline const float kAttackParameterCharge = 0.05f;
-	static inline const float kAttackParameterDash = 0.2f;
-	static inline const float kAttackParameterLingeringSound = 0.05f;
-
-	static inline const float kAttackDashSpeed = 0.6f;
+	static inline float kAttackParameterCharge = 0.05f;
+	static inline float kAttackParameterDash = 0.2f;
+	static inline float kAttackParameterLingeringSound = 0.05f;
+				  
+	static inline float kAttackDashSpeed = 0.6f;
 
 	std::array<Renderer::Model, 2> attackEffectModel_;
 
@@ -161,27 +165,28 @@ private:
 	//static inline const float kKnockBackPower = 1.0f;
 	//static inline const float kKnockBackAttenuation = 0.1f;
 	float knockbackParameter_ = 0.0f;
-	static inline const float kKnockbackParameterBack = 0.2f;
-	static inline const float kKnockbackParameterStop = 0.2f;
+
+	static inline float kKnockbackParameterBack = 0.2f;
+	static inline float kKnockbackParameterStop = 0.2f;
 	
 
 	// 移動.
-	static inline const float kAcceletation = 0.02f;
-	static inline const float kAttenuation = 0.1f;
-	static inline const float kLimitRunSpeed = 0.25f;
+	static inline float kAcceletation = 0.02f;
+	static inline float kAttenuation = 0.1f;
+	static inline float kLimitRunSpeed = 0.25f;
 
 	Transform transform_;
 	Vector3 velocity_ = {};
 
 	// ジャンプ.
-	static inline const float kGravityAcceleration = 0.01f;
-	static inline const float kLimitFallSpeed = 0.4f;
-	static inline const float kJumpAcceleration = 0.3f;
+	static inline float kGravityAcceleration = 0.01f;
+	static inline float kLimitFallSpeed = 0.4f;
+	static inline float kJumpAcceleration = 0.3f;
 
 	bool onGround_ = true;
 
 	// 旋回制御.
-	static inline const float kTimeTurn = 0.3f;
+	static inline float kTimeTurn = 0.3f;
 
 	LRDirection lrDirection_ = LRDirection::kRight;
 	float turnFirstRotationY_ = 0.0f;
@@ -190,14 +195,14 @@ private:
 	// マップチップ.
 	MapChipField* mapChipField_ = nullptr;
 
-	static inline const float kWidth = 0.8f;
-	static inline const float kHeight = 0.8f;
+	static inline float kWidth = 0.8f;
+	static inline float kHeight = 0.8f;
 
-	static inline const float kBlank = 0.2f;
+	static inline float kBlank = 0.2f;
 
-	static inline const float kAttenuationLanding = 0.01f;
+	static inline float kAttenuationLanding = 0.01f;
 
-	static inline const float kAttenuationWall = 0.1f;
+	static inline float kAttenuationWall = 0.1f;
 
 	// 死亡判定.
 	bool isDead_ = false;

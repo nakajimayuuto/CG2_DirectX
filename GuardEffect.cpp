@@ -55,3 +55,20 @@ void GuardEffect::Update(){
 void GuardEffect::Draw(){
 	model_.Draw(transform_);
 }
+
+void GuardEffect::RegisterGlobalVariables() {
+
+	const char* groupName = "GuardEffect";
+
+	GlobalVariables::GetInstance()->CreateGroup(groupName);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "AnimationParameterSpread", kAnimationParameterSpread);
+	GlobalVariables::GetInstance()->AddValue(groupName, "AnimationParameterFadeOut", kAnimationParameterFadeOut);
+}
+
+void GuardEffect::ApplyGlobalVariables() {
+	const char* groupName = "GuardEffect";
+
+	kAnimationParameterSpread = GlobalVariables::GetInstance()->GetFloatValue(groupName, "AnimationParameterSpread");
+	kAnimationParameterFadeOut = GlobalVariables::GetInstance()->GetFloatValue(groupName, "AnimationParameterFadeOut");
+}

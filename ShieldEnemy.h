@@ -15,6 +15,9 @@ public:
 	void OnCollision(GameScene* scene, Player* player) override;
 
 	AABB GetAABB() override;
+
+	static void RegisterGlobalVariables();
+	static void ApplyGlobalVariables();
 private:
 	enum class Behavior {
 		kUnknown, // リクエスト無し.
@@ -61,8 +64,8 @@ private:
 	DeathAnimationPhase deathAnimationPhase_;
 
 	float deathAnimationParameter_ = 0.0f;
-	static inline const float kDeathAnimationParameterSpin = 1.0f;
-	static inline const float kDeathAnimationParameterShrink = 0.5f;
+	static inline  float kDeathAnimationParameterSpin = 1.0f;
+	static inline  float kDeathAnimationParameterShrink = 0.5f;
 
 	enum class GuardPhase {
 		kBack, // 後退.
@@ -72,25 +75,25 @@ private:
 	GuardPhase guardPhase_;
 
 	float guardParameter_ = 0.0f;
-	static inline const float kGuardParameterBack = 0.2f;
-	static inline const float kGuardParameterStop = 0.1f;
+	static inline float kGuardParameterBack = 0.2f;
+	static inline float kGuardParameterStop = 0.1f;
 
 	// 移動.
-	static inline const float kWalkSpeed = 0.01f;
+	static inline float kWalkSpeed = 0.01f;
 
 	Vector3 velocity_ = {};
 
 	// 当たり判定.
-	static inline const float kWidth = 0.8f;
-	static inline const float kHeight = 0.8f;
+	static inline float kWidth = 0.8f;
+	static inline float kHeight = 0.8f;
 
 	// アニメーション.
 	// 最初の角度.
-	static inline const float kWalkMotionAngleStart = -15.0f;
+	static inline float kWalkMotionAngleStart = -15.0f;
 	// 最後の角度.
-	static inline const float kWalkMotionAngleEnd = 15.0f;
+	static inline float kWalkMotionAngleEnd = 15.0f;
 	// アニメーションの周期	(秒).
-	static inline const float kWalkMotionTime = 1.0f;
+	static inline float kWalkMotionTime = 1.0f;
 
 	float walkTimer_ = 0.0f;
 

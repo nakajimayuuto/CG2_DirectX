@@ -80,3 +80,32 @@ void CameraController::Reset() {
 	Camera::GetInstance()->SetPosition(static_cast<Vector3>(targetTransform.translate) + targetOffset_);
 
 }
+
+void CameraController::RegisterGlobalVariables() {
+
+	const char* groupName = "CameraController";
+
+	GlobalVariables::GetInstance()->CreateGroup(groupName);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "InterpolationRate", kInterpolationRate);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "VelocityBias", kVelocityBias);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "Margin.botom", kMargin.botom);
+	GlobalVariables::GetInstance()->AddValue(groupName, "Margin.top", kMargin.top);
+	GlobalVariables::GetInstance()->AddValue(groupName, "Margin.left", kMargin.left);
+	GlobalVariables::GetInstance()->AddValue(groupName, "Margin.right", kMargin.right);
+}
+
+void CameraController::ApplyGlobalVariables() {
+	const char* groupName = "CameraController";
+
+	kInterpolationRate = GlobalVariables::GetInstance()->GetFloatValue(groupName, "InterpolationRate");
+
+	kVelocityBias = GlobalVariables::GetInstance()->GetFloatValue(groupName, "VelocityBias");
+
+	kMargin.botom = GlobalVariables::GetInstance()->GetFloatValue(groupName, "Margin.botom");
+	kMargin.top = GlobalVariables::GetInstance()->GetFloatValue(groupName, "Margin.top");
+	kMargin.left = GlobalVariables::GetInstance()->GetFloatValue(groupName, "Margin.left");
+	kMargin.right = GlobalVariables::GetInstance()->GetFloatValue(groupName, "Margin.right");
+}

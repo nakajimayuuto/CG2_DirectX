@@ -15,14 +15,6 @@ void Player::Initialize(const Vector3& position) {
 
 	isKnockbackRequest_ = false;
 	isDead_ = false;
-
-	const char* groupName = "Player";
-	
-	GlobalVariables::GetInstance()->CreateGroup(groupName);
-
-	GlobalVariables::GetInstance()->SetValue(groupName,"TestInt",90);
-	GlobalVariables::GetInstance()->SetValue(groupName,"TestFloat",90.0f);
-	GlobalVariables::GetInstance()->SetValue(groupName, "TestVector3", {90.0f,90.0f,90.0f});
 }
 
 void Player::Update() {
@@ -657,6 +649,73 @@ bool Player::IsAttack() const {
 	}
 
 	return false;
+}
+
+void Player::RegisterGlobalVariables() {
+
+	const char* groupName = "Player";
+
+	GlobalVariables::GetInstance()->CreateGroup(groupName);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "AttackParameterCharge", kAttackParameterCharge);
+	GlobalVariables::GetInstance()->AddValue(groupName, "AttackParameterDash", kAttackParameterDash);
+	GlobalVariables::GetInstance()->AddValue(groupName, "AttackParameterCharge", kAttackParameterLingeringSound);
+	
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "AttackDashSpeed", kAttackDashSpeed);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "nockbackParameterBack", kKnockbackParameterBack);
+	GlobalVariables::GetInstance()->AddValue(groupName, "nockbackParameterStop", kKnockbackParameterStop);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "Acceletation", kAcceletation);
+	GlobalVariables::GetInstance()->AddValue(groupName, "Attenuation", kAttenuation);
+	GlobalVariables::GetInstance()->AddValue(groupName, "LimitRunSpeed", kLimitRunSpeed);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "GravityAcceleration", kGravityAcceleration);
+	GlobalVariables::GetInstance()->AddValue(groupName, "LimitFallSpeed", kLimitFallSpeed);
+	GlobalVariables::GetInstance()->AddValue(groupName, "JumpAcceleration", kJumpAcceleration);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "TimeTurn", kTimeTurn);
+	GlobalVariables::GetInstance()->AddValue(groupName, "Width", kWidth);
+	GlobalVariables::GetInstance()->AddValue(groupName, "Height", kHeight);
+	
+	GlobalVariables::GetInstance()->AddValue(groupName, "Blank", kBlank);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "AttenuationLanding", kAttenuationLanding);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "AttenuationWall", kAttenuationWall);
+}
+
+void Player::ApplyGlobalVariables(){
+	const char* groupName = "Player";
+
+	kAttackParameterCharge = GlobalVariables::GetInstance()->GetFloatValue(groupName, "AttackParameterCharge");
+	kAttackParameterDash = GlobalVariables::GetInstance()->GetFloatValue(groupName, "AttackParameterDash");
+	kAttackParameterLingeringSound = GlobalVariables::GetInstance()->GetFloatValue(groupName, "AttackParameterCharge");
+
+	kAttackDashSpeed = GlobalVariables::GetInstance()->GetFloatValue(groupName, "AttackDashSpeed");
+
+	kKnockbackParameterBack = GlobalVariables::GetInstance()->GetFloatValue(groupName, "nockbackParameterBack");
+	kKnockbackParameterStop = GlobalVariables::GetInstance()->GetFloatValue(groupName, "nockbackParameterStop");
+
+	kAcceletation = GlobalVariables::GetInstance()->GetFloatValue(groupName, "Acceletation");
+	kAttenuation = GlobalVariables::GetInstance()->GetFloatValue(groupName, "Attenuation");
+	kLimitRunSpeed = GlobalVariables::GetInstance()->GetFloatValue(groupName, "LimitRunSpeed");
+
+	kGravityAcceleration = GlobalVariables::GetInstance()->GetFloatValue(groupName, "GravityAcceleration");
+	kLimitFallSpeed = GlobalVariables::GetInstance()->GetFloatValue(groupName, "LimitFallSpeed");
+	kJumpAcceleration = GlobalVariables::GetInstance()->GetFloatValue(groupName, "JumpAcceleration");
+
+	kTimeTurn = GlobalVariables::GetInstance()->GetFloatValue(groupName, "TimeTurn");
+	kWidth = GlobalVariables::GetInstance()->GetFloatValue(groupName, "Width");
+	kHeight = GlobalVariables::GetInstance()->GetFloatValue(groupName, "Height");
+
+	kBlank = GlobalVariables::GetInstance()->GetFloatValue(groupName, "Blank");
+
+	kAttenuationLanding = GlobalVariables::GetInstance()->GetFloatValue(groupName, "AttenuationLanding");
+
+	kAttenuationWall = GlobalVariables::GetInstance()->GetFloatValue(groupName, "AttenuationWall");
+
 }
 
 void Player::Draw() {

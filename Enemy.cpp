@@ -1,6 +1,7 @@
 #include "Enemy.h"
 #include "Player.h"
 #include "./Scene/GameScene.h"
+#include "GlobalVariables.h"
 
 void Enemy::Initialize(const Vector3& position) {
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("enemy"));
@@ -39,6 +40,43 @@ void Enemy::Update() {
 		BehaviorDeathAnimationUpdate();
 		break;
 	}
+}
+
+void Enemy::RegisterGlobalVariables(){
+	const char* groupName = "Enemy";
+
+	GlobalVariables::GetInstance()->CreateGroup(groupName);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "DeathAnimationParameterSpin", kDeathAnimationParameterSpin);
+	GlobalVariables::GetInstance()->AddValue(groupName, "DeathAnimationParameterShrink", kDeathAnimationParameterShrink);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "WalkSpeed", kWalkSpeed);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "Width", kWidth );
+	GlobalVariables::GetInstance()->AddValue(groupName, "Height", kHeight);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "WalkMotionAngleStart", kWalkMotionAngleStart);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "WalkMotionAngleEnd", kWalkMotionAngleEnd);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "WalkMotionTime", kWalkMotionTime);
+}
+
+void Enemy::ApplyGlobalVariables(){
+	const char* groupName = "Enemy";
+	kDeathAnimationParameterSpin = GlobalVariables::GetInstance()->GetFloatValue(groupName, "DeathAnimationParameterSpin");
+	kDeathAnimationParameterShrink = GlobalVariables::GetInstance()->GetFloatValue(groupName, "DeathAnimationParameterShrink");
+
+	kWalkSpeed = GlobalVariables::GetInstance()->GetFloatValue(groupName, "WalkSpeed");
+
+	kWidth = GlobalVariables::GetInstance()->GetFloatValue(groupName, "Width");
+	kHeight = GlobalVariables::GetInstance()->GetFloatValue(groupName, "Height");
+
+	kWalkMotionAngleStart = GlobalVariables::GetInstance()->GetFloatValue(groupName, "WalkMotionAngleStart");
+
+	kWalkMotionAngleEnd = GlobalVariables::GetInstance()->GetFloatValue(groupName, "WalkMotionAngleEnd");
+
+	kWalkMotionTime = GlobalVariables::GetInstance()->GetFloatValue(groupName, "WalkMotionTime");
 }
 
 void Enemy::BehaviorRootInitialize() {

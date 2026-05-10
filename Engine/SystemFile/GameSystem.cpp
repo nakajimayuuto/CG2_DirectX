@@ -9,6 +9,7 @@
 #include "../../Managers/InputManager.h"
 #include "../../Managers/TextureManager.h"
 #include "../../Managers/ModelManager.h"
+#include "../../GlobalVariables.h"
 #include "../../Environment.h"
 #include "../Math/Random.h"
 #include <strsafe.h>
@@ -333,6 +334,8 @@ void GameSystem::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("block_template", "Resource/block", "block.obj");
 
 	TextureManager::GetInstance()->RegisterTexture("white_template", "Resource/white_template.png");
+
+	GlobalVariables::GetInstance()->LoadFiles();
 }
 
 void GameSystem::CreatePipeline(D3D12_CULL_MODE cullMode) {

@@ -29,19 +29,22 @@ public:
 	void SetMode(Mode mode) { mode_ = mode; };
 
 	Mode GetMode() { return mode_; }
+
+	static void RegisterGlobalVariables();
+	static void ApplyGlobalVariables();
 private:
 	void FollowUpdate();
 	void ForcedScrollUpdate();
 private:
 	// 補間.
-	static inline const float kInterpolationRate = 0.3f;
+	static inline float kInterpolationRate = 0.3f;
 
 	Vector3 afterPosition_ = {0.0f,0.0f,0.0f};
 
 	// 加減速.
-	static inline const float kVelocityBias = 4.0f;
+	static inline float kVelocityBias = 4.0f;
 
-	static inline const Rect kMargin = { -10.0f,10.0f,-10.0f,10.0f };
+	static inline Rect kMargin = { -10.0f,10.0f,-10.0f,10.0f };
 
 	// モード.
 	Mode mode_ = Mode::kFollow;

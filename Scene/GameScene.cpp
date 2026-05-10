@@ -3,6 +3,8 @@
 #include "../Enemy.h"
 #include "../ShieldEnemy.h"
 #include "../Managers/StageManager.h"
+#include "../HitEffect.h"
+#include "../GuardEffect.h"
 
 GameScene::~GameScene() {
 	for (std::vector<Transform*>& transformBlockLine : transformBlocks_) {
@@ -76,6 +78,8 @@ void GameScene::Initialize() {
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
 
 	phase_ = Phase::kFadeIn;
+
+	GlobalVariablesInitialize();
 }
 
 void GameScene::CreateStage(){
@@ -144,6 +148,26 @@ void GameScene::GenerateFieldObjects() {
 	}
 }
 
+void GameScene::GlobalVariablesInitialize(){
+	Player::RegisterGlobalVariables();
+	Enemy::RegisterGlobalVariables();
+	ShieldEnemy::RegisterGlobalVariables();
+	CameraController::RegisterGlobalVariables();
+	DeathParticle::RegisterGlobalVariables();
+	HitEffect::RegisterGlobalVariables();
+	GuardEffect::RegisterGlobalVariables();
+}
+
+void GameScene::GlobalVariablesApplyUpdate(){
+	Player::ApplyGlobalVariables();
+	Enemy::ApplyGlobalVariables();
+	ShieldEnemy::ApplyGlobalVariables();
+	CameraController::ApplyGlobalVariables();
+	DeathParticle::ApplyGlobalVariables();
+	HitEffect::ApplyGlobalVariables();
+	GuardEffect::ApplyGlobalVariables();
+}
+
 void GameScene::CheckAllCollision() {
 	for (BaseEnemy* enemy : enemies_) {
 		if (enemy->GetIsCollisionDisable()) {
@@ -187,6 +211,8 @@ void GameScene::Update() {
 	if (InputManager::GetInstance()->TriggerKey(DIK_R)) {
 		SceneManager::GetInstance()->ReloadScene();
 	}
+
+	GlobalVariablesApplyUpdate();
 #endif // _DEBUG
 
 	switch (phase_) {

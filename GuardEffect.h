@@ -11,6 +11,9 @@ public:
 	void Update() override;
 
 	void Draw() override;
+
+	static void RegisterGlobalVariables();
+	static void ApplyGlobalVariables();
 private:
 	enum class Status {
 		kSpread, // 拡大.
@@ -27,7 +30,7 @@ private:
 	Status status_;
 
 	float animationParameter_ = 0.0f;
-	static inline const float kAnimationParameterSpread = 0.5f;
-	static inline const float kAnimationParameterFadeOut = 0.5f;
+	static inline float kAnimationParameterSpread = 0.5f;
+	static inline float kAnimationParameterFadeOut = 0.5f;
 };
 

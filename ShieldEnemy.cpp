@@ -53,6 +53,49 @@ void ShieldEnemy::Update() {
 	}
 }
 
+void ShieldEnemy::RegisterGlobalVariables() {
+	const char* groupName = "ShieldEnemy";
+
+	GlobalVariables::GetInstance()->CreateGroup(groupName);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "DeathAnimationParameterSpin", kDeathAnimationParameterSpin);
+	GlobalVariables::GetInstance()->AddValue(groupName, "DeathAnimationParameterShrink", kDeathAnimationParameterShrink);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "GuardParameterBack", kGuardParameterBack);
+	GlobalVariables::GetInstance()->AddValue(groupName, "GuardParameterStop", kGuardParameterStop);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "WalkSpeed", kWalkSpeed);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "Width", kWidth);
+	GlobalVariables::GetInstance()->AddValue(groupName, "Height", kHeight);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "WalkMotionAngleStart", kWalkMotionAngleStart);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "WalkMotionAngleEnd", kWalkMotionAngleEnd);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "WalkMotionTime", kWalkMotionTime);
+}
+
+void ShieldEnemy::ApplyGlobalVariables() {
+	const char* groupName = "ShieldEnemy";
+	kDeathAnimationParameterSpin = GlobalVariables::GetInstance()->GetFloatValue(groupName, "DeathAnimationParameterSpin");
+	kDeathAnimationParameterShrink = GlobalVariables::GetInstance()->GetFloatValue(groupName, "DeathAnimationParameterShrink");
+
+	kGuardParameterBack = GlobalVariables::GetInstance()->GetFloatValue(groupName, "GuardParameterBack");
+	kGuardParameterStop = GlobalVariables::GetInstance()->GetFloatValue(groupName, "GuardParameterStop");
+
+	kWalkSpeed = GlobalVariables::GetInstance()->GetFloatValue(groupName, "WalkSpeed");
+
+	kWidth = GlobalVariables::GetInstance()->GetFloatValue(groupName, "Width");
+	kHeight = GlobalVariables::GetInstance()->GetFloatValue(groupName, "Height");
+
+	kWalkMotionAngleStart = GlobalVariables::GetInstance()->GetFloatValue(groupName, "WalkMotionAngleStart");
+
+	kWalkMotionAngleEnd = GlobalVariables::GetInstance()->GetFloatValue(groupName, "WalkMotionAngleEnd");
+
+	kWalkMotionTime = GlobalVariables::GetInstance()->GetFloatValue(groupName, "WalkMotionTime");
+}
+
 void ShieldEnemy::BehaviorRootInitialize() {
 
 	velocity_ = { -kWalkSpeed,0.0f,0.0f };

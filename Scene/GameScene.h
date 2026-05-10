@@ -28,6 +28,7 @@ private:
 
 	void GenerateFieldObjects();
 
+
 	void CheckAllCollision();
 
 	void EnemyRemoveCheck();
@@ -35,6 +36,9 @@ private:
 	void HitEffectRemoveCheck();
 
 	void ChangePhase();
+
+	void GlobalVariablesInitialize();
+	void GlobalVariablesApplyUpdate();
 private:
 	enum class Phase {
 		kFadeIn, // フェードイン.

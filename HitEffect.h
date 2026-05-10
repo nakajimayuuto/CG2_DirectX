@@ -11,6 +11,9 @@ public:
 	void Update() override;
 
 	void Draw() override;
+
+	static void RegisterGlobalVariables();
+	static void ApplyGlobalVariables();
 private:
 	enum class Status {
 		kSpread, // 拡大.
@@ -25,8 +28,8 @@ private:
 
 	// 楕円.
 	static inline const uint32_t kEllipseMax = 3;
-	static inline const float kEllipseWidth = 2.5f;
-	static inline const float kEllipseHeight = 0.1f;
+	static inline float kEllipseWidth = 2.5f;
+	static inline float kEllipseHeight = 0.1f;
 
 	std::array<Renderer::Model,kEllipseMax> ellipseModels_;
 
@@ -36,7 +39,7 @@ private:
 	Status status_;
 
 	float animationParameter_ = 0.0f;
-	static inline const float kAnimationParameterSpread = 0.1f;
-	static inline const float kAnimationParameterShrink = 0.4f;
+	static inline float kAnimationParameterSpread = 0.1f;
+	static inline float kAnimationParameterShrink = 0.4f;
 };
 

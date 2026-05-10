@@ -65,3 +65,22 @@ void DeathParticle::Start(const Vector3& position){
 
 	color_ = { 1.0f,1.0f,1.0f,1.0f };
 }
+
+void DeathParticle::RegisterGlobalVariables() {
+
+	const char* groupName = "DeathParticle";
+
+	GlobalVariables::GetInstance()->CreateGroup(groupName);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "Duration",kDuration);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "Speed", kSpeed);
+}
+
+void DeathParticle::ApplyGlobalVariables() {
+	const char* groupName = "DeathParticle";
+
+	kDuration = GlobalVariables::GetInstance()->GetFloatValue(groupName, "Duration");
+
+	kSpeed = GlobalVariables::GetInstance()->GetFloatValue(groupName, "Speed");
+}

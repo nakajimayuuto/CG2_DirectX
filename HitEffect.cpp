@@ -77,3 +77,26 @@ void HitEffect::Draw(){
 		ellipseModels_[i].Draw(ellipseTransforms_[i]);
 	}	
 }
+
+void HitEffect::RegisterGlobalVariables() {
+
+	const char* groupName = "HitEffect";
+
+	GlobalVariables::GetInstance()->CreateGroup(groupName);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "EllipseWidth", kEllipseWidth);
+	GlobalVariables::GetInstance()->AddValue(groupName, "EllipseHeight", kEllipseHeight);
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "AnimationParameterSpread", kAnimationParameterSpread);
+	GlobalVariables::GetInstance()->AddValue(groupName, "AnimationParameterShrink", kAnimationParameterShrink);
+}
+
+void HitEffect::ApplyGlobalVariables() {
+	const char* groupName = "HitEffect";
+
+	kEllipseWidth = GlobalVariables::GetInstance()->GetFloatValue(groupName, "EllipseWidth");
+	kEllipseHeight = GlobalVariables::GetInstance()->GetFloatValue(groupName, "EllipseHeight");
+
+	kAnimationParameterSpread = GlobalVariables::GetInstance()->GetFloatValue(groupName, "AnimationParameterSpread");
+	kAnimationParameterShrink = GlobalVariables::GetInstance()->GetFloatValue(groupName, "AnimationParameterShrink");
+}
