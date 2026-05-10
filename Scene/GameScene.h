@@ -1,6 +1,4 @@
 #pragma once
-//#include "../Engine/Renderer/Renderer.h"
-//#include "../Managers/ModelManager.h"
 #include "../Satlib.h"
 #include "IScene.h"
 
@@ -13,12 +11,5 @@ public:
 
 	void Draw() override;
 private:
-	Renderer::Model testModel_;
-
-	Transform testTransform_;
-
-	Renderer::Model testModel2_;
-	
-	Transform testTransform2_;
 };
 
