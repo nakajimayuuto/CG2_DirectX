@@ -734,21 +734,6 @@ void GameSystem::ApplyGlobalVariables() {
 	DirectionalLight::GetInstance()->ApplyGlobalVariables();
 };
 
-void GameSystem::SetCullMode(D3D12_CULL_MODE mode) {
-	//// 【RasterizerStateの設定を行う】
-	//D3D12_RASTERIZER_DESC rasterizerDesc{};
-	//// 裏面(時計回り)を表示しない.
-	//rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
-	//// 三角形の中を塗りつぶす.
-	//rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
-	//
-	//// 【PSO】
-	//graphicsPipelineStateDesc.RasterizerState = rasterizerDesc; // RasterizerState.
-	//// 実際に生成.
-	//HRESULT hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&pipeline_.graphicsPipelineState));
-	//assert(SUCCEEDED(hr));
-}
-
 LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 #ifdef USE_IMGUI
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
