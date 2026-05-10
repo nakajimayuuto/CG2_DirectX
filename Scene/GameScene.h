@@ -13,5 +13,8 @@ public:
 
 	void Draw() override;
 private:
+	Renderer::Model testModel_;
+
+	Transform testTransform_;
 };
 
