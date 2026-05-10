@@ -5,16 +5,12 @@ void GameScene::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("player","Resource/player","player.obj");
 	ModelManager::GetInstance()->RegisterObj("block","Resource/block","block.obj");
 	ModelManager::GetInstance()->RegisterObj("plane","Resource","plane.obj");
-	testModel_.Initialize(ModelManager::GetInstance()->GetModelInfo("plane"));
+	ModelManager::GetInstance()->RegisterObj("fence","Resource/fence","fence.obj");
+	testModel_.Initialize(ModelManager::GetInstance()->GetModelInfo("fence"));
 	testTransform_.Initialize();
-	testTransform_.translate = {-1.0f,0.0f,0.0f};
-	testTransform_.rotate.y = Radian(-210.0f);
-	testModel2_.Initialize(ModelManager::GetInstance()->GetModelInfo("plane"));
-	testTransform2_.Initialize();
-	testTransform2_.translate = {1.0f,0.0f,0.0f};
-	testTransform2_.rotate.y = Radian(-210.0f);
-
-	testModel2_.SetBlendMode(BlendMode::kNone);
+	testTransform_.translate = {0.0f,0.0f,0.0f};
+	testTransform_.rotate.y = Radian(-180.0f);
+	testTransform_.rotate.x = Radian(30.0f);
 
 	Camera::GetInstance()->SetPosition({0.0f,0.0f,-10.0f});
 }
@@ -31,13 +27,13 @@ void GameScene::Update() {
 
 	testModel_.SetColor(color);
 	
-	color = testModel2_.GetColor();
-
-	ImGui::ColorEdit4("testModelBlock",reinterpret_cast<float*>(&color));
-
-	ImGui::SliderFloat3("PlayerTransform",reinterpret_cast<float*>(&testTransform2_.rotate),-6.0f,6.0f);
-
-	testModel2_.SetColor(color);
+	//color = testModel2_.GetColor();
+	//
+	//ImGui::ColorEdit4("testModelBlock",reinterpret_cast<float*>(&color));
+	//
+	//ImGui::SliderFloat3("PlayerTransform",reinterpret_cast<float*>(&testTransform2_.rotate),-6.0f,6.0f);
+	//
+	//testModel2_.SetColor(color);
 
 	ImGui::End();
 
@@ -48,5 +44,5 @@ void GameScene::Draw() {
 
 	testModel_.Draw(testTransform_);
 
-	testModel2_.Draw(testTransform2_);
+	//testModel2_.Draw(testTransform2_);
 }

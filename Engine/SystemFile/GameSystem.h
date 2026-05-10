@@ -55,6 +55,10 @@ enum class BlendMode {
 	kNone,
 	kNormal,
 	kNormalCullNone,
+	kAdd,
+	kSubtract,
+	kMultily,
+	kScreen,
 
 	kCount,
 };

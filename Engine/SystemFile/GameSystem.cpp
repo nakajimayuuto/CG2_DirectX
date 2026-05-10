@@ -325,7 +325,7 @@ void GameSystem::Initialize() {
 	io.Fonts->Build();
 #endif // USE_IMGUI
 
-	for (uint32_t i = 0; i < static_cast<uint32_t>(BlendMode::kCount);i++) {
+	for (uint32_t i = 0; i < static_cast<uint32_t>(BlendMode::kCount); i++) {
 		CreatePipeline(static_cast<BlendMode>(i));
 	}
 
@@ -485,24 +485,42 @@ void GameSystem::CreatePipeline(BlendMode blendMode) {
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 	blendDesc.AlphaToCoverageEnable = FALSE;
 	blendDesc.IndependentBlendEnable = FALSE;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	blendDesc.RenderTarget[0].BlendEnable = true;
 
-	switch (blendMode){
+	switch (blendMode) {
 	case BlendMode::kNormal:
-		blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-		blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-		blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
-		blendDesc.RenderTarget[0].BlendEnable = true;
-		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	case BlendMode::kNormalCullNone:
 		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
 		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
 		break;
-	default:
-		blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-		blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-		blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
-		blendDesc.RenderTarget[0].BlendEnable = false;
-		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	case BlendMode::kAdd:
 		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+		break;
+	case BlendMode::kSubtract:
+		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;
+		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+		break;
+	case BlendMode::kMultily:
+		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_SRC_COLOR;
+		break;
+	case BlendMode::kScreen:
+		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+		break;
+	default:
+		blendDesc.RenderTarget[0].BlendEnable = false;
+		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
 		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
 		break;
 	}
@@ -557,7 +575,7 @@ void GameSystem::CreatePipeline(BlendMode blendMode) {
 	dxcUtils->Release();
 }
 
-void GameSystem::SetPipeline(BlendMode blendMode){
+void GameSystem::SetPipeline(BlendMode blendMode) {
 	commandList->RSSetViewports(1, &viewport); // Viewportを設定.
 	commandList->RSSetScissorRects(1, &scissorRect); // Scissorを設定.
 	// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
@@ -594,7 +612,7 @@ bool GameSystem::BeginFrame() {
 	dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
-	ApplyGlobalVariables();	
+	ApplyGlobalVariables();
 
 	return true;
 }
