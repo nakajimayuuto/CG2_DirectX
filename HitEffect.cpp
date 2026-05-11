@@ -1,4 +1,8 @@
 #include "HitEffect.h"
+// 中心円.
+Renderer::Model* HitEffect::model_ = nullptr;
+Camera* HitEffect::camera_ = nullptr;
+
 
 HitEffect* HitEffect::Create(Vector3 position){
 	HitEffect* instance = new HitEffect();
@@ -10,14 +14,12 @@ HitEffect* HitEffect::Create(Vector3 position){
 }
 
 void HitEffect::Initialize(Vector3 position){
-	ModelInfo effectInfo = ModelManager::GetInstance()->GetModelInfo("hit_effect_plane");
-	model_.Initialize(effectInfo);
-	model_.SetLightingType(Renderer::LightingType::kNone);
+	model_->SetLightingType(Renderer::LightingType::kNone);
 	transformCircle_.Initialize();
 	transformCircle_.translate = position;
 
 	for (Renderer::Model& model : ellipseModels_) {
-		model.Initialize(effectInfo);
+		model.Initialize(ModelManager::GetInstance()->GetModelInfo("hit_effect_plane"));
 		model.SetLightingType(Renderer::LightingType::kNone);
 	}
 
@@ -81,7 +83,7 @@ void HitEffect::Update(){
 }
 
 void HitEffect::Draw(){
-	model_.Draw(transformCircle_);
+	model_->Draw(transformCircle_);
 
 	for (uint32_t i = 0; i < kEllipseMax; i++) {
 		ellipseModels_[i].Draw(ellipseTransforms_[i]);

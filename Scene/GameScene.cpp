@@ -65,7 +65,14 @@ void GameScene::Initialize() {
 		enemies_.push_back(newEnemy_);
 	}
 
+	hitEffectModel_ = new Renderer::Model();
+	hitEffectModel_->Initialize(ModelManager::GetInstance()->GetModelInfo("hit_effect_plane"));
+	camera_ = Camera::GetInstance();
+
 	hitEffects_.clear();
+
+	HitEffect::SetCamera(camera_);
+	HitEffect::SetModel(hitEffectModel_);
 
 	skydome_ = new Skydome();
 	skydome_->Initialize();

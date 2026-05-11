@@ -59,6 +59,10 @@ private:
 
 	std::list<HitEffect*> hitEffects_;
 
+	Renderer::Model* hitEffectModel_ = nullptr;
+
+	Camera* camera_ = nullptr;
+
 	Phase phase_;
 
 	Skydome* skydome_ = nullptr;

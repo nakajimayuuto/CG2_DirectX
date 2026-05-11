@@ -2,7 +2,6 @@
 #include "Satlib.h"
 #include <assert.h>
 #include <array>
-
 class HitEffect{
 public:
 	static HitEffect* Create(Vector3 position);
@@ -14,6 +13,9 @@ public:
 	void Draw();
 
 	bool GetIsDelete() { return isDelete_; };
+
+	static void SetModel(Renderer::Model* model) { model_ = model; };
+	static void SetCamera(Camera* camera) { camera_ = camera; };
 private:
 	enum class Status {
 		kSpread, // 拡大.
@@ -21,8 +23,10 @@ private:
 		kDelete, // 削除
 	};
 private:
-	// 中心円.
-	Renderer::Model model_;
+	static Renderer::Model* model_;
+	static Camera* camera_;
+
+	Renderer::Model centerModel_;
 
 	Transform transformCircle_;
 
