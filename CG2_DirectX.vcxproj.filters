@@ -133,6 +133,15 @@
     <Filter Include="ソース ファイル\Enemies\ForwardEnemy">
       <UniqueIdentifier>{26d46f7c-606d-4fbe-83b1-c11b8be77986}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Enemies\ForwardEnemy\ForwardEnemyState">
+      <UniqueIdentifier>{9fccbe54-138d-4494-b37f-717664ccc95c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Enemies\ForwardEnemy\ForwardEnemyState\ForwardEnemyApproach">
+      <UniqueIdentifier>{54e990de-f176-4886-9b1a-bfebf1797171}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Enemies\ForwardEnemy\ForwardEnemyState\ForwardEnemyLeave">
+      <UniqueIdentifier>{8e9066a5-87c2-48d0-b7d6-6f61a46fcc6a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -260,6 +269,12 @@
     </ClCompile>
     <ClCompile Include="ForwardEnemy.cpp">
       <Filter>ソース ファイル\Enemies\ForwardEnemy</Filter>
+    </ClCompile>
+    <ClCompile Include="ForwardEnemyApproachPhase.cpp">
+      <Filter>ソース ファイル\Enemies\ForwardEnemy\ForwardEnemyState\ForwardEnemyApproach</Filter>
+    </ClCompile>
+    <ClCompile Include="ForwardEnemyLeavePhase.cpp">
+      <Filter>ソース ファイル\Enemies\ForwardEnemy\ForwardEnemyState\ForwardEnemyLeave</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -397,6 +412,15 @@
     </ClInclude>
     <ClInclude Include="ForwardEnemy.h">
       <Filter>ソース ファイル\Enemies\ForwardEnemy</Filter>
+    </ClInclude>
+    <ClInclude Include="ForwardEnemyBasePhase.h">
+      <Filter>ソース ファイル\Enemies\ForwardEnemy\ForwardEnemyState</Filter>
+    </ClInclude>
+    <ClInclude Include="ForwardEnemyApproachPhase.h">
+      <Filter>ソース ファイル\Enemies\ForwardEnemy\ForwardEnemyState\ForwardEnemyApproach</Filter>
+    </ClInclude>
+    <ClInclude Include="ForwardEnemyLeavePhase.h">
+      <Filter>ソース ファイル\Enemies\ForwardEnemy\ForwardEnemyState\ForwardEnemyLeave</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
