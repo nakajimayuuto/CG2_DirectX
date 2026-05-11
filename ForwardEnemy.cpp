@@ -1,5 +1,10 @@
 #include "ForwardEnemy.h"
 
+void (ForwardEnemy::* ForwardEnemy::pFunc[])() = {
+	&ForwardEnemy::ApproachPhaseUpdate,
+	&ForwardEnemy::LeavePhaseUpdate
+};
+
 void ForwardEnemy::Initialize(Vector3 position){
 	model_.Initialize(TextureManager::GetInstance()->GetTextureInfo("enemy_texture"));
 	transform_.Initialize();
@@ -8,14 +13,16 @@ void ForwardEnemy::Initialize(Vector3 position){
 }
 
 void ForwardEnemy::Update(){
-	switch (phase_){
-	case ForwardEnemy::Phase::kApproach:
-		ApproachPhaseUpdate();
-		break;
-	case ForwardEnemy::Phase::kLeave:
-		LeavePhaseUpdate();
-		break;
-	}
+	(this->*pFunc[static_cast<size_t>(phase_)])();
+
+	//switch (phase_){
+	//case ForwardEnemy::Phase::kApproach:
+	//	ApproachPhaseUpdate();
+	//	break;
+	//case ForwardEnemy::Phase::kLeave:
+	//	LeavePhaseUpdate();
+	//	break;
+	//}
 }
 
 void ForwardEnemy::Draw(){

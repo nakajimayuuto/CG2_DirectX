@@ -1,7 +1,7 @@
 #pragma once
 #include "Satlib.h"
 #include "BaseEnemy.h"
-class ForwardEnemy : public BaseEnemy{
+class ForwardEnemy : public BaseEnemy {
 public:
 	enum class Phase {
 		kApproach, // 接近する.
@@ -17,6 +17,8 @@ public:
 
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();
+private:
+	static void (ForwardEnemy::* pFunc[])();
 private:
 	static inline float kApproachSpeed = 0.1f;
 	static inline float kLeaveSpeed = 0.1f;
