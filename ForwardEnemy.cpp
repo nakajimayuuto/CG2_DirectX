@@ -17,25 +17,32 @@ void ForwardEnemy::Initialize(Vector3 position){
 	transform_.translate = position;
 	velocity_ = { 0.0f,0.0f,0.0f };
 	phase_ = new ForwardEnemyApproachPhase();
-
-	Fire();
+	phase_->Initialize();
 }
 
 void ForwardEnemy::Update(){
 	phase_->Update(this);
+
+	for (BaseBullet* bullet : bullets_) {
+		bullet->Update();
+	}
 }
 
 void ForwardEnemy::Draw(){
 	model_.Draw(transform_);
+
+	for (BaseBullet* bullet : bullets_) {
+		bullet->Draw();
+	}
 }
 
 void ForwardEnemy::Fire(){
-	Vector3 velocity(0.0f, 0.0f, kBulletSpeed);
+	Vector3 velocity(0.0f, 0.0f, -kBulletSpeed);
 
 	velocity = transform_.GetAffineMatrix().TransformNomal(velocity);
 
 	BaseBullet* newBullet = new EnemyBullet;
-	newBullet->Initialize("bullet_enemy_texture", transform_.translate, velocity);
+	newBullet->Initialize("enemy_bullet_texture", transform_.translate, velocity);
 
 	bullets_.push_back(newBullet);
 }

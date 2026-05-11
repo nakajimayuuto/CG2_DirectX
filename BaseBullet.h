@@ -2,11 +2,11 @@
 #include "Satlib.h"
 class BaseBullet {
 public:
-	virtual void Initialize(const std::string& modelName, const Vector3& position, const Vector3& velocity);
+	virtual void Initialize(const std::string& modelName, const Vector3& position, const Vector3& velocity) = 0;
 
-	virtual void Update();
+	virtual void Update() = 0;
 
-	virtual void Draw();
+	virtual void Draw() = 0;
 
 	bool GetIsActive() { return isActive_; };
 protected:

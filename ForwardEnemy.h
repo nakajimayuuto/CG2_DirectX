@@ -18,12 +18,15 @@ public:
 
 	Vector3 GetPosition() { return transform_.translate; };
 
-	void ChangePhase(ForwardEnemyBasePhase* phase) { phase_ = phase; };
+	void ChangePhase(ForwardEnemyBasePhase* phase) {
+		phase_ = phase; 
+		phase_->Initialize();
+	};
 
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();
 private:
-	static void (ForwardEnemy::* pFunc[])();
+	//static void (ForwardEnemy::* pFunc[])();
 private:
 	static inline float kBulletSpeed = 1.0f;
 
