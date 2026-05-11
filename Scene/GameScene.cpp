@@ -11,13 +11,14 @@ void GameScene::Initialize() {
 	TextureManager::GetInstance()->RegisterTexture("uvChecker","Resource/uvChecker.png");
 	TextureManager::GetInstance()->RegisterTexture("player_texture","Resource/kari_texture/donut.png");
 	TextureManager::GetInstance()->RegisterTexture("bullet_texture","Resource/kari_texture/bullet.png");
+	TextureManager::GetInstance()->RegisterTexture("enemy_bullet_texture","Resource/kari_texture/enemy_bullet.png");
 	TextureManager::GetInstance()->RegisterTexture("enemy_texture","Resource/kari_texture/kari_musikera.png");
 
 	player_ = new Player();
 	player_->Initialize();
 
 	enemy_ = new ForwardEnemy();
-	enemy_->Initialize({0.0f,0.0f,50.0f});
+	enemy_->Initialize({10.0f,0.0f,50.0f});
 
 	RegisterGlobalVariables();
 }
@@ -53,10 +54,10 @@ void GameScene::Draw() {
 
 void GameScene::RegisterGlobalVariables(){
 	Player::RegisterGlobalVariables();
-	PlayerBullet::RegisterGlobalVariables();
+	//PlayerBullet::RegisterGlobalVariables();
 }										 
 
 void GameScene::ApplyGlobalVariables(){
 	Player::ApplyGlobalVariables();
-	PlayerBullet::ApplyGlobalVariables();
+	//PlayerBullet::ApplyGlobalVariables();
 }

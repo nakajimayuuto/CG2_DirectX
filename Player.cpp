@@ -1,8 +1,9 @@
 #include "Player.h"
+#include "PlayerBullet.h"
 
 Player::~Player() {
 
-	for (PlayerBullet* bullet : bullets_) {
+	for (BaseBullet* bullet : bullets_) {
 		delete bullet;
 	}
 	bullets_.clear();
@@ -18,7 +19,7 @@ void Player::Update() {
 	RotateUpdate();
 	AttackUpdate();
 
-	for(PlayerBullet* bullet : bullets_){
+	for(BaseBullet* bullet : bullets_){
 		bullet->Update();
 	}
 
@@ -72,7 +73,7 @@ void Player::AttackUpdate() {
 
 		velocity = transform_.GetAffineMatrix().TransformNomal(velocity);
 
-		PlayerBullet* newBullet = new PlayerBullet;
+		BaseBullet* newBullet = new PlayerBullet;
 		newBullet->Initialize("bullet_texture", transform_.translate, velocity);
 		newBullet->Initialize("bullet_texture", transform_.translate, velocity);
 
@@ -82,7 +83,7 @@ void Player::AttackUpdate() {
 }
 
 void Player::BulletRemoveCheck() {
-	bullets_.remove_if([](PlayerBullet* bullet) {
+	bullets_.remove_if([](BaseBullet* bullet) {
 		if (!bullet->GetIsActive()) {
 			delete bullet;
 			return true;
@@ -92,7 +93,7 @@ void Player::BulletRemoveCheck() {
 }
 
 void Player::Draw() {
-	for (PlayerBullet* bullet : bullets_) {
+	for (BaseBullet* bullet : bullets_) {
 		bullet->Draw();
 	}
 

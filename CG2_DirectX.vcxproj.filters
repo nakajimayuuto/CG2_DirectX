@@ -121,9 +121,6 @@
     <Filter Include="ソース ファイル\Player">
       <UniqueIdentifier>{af194e25-50ef-4ec6-a7b0-e21ba46f58d6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Player\Bullet">
-      <UniqueIdentifier>{49324556-8a07-4d57-b55b-7aab94cb73ac}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\Enemies">
       <UniqueIdentifier>{e7c07ff6-9d74-4e8b-b7ba-d923651c99ab}</UniqueIdentifier>
     </Filter>
@@ -141,6 +138,15 @@
     </Filter>
     <Filter Include="ソース ファイル\Enemies\ForwardEnemy\ForwardEnemyState\ForwardEnemyLeave">
       <UniqueIdentifier>{8e9066a5-87c2-48d0-b7d6-6f61a46fcc6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Bullets">
+      <UniqueIdentifier>{45d99874-af71-4c60-8dc2-48e0e5b736b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Player\PlayerBullet">
+      <UniqueIdentifier>{49324556-8a07-4d57-b55b-7aab94cb73ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Enemies\ForwardEnemy\Bullet">
+      <UniqueIdentifier>{57c96197-d858-4f61-8ca8-a3bec5445f12}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -262,7 +268,7 @@
       <Filter>ソース ファイル\Player</Filter>
     </ClCompile>
     <ClCompile Include="PlayerBullet.cpp">
-      <Filter>ソース ファイル\Player\Bullet</Filter>
+      <Filter>ソース ファイル\Player\PlayerBullet</Filter>
     </ClCompile>
     <ClCompile Include="BaseEnemy.cpp">
       <Filter>ソース ファイル\Enemies\BaseEnemy</Filter>
@@ -275,6 +281,9 @@
     </ClCompile>
     <ClCompile Include="ForwardEnemyLeavePhase.cpp">
       <Filter>ソース ファイル\Enemies\ForwardEnemy\ForwardEnemyState\ForwardEnemyLeave</Filter>
+    </ClCompile>
+    <ClCompile Include="EnemyBullet.cpp">
+      <Filter>ソース ファイル\Enemies\ForwardEnemy\Bullet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -405,7 +414,7 @@
       <Filter>ソース ファイル\Player</Filter>
     </ClInclude>
     <ClInclude Include="PlayerBullet.h">
-      <Filter>ソース ファイル\Player\Bullet</Filter>
+      <Filter>ソース ファイル\Player\PlayerBullet</Filter>
     </ClInclude>
     <ClInclude Include="BaseEnemy.h">
       <Filter>ソース ファイル\Enemies\BaseEnemy</Filter>
@@ -421,6 +430,12 @@
     </ClInclude>
     <ClInclude Include="ForwardEnemyLeavePhase.h">
       <Filter>ソース ファイル\Enemies\ForwardEnemy\ForwardEnemyState\ForwardEnemyLeave</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseBullet.h">
+      <Filter>ソース ファイル\Bullets</Filter>
+    </ClInclude>
+    <ClInclude Include="EnemyBullet.h">
+      <Filter>ソース ファイル\Enemies\ForwardEnemy\Bullet</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

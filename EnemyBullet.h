@@ -1,10 +1,10 @@
 #pragma once
-#include "Satlib.h"
 #include "BaseBullet.h"
+#include "Satlib.h"
 
-class PlayerBullet : public BaseBullet{
+class EnemyBullet : public BaseBullet{
 public:
-	void Initialize(const std::string& modelName,const Vector3& position, const Vector3& velocity) override;
+	void Initialize(const std::string& modelName, const Vector3& position, const Vector3& velocity) override;
 
 	void Update() override;
 

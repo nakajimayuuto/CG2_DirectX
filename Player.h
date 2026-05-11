@@ -1,6 +1,6 @@
 #pragma once
 #include "Satlib.h"
-#include "PlayerBullet.h"
+#include "BaseBullet.h"
 #include <list>
 
 /// <summary>
@@ -40,6 +40,6 @@ private:
 
 	Renderer::ModelBox model_;
 
-	std::list<PlayerBullet*> bullets_;
+	std::list<BaseBullet*> bullets_;
 };
 
