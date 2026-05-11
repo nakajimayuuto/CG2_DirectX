@@ -10,6 +10,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	system->Initialize();
 
+	GlobalVariables::GetInstance()->LoadFiles();
+
 	StageManager::GetInstance()->LoadStageDataFile();
 
 	Camera::GetInstance()->Initialize(static_cast<float>(Environment::GetInstance()->GetWindowSize().width), static_cast<float>(Environment::GetInstance()->GetWindowSize().height));

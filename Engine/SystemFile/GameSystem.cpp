@@ -334,8 +334,6 @@ void GameSystem::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("block_template", "Resource/block", "block.obj");
 
 	TextureManager::GetInstance()->RegisterTexture("white_template", "Resource/white_template.png");
-
-	GlobalVariables::GetInstance()->LoadFiles();
 }
 
 void GameSystem::CreatePipeline(D3D12_CULL_MODE cullMode) {

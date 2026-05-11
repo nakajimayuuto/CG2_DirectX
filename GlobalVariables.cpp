@@ -88,7 +88,7 @@ void GlobalVariables::SetValue(const std::string& groupName, const std::string& 
 	group[key] = newItem;
 }
 
-void GlobalVariables::AddValue(const std::string& groupName, const std::string& key, int32_t value){
+void GlobalVariables::AddItem(const std::string& groupName, const std::string& key, int32_t value){
 	Group& group = datas_[groupName];
 
 	std::map<std::string, Item>::iterator itItem = group.find(key);
@@ -101,7 +101,7 @@ void GlobalVariables::AddValue(const std::string& groupName, const std::string& 
 	SetValue(groupName,key,value);
 }
 
-void GlobalVariables::AddValue(const std::string& groupName, const std::string& key, float value){
+void GlobalVariables::AddItem(const std::string& groupName, const std::string& key, float value){
 	Group& group = datas_[groupName];
 
 	std::map<std::string, Item>::iterator itItem = group.find(key);
@@ -114,7 +114,7 @@ void GlobalVariables::AddValue(const std::string& groupName, const std::string& 
 	SetValue(groupName, key, value);
 }
 
-void GlobalVariables::AddValue(const std::string& groupName, const std::string& key, const Vector3& value){
+void GlobalVariables::AddItem(const std::string& groupName, const std::string& key, const Vector3& value){
 	Group& group = datas_[groupName];
 
 	std::map<std::string, Item>::iterator itItem = group.find(key);

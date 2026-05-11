@@ -87,14 +87,14 @@ void CameraController::RegisterGlobalVariables() {
 
 	GlobalVariables::GetInstance()->CreateGroup(groupName);
 
-	GlobalVariables::GetInstance()->AddValue(groupName, "InterpolationRate", kInterpolationRate);
+	GlobalVariables::GetInstance()->AddItem(groupName, "InterpolationRate", kInterpolationRate);
 
-	GlobalVariables::GetInstance()->AddValue(groupName, "VelocityBias", kVelocityBias);
+	GlobalVariables::GetInstance()->AddItem(groupName, "VelocityBias", kVelocityBias);
 
-	GlobalVariables::GetInstance()->AddValue(groupName, "Margin.botom", kMargin.botom);
-	GlobalVariables::GetInstance()->AddValue(groupName, "Margin.top", kMargin.top);
-	GlobalVariables::GetInstance()->AddValue(groupName, "Margin.left", kMargin.left);
-	GlobalVariables::GetInstance()->AddValue(groupName, "Margin.right", kMargin.right);
+	GlobalVariables::GetInstance()->AddItem(groupName, "Margin.botom", kMargin.botom);
+	GlobalVariables::GetInstance()->AddItem(groupName, "Margin.top", kMargin.top);
+	GlobalVariables::GetInstance()->AddItem(groupName, "Margin.left", kMargin.left);
+	GlobalVariables::GetInstance()->AddItem(groupName, "Margin.right", kMargin.right);
 }
 
 void CameraController::ApplyGlobalVariables() {

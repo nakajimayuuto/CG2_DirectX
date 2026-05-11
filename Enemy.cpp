@@ -47,19 +47,19 @@ void Enemy::RegisterGlobalVariables(){
 
 	GlobalVariables::GetInstance()->CreateGroup(groupName);
 
-	GlobalVariables::GetInstance()->AddValue(groupName, "DeathAnimationParameterSpin", kDeathAnimationParameterSpin);
-	GlobalVariables::GetInstance()->AddValue(groupName, "DeathAnimationParameterShrink", kDeathAnimationParameterShrink);
+	GlobalVariables::GetInstance()->AddItem(groupName, "DeathAnimationParameterSpin", kDeathAnimationParameterSpin);
+	GlobalVariables::GetInstance()->AddItem(groupName, "DeathAnimationParameterShrink", kDeathAnimationParameterShrink);
 
-	GlobalVariables::GetInstance()->AddValue(groupName, "WalkSpeed", kWalkSpeed);
+	GlobalVariables::GetInstance()->AddItem(groupName, "WalkSpeed", kWalkSpeed);
 
-	GlobalVariables::GetInstance()->AddValue(groupName, "Width", kWidth );
-	GlobalVariables::GetInstance()->AddValue(groupName, "Height", kHeight);
+	GlobalVariables::GetInstance()->AddItem(groupName, "Width", kWidth );
+	GlobalVariables::GetInstance()->AddItem(groupName, "Height", kHeight);
 
-	GlobalVariables::GetInstance()->AddValue(groupName, "WalkMotionAngleStart", kWalkMotionAngleStart);
+	GlobalVariables::GetInstance()->AddItem(groupName, "WalkMotionAngleStart", kWalkMotionAngleStart);
 
-	GlobalVariables::GetInstance()->AddValue(groupName, "WalkMotionAngleEnd", kWalkMotionAngleEnd);
+	GlobalVariables::GetInstance()->AddItem(groupName, "WalkMotionAngleEnd", kWalkMotionAngleEnd);
 
-	GlobalVariables::GetInstance()->AddValue(groupName, "WalkMotionTime", kWalkMotionTime);
+	GlobalVariables::GetInstance()->AddItem(groupName, "WalkMotionTime", kWalkMotionTime);
 }
 
 void Enemy::ApplyGlobalVariables(){

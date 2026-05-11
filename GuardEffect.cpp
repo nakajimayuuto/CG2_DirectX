@@ -62,8 +62,8 @@ void GuardEffect::RegisterGlobalVariables() {
 
 	GlobalVariables::GetInstance()->CreateGroup(groupName);
 
-	GlobalVariables::GetInstance()->AddValue(groupName, "AnimationParameterSpread", kAnimationParameterSpread);
-	GlobalVariables::GetInstance()->AddValue(groupName, "AnimationParameterFadeOut", kAnimationParameterFadeOut);
+	GlobalVariables::GetInstance()->AddItem(groupName, "AnimationParameterSpread", kAnimationParameterSpread);
+	GlobalVariables::GetInstance()->AddItem(groupName, "AnimationParameterFadeOut", kAnimationParameterFadeOut);
 }
 
 void GuardEffect::ApplyGlobalVariables() {

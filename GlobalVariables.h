@@ -22,9 +22,9 @@ public:
 	void SetValue(const std::string& groupName, const std::string& key,float value);
 	void SetValue(const std::string& groupName, const std::string& key,const Vector3& value);
 
-	void AddValue(const std::string& groupName, const std::string& key,int32_t value);
-	void AddValue(const std::string& groupName, const std::string& key,float value);
-	void AddValue(const std::string& groupName, const std::string& key,const Vector3& value);
+	void AddItem(const std::string& groupName, const std::string& key,int32_t value);
+	void AddItem(const std::string& groupName, const std::string& key,float value);
+	void AddItem(const std::string& groupName, const std::string& key,const Vector3& value);
 
 	int32_t GetIntValue(const std::string& groupName, const std::string& key);
 	float GetFloatValue(const std::string& groupName, const std::string& key);

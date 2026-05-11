@@ -84,11 +84,11 @@ void HitEffect::RegisterGlobalVariables() {
 
 	GlobalVariables::GetInstance()->CreateGroup(groupName);
 
-	GlobalVariables::GetInstance()->AddValue(groupName, "EllipseWidth", kEllipseWidth);
-	GlobalVariables::GetInstance()->AddValue(groupName, "EllipseHeight", kEllipseHeight);
+	GlobalVariables::GetInstance()->AddItem(groupName, "EllipseWidth", kEllipseWidth);
+	GlobalVariables::GetInstance()->AddItem(groupName, "EllipseHeight", kEllipseHeight);
 
-	GlobalVariables::GetInstance()->AddValue(groupName, "AnimationParameterSpread", kAnimationParameterSpread);
-	GlobalVariables::GetInstance()->AddValue(groupName, "AnimationParameterShrink", kAnimationParameterShrink);
+	GlobalVariables::GetInstance()->AddItem(groupName, "AnimationParameterSpread", kAnimationParameterSpread);
+	GlobalVariables::GetInstance()->AddItem(groupName, "AnimationParameterShrink", kAnimationParameterShrink);
 }
 
 void HitEffect::ApplyGlobalVariables() {

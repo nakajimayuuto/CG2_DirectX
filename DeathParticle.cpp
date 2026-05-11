@@ -72,9 +72,9 @@ void DeathParticle::RegisterGlobalVariables() {
 
 	GlobalVariables::GetInstance()->CreateGroup(groupName);
 
-	GlobalVariables::GetInstance()->AddValue(groupName, "Duration",kDuration);
+	GlobalVariables::GetInstance()->AddItem(groupName, "Duration",kDuration);
 
-	GlobalVariables::GetInstance()->AddValue(groupName, "Speed", kSpeed);
+	GlobalVariables::GetInstance()->AddItem(groupName, "Speed", kSpeed);
 }
 
 void DeathParticle::ApplyGlobalVariables() {
