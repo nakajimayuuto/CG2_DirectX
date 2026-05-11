@@ -3,6 +3,7 @@
 #include "IScene.h"
 
 #include "../Player.h"
+#include "../BaseEnemy.h"
 
 class GameScene : public IScene{
 public:
@@ -17,5 +18,7 @@ public:
 	void ApplyGlobalVariables();
 private:
 	Player* player_ = nullptr;
+
+	BaseEnemy* enemy_ = nullptr;
 };
 

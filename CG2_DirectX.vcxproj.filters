@@ -124,6 +124,15 @@
     <Filter Include="ソース ファイル\Player\Bullet">
       <UniqueIdentifier>{49324556-8a07-4d57-b55b-7aab94cb73ac}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Enemies">
+      <UniqueIdentifier>{e7c07ff6-9d74-4e8b-b7ba-d923651c99ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Enemies\BaseEnemy">
+      <UniqueIdentifier>{6e618459-f218-4a02-a426-4de8f1838c24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Enemies\ForwardEnemy">
+      <UniqueIdentifier>{26d46f7c-606d-4fbe-83b1-c11b8be77986}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -245,6 +254,12 @@
     </ClCompile>
     <ClCompile Include="PlayerBullet.cpp">
       <Filter>ソース ファイル\Player\Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseEnemy.cpp">
+      <Filter>ソース ファイル\Enemies\BaseEnemy</Filter>
+    </ClCompile>
+    <ClCompile Include="ForwardEnemy.cpp">
+      <Filter>ソース ファイル\Enemies\ForwardEnemy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -376,6 +391,12 @@
     </ClInclude>
     <ClInclude Include="PlayerBullet.h">
       <Filter>ソース ファイル\Player\Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseEnemy.h">
+      <Filter>ソース ファイル\Enemies\BaseEnemy</Filter>
+    </ClInclude>
+    <ClInclude Include="ForwardEnemy.h">
+      <Filter>ソース ファイル\Enemies\ForwardEnemy</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
