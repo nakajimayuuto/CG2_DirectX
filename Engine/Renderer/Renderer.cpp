@@ -159,9 +159,7 @@ void Renderer::Model::SetIsVisible(bool isVisible, const std::string& meshName) 
 };
 
 bool Renderer::Model::GetIsVisible() {
-	if (modelMax_ == 1) {
-		return isVisible_[0];
-	}
+	return isVisible_[0];
 };
 
 bool Renderer::Model::GetIsVisible(const std::string& meshName) {
