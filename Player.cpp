@@ -1,5 +1,13 @@
 #include "Player.h"
 
+Player::~Player() {
+
+	for (PlayerBullet* bullet : bullets_) {
+		delete bullet;
+	}
+	bullets_.clear();
+}
+
 void Player::Initialize() {
 	transform_.Initialize();
 	model_.Initialize(TextureManager::GetInstance()->GetTextureInfo("player_texture"));
@@ -10,8 +18,8 @@ void Player::Update() {
 	RotateUpdate();
 	AttackUpdate();
 
-	if (bullet_) {
-		bullet_->Update();
+	for(PlayerBullet* bullet : bullets_){
+		bullet->Update();
 	}
 
 	ImGui::Begin("Player");
@@ -61,15 +69,15 @@ void Player::AttackUpdate() {
 		PlayerBullet* newBullet = new PlayerBullet;
 		newBullet->Initialize("bullet_texture", transform_.translate);
 
-		bullet_ = newBullet;
+		bullets_.push_back(newBullet);
 	}
 
 }
 
 void Player::Draw() {
-	model_.Draw(transform_);
-
-	if (bullet_) {
-		bullet_->Draw();
+	for (PlayerBullet* bullet : bullets_) {
+		bullet->Draw();
 	}
+
+	model_.Draw(transform_);
 }

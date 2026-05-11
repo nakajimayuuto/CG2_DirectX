@@ -1,12 +1,14 @@
 #pragma once
 #include "Satlib.h"
 #include "PlayerBullet.h"
+#include <list>
 
 /// <summary>
 /// 自キャラ
 /// </summary>
 class Player{
 public:
+	~Player();
 	void Initialize();
 
 	void Update();
@@ -31,6 +33,6 @@ private:
 
 	Renderer::ModelBox model_;
 
-	PlayerBullet* bullet_ = nullptr;
+	std::list<PlayerBullet*> bullets_;
 };
 
