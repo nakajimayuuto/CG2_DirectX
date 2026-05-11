@@ -1,9 +1,9 @@
 #include "ForwardEnemy.h"
 
-void ForwardEnemy::Initialize(){
+void ForwardEnemy::Initialize(Vector3 position){
 	model_.Initialize(TextureManager::GetInstance()->GetTextureInfo("enemy_texture"));
 	transform_.Initialize();
-
+	transform_.translate = position;
 	velocity_ = { 0.0f,0.0f,-kSpeed };
 }
 

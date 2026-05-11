@@ -4,6 +4,7 @@
 
 GameScene::~GameScene(){
 	delete player_;
+	delete enemy_;
 }
 
 void GameScene::Initialize() {
@@ -16,7 +17,7 @@ void GameScene::Initialize() {
 	player_->Initialize();
 
 	enemy_ = new ForwardEnemy();
-	enemy_->Initialize();
+	enemy_->Initialize({0.0f,0.0f,50.0f});
 
 	RegisterGlobalVariables();
 }
@@ -35,7 +36,9 @@ void GameScene::Update() {
 
 	player_->Update();
 
-	enemy_->Update();
+	if (enemy_) {
+		enemy_->Update();
+	}
 
 	Camera::GetInstance()->Update();
 }
@@ -43,7 +46,9 @@ void GameScene::Update() {
 void GameScene::Draw() {
 	player_->Draw();
 
-	enemy_->Draw();
+	if (enemy_) {
+		enemy_->Draw();
+	}
 }
 
 void GameScene::RegisterGlobalVariables(){
