@@ -659,15 +659,15 @@ void Player::RegisterGlobalVariables() {
 
 	GlobalVariables::GetInstance()->AddValue(groupName, "AttackParameterCharge", kAttackParameterCharge);
 	GlobalVariables::GetInstance()->AddValue(groupName, "AttackParameterDash", kAttackParameterDash);
-	GlobalVariables::GetInstance()->AddValue(groupName, "AttackParameterCharge", kAttackParameterLingeringSound);
+	GlobalVariables::GetInstance()->AddValue(groupName, "AttackParameterLingeringSound", kAttackParameterLingeringSound);
 	
 
 	GlobalVariables::GetInstance()->AddValue(groupName, "AttackDashSpeed", kAttackDashSpeed);
 
-	GlobalVariables::GetInstance()->AddValue(groupName, "nockbackParameterBack", kKnockbackParameterBack);
-	GlobalVariables::GetInstance()->AddValue(groupName, "nockbackParameterStop", kKnockbackParameterStop);
+	GlobalVariables::GetInstance()->AddValue(groupName, "knockbackParameterBack", kKnockbackParameterBack);
+	GlobalVariables::GetInstance()->AddValue(groupName, "knockbackParameterStop", kKnockbackParameterStop);
 
-	GlobalVariables::GetInstance()->AddValue(groupName, "Acceletation", kAcceletation);
+	GlobalVariables::GetInstance()->AddValue(groupName, "Acceleration", kAcceletation);
 	GlobalVariables::GetInstance()->AddValue(groupName, "Attenuation", kAttenuation);
 	GlobalVariables::GetInstance()->AddValue(groupName, "LimitRunSpeed", kLimitRunSpeed);
 
@@ -691,14 +691,14 @@ void Player::ApplyGlobalVariables(){
 
 	kAttackParameterCharge = GlobalVariables::GetInstance()->GetFloatValue(groupName, "AttackParameterCharge");
 	kAttackParameterDash = GlobalVariables::GetInstance()->GetFloatValue(groupName, "AttackParameterDash");
-	kAttackParameterLingeringSound = GlobalVariables::GetInstance()->GetFloatValue(groupName, "AttackParameterCharge");
+	kAttackParameterLingeringSound = GlobalVariables::GetInstance()->GetFloatValue(groupName, "AttackParameterLingeringSound");
 
 	kAttackDashSpeed = GlobalVariables::GetInstance()->GetFloatValue(groupName, "AttackDashSpeed");
 
-	kKnockbackParameterBack = GlobalVariables::GetInstance()->GetFloatValue(groupName, "nockbackParameterBack");
-	kKnockbackParameterStop = GlobalVariables::GetInstance()->GetFloatValue(groupName, "nockbackParameterStop");
+	kKnockbackParameterBack = GlobalVariables::GetInstance()->GetFloatValue(groupName, "knockbackParameterBack");
+	kKnockbackParameterStop = GlobalVariables::GetInstance()->GetFloatValue(groupName, "knockbackParameterStop");
 
-	kAcceletation = GlobalVariables::GetInstance()->GetFloatValue(groupName, "Acceletation");
+	kAcceletation = GlobalVariables::GetInstance()->GetFloatValue(groupName, "Acceleration");
 	kAttenuation = GlobalVariables::GetInstance()->GetFloatValue(groupName, "Attenuation");
 	kLimitRunSpeed = GlobalVariables::GetInstance()->GetFloatValue(groupName, "LimitRunSpeed");
 
