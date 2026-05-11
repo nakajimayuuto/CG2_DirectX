@@ -14,6 +14,11 @@ public:
 	void Update();
 
 	void Draw();
+
+	void BulletRemoveCheck();
+
+	static void RegisterGlobalVariables();
+	static void ApplyGlobalVariables();
 private:
 	void MoveUpdate();
 
@@ -28,6 +33,8 @@ private:
 	static inline float kMoveLimitY = 11.0f;
 
 	static inline float kRotateLimitY = Radian(45.0f);
+
+	static inline float kBulletSpeed = 1.0f;
 	
 	Transform transform_;
 

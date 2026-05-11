@@ -1,4 +1,5 @@
 #include "Transform.h"
+#include "Matrix4x4.h"
 
 void Transform::Initialize(){
 	scale.x = 1.0f;
@@ -12,6 +13,10 @@ void Transform::Initialize(){
 	translate.x = 0.0f;
 	translate.y = 0.0f;
 	translate.z = 0.0f;
+}
+
+Matrix4x4 Transform::GetAffineMatrix(){
+	return Matrix4x4::MakeAffineMatrix(scale,rotate,translate);
 }
 
 void Transform2D::Initialize(){

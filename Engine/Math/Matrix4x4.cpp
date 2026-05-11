@@ -548,6 +548,14 @@ Vector3 Matrix4x4::MatrixTransform(const Vector3& vector) {
 	return result;
 }
 
+Vector3 Matrix4x4::TransformNomal(const Vector3& vector){
+	Vector3 result{
+		vector.x * matrix[0][0] + vector.y * matrix[1][0] + vector.z * matrix[2][0],
+		vector.x * matrix[0][1] + vector.y * matrix[1][1] + vector.z * matrix[2][1],
+		vector.x * matrix[0][2] + vector.y * matrix[1][2] + vector.z * matrix[2][2]};
+	return result;
+}
+
 Matrix4x4 Matrix4x4::MakeTranslateMatrix(const Vector3& translate) {
 	Matrix4x4 result;
 

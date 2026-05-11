@@ -12,6 +12,9 @@ public:
 	void Update() override;
 
 	void Draw() override;
+
+	void RegisterGlobalVariables();
+	void ApplyGlobalVariables();
 private:
 	Player* player_ = nullptr;
 };

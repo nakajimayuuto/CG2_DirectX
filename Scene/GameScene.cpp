@@ -12,6 +12,8 @@ void GameScene::Initialize() {
 
 	player_ = new Player();
 	player_->Initialize();
+
+	RegisterGlobalVariables();
 }
 
 void GameScene::Update() {
@@ -24,7 +26,7 @@ void GameScene::Update() {
 		SceneManager::GetInstance()->ReloadScene();
 	}
 #endif // _DEBUG
-
+	ApplyGlobalVariables();
 
 	player_->Update();
 
@@ -33,4 +35,14 @@ void GameScene::Update() {
 
 void GameScene::Draw() {
 	player_->Draw();
+}
+
+void GameScene::RegisterGlobalVariables(){
+	Player::RegisterGlobalVariables();
+	PlayerBullet::RegisterGlobalVariables();
+}										 
+
+void GameScene::ApplyGlobalVariables(){
+	Player::ApplyGlobalVariables();
+	PlayerBullet::ApplyGlobalVariables();
 }

@@ -25,6 +25,8 @@ public:
 	static Matrix4x4 GetTranspose(Matrix4x4 matrix);
 	static Matrix4x4 Identity();
 	Vector3 MatrixTransform(const Vector3& vector);
+	
+	Vector3 TransformNomal(const Vector3& vector);
 
 	static Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
 	static Matrix4x4 MakeScaleMatrix(const Vector3& scale);
