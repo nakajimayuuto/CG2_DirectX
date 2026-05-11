@@ -23,9 +23,21 @@ void ForwardEnemy::Initialize(Vector3 position){
 void ForwardEnemy::Update(){
 	phase_->Update(this);
 
+	BulletRemoveCheck();
+
 	for (BaseBullet* bullet : bullets_) {
 		bullet->Update();
 	}
+}
+
+void ForwardEnemy::BulletRemoveCheck() {
+	bullets_.remove_if([](BaseBullet* bullet) {
+		if (!bullet->GetIsActive()) {
+			delete bullet;
+			return true;
+		}
+		return false;
+		});
 }
 
 void ForwardEnemy::Draw(){
