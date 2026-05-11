@@ -7,7 +7,8 @@ GameScene::~GameScene(){
 
 void GameScene::Initialize() {
 	TextureManager::GetInstance()->RegisterTexture("uvChecker","Resource/uvChecker.png");
-	TextureManager::GetInstance()->RegisterTexture("player_texture","Resource/player/player.png");
+	TextureManager::GetInstance()->RegisterTexture("player_texture","Resource/kari_texture/donut.png");
+	TextureManager::GetInstance()->RegisterTexture("bullet_texture","Resource/kari_texture/bullet.png");
 
 	player_ = new Player();
 	player_->Initialize();

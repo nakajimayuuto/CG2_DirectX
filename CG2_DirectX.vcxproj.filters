@@ -121,6 +121,9 @@
     <Filter Include="ソース ファイル\Player">
       <UniqueIdentifier>{af194e25-50ef-4ec6-a7b0-e21ba46f58d6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Player\Bullet">
+      <UniqueIdentifier>{49324556-8a07-4d57-b55b-7aab94cb73ac}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -239,6 +242,9 @@
     </ClCompile>
     <ClCompile Include="Player.cpp">
       <Filter>ソース ファイル\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerBullet.cpp">
+      <Filter>ソース ファイル\Player\Bullet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -367,6 +373,9 @@
     </ClInclude>
     <ClInclude Include="Player.h">
       <Filter>ソース ファイル\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerBullet.h">
+      <Filter>ソース ファイル\Player\Bullet</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

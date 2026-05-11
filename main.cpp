@@ -1,7 +1,7 @@
 #include "Satlib.h"
 
 
-// オーディオ類.
+// オーディオ類.	
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 

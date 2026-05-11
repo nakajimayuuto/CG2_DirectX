@@ -6,13 +6,22 @@ void Player::Initialize() {
 }
 
 void Player::Update() {
-	InputManager* input = InputManager::GetInstance();
+	MoveUpdate();
+	RotateUpdate();
+	AttackUpdate();
 
-	Vector3 move = {0.0f,0.0f,0.0f};
+	if (bullet_) {
+		bullet_->Update();
+	}
 
 	ImGui::Begin("Player");
-	ImGui::DragFloat3("transform",reinterpret_cast<float*>(&transform_.translate.x),0.1f,-3.0f,3.0f);
+	ImGui::DragFloat3("transform", reinterpret_cast<float*>(&transform_.translate.x), 0.1f, -3.0f, 3.0f);
 	ImGui::End();
+}
+
+void Player::MoveUpdate() {
+	InputManager* input = InputManager::GetInstance();
+	Vector3 move = { 0.0f,0.0f,0.0f };
 
 	if (input->PressKey(DIK_LEFT)) {
 		move.x -= kCharacterSpeed;
@@ -28,12 +37,39 @@ void Player::Update() {
 
 	transform_.translate += move;
 
-	transform_.translate.x = std::max(transform_.translate.x,-kMoveLimitX);
-	transform_.translate.x = std::min(transform_.translate.x,kMoveLimitX);
-	transform_.translate.y = std::max(transform_.translate.y,-kMoveLimitY);
-	transform_.translate.y = std::min(transform_.translate.y,kMoveLimitY);
+	transform_.translate.x = std::max(transform_.translate.x, -kMoveLimitX);
+	transform_.translate.x = std::min(transform_.translate.x, kMoveLimitX);
+	transform_.translate.y = std::max(transform_.translate.y, -kMoveLimitY);
+	transform_.translate.y = std::min(transform_.translate.y, kMoveLimitY);
+}
+
+void Player::RotateUpdate() {
+	InputManager* input = InputManager::GetInstance();
+
+	if (input->PressKey(DIK_A)) {
+		transform_.rotate.y -= kRotSpeed;
+	} else if (input->PressKey(DIK_D)) {
+		transform_.rotate.y += kRotSpeed;
+	}
+
+	transform_.rotate.y = std::max(transform_.rotate.y, -kRotateLimitY);
+	transform_.rotate.y = std::min(transform_.rotate.y, kRotateLimitY);
+}
+
+void Player::AttackUpdate() {
+	if (InputManager::GetInstance()->TriggerKey(DIK_SPACE)) {
+		PlayerBullet* newBullet = new PlayerBullet;
+		newBullet->Initialize("bullet_texture", transform_.translate);
+
+		bullet_ = newBullet;
+	}
+
 }
 
 void Player::Draw() {
 	model_.Draw(transform_);
+
+	if (bullet_) {
+		bullet_->Draw();
+	}
 }
