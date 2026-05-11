@@ -20,12 +20,13 @@ public:
 
 	void ChangePhase(ForwardEnemyBasePhase* phase) {
 		phase_ = phase; 
-		phase_->Initialize();
+		phase_->Initialize(this);
 	};
 
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();
 private:
+	void BulletRemoveCheck();
 	//static void (ForwardEnemy::* pFunc[])();
 private:
 	static inline float kBulletSpeed = 1.0f;

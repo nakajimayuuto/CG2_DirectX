@@ -86,6 +86,7 @@
     <ClCompile Include="PlayerBullet.cpp" />
     <ClCompile Include="Scene\GameScene.cpp" />
     <ClCompile Include="Scene\TitleScene.cpp" />
+    <ClCompile Include="TimedCall.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseBullet.h" />
@@ -138,6 +139,7 @@
     <ClInclude Include="Scene\GameScene.h" />
     <ClInclude Include="Scene\IScene.h" />
     <ClInclude Include="Scene\TitleScene.h" />
+    <ClInclude Include="TimedCall.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

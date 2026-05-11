@@ -3,7 +3,7 @@ class ForwardEnemy;
 
 class ForwardEnemyBasePhase {
 public:
-	virtual void Initialize() = 0;
+	virtual void Initialize(ForwardEnemy* pEnemy) = 0;
 
 	virtual void Update(ForwardEnemy* pEnemy) = 0;
 };

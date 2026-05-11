@@ -1,7 +1,8 @@
 #include "ForwardEnemyLeavePhase.h"
 #include "ForwardEnemy.h"
 
-void ForwardEnemyLeavePhase::Initialize(){
+void ForwardEnemyLeavePhase::Initialize(ForwardEnemy* pEnemy){
+	(void)pEnemy;
 }
 
 void ForwardEnemyLeavePhase::Update(ForwardEnemy* pEnemy) {

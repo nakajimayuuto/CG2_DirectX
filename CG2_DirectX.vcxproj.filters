@@ -148,6 +148,9 @@
     <Filter Include="ソース ファイル\Enemies\ForwardEnemy\Bullet">
       <UniqueIdentifier>{57c96197-d858-4f61-8ca8-a3bec5445f12}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\TimeCall">
+      <UniqueIdentifier>{42e182b5-e8c1-492f-8adf-98572a0453e1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -284,6 +287,9 @@
     </ClCompile>
     <ClCompile Include="EnemyBullet.cpp">
       <Filter>ソース ファイル\Enemies\ForwardEnemy\Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="TimedCall.cpp">
+      <Filter>ソース ファイル\TimeCall</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -436,6 +442,9 @@
     </ClInclude>
     <ClInclude Include="EnemyBullet.h">
       <Filter>ソース ファイル\Enemies\ForwardEnemy\Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="TimedCall.h">
+      <Filter>ソース ファイル\TimeCall</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
