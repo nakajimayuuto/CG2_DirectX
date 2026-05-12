@@ -455,6 +455,9 @@
     <ClInclude Include="Collider.h">
       <Filter>ソース ファイル\Collider</Filter>
     </ClInclude>
+    <ClInclude Include="CollisionConfig.h">
+      <Filter>ソース ファイル\Collider</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Engine\Renderer\Object3d.hlsli">

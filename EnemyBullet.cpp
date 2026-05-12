@@ -22,6 +22,9 @@ void EnemyBullet::Initialize(const std::string& modelName, const Vector3& positi
 	deathTimer_ = kLifeTime;
 	isActive_ = true;
 
+	SetCollisionAttribute(kCollisionAttributeEnemy);
+	SetCollisionMask(kCollisionAttributePlayer);
+
 }
 
 void EnemyBullet::Update() {

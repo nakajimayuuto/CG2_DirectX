@@ -19,6 +19,9 @@ void ForwardEnemy::Initialize(Vector3 position){
 	velocity_ = { 0.0f,0.0f,0.0f };
 	phase_ = new ForwardEnemyApproachPhase();
 	phase_->Initialize(this);
+
+	SetCollisionAttribute(kCollisionAttributeEnemy);
+	SetCollisionMask(kCollisionAttributePlayer);
 }
 
 void ForwardEnemy::Update(){

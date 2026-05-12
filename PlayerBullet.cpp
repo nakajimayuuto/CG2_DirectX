@@ -9,6 +9,9 @@ void PlayerBullet::Initialize(const std::string& modelName, const Vector3& posit
 	deathTimer_ = kLifeTime;
 	isActive_ = true;
 
+	SetCollisionAttribute(kCollisionAttributePlayer);
+	SetCollisionMask(kCollisionAttributeEnemy);
+
 }
 
 void PlayerBullet::Update(){

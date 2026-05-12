@@ -93,6 +93,7 @@
     <ClInclude Include="BaseBullet.h" />
     <ClInclude Include="BaseEnemy.h" />
     <ClInclude Include="Collider.h" />
+    <ClInclude Include="CollisionConfig.h" />
     <ClInclude Include="EnemyBullet.h" />
     <ClInclude Include="Engine\Math\Beats.h" />
     <ClInclude Include="Engine\Math\Collision.h" />

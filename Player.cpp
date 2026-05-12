@@ -12,6 +12,9 @@ Player::~Player() {
 void Player::Initialize() {
 	transform_.Initialize();
 	model_.Initialize(TextureManager::GetInstance()->GetTextureInfo("player_texture"));
+
+	SetCollisionAttribute(kCollisionAttributePlayer);
+	SetCollisionMask(kCollisionAttributeEnemy);
 }
 
 void Player::Update() {

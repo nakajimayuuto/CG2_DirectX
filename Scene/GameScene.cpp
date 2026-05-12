@@ -48,37 +48,45 @@ void GameScene::Update() {
 }
 
 void GameScene::CheckAllCollision() {
-	Sphere sphereA;
-	Sphere sphereB;
-	Vector3 scale;
+	std::list<Collider*> colliders_;
+
+	colliders_.push_back(player_);
+	colliders_.push_back(enemy_);
 
 	const std::list<BaseBullet*>& playerBullets = player_->GetBullet();
 
+	for (BaseBullet* bullet : playerBullets) {
+		colliders_.push_back(bullet);
+	}
+
 	if (ForwardEnemy* forwardEnemy = dynamic_cast<ForwardEnemy*>(enemy_)) {
 		const std::list<BaseBullet*>& enemyBullets = forwardEnemy->GetBullet();
-
-#pragma region 自キャラと敵弾.
 		for (BaseBullet* bullet : enemyBullets) {
-			CheckCollisionPair(player_, bullet);
+			colliders_.push_back(bullet);
 		}
-#pragma endregion
+	}
 
-#pragma region 自弾と敵弾.
-		for (BaseBullet* enemyBullet : enemyBullets) {
-			for (BaseBullet* playerBullet : playerBullets) {
-				CheckCollisionPair(enemyBullet,playerBullet);
-			}
+	std::list<Collider*>::iterator itrA = colliders_.begin();
+	for (; itrA != colliders_.end();itrA++) {
+		Collider* colliderA = *itrA;
+		std::list<Collider*>::iterator itrB = itrA;
+		itrB++;
+		for (; itrB != colliders_.end(); itrB++) {
+			Collider* colliderB = *itrB;
+
+			CheckCollisionPair(colliderA,colliderB);
 		}
-#pragma endregion
 	}
-#pragma region 自弾と敵キャラ.
-	for (BaseBullet* bullet : playerBullets) {
-		CheckCollisionPair(enemy_, bullet);
-	}
-#pragma endregion
 }
 
 void GameScene::CheckCollisionPair(Collider* colliderA, Collider* colliderB) {
+	if (
+		((colliderA->GetCollisionAttribute() ^ colliderB->GetCollisionMask()) != 0xFFFFFFFF) ||
+		((colliderB->GetCollisionAttribute() ^ colliderA->GetCollisionMask()) != 0xFFFFFFFF)
+		) {
+		return;
+	}
+
 	Sphere sphereA;
 	Sphere sphereB;
 	sphereA.center = colliderA->GetWorldPosition();
