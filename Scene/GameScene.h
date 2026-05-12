@@ -18,6 +18,8 @@ public:
 	void ApplyGlobalVariables();
 private:
 	void CheckAllCollision();
+
+	void CheckCollisionPair(Collider* colliderA,Collider* colliderB);
 private:
 	Player* player_ = nullptr;
 

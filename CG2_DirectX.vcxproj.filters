@@ -151,6 +151,9 @@
     <Filter Include="ソース ファイル\TimeCall">
       <UniqueIdentifier>{42e182b5-e8c1-492f-8adf-98572a0453e1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Collider">
+      <UniqueIdentifier>{11075fe7-e8a6-4c60-95ba-4517961f623e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -290,6 +293,9 @@
     </ClCompile>
     <ClCompile Include="TimedCall.cpp">
       <Filter>ソース ファイル\TimeCall</Filter>
+    </ClCompile>
+    <ClCompile Include="Collider.cpp">
+      <Filter>ソース ファイル\Collider</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -445,6 +451,9 @@
     </ClInclude>
     <ClInclude Include="TimedCall.h">
       <Filter>ソース ファイル\TimeCall</Filter>
+    </ClInclude>
+    <ClInclude Include="Collider.h">
+      <Filter>ソース ファイル\Collider</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

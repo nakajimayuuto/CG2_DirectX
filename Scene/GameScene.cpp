@@ -45,7 +45,7 @@ void GameScene::Update() {
 	Camera::GetInstance()->Update();
 
 	CheckAllCollision();
-}	
+}
 
 void GameScene::CheckAllCollision() {
 	Sphere sphereA;
@@ -58,58 +58,39 @@ void GameScene::CheckAllCollision() {
 		const std::list<BaseBullet*>& enemyBullets = forwardEnemy->GetBullet();
 
 #pragma region 自キャラと敵弾.
-		sphereA.center = player_->GetWorldPosition();
-		scale = player_->GetTransform().scale;
-		sphereA.radius = std::min(std::min(scale.x,scale.y),scale.z);
-
 		for (BaseBullet* bullet : enemyBullets) {
-			sphereB.center = bullet->GetWorldPosition();
-			scale = bullet->GetTransform().scale;
-			sphereB.radius = std::min(std::min(scale.x, scale.y), scale.z);
-
-			if (Collision::SphereToSphere(sphereA,sphereB)) {
-				player_->OnCollision();
-				bullet->OnCollision();
-			}
+			CheckCollisionPair(player_, bullet);
 		}
 #pragma endregion
 
 #pragma region 自弾と敵弾.
 		for (BaseBullet* enemyBullet : enemyBullets) {
-			sphereA.center = enemyBullet->GetWorldPosition();
-			scale = enemyBullet->GetTransform().scale;
-			sphereA.radius = std::min(std::min(scale.x, scale.y), scale.z);
-
 			for (BaseBullet* playerBullet : playerBullets) {
-				sphereB.center = playerBullet->GetWorldPosition();
-				scale = playerBullet->GetTransform().scale;
-				sphereB.radius = std::min(std::min(scale.x, scale.y), scale.z);
-
-				if (Collision::SphereToSphere(sphereA, sphereB)) {
-					enemyBullet->OnCollision();
-					playerBullet->OnCollision();
-				}
+				CheckCollisionPair(enemyBullet,playerBullet);
 			}
 		}
 #pragma endregion
 	}
-
 #pragma region 自弾と敵キャラ.
-	sphereA.center = enemy_->GetWorldPosition();
-	scale = enemy_->GetTransform().scale;
-	sphereA.radius = std::min(std::min(scale.x, scale.y), scale.z);
-
 	for (BaseBullet* bullet : playerBullets) {
-		sphereB.center = bullet->GetWorldPosition();
-		scale = bullet->GetTransform().scale;
-		sphereB.radius = std::min(std::min(scale.x, scale.y), scale.z);
-
-		if (Collision::SphereToSphere(sphereA, sphereB)) {
-			enemy_->OnCollision();
-			bullet->OnCollision();
-		}
+		CheckCollisionPair(enemy_, bullet);
 	}
 #pragma endregion
+}
+
+void GameScene::CheckCollisionPair(Collider* colliderA, Collider* colliderB) {
+	Sphere sphereA;
+	Sphere sphereB;
+	sphereA.center = colliderA->GetWorldPosition();
+	sphereA.radius = colliderA->GetRadius();
+
+	sphereB.center = colliderB->GetWorldPosition();
+	sphereB.radius = colliderB->GetRadius();
+
+	if (Collision::SphereToSphere(sphereA, sphereB)) {
+		colliderA->OnCollision();
+		colliderB->OnCollision();
+	}
 }
 
 void GameScene::Draw() {

@@ -2,11 +2,12 @@
 #include "Satlib.h"
 #include "BaseBullet.h"
 #include <list>
+#include "Collider.h"
 
 /// <summary>
 /// 自キャラ
 /// </summary>
-class Player{
+class Player : public Collider{
 public:
 	~Player();
 	void Initialize();
@@ -15,7 +16,7 @@ public:
 
 	void Draw();
 
-	void OnCollision();
+	void OnCollision() override;
 
 	void BulletRemoveCheck();
 
@@ -24,7 +25,7 @@ public:
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();
 
-	Vector3 GetWorldPosition() { return { transform_.GetAffineMatrix().matrix[3][0],transform_.GetAffineMatrix().matrix[3][1],transform_.GetAffineMatrix().matrix[3][2] }; };
+	Vector3 GetWorldPosition() override { return { transform_.GetAffineMatrix().matrix[3][0],transform_.GetAffineMatrix().matrix[3][1],transform_.GetAffineMatrix().matrix[3][2] }; };
 
 	Transform GetTransform()const { return transform_; };
 private:
