@@ -13,6 +13,8 @@ public:
 
 	void Draw() override;
 
+	void OnCollision() override;
+
 	void SetPlayer(Player* player) { player_ = player; };
 
 	static void RegisterGlobalVariables();

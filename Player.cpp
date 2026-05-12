@@ -30,6 +30,10 @@ void Player::Update() {
 	ImGui::End();
 }
 
+void Player::OnCollision() {
+
+}
+
 void Player::MoveUpdate() {
 	InputManager* input = InputManager::GetInstance();
 	Vector3 move = { 0.0f,0.0f,0.0f };

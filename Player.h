@@ -15,12 +15,18 @@ public:
 
 	void Draw();
 
+	void OnCollision();
+
 	void BulletRemoveCheck();
+
+	const std::list<BaseBullet*>& GetBullet() const { return bullets_; }
 
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();
 
 	Vector3 GetWorldPosition() { return { transform_.GetAffineMatrix().matrix[3][0],transform_.GetAffineMatrix().matrix[3][1],transform_.GetAffineMatrix().matrix[3][2] }; };
+
+	Transform GetTransform()const { return transform_; };
 private:
 	void MoveUpdate();
 

@@ -30,6 +30,10 @@ void PlayerBullet::Draw(){
 	model_.Draw(transform_);
 }
 
+void PlayerBullet::OnCollision(){
+	isActive_ = false;
+}
+
 void PlayerBullet::RegisterGlobalVariables() {
 	const std::string name = "playerBullet";
 	GlobalVariables* globalVariables = GlobalVariables::GetInstance();

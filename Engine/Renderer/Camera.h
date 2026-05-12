@@ -1,5 +1,6 @@
 #pragma once
 #include "../Math/Matrix4x4.h"
+#include "../Math/Transform.h"
 
 class Camera{
 	Vector3 scale_;

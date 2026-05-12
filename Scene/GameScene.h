@@ -17,6 +17,8 @@ public:
 	void RegisterGlobalVariables();
 	void ApplyGlobalVariables();
 private:
+	void CheckAllCollision();
+private:
 	Player* player_ = nullptr;
 
 	BaseEnemy* enemy_ = nullptr;

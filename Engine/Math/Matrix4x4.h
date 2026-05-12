@@ -1,9 +1,10 @@
 #pragma once
 #include "Vector3.h"
 #include "Vertex.h"
-#include "Transform.h"
 #include "assert.h"
 #include <cmath>
+
+class Transform;
 
 class Matrix4x4 {
 public:

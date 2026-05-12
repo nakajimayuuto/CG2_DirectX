@@ -49,6 +49,9 @@ void ForwardEnemy::Draw(){
 	}
 }
 
+void ForwardEnemy::OnCollision(){
+}
+
 void ForwardEnemy::Fire(){
 	Vector3 velocity(0.0f, 0.0f, -kBulletSpeed);
 

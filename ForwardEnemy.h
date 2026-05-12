@@ -12,6 +12,8 @@ public:
 	void Update() override;
 	void Draw() override;
 
+	void OnCollision() override;
+
 	void Fire();
 
 	void Translate(Vector3 translate);
@@ -22,6 +24,8 @@ public:
 		phase_ = phase; 
 		phase_->Initialize(this);
 	};
+
+	const std::list<BaseBullet*>& GetBullet() const { return bullets_; }
 
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();

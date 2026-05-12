@@ -55,6 +55,10 @@ void EnemyBullet::Draw() {
 	model_.Draw(transform_);
 }
 
+void EnemyBullet::OnCollision(){
+	isActive_ = false;
+}
+
 void EnemyBullet::RegisterGlobalVariables() {
 	const std::string name = "EnemyBullet";
 	GlobalVariables* globalVariables = GlobalVariables::GetInstance();

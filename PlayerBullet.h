@@ -10,6 +10,8 @@ public:
 
 	void Draw() override;
 
+	void OnCollision() override;
+
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();
 private:
