@@ -1,8 +1,16 @@
 #include "EnemyBullet.h"
 void EnemyBullet::Initialize(const std::string& modelName, const Vector3& position, const Vector3& velocity) {
 	model_.Initialize(TextureManager::GetInstance()->GetTextureInfo(modelName));
+	model_.SetColor({1.0f,0.0f,0.0f,1.0f});
 	transform_.Initialize();
 	transform_.translate = position;
+	transform_.scale.x = 0.5f;
+	transform_.scale.y = 0.5f;
+	transform_.scale.z = 3.0f;
+
+	transform_.rotate.y = std::atan2(velocity.x , velocity.z);
+	Vector3 velocityXZ = {velocity.x,0.0f,velocity.z};
+	transform_.rotate.x = std::atan2(-velocity.y ,velocityXZ.Length());
 
 	velocity_ = velocity;
 	deathTimer_ = kLifeTime;

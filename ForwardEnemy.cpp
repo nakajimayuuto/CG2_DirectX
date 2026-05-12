@@ -62,7 +62,7 @@ void ForwardEnemy::Fire(){
 	velocity = velocity.Normalize() * kBulletSpeed;
 
 	BaseBullet* newBullet = new EnemyBullet;
-	newBullet->Initialize("enemy_bullet_texture", transform_.translate, velocity);
+	newBullet->Initialize("white_template", transform_.translate, velocity);
 
 	bullets_.push_back(newBullet);
 }
