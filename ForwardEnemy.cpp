@@ -64,6 +64,8 @@ void ForwardEnemy::Fire(){
 	BaseBullet* newBullet = new EnemyBullet;
 	newBullet->Initialize("white_template", transform_.translate, velocity);
 
+	dynamic_cast<EnemyBullet*>(newBullet)->SetPlayer(player_);
+
 	bullets_.push_back(newBullet);
 }
 

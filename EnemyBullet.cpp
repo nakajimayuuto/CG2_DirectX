@@ -1,4 +1,10 @@
 #include "EnemyBullet.h"
+#include "Player.h"
+
+EnemyBullet::~EnemyBullet(){
+	delete player_;
+}
+
 void EnemyBullet::Initialize(const std::string& modelName, const Vector3& position, const Vector3& velocity) {
 	model_.Initialize(TextureManager::GetInstance()->GetTextureInfo(modelName));
 	model_.SetColor({1.0f,0.0f,0.0f,1.0f});
@@ -8,9 +14,9 @@ void EnemyBullet::Initialize(const std::string& modelName, const Vector3& positi
 	transform_.scale.y = 0.5f;
 	transform_.scale.z = 3.0f;
 
-	transform_.rotate.y = std::atan2(velocity.x , velocity.z);
-	Vector3 velocityXZ = {velocity.x,0.0f,velocity.z};
-	transform_.rotate.x = std::atan2(-velocity.y ,velocityXZ.Length());
+	transform_.rotate.y = std::atan2(velocity.x, velocity.z);
+	Vector3 velocityXZ = { velocity.x,0.0f,velocity.z };
+	transform_.rotate.x = std::atan2(-velocity.y, velocityXZ.Length());
 
 	velocity_ = velocity;
 	deathTimer_ = kLifeTime;
@@ -21,7 +27,19 @@ void EnemyBullet::Initialize(const std::string& modelName, const Vector3& positi
 void EnemyBullet::Update() {
 	LifeTimeUpdate();
 
+	Vector3 toPlayer = player_->GetWorldPosition() - GetWorldPosition();
+
+	toPlayer = toPlayer.Normalize();
+
+	velocity_ = velocity_.Normalize();
+
+	velocity_ = Slerp(velocity_,toPlayer,kHomingRatio) * kSpeed;
+
 	transform_.translate += velocity_;
+
+	transform_.rotate.y = std::atan2(velocity_.x, velocity_.z);
+	Vector3 velocityXZ = { velocity_.x,0.0f,velocity_.z };
+	transform_.rotate.x = std::atan2(-velocity_.y, velocityXZ.Length());
 }
 
 void EnemyBullet::LifeTimeUpdate() {

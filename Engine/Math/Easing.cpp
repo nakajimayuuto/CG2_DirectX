@@ -78,6 +78,20 @@ Vector3 Lerp(Vector3 before, Vector3 after, float time) {
 	return result;
 }
 
+Vector3 Slerp(Vector3 before, Vector3 after, float time){
+	Vector3 result = before;
+	
+	float theta = before.Dot(after);
+
+	auto SlerpFloat = [](float before, float after, float time, float theta) {return ((std::sin((1.0f - time) * theta) / std::sin(theta)) * before) + ((std::sin(time * theta) / std::sin(theta)) * after); };
+
+	result.x = SlerpFloat(before.x, after.x, time,theta);
+	result.y = SlerpFloat(before.y, after.y, time,theta);
+	result.z = SlerpFloat(before.z, after.z, time,theta);
+
+	return result;
+}
+
 int Easing(int before, int after, float time, float timeMax, EaseType type){
 	return static_cast<int>(Easing(static_cast<float>(before), static_cast<float>(after), time, timeMax, type));
 }

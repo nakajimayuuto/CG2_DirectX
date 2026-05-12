@@ -9,6 +9,7 @@ public:
 	virtual void Draw() = 0;
 
 	bool GetIsActive() { return isActive_; };
+	Vector3 GetWorldPosition() { return { transform_.GetAffineMatrix().matrix[3][0],transform_.GetAffineMatrix().matrix[3][1],transform_.GetAffineMatrix().matrix[3][2] }; };
 protected:
 	bool isActive_;
 	

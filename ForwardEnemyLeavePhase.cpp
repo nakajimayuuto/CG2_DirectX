@@ -6,5 +6,9 @@ void ForwardEnemyLeavePhase::Initialize(ForwardEnemy* pEnemy){
 }
 
 void ForwardEnemyLeavePhase::Update(ForwardEnemy* pEnemy) {
-	pEnemy->Translate({ -kSpeed,kSpeed ,0.0f });
+	if (pEnemy->GetPosition().x >= 0.0f) {
+		pEnemy->Translate({ kSpeed,kSpeed ,0.0f });
+	} else {
+		pEnemy->Translate({ -kSpeed,kSpeed ,0.0f });
+	}
 }

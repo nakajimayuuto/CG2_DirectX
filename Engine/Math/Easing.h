@@ -16,6 +16,10 @@ float Lerp(float before, float after, float time);
 
 Vector3 Lerp(Vector3 before, Vector3 after, float time);
 
+//float Slerp(float before, float after, float time);
+
+Vector3 Slerp(Vector3 before, Vector3 after, float time);
+
 float Easing(float before, float after, int time, int timeMax, EaseType type);
 
 float Easing(float before, float after, float time, float timeMax, EaseType type);
