@@ -2,6 +2,7 @@
 #include "ForwardEnemyApproachPhase.h"
 #include "ForwardEnemyLeavePhase.h"
 #include "EnemyBullet.h"
+#include "Player.h"
 
 ForwardEnemy::~ForwardEnemy() {
 
@@ -51,7 +52,14 @@ void ForwardEnemy::Draw(){
 void ForwardEnemy::Fire(){
 	Vector3 velocity(0.0f, 0.0f, -kBulletSpeed);
 
-	velocity = transform_.GetAffineMatrix().TransformNomal(velocity);
+	//velocity = transform_.GetAffineMatrix().TransformNomal(velocity);
+
+	Vector3 playerPos = player_->GetWorldPosition();
+	Vector3 enemyPos = GetWorldPosition();
+
+	velocity = playerPos - enemyPos;
+
+	velocity = velocity.Normalize() * kBulletSpeed;
 
 	BaseBullet* newBullet = new EnemyBullet;
 	newBullet->Initialize("enemy_bullet_texture", transform_.translate, velocity);

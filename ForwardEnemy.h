@@ -29,14 +29,11 @@ private:
 	void BulletRemoveCheck();
 	//static void (ForwardEnemy::* pFunc[])();
 private:
-	static inline float kBulletSpeed = 1.0f;
+	static inline float kBulletSpeed = 0.5f;
 
 	Vector3 velocity_;
 
 	ForwardEnemyBasePhase* phase_ = nullptr;
-
-	Transform transform_;
-	Renderer::ModelBox model_;
 
 	std::list<BaseBullet*> bullets_;
 };
