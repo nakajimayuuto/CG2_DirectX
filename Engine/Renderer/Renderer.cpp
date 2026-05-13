@@ -1,11 +1,6 @@
 #include "Renderer.h"
 #include <vector>
-Renderer::Model::~Model(){
-	for (uint32_t i = 0; i < modelMax_; i++) {
-		delete materialData_[i];
-
-		delete wvpData_[i];
-	}
+Renderer::Model::~Model() {
 	materialData_.clear();
 
 	wvpData_.clear();
@@ -65,7 +60,7 @@ void Renderer::Model::Initialize(const ModelInfo& info) {
 		// 今回は赤を書き込んでみる
 		materialData_[i]->color = modelData_[i].materialData.matarial.color;
 		materialData_[i]->lightingType = static_cast<uint32_t>(LightingType::kHalfLambert);
-		materialData_[i]->uvTransform = Matrix4x4::Identity();
+		materialData_[i]->uvTransform = modelData_[i].materialData.matarial.uvTransform;
 
 		// 【TransformationMatrix】
 		// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
@@ -79,7 +74,9 @@ void Renderer::Model::Initialize(const ModelInfo& info) {
 		wvpData_[i]->WVP = Matrix4x4::Identity();
 		wvpData_[i]->World = Matrix4x4::Identity();
 		uvTransform_[i].Initialize();
-
+		uvTransform_[i].scale = materialData_[i]->uvTransform.MatrixToTransform().scale;
+		uvTransform_[i].rotate = materialData_[i]->uvTransform.MatrixToTransform().rotate;
+		uvTransform_[i].translate = materialData_[i]->uvTransform.MatrixToTransform().translate;
 
 		// 【VertexBufferViewを作成する】
 

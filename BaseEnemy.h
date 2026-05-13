@@ -22,6 +22,6 @@ protected:
 	Player* player_ = nullptr;
 
 	Transform transform_;
-	Renderer::ModelBox model_;
+	Renderer::Model model_;
 };
 

@@ -13,7 +13,7 @@ ForwardEnemy::~ForwardEnemy() {
 }
 
 void ForwardEnemy::Initialize(Vector3 position){
-	model_.Initialize(TextureManager::GetInstance()->GetTextureInfo("enemy_texture"));
+	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("enemy"));
 	transform_.Initialize();
 	transform_.translate = position;
 	velocity_ = { 0.0f,0.0f,0.0f };
@@ -68,7 +68,7 @@ void ForwardEnemy::Fire(){
 	velocity = velocity.Normalize() * kBulletSpeed;
 
 	BaseBullet* newBullet = new EnemyBullet;
-	newBullet->Initialize("white_template", transform_.translate, velocity);
+	newBullet->Initialize("enemy_bullet", transform_.translate, velocity);
 
 	dynamic_cast<EnemyBullet*>(newBullet)->SetPlayer(player_);
 

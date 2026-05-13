@@ -1,9 +1,11 @@
 #include "PlayerBullet.h"
 
 void PlayerBullet::Initialize(const std::string& modelName, const Vector3& position, const Vector3& velocity){
-	model_.Initialize(TextureManager::GetInstance()->GetTextureInfo(modelName));
+	model_.Initialize(ModelManager::GetInstance()->GetModelInfo(modelName));
 	transform_.Initialize();
 	transform_.translate = position;
+
+	transform_.scale = {0.5f,0.5f,0.5f};
 
 	velocity_ = velocity;
 	deathTimer_ = kLifeTime;

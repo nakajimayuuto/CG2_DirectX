@@ -27,5 +27,7 @@ private:
 	BaseEnemy* enemy_ = nullptr;
 
 	Skydome* skydome_ = nullptr;
+
+	Renderer::Model groundModel_;
 };
 

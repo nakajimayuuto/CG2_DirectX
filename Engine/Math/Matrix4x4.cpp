@@ -660,6 +660,37 @@ Matrix4x4 Matrix4x4::MakeAffineMatrix(const Transform& transform){
 	return MakeScaleMatrix(transform.scale) * (MakeRotateXMatrix(transform.rotate.x) * MakeRotateYMatrix(transform.rotate.y) * MakeRotateZMatrix(transform.rotate.z)) * MakeTranslateMatrix(transform.translate);
 }
 
+Transform Matrix4x4::MatrixToTransform(){
+	Transform result;
+	result.scale = MatrixToScale();
+	result.rotate = MatrixToRotate();
+	result.translate = MatrixToTranslate();
+
+	return result;
+}
+
+Vector3 Matrix4x4::MatrixToScale(){
+	Vector3 result;
+	result.x = std::sqrt(std::pow(matrix[0][0], 2.0f) + std::pow(matrix[1][0], 2.0f) + std::pow(matrix[2][0], 2.0f));
+	result.y = std::sqrt(std::pow(matrix[0][1], 2.0f) + std::pow(matrix[1][1], 2.0f) + std::pow(matrix[2][1], 2.0f));
+	result.z = std::sqrt(std::pow(matrix[0][2], 2.0f) + std::pow(matrix[1][2], 2.0f) + std::pow(matrix[2][2], 2.0f));
+	return result;
+}
+
+Vector3 Matrix4x4::MatrixToRotate(){
+	Vector3 result;
+
+	result.y = std::atan2(-matrix[2][0],std::sqrt(std::pow(matrix[0][0], 2.0f)+ std::pow(matrix[1][0], 2.0f)));
+	result.x = std::atan2(matrix[2][1],matrix[2][2]);
+	result.z = std::atan2(matrix[1][0],matrix[0][0]);
+
+	return result;
+}
+
+Vector3 Matrix4x4::MatrixToTranslate(){
+	return {matrix[3][0],matrix[3][1],matrix[3][2]};
+}
+
 Matrix4x4 Matrix4x4::MakeOrthographicMatrix(Vertex4 vertex4, float zNear, float zFar) {
 	Matrix4x4 result;
 

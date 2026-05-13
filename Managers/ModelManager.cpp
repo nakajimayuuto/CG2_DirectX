@@ -52,6 +52,7 @@ MaterialData ModelManager::LoadMaterialTemplateFile(const std::string& directory
 	std::string mtlName;
 
 	materialData.matarial.color = { 1.0f,1.0f,1.0f,1.0f };
+	materialData.matarial.uvTransform = Matrix4x4::Identity();
 
 	// 2. ファイルを開く.
 	std::ifstream file(directoryPath + "/" + fileName); // ファイルを開く.
@@ -75,6 +76,14 @@ MaterialData ModelManager::LoadMaterialTemplateFile(const std::string& directory
 			if (identifier == "map_Kd") {
 				std::string textureFilename;
 				s >> textureFilename;
+				if (textureFilename == "-s") {
+					Vector3 scale;
+					s >> scale.x >> scale.y >> scale.z;
+
+					materialData.matarial.uvTransform = Matrix4x4::MakeScaleMatrix(scale);
+					s >> textureFilename;
+				}
+
 				// 連結してファイルパスにする.
 				materialData.textureFilePath = directoryPath + "/" + textureFilename;
 			} else if (identifier == "Kd") {
@@ -170,9 +179,9 @@ std::vector<ModelData>ModelManager::LoadObjFile(const std::string& directoryPath
 
 
 				// 要素へのIndexから、実際の要素の値を取得して、頂点を構築する.
-				Vector4 position = {0.0f,0.0f,0.0f,0.0f};
-				Vector2 texcoord = {0.0f,0.0f};
-				Vector3 normal = {0.0f,0.0f,0.0f};
+				Vector4 position = { 0.0f,0.0f,0.0f,0.0f };
+				Vector2 texcoord = { 0.0f,0.0f };
+				Vector3 normal = { 0.0f,0.0f,0.0f };
 
 				if (elementIndices[0] != -1024) {
 					position = positions[elementIndices[0] - 1];
@@ -181,7 +190,7 @@ std::vector<ModelData>ModelManager::LoadObjFile(const std::string& directoryPath
 				if (elementIndices[1] != -1024) {
 					texcoord = texcoords[elementIndices[1] - 1];
 				}
-				
+
 				if (elementIndices[2] != -1024) {
 					normal = normals[elementIndices[2] - 1];
 				}

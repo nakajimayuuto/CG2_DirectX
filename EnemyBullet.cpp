@@ -6,12 +6,12 @@ EnemyBullet::~EnemyBullet(){
 }
 
 void EnemyBullet::Initialize(const std::string& modelName, const Vector3& position, const Vector3& velocity) {
-	model_.Initialize(TextureManager::GetInstance()->GetTextureInfo(modelName));
+	model_.Initialize(ModelManager::GetInstance()->GetModelInfo(modelName));
 	model_.SetColor({1.0f,0.0f,0.0f,1.0f});
 	transform_.Initialize();
 	transform_.translate = position;
-	transform_.scale.x = 0.5f;
-	transform_.scale.y = 0.5f;
+	transform_.scale.x = 1.0f;
+	transform_.scale.y = 1.0f;
 	transform_.scale.z = 3.0f;
 
 	transform_.rotate.y = std::atan2(velocity.x, velocity.z);

@@ -11,7 +11,7 @@ Player::~Player() {
 
 void Player::Initialize() {
 	transform_.Initialize();
-	model_.Initialize(TextureManager::GetInstance()->GetTextureInfo("player_texture"));
+	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
 
 	SetCollisionAttribute(kCollisionAttributePlayer);
 	SetCollisionMask(kCollisionAttributeEnemy);
@@ -81,8 +81,7 @@ void Player::AttackUpdate() {
 		velocity = transform_.GetAffineMatrix().TransformNomal(velocity);
 
 		BaseBullet* newBullet = new PlayerBullet;
-		newBullet->Initialize("bullet_texture", transform_.translate, velocity);
-		newBullet->Initialize("bullet_texture", transform_.translate, velocity);
+		newBullet->Initialize("player_bullet", transform_.translate, velocity);
 
 		bullets_.push_back(newBullet);
 	}

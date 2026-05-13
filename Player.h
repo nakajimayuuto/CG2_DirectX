@@ -46,7 +46,7 @@ private:
 	
 	Transform transform_;
 
-	Renderer::ModelBox model_;
+	Renderer::Model model_;
 
 	std::list<BaseBullet*> bullets_;
 };

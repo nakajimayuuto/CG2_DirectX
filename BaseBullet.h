@@ -19,5 +19,5 @@ protected:
 	
 	Transform transform_;
 
-	Renderer::ModelBox model_;
+	Renderer::Model model_;
 };
