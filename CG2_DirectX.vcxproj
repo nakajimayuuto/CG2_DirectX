@@ -88,6 +88,7 @@
     <ClCompile Include="PlayerBullet.cpp" />
     <ClCompile Include="Scene\GameScene.cpp" />
     <ClCompile Include="Scene\TitleScene.cpp" />
+    <ClCompile Include="Skydome.cpp" />
     <ClCompile Include="TimedCall.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -144,6 +145,7 @@
     <ClInclude Include="Scene\GameScene.h" />
     <ClInclude Include="Scene\IScene.h" />
     <ClInclude Include="Scene\TitleScene.h" />
+    <ClInclude Include="Skydome.h" />
     <ClInclude Include="TimedCall.h" />
   </ItemGroup>
   <ItemGroup>

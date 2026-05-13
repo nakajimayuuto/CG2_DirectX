@@ -3,6 +3,7 @@
 #include "IScene.h"
 
 #include "../Player.h"
+#include "../Skydome.h"
 #include "../BaseEnemy.h"
 
 class GameScene : public IScene{
@@ -24,5 +25,7 @@ private:
 	Player* player_ = nullptr;
 
 	BaseEnemy* enemy_ = nullptr;
+
+	Skydome* skydome_ = nullptr;
 };
 

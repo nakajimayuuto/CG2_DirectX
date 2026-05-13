@@ -13,6 +13,7 @@ void GameScene::Initialize() {
 	TextureManager::GetInstance()->RegisterTexture("bullet_texture", "Resource/kari_texture/bullet.png");
 	TextureManager::GetInstance()->RegisterTexture("enemy_bullet_texture", "Resource/kari_texture/enemy_bullet.png");
 	TextureManager::GetInstance()->RegisterTexture("enemy_texture", "Resource/kari_texture/kari_musikera.png");
+	ModelManager::GetInstance()->RegisterObj("skydome","Resource/skydome","skydome.obj");
 
 	player_ = new Player();
 	player_->Initialize();
@@ -22,6 +23,9 @@ void GameScene::Initialize() {
 	enemy_->Initialize({ 10.0f,0.0f,50.0f });
 
 	RegisterGlobalVariables();
+
+	skydome_ = new Skydome();
+	skydome_->Initialize();
 }
 
 void GameScene::Update() {
@@ -92,6 +96,8 @@ void GameScene::CheckCollisionPair(Collider* colliderA, Collider* colliderB) {
 }
 
 void GameScene::Draw() {
+	skydome_->Draw();
+	
 	player_->Draw();
 
 	if (enemy_) {

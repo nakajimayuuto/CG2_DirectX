@@ -157,6 +157,9 @@
     <Filter Include="Engine\Math\Collider">
       <UniqueIdentifier>{11075fe7-e8a6-4c60-95ba-4517961f623e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Skydome">
+      <UniqueIdentifier>{e145e4af-b88e-4fd0-b6e1-fce94a94041d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -302,6 +305,9 @@
     </ClCompile>
     <ClCompile Include="Engine\Math\Collider.cpp">
       <Filter>Engine\Math\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="Skydome.cpp">
+      <Filter>ソース ファイル\Skydome</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -466,6 +472,9 @@
     </ClInclude>
     <ClInclude Include="Engine\Math\Collider.h">
       <Filter>Engine\Math\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="Skydome.h">
+      <Filter>ソース ファイル\Skydome</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
