@@ -107,7 +107,7 @@ void Renderer::Model::Draw(const Transform& transform) {
 			return;
 		}
 
-		Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform);
+		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
 
 		wvpData_[i]->World = worldMatrix;
 		wvpData_[i]->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
@@ -415,7 +415,7 @@ void Renderer::ModelSphere::Draw(const Transform& transform) {
 		return;
 	}
 
-	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform);
+	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
 
 	wvpData_->World = worldMatrix;
 	wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
@@ -539,7 +539,7 @@ void Renderer::ModelBox::Draw(const Transform& transform) {
 		return;
 	}
 
-	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform);
+	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
 
 	wvpData_->World = worldMatrix;
 	wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
@@ -749,7 +749,7 @@ void Renderer::Sprite::Draw(const Transform& transform) {
 		return;
 	}
 
-	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform);
+	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
 
 	transformationMatrixData_->World = worldMatrix;
 	transformationMatrixData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);

@@ -5,6 +5,7 @@
 GameScene::~GameScene() {
 	delete player_;
 	delete enemy_;
+	delete skydome_;
 }
 
 void GameScene::Initialize() {
@@ -22,8 +23,12 @@ void GameScene::Initialize() {
 
 	groundModel_.Initialize(ModelManager::GetInstance()->GetModelInfo("ground"));
 
+	railCameraController_ = new RailCameraController();
+	railCameraController_->Initialize(Transform::GetInitialValue());
+
 	player_ = new Player();
-	player_->Initialize();
+	player_->Initialize({0.0f,0.0f,50.0f});
+	player_->SetParent(&railCameraController_->GetTransform());
 
 	enemy_ = new ForwardEnemy();
 	enemy_->SetPlayer(player_);
@@ -47,11 +52,13 @@ void GameScene::Update() {
 #endif // _DEBUG
 	ApplyGlobalVariables();
 
-	player_->Update();
-
 	if (enemy_) {
 		enemy_->Update();
 	}
+
+	railCameraController_->Update();
+
+	player_->Update();
 
 	Camera::GetInstance()->Update();
 
@@ -105,7 +112,7 @@ void GameScene::CheckCollisionPair(Collider* colliderA, Collider* colliderB) {
 void GameScene::Draw() {
 	skydome_->Draw();
 
-	groundModel_.Draw({ {1.0f,1.0f,1.0f} ,{0.0f,0.0f,0.0f} ,{0.0f,-10.0f,0.0f} });
+	groundModel_.Draw(Transform::GetInitialValue());
 	
 	player_->Draw();
 

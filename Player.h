@@ -9,7 +9,7 @@
 class Player : public Collider{
 public:
 	~Player();
-	void Initialize();
+	void Initialize(const Vector3& position);
 
 	void Update();
 
@@ -27,6 +27,8 @@ public:
 	Vector3 GetWorldPosition() override { return { transform_.GetAffineMatrix().matrix[3][0],transform_.GetAffineMatrix().matrix[3][1],transform_.GetAffineMatrix().matrix[3][2] }; };
 
 	Transform GetTransform()const { return transform_; };
+
+	void SetParent(const Transform* parent) { transform_.SetParent(parent); };
 private:
 	void MoveUpdate();
 

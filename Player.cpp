@@ -9,9 +9,11 @@ Player::~Player() {
 	bullets_.clear();
 }
 
-void Player::Initialize() {
+void Player::Initialize(const Vector3& position) {
 	transform_.Initialize();
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
+
+	transform_.translate = position;
 
 	SetCollisionAttribute(kCollisionAttributePlayer);
 	SetCollisionMask(kCollisionAttributeEnemy);
@@ -81,7 +83,7 @@ void Player::AttackUpdate() {
 		velocity = transform_.GetAffineMatrix().TransformNomal(velocity);
 
 		BaseBullet* newBullet = new PlayerBullet;
-		newBullet->Initialize("player_bullet", transform_.translate, velocity);
+		newBullet->Initialize("player_bullet", transform_.GetAffineMatrix().MatrixToTranslate(), velocity);
 
 		bullets_.push_back(newBullet);
 	}

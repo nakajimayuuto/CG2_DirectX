@@ -10,5 +10,5 @@ void Skydome::Update() {
 }
 
 void Skydome::Draw() {
-	model_.Draw({ {1.0f,1.0f,1.0f} ,{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} });
+	model_.Draw(Transform::GetInitialValue());
 }

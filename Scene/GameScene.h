@@ -5,6 +5,7 @@
 #include "../Player.h"
 #include "../Skydome.h"
 #include "../BaseEnemy.h"
+#include "../RailCameraController.h"
 
 class GameScene : public IScene{
 public:
@@ -27,6 +28,8 @@ private:
 	BaseEnemy* enemy_ = nullptr;
 
 	Skydome* skydome_ = nullptr;
+
+	RailCameraController* railCameraController_ = nullptr;
 
 	Renderer::Model groundModel_;
 };
