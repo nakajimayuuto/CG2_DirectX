@@ -16,9 +16,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BaseEnemy.cpp" />
-    <ClCompile Include="Collider.cpp" />
     <ClCompile Include="EnemyBullet.cpp" />
     <ClCompile Include="Engine\Math\Beats.cpp" />
+    <ClCompile Include="Engine\Math\Collider.cpp" />
     <ClCompile Include="Engine\Math\Collision.cpp" />
     <ClCompile Include="Engine\Math\Easing.cpp" />
     <ClCompile Include="Engine\Math\Math.cpp" />
@@ -78,6 +78,7 @@
     <ClCompile Include="ForwardEnemyApproachPhase.cpp" />
     <ClCompile Include="ForwardEnemyLeavePhase.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Managers\CollisionManager.cpp" />
     <ClCompile Include="Managers\InputManager.cpp" />
     <ClCompile Include="Managers\ModelManager.cpp" />
     <ClCompile Include="Managers\SceneManager.cpp" />
@@ -92,11 +93,11 @@
   <ItemGroup>
     <ClInclude Include="BaseBullet.h" />
     <ClInclude Include="BaseEnemy.h" />
-    <ClInclude Include="Collider.h" />
-    <ClInclude Include="CollisionConfig.h" />
     <ClInclude Include="EnemyBullet.h" />
     <ClInclude Include="Engine\Math\Beats.h" />
+    <ClInclude Include="Engine\Math\Collider.h" />
     <ClInclude Include="Engine\Math\Collision.h" />
+    <ClInclude Include="Engine\Math\CollisionConfig.h" />
     <ClInclude Include="Engine\Math\Easing.h" />
     <ClInclude Include="Engine\Math\Math.h" />
     <ClInclude Include="Engine\Math\Matrix4x4.h" />
@@ -131,6 +132,7 @@
     <ClInclude Include="ForwardEnemyApproachPhase.h" />
     <ClInclude Include="ForwardEnemyBasePhase.h" />
     <ClInclude Include="ForwardEnemyLeavePhase.h" />
+    <ClInclude Include="Managers\CollisionManager.h" />
     <ClInclude Include="Managers\InputManager.h" />
     <ClInclude Include="Managers\ModelManager.h" />
     <ClInclude Include="Managers\SceneManager.h" />

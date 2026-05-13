@@ -48,35 +48,25 @@ void GameScene::Update() {
 }
 
 void GameScene::CheckAllCollision() {
-	std::list<Collider*> colliders_;
-
-	colliders_.push_back(player_);
-	colliders_.push_back(enemy_);
+	CollisionManager* manager = CollisionManager::GetInstance();
+	manager->ClearColliderList();
+	manager->AddColliderList(player_);
+	manager->AddColliderList(enemy_);
 
 	const std::list<BaseBullet*>& playerBullets = player_->GetBullet();
 
 	for (BaseBullet* bullet : playerBullets) {
-		colliders_.push_back(bullet);
+		manager->AddColliderList(bullet);
 	}
 
 	if (ForwardEnemy* forwardEnemy = dynamic_cast<ForwardEnemy*>(enemy_)) {
 		const std::list<BaseBullet*>& enemyBullets = forwardEnemy->GetBullet();
 		for (BaseBullet* bullet : enemyBullets) {
-			colliders_.push_back(bullet);
+			manager->AddColliderList(bullet);
 		}
 	}
 
-	std::list<Collider*>::iterator itrA = colliders_.begin();
-	for (; itrA != colliders_.end();itrA++) {
-		Collider* colliderA = *itrA;
-		std::list<Collider*>::iterator itrB = itrA;
-		itrB++;
-		for (; itrB != colliders_.end(); itrB++) {
-			Collider* colliderB = *itrB;
-
-			CheckCollisionPair(colliderA,colliderB);
-		}
-	}
+	manager->CheckAllCollision();
 }
 
 void GameScene::CheckCollisionPair(Collider* colliderA, Collider* colliderB) {

@@ -2,7 +2,6 @@
 #include "Satlib.h"
 #include "BaseBullet.h"
 #include <list>
-#include "Collider.h"
 
 /// <summary>
 /// 自キャラ

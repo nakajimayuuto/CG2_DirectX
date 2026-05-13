@@ -1,6 +1,6 @@
 #pragma once
-#include "./Engine/Math/Collision.h"
-#include "./Engine/Math/Shape.h"
+#include "Collision.h"
+#include "Shape.h"
 #include "CollisionConfig.h"
 class Collider {
 public:

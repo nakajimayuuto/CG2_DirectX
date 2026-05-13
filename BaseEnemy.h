@@ -1,6 +1,5 @@
 #pragma once
 #include "Satlib.h"
-#include "Collider.h"
 
 class Player;
 
