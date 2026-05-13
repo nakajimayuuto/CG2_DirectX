@@ -817,3 +817,86 @@ void Renderer::Sprite::AdaptationSize() {
 	vertexData[3].texcoord = { 1.0f,0.0f };
 	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
 }
+
+Renderer::Line* Renderer::Line::GetInstance() {
+	static Renderer::Line instance;
+	return &instance;
+}
+
+void Renderer::Line::Initialize() {
+	isVisible_ = true;
+
+	textureInfo_ = TextureManager::GetInstance()->GetTextureInfo("white_template");
+
+	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
+	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * kLineMax * 2);
+
+	// 【MaterialResourceを生成する】
+	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
+	materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+	// マテリアルにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
+	// 今回は赤を書き込んでみる
+	materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	materialData_->lightingType = static_cast<uint32_t>(LightingType::kHalfLambert);
+	materialData_->uvTransform = Matrix4x4::Identity();
+
+	// 【TransformationMatrix】
+	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
+	wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+	// データを書き込む.
+	// 書き込むためのアドレスを取得.
+	wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&wvpData_));
+	// 単位行列を書き込んでおく.
+	wvpData_->WVP = Matrix4x4::Identity();
+	wvpData_->World = Matrix4x4::Identity();
+
+	// 【VertexBufferViewを作成する】
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
+	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * kLineMax * 2);
+	// 1頂点あたりのサイズ.
+	vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+	// 【Resourceにデータを書き込む】
+	// 頂点リソースにデータを書き込む.
+	VertexData* vertexData = nullptr;
+	// 書き込むためのアドレスを取得.
+	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+}
+
+void Renderer::Line::Draw(const Transform& startTransform, const Transform& endTransform) {
+	if (!isVisible_) {
+		return;
+	}
+
+	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+
+	wvpData_->World = worldMatrix;
+	wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+
+	materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransform_);
+
+	/*=============================================================
+	三角形の描画のコマンド.
+	=============================================================*/
+	GameSystem::GetInstance()->SetPipeline(blendMode_);
+
+	GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_); // VBVを設定.
+	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
+	GameSystem::GetInstance()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	// CBufferの場所を設定.
+	// マテリアル用のCBufferの場所.
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
+	// WVP用のCBufferの場所.
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource_->GetGPUVirtualAddress());
+	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureInfo_.textureSrvHandlesGPU);
+	// DirectionalLight用のCBufferの場所.
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
+	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
+	GameSystem::GetInstance()->GetCommandList()->DrawInstanced(UINT(modelData_.vertices.size()), 1, 0, 0);
+}

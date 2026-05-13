@@ -220,5 +220,45 @@ namespace Renderer {
 
 		D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
 	};
+
+	class Line {
+	public:
+		static Line* GetInstance();
+
+		void Initialize();
+
+		void Draw(const Transform& startTransform,const Transform& endTransform);
+
+		void SetIsVisible(bool isVisible) { isVisible_ = isVisible; };
+
+		bool GetIsVisible() { return isVisible_; };
+
+		void SetColor(Vector4 color) { materialData_->color = color; };
+
+		Vector4 GetColor() { return materialData_->color; };
+	private:
+
+		Material* materialData_ = nullptr;
+
+		TransformationMatrix* wvpData_ = nullptr;
+
+		bool isVisible_;
+
+		TextureInfo textureInfo_;
+
+		Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_;
+
+		Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_;
+
+		Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_;
+
+		D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
+
+		Transform uvTransform_;
+
+		BlendMode blendMode_;
+
+		const uint32_t kLineMax = 500;
+	};
 }
 
