@@ -38,15 +38,6 @@ void GameScene::Initialize() {
 
 	skydome_ = new Skydome();
 	skydome_->Initialize();
-
-	controlPoints_ = {
-		{0.0f,0.0f,0.0f},
-		{1.0f,1.0f,0.0f},
-		{1.0f,1.5f,0.0f},
-		{2.0f,1.5f,0.0f},
-		{2.0f,0.0f,0.0f},
-		{3.0f,0.0f,0.0f}
-	};
 }
 
 void GameScene::Update() {
@@ -122,19 +113,6 @@ void GameScene::Draw() {
 	skydome_->Draw();
 
 	groundModel_.Draw(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,-10.0f }));
-
-	std::vector<Vector3>pointsDrawing;
-	const size_t segmentCount = 100;
-
-	for (size_t i = 0; i < segmentCount; i++) {
-		float t = 1.0f / segmentCount * i;
-		Vector3 pos = CatmullRomInterpolation(controlPoints_, t, 1.0f);
-		pointsDrawing.push_back(pos);
-	}
-
-	for (size_t i = 0; i < pointsDrawing.size() - 1; i++) {
-		Renderer::Line::GetInstance()->Draw(pointsDrawing[i],pointsDrawing[i + 1], {1.0f,1.0f,1.0f,1.0f});
-	}
 
 	player_->Draw();
 
