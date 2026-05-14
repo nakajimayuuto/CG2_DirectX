@@ -116,6 +116,8 @@ void GameScene::Draw() {
 
 	player_->Draw();
 
+	railCameraController_->Draw();
+
 	if (enemy_) {
 		enemy_->Draw();
 	}

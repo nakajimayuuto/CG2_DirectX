@@ -11,9 +11,13 @@ Player::~Player() {
 
 void Player::Initialize(const Vector3& position) {
 	transform_.Initialize();
+	transform2_.Initialize();
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
+	model2_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
 
 	transform_.translate = position;
+	transform2_.SetParent(&transform_);
+	transform2_.translate = position;
 
 	SetCollisionAttribute(kCollisionAttributePlayer);
 	SetCollisionMask(kCollisionAttributeEnemy);
@@ -31,9 +35,10 @@ void Player::Update() {
 	BulletRemoveCheck();
 
 	ImGui::Begin("Player");
-	ImGui::DragFloat3("transform", reinterpret_cast<float*>(&transform_.translate.x), 0.1f, -3.0f, 3.0f);
+	ImGui::DragFloat3("transform", reinterpret_cast<float*>(&transform_.translate.x), 0.1f, -300.0f, 300.0f);
+	ImGui::DragFloat3("rotate", reinterpret_cast<float*>(&transform_.rotate.x), 0.01f, -3.0f, 3.0f);
 	ImGui::End();
-}
+}	
 
 void Player::OnCollision() {
 
@@ -57,10 +62,10 @@ void Player::MoveUpdate() {
 
 	transform_.translate += move;
 
-	transform_.translate.x = std::max(transform_.translate.x, -kMoveLimitX);
-	transform_.translate.x = std::min(transform_.translate.x, kMoveLimitX);
-	transform_.translate.y = std::max(transform_.translate.y, -kMoveLimitY);
-	transform_.translate.y = std::min(transform_.translate.y, kMoveLimitY);
+	//transform_.translate.x = std::max(transform_.translate.x, -kMoveLimitX);
+	//transform_.translate.x = std::min(transform_.translate.x, kMoveLimitX);
+	//transform_.translate.y = std::max(transform_.translate.y, -kMoveLimitY);
+	//transform_.translate.y = std::min(transform_.translate.y, kMoveLimitY);
 }
 
 void Player::RotateUpdate() {
@@ -106,6 +111,7 @@ void Player::Draw() {
 	}
 
 	model_.Draw(transform_);
+	model2_.Draw(transform2_);
 }
 
 void Player::RegisterGlobalVariables() {

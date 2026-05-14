@@ -47,8 +47,10 @@ private:
 	static inline float kBulletSpeed = 1.0f;
 	
 	Transform transform_;
+	Transform transform2_;
 
 	Renderer::Model model_;
+	Renderer::Model model2_;
 
 	std::list<BaseBullet*> bullets_;
 };

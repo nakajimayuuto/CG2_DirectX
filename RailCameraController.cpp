@@ -6,25 +6,24 @@ void RailCameraController::Initialize(const Transform& transform) {
 
 	controlPoints_ = {
 		{0.0f,0.0f,0.0f},
-		{10.0f,10.0f,0.0f},
-		{10.0f,15.0f,0.0f},
-		{20.0f,15.0f,0.0f},
-		{20.0f,0.0f,0.0f},
-		{30.0f,0.0f,0.0f}
+		{0.0f,10.0f,10.0f},
+		{0.0f,15.0f,10.0f},
+		{0.0f,15.0f,20.0f},
+		{0.0f,0.0f,20.0f},
+		{0.0f,0.0f,30.0f}
 	};
 }
 
 void RailCameraController::Update() {
 	ImGui::Begin("Camera");
-	ImGui::SliderFloat3("translate",reinterpret_cast<float*>(&transform_.translate),-3.0f,3.0f);
-	ImGui::SliderFloat3("rotate",reinterpret_cast<float*>(&transform_.rotate),-3.0f,3.0f);
+	ImGui::SliderFloat3("translate", reinterpret_cast<float*>(&transform_.translate), -6.0f, 6.0f);
+	ImGui::DragFloat3("rotate", reinterpret_cast<float*>(&transform_.rotate), 0.01f, -6.0f, 6.0f);
 	ImGui::End();
 
 	timer_ += 1.0f / 60.0f;
 
 	transform_.translate = CatmullRomInterpolation(controlPoints_, timer_, timeMax);
-	//Vector3 target = CatmullRomInterpolation(controlPoints_, timer_+ 1.0f, timeMax);
-	//
+	Vector3 target = CatmullRomInterpolation(controlPoints_, timer_+ 1.0f, timeMax);
 	//target = target - transform_.translate;
 	//
 	//transform_.rotate.y = std::atan2(target.x, target.z);
