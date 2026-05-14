@@ -15,6 +15,7 @@
 #include <strsafe.h>
 #include <filesystem>
 #include <chrono>
+#include "../Renderer/Renderer.h"
 
 GameSystem* GameSystem::GetInstance() {
 	static GameSystem gameSystem;
@@ -337,6 +338,8 @@ void GameSystem::Initialize() {
 
 	TextureManager::GetInstance()->RegisterTexture("white_template", "Resource/white_template.png");
 
+	Renderer::Line::GetInstance()->Initialize();
+
 	GlobalVariables::GetInstance()->LoadFiles();
 
 	RegisterGlobalVariables();
@@ -606,6 +609,8 @@ bool GameSystem::BeginFrame() {
 	}
 
 	InputManager::GetInstance()->Update();
+
+	Renderer::Line::GetInstance()->ClearDrawIndex();
 
 #ifdef USE_IMGUI
 	ImGui_ImplDX12_NewFrame();

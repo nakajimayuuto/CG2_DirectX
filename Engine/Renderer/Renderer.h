@@ -8,6 +8,7 @@
 #include "../../externals/DirectXTex/DirectXTex.h"
 #include "../../externals/DirectXTex/d3dx12.h"
 #include "../SystemFile/GameSystem.h"
+#include <array>
 
 namespace Renderer {
 	enum class LightingType {
@@ -227,38 +228,37 @@ namespace Renderer {
 
 		void Initialize();
 
-		void Draw(const Transform& startTransform,const Transform& endTransform);
+		void Draw(const Vector3& startVector3, const Vector3& endVector3, const Vector4& color);
 
-		void SetIsVisible(bool isVisible) { isVisible_ = isVisible; };
-
-		bool GetIsVisible() { return isVisible_; };
-
-		void SetColor(Vector4 color) { materialData_->color = color; };
-
-		Vector4 GetColor() { return materialData_->color; };
+		void ClearDrawIndex() { currentDrawLineIndex_ = 0; };
 	private:
+		struct LineData {
+			Material* materialData_ = nullptr;
 
-		Material* materialData_ = nullptr;
+			TransformationMatrix* wvpData_ = nullptr;
 
-		TransformationMatrix* wvpData_ = nullptr;
+			VertexData* vertexData = nullptr;
 
-		bool isVisible_;
+			TextureInfo textureInfo_;
 
-		TextureInfo textureInfo_;
+			Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_;
 
-		Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_;
+			Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_;
 
-		Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_;
+			Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_;
 
-		Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_;
+			D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
 
-		D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
+			Transform uvTransform_;
 
-		Transform uvTransform_;
+			BlendMode blendMode_;
+		};
 
-		BlendMode blendMode_;
+		static inline const uint32_t kLineMax = 500;
 
-		const uint32_t kLineMax = 500;
+		uint32_t currentDrawLineIndex_;
+
+		std::array<LineData*, kLineMax> lineDatas_;
 	};
 }
 

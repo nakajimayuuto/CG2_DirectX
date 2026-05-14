@@ -112,8 +112,8 @@ void GameScene::CheckCollisionPair(Collider* colliderA, Collider* colliderB) {
 void GameScene::Draw() {
 	skydome_->Draw();
 
-	groundModel_.Draw(Transform::GetInitialValue());
-	
+	groundModel_.Draw(Transform::GetInitialValue({1.0f,1.0f,1.0f}, {0.0f,0.0f,0.0f}, {0.0f,0.0f,-10.0f}));
+
 	player_->Draw();
 
 	if (enemy_) {

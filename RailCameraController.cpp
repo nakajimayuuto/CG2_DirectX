@@ -12,7 +12,7 @@ void RailCameraController::Update() {
 	ImGui::End();
 
 	transform_.translate = camera_->GetPosition();
-	transform_.translate += {0.0f, 0.0f, 0.1f};
+	transform_.translate += {0.0f, 0.0f, 0.0f};
 
 	camera_->SetTransform(transform_);
 }

@@ -824,79 +824,90 @@ Renderer::Line* Renderer::Line::GetInstance() {
 }
 
 void Renderer::Line::Initialize() {
-	isVisible_ = true;
+	for (uint32_t i = 0; i < kLineMax; i++) {
+		lineDatas_[i] = new Renderer::Line::LineData();
+		lineDatas_[i]->textureInfo_ = TextureManager::GetInstance()->GetTextureInfo("white_template");
+		lineDatas_[i]->blendMode_ = BlendMode::kLine;
 
-	textureInfo_ = TextureManager::GetInstance()->GetTextureInfo("white_template");
+		// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
+		lineDatas_[i]->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData)* 2);
 
-	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
-	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * kLineMax * 2);
+		// 【MaterialResourceを生成する】
+		// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
+		lineDatas_[i]->materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+		// マテリアルにデータを書き込む.
+		// 書き込むためのアドレスを取得.
+		lineDatas_[i]->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&lineDatas_[i]->materialData_));
+		// 今回は赤を書き込んでみる
+		lineDatas_[i]->materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+		lineDatas_[i]->materialData_->lightingType = static_cast<uint32_t>(LightingType::kNone);
+		lineDatas_[i]->materialData_->uvTransform = Matrix4x4::Identity();
 
-	// 【MaterialResourceを生成する】
-	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
-	materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
-	// マテリアルにデータを書き込む.
-	// 書き込むためのアドレスを取得.
-	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
-	// 今回は赤を書き込んでみる
-	materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	materialData_->lightingType = static_cast<uint32_t>(LightingType::kHalfLambert);
-	materialData_->uvTransform = Matrix4x4::Identity();
+		// 【TransformationMatrix】
+		// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
+		lineDatas_[i]->wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+		// データを書き込む.
+		// 書き込むためのアドレスを取得.
+		lineDatas_[i]->wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&lineDatas_[i]->wvpData_));
+		// 単位行列を書き込んでおく.
+		lineDatas_[i]->wvpData_->WVP = Matrix4x4::Identity();
+		lineDatas_[i]->wvpData_->World = Matrix4x4::Identity();
 
-	// 【TransformationMatrix】
-	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
-	wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
-	// データを書き込む.
-	// 書き込むためのアドレスを取得.
-	wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&wvpData_));
-	// 単位行列を書き込んでおく.
-	wvpData_->WVP = Matrix4x4::Identity();
-	wvpData_->World = Matrix4x4::Identity();
+		// 【VertexBufferViewを作成する】
+		// 頂点バッファビューを作成する.
+		// リソースの先頭のアドレスから使う.
+		lineDatas_[i]->vertexBufferView_.BufferLocation = lineDatas_[i]->vertexResource_->GetGPUVirtualAddress();
+		// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
+		lineDatas_[i]->vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * 2);
+		// 1頂点あたりのサイズ.
+		lineDatas_[i]->vertexBufferView_.StrideInBytes = sizeof(VertexData);
 
-	// 【VertexBufferViewを作成する】
-	// 頂点バッファビューを作成する.
-	// リソースの先頭のアドレスから使う.
-	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
-	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
-	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * kLineMax * 2);
-	// 1頂点あたりのサイズ.
-	vertexBufferView_.StrideInBytes = sizeof(VertexData);
-
-	// 【Resourceにデータを書き込む】
-	// 頂点リソースにデータを書き込む.
-	VertexData* vertexData = nullptr;
-	// 書き込むためのアドレスを取得.
-	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-}
-
-void Renderer::Line::Draw(const Transform& startTransform, const Transform& endTransform) {
-	if (!isVisible_) {
-		return;
+		// 【Resourceにデータを書き込む】
+		// 書き込むためのアドレスを取得.
+		lineDatas_[i]->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&lineDatas_[i]->vertexData));
 	}
 
-	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+	currentDrawLineIndex_ = 0;
+}
 
-	wvpData_->World = worldMatrix;
-	wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+void Renderer::Line::Draw(const Vector3& startVector3, const Vector3& endVector3,const Vector4& color) {
 
-	materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransform_);
+	Vector3 centerVector3 = (static_cast<Vector3>(startVector3) + endVector3 ) / 2.0f;
+	Vector3 diff = (static_cast<Vector3>(startVector3) - endVector3 );
+
+	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix({1.0f,1.0f,1.0f}, {0.0f,0.0f,0.0f}, centerVector3);
+
+	lineDatas_[currentDrawLineIndex_]->vertexData[0].position = { -diff.x / 2.0f,-diff.y / 2.0f ,-diff.z / 2.0f ,1.0f};
+	lineDatas_[currentDrawLineIndex_]->vertexData[0].texcoord = {0.0f,1.0f};
+	lineDatas_[currentDrawLineIndex_]->vertexData[0].normal = { 0.0f,0.0f,0.0f };
+	lineDatas_[currentDrawLineIndex_]->vertexData[1].position = { diff.x / 2.0f,diff.y / 2.0f ,diff.z / 2.0f ,1.0f};
+	lineDatas_[currentDrawLineIndex_]->vertexData[1].texcoord = { 0.0f,1.0f };
+	lineDatas_[currentDrawLineIndex_]->vertexData[1].normal = { 0.0f,0.0f,0.0f };
+
+	lineDatas_[currentDrawLineIndex_]->wvpData_->World = worldMatrix;
+	lineDatas_[currentDrawLineIndex_]->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+
+	lineDatas_[currentDrawLineIndex_]->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(lineDatas_[currentDrawLineIndex_]->uvTransform_);
+	lineDatas_[currentDrawLineIndex_]->materialData_->color = color;
 
 	/*=============================================================
 	三角形の描画のコマンド.
 	=============================================================*/
-	GameSystem::GetInstance()->SetPipeline(blendMode_);
+	GameSystem::GetInstance()->SetPipeline(lineDatas_[currentDrawLineIndex_]->blendMode_);
 
-	GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_); // VBVを設定.
+	GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &lineDatas_[currentDrawLineIndex_]->vertexBufferView_); // VBVを設定.
 	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
-	GameSystem::GetInstance()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	GameSystem::GetInstance()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 	// CBufferの場所を設定.
 	// マテリアル用のCBufferの場所.
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(0, lineDatas_[currentDrawLineIndex_]->materialResource_->GetGPUVirtualAddress());
 	// WVP用のCBufferの場所.
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource_->GetGPUVirtualAddress());
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(1, lineDatas_[currentDrawLineIndex_]->wvpResource_->GetGPUVirtualAddress());
 	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureInfo_.textureSrvHandlesGPU);
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootDescriptorTable(2, lineDatas_[currentDrawLineIndex_]->textureInfo_.textureSrvHandlesGPU);
 	// DirectionalLight用のCBufferの場所.
 	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-	GameSystem::GetInstance()->GetCommandList()->DrawInstanced(UINT(modelData_.vertices.size()), 1, 0, 0);
+	GameSystem::GetInstance()->GetCommandList()->DrawInstanced(2, 1, 0, 0);
+	currentDrawLineIndex_++;
 }
