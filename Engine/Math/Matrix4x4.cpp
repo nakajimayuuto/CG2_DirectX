@@ -78,9 +78,16 @@ Matrix4x4& Matrix4x4::operator*=(float scalar) {
 }
 
 Matrix4x4& Matrix4x4::operator*=(const Matrix4x4& m1) {
+	Matrix4x4 result;
 	for (int row = 0; row < 4; row++) {
 		for (int column = 0; column < 4; column++) {
-			matrix[row][column] = (matrix[row][0] * m1.matrix[0][column]) + (matrix[row][1] * m1.matrix[1][column]) + (matrix[row][2] * m1.matrix[2][column]) + (matrix[row][3] * m1.matrix[3][column]);
+			result.matrix[row][column] = (matrix[row][0] * m1.matrix[0][column]) + (matrix[row][1] * m1.matrix[1][column]) + (matrix[row][2] * m1.matrix[2][column]) + (matrix[row][3] * m1.matrix[3][column]);
+		}
+	}
+
+	for (int row = 0; row < 4; row++) {
+		for (int column = 0; column < 4; column++) {
+			matrix[column][row] = result.matrix[column][row];
 		}
 	}
 

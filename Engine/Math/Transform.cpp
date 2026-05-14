@@ -35,13 +35,7 @@ Matrix4x4 Transform::GetAffineMatrix()const {
 	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(scale, rotate, translate);
 	if (parent_) {
 		worldMatrix = Matrix4x4::MakeAffineMatrix(scale, {0.0f,0.0f,0.0f}, translate);
-		Matrix4x4 parentMatrix;
-		parentMatrix = Matrix4x4::MakeScaleMatrix(parent_->scale);
-		parentMatrix *= Matrix4x4::MakeRotateYMatrix(parent_->rotate.y);//(Matrix4x4::MakeRotateXMatrix(parent_->rotate.x) * Matrix4x4::MakeRotateYMatrix(parent_->rotate.y) * Matrix4x4::MakeRotateZMatrix(parent_->rotate.z)) ;
-		parentMatrix *= Matrix4x4::MakeTranslateMatrix(parent_->translate);
-		worldMatrix *= parentMatrix;
-
-		//worldMatrix *= parent_->GetAffineMatrix();
+		worldMatrix *= parent_->GetAffineMatrix();
 	}
 	return worldMatrix;
 }

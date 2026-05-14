@@ -32,7 +32,7 @@ void GameScene::Initialize() {
 
 	enemy_ = new ForwardEnemy();
 	enemy_->SetPlayer(player_);
-	enemy_->Initialize({ 10.0f,0.0f,50.0f });
+	enemy_->Initialize({ 10.0f,50.0f,100.0f });
 
 	RegisterGlobalVariables();
 
