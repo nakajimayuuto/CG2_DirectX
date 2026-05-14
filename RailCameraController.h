@@ -16,6 +16,6 @@ private:
 
 	float timer_;
 
-	const float timeMax = 1000.0f;
+	const float timeMax = 100.0f;
 };
 
