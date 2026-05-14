@@ -32,5 +32,7 @@ private:
 	RailCameraController* railCameraController_ = nullptr;
 
 	Renderer::Model groundModel_;
+
+	std::vector<Vector3> controlPoints_;
 };
 

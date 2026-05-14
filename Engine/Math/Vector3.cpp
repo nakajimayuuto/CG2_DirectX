@@ -5,6 +5,14 @@
 
 using namespace std;
 
+const Vector3& Vector3::operator-(){
+	Vector3 result;
+	result.x = x * -1.0f;
+	result.y = y * -1.0f;
+	result.z = z * -1.0f;
+	return result;
+}
+
 Vector3 Vector3::operator+(const Vector3& v1){
 	Vector3 result;
 	result.x = x + v1.x;
@@ -13,11 +21,27 @@ Vector3 Vector3::operator+(const Vector3& v1){
 	return result;
 }
 
+Vector3 Vector3::operator+(float scalar){
+	Vector3 result;
+	result.x = x + scalar;
+	result.y = y + scalar;
+	result.z = z + scalar;
+	return result;
+}
+
 Vector3 Vector3::operator-(const Vector3& v1){
 	Vector3 result;
 	result.x = x - v1.x;
 	result.y = y - v1.y;
 	result.z = z - v1.z;
+	return result;
+}
+
+Vector3 Vector3::operator-(float scalar){
+	Vector3 result;
+	result.x = x - scalar;
+	result.y = y - scalar;
+	result.z = z - scalar;
 	return result;
 }
 

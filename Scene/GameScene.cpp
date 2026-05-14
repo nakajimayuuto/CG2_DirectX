@@ -14,12 +14,12 @@ void GameScene::Initialize() {
 	//TextureManager::GetInstance()->RegisterTexture("bullet_texture", "Resource/kari_texture/bullet.png");
 	//TextureManager::GetInstance()->RegisterTexture("enemy_bullet_texture", "Resource/kari_texture/enemy_bullet.png");
 	//TextureManager::GetInstance()->RegisterTexture("enemy_texture", "Resource/kari_texture/kari_musikera.png");
-	ModelManager::GetInstance()->RegisterObj("skydome","Resource/skydome","skydome.obj");
-	ModelManager::GetInstance()->RegisterObj("player","Resource/player","player.obj");
-	ModelManager::GetInstance()->RegisterObj("enemy","Resource/shield_enemy","shield_enemy.obj");
-	ModelManager::GetInstance()->RegisterObj("enemy_bullet","Resource/death_particle","death_particle.obj");
-	ModelManager::GetInstance()->RegisterObj("player_bullet","Resource/bullet","bullet.obj");
-	ModelManager::GetInstance()->RegisterObj("ground","Resource/Ground","ground.obj");
+	ModelManager::GetInstance()->RegisterObj("skydome", "Resource/skydome", "skydome.obj");
+	ModelManager::GetInstance()->RegisterObj("player", "Resource/player", "player.obj");
+	ModelManager::GetInstance()->RegisterObj("enemy", "Resource/shield_enemy", "shield_enemy.obj");
+	ModelManager::GetInstance()->RegisterObj("enemy_bullet", "Resource/death_particle", "death_particle.obj");
+	ModelManager::GetInstance()->RegisterObj("player_bullet", "Resource/bullet", "bullet.obj");
+	ModelManager::GetInstance()->RegisterObj("ground", "Resource/Ground", "ground.obj");
 
 	groundModel_.Initialize(ModelManager::GetInstance()->GetModelInfo("ground"));
 
@@ -27,7 +27,7 @@ void GameScene::Initialize() {
 	railCameraController_->Initialize(Transform::GetInitialValue());
 
 	player_ = new Player();
-	player_->Initialize({0.0f,0.0f,50.0f});
+	player_->Initialize({ 0.0f,0.0f,50.0f });
 	player_->SetParent(&railCameraController_->GetTransform());
 
 	enemy_ = new ForwardEnemy();
@@ -38,6 +38,15 @@ void GameScene::Initialize() {
 
 	skydome_ = new Skydome();
 	skydome_->Initialize();
+
+	controlPoints_ = {
+		{0.0f,0.0f,0.0f},
+		{1.0f,1.0f,0.0f},
+		{1.0f,1.5f,0.0f},
+		{2.0f,1.5f,0.0f},
+		{2.0f,0.0f,0.0f},
+		{3.0f,0.0f,0.0f}
+	};
 }
 
 void GameScene::Update() {
@@ -112,7 +121,20 @@ void GameScene::CheckCollisionPair(Collider* colliderA, Collider* colliderB) {
 void GameScene::Draw() {
 	skydome_->Draw();
 
-	groundModel_.Draw(Transform::GetInitialValue({1.0f,1.0f,1.0f}, {0.0f,0.0f,0.0f}, {0.0f,0.0f,-10.0f}));
+	groundModel_.Draw(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,-10.0f }));
+
+	std::vector<Vector3>pointsDrawing;
+	const size_t segmentCount = 100;
+
+	for (size_t i = 0; i < segmentCount; i++) {
+		float t = 1.0f / segmentCount * i;
+		Vector3 pos = CatmullRomInterpolation(controlPoints_, t, 1.0f);
+		pointsDrawing.push_back(pos);
+	}
+
+	for (size_t i = 0; i < pointsDrawing.size() - 1; i++) {
+		Renderer::Line::GetInstance()->Draw(pointsDrawing[i],pointsDrawing[i + 1], {1.0f,1.0f,1.0f,1.0f});
+	}
 
 	player_->Draw();
 
