@@ -3,6 +3,7 @@
 #include "BaseEnemy.h"
 #include "ForwardEnemyBasePhase.h"
 #include "BaseBullet.h"
+#include "./Scene//IScene.h"
 #include <list>
 
 class ForwardEnemy : public BaseEnemy {
@@ -25,20 +26,19 @@ public:
 		phase_->Initialize(this);
 	};
 
-	const std::list<BaseBullet*>& GetBullet() const { return bullets_; }
+	void SetGameScene(IScene* gameScene) { gameScene_ = gameScene; };
 
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();
 private:
-	void BulletRemoveCheck();
 	//static void (ForwardEnemy::* pFunc[])();
 private:
 	static inline float kBulletSpeed = 0.5f;
 
 	Vector3 velocity_;
 
-	ForwardEnemyBasePhase* phase_ = nullptr;
+	IScene* gameScene_ = nullptr;
 
-	std::list<BaseBullet*> bullets_;
+	ForwardEnemyBasePhase* phase_ = nullptr;
 };
 

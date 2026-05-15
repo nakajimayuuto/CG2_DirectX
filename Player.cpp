@@ -1,12 +1,8 @@
 #include "Player.h"
 #include "PlayerBullet.h"
+#include "./Scene/GameScene.h"
 
 Player::~Player() {
-
-	for (BaseBullet* bullet : bullets_) {
-		delete bullet;
-	}
-	bullets_.clear();
 }
 
 void Player::Initialize(const Vector3& position) {
@@ -23,12 +19,6 @@ void Player::Update() {
 	MoveUpdate();
 	RotateUpdate();
 	AttackUpdate();
-
-	for(BaseBullet* bullet : bullets_){
-		bullet->Update();
-	}
-
-	BulletRemoveCheck();
 
 	ImGui::Begin("Player");
 	ImGui::DragFloat3("transform", reinterpret_cast<float*>(&transform_.translate.x), 0.1f, -300.0f, 300.0f);
@@ -86,25 +76,12 @@ void Player::AttackUpdate() {
 		BaseBullet* newBullet = new PlayerBullet;
 		newBullet->Initialize("player_bullet", transform_.GetAffineMatrix().MatrixToTranslate(), velocity);
 
-		bullets_.push_back(newBullet);
+		dynamic_cast<GameScene*>(gameScene_)->AddBullet(newBullet);
 	}
 
-}
-
-void Player::BulletRemoveCheck() {
-	bullets_.remove_if([](BaseBullet* bullet) {
-		if (!bullet->GetIsActive()) {
-			delete bullet;
-			return true;
-		}
-		return false;
-		});
 }
 
 void Player::Draw() {
-	for (BaseBullet* bullet : bullets_) {
-		bullet->Draw();
-	}
 
 
 	model_.Draw(transform_);

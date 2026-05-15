@@ -3,13 +3,9 @@
 #include "ForwardEnemyLeavePhase.h"
 #include "EnemyBullet.h"
 #include "Player.h"
+#include "./Scene/GameScene.h"
 
 ForwardEnemy::~ForwardEnemy() {
-
-	for (BaseBullet* bullet : bullets_) {
-		delete bullet;
-	}
-	bullets_.clear();
 }
 
 void ForwardEnemy::Initialize(Vector3 position){
@@ -26,30 +22,10 @@ void ForwardEnemy::Initialize(Vector3 position){
 
 void ForwardEnemy::Update(){
 	phase_->Update(this);
-
-	BulletRemoveCheck();
-
-	for (BaseBullet* bullet : bullets_) {
-		bullet->Update();
-	}
-}
-
-void ForwardEnemy::BulletRemoveCheck() {
-	bullets_.remove_if([](BaseBullet* bullet) {
-		if (!bullet->GetIsActive()) {
-			delete bullet;
-			return true;
-		}
-		return false;
-		});
 }
 
 void ForwardEnemy::Draw(){
 	model_.Draw(transform_);
-
-	for (BaseBullet* bullet : bullets_) {
-		bullet->Draw();
-	}
 }
 
 void ForwardEnemy::OnCollision(){
@@ -72,7 +48,7 @@ void ForwardEnemy::Fire(){
 
 	dynamic_cast<EnemyBullet*>(newBullet)->SetPlayer(player_);
 
-	bullets_.push_back(newBullet);
+	dynamic_cast<GameScene*>(gameScene_)->AddBullet(newBullet);
 }
 
 void ForwardEnemy::Translate(Vector3 translate){

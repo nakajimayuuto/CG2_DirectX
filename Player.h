@@ -17,9 +17,7 @@ public:
 
 	void OnCollision() override;
 
-	void BulletRemoveCheck();
-
-	const std::list<BaseBullet*>& GetBullet() const { return bullets_; }
+	void SetGameScene(IScene* gameScene) { gameScene_ = gameScene; };
 
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();
@@ -50,6 +48,6 @@ private:
 
 	Renderer::Model model_;
 
-	std::list<BaseBullet*> bullets_;
+	IScene* gameScene_ = nullptr;
 };
 

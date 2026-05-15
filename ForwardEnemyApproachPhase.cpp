@@ -29,7 +29,7 @@ void ForwardEnemyApproachPhase::Update(ForwardEnemy* pEnemy){
 		timedCall->Update();
 	}
 
-	if (pEnemy->GetPosition().z <= 0.0f) {
+	if (pEnemy->GetPosition().z <= (Camera::GetInstance()->GetPosition().z) - 5.0f) {
 		pEnemy->ChangePhase(new ForwardEnemyLeavePhase);
 	
 	}
