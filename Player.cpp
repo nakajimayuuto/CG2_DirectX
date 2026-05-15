@@ -8,8 +8,12 @@ Player::~Player() {
 void Player::Initialize(const Vector3& position) {
 	transform_.Initialize();
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
+	model2_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
 
 	transform_.translate = position;
+
+	transform3DReticle_.Initialize();
+	transform3DReticle_.rotate.y = Radian(90.0f);
 
 	SetCollisionAttribute(kCollisionAttributePlayer);
 	SetCollisionMask(kCollisionAttributeEnemy);
@@ -28,6 +32,13 @@ void Player::Update() {
 
 void Player::OnCollision() {
 
+}
+
+void Player::Reticle3DUpdate(){
+	Vector3 offset = { 0.0f,0.0f,1.0f };
+	offset = transform_.GetAffineMatrix().MatrixTransform(offset);
+	offset = offset.Normalize() * kDistancePlayerTo3DReticle_;
+	transform3DReticle_.translate = offset;
 }
 
 void Player::MoveUpdate() {
@@ -82,9 +93,9 @@ void Player::AttackUpdate() {
 }
 
 void Player::Draw() {
-
-
 	model_.Draw(transform_);
+
+	model2_.Draw(transform3DReticle_);
 }
 
 void Player::RegisterGlobalVariables() {
