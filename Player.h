@@ -22,7 +22,8 @@ public:
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();
 
-	Vector3 GetWorldPosition() override { return { transform_.GetAffineMatrix().matrix[3][0],transform_.GetAffineMatrix().matrix[3][1],transform_.GetAffineMatrix().matrix[3][2] }; };
+	Vector3 GetWorldPosition() override { return { transform_.GetAffineMatrix().matrix[3][0],transform_.GetAffineMatrix().matrix[3][1],
+		transform_.GetAffineMatrix().matrix[3][2] }; };
 
 	Transform GetTransform()const { return transform_; };
 
@@ -54,8 +55,9 @@ private:
 	
 	// 3Dレティクル.
 	Renderer::Model model2_;
+	Renderer::Sprite sprite_;
 	Transform transform3DReticle_;
 
-	static inline float kDistancePlayerTo3DReticle_ = 50.0f;
+	static inline float kDistancePlayerTo3DReticle_ = 20.0f;
 };
 

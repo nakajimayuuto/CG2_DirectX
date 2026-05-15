@@ -8,12 +8,15 @@ Player::~Player() {
 void Player::Initialize(const Vector3& position) {
 	transform_.Initialize();
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
-	model2_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
+	model2_.Initialize(ModelManager::GetInstance()->GetModelInfo("enemy_bullet"));
+	sprite_.Initialize(TextureManager::GetInstance()->GetTextureInfo("reticle"));
+	sprite_.SetColor({1.0f,0.0f,0.0f,1.0f});
 
 	transform_.translate = position;
 
 	transform3DReticle_.Initialize();
-	transform3DReticle_.rotate.y = Radian(90.0f);
+	transform3DReticle_.translate = { 0.0f,0.0f,50.0f };
+	transform3DReticle_.SetParent(&transform_);
 
 	SetCollisionAttribute(kCollisionAttributePlayer);
 	SetCollisionMask(kCollisionAttributeEnemy);
@@ -23,10 +26,13 @@ void Player::Update() {
 	MoveUpdate();
 	RotateUpdate();
 	AttackUpdate();
+	Reticle3DUpdate();
 
 	ImGui::Begin("Player");
 	ImGui::DragFloat3("transform", reinterpret_cast<float*>(&transform_.translate.x), 0.1f, -300.0f, 300.0f);
 	ImGui::DragFloat3("rotate", reinterpret_cast<float*>(&transform_.rotate.x), 0.01f, -6.0f, 6.0f);
+	ImGui::DragFloat3("transform3D", reinterpret_cast<float*>(&transform3DReticle_.translate.x), 0.1f, -300.0f, 300.0f);
+	ImGui::DragFloat3("rotate3D", reinterpret_cast<float*>(&transform3DReticle_.rotate.x), 0.01f, -6.0f, 6.0f);
 	ImGui::End();
 }	
 
@@ -35,10 +41,6 @@ void Player::OnCollision() {
 }
 
 void Player::Reticle3DUpdate(){
-	Vector3 offset = { 0.0f,0.0f,1.0f };
-	offset = transform_.GetAffineMatrix().MatrixTransform(offset);
-	offset = offset.Normalize() * kDistancePlayerTo3DReticle_;
-	transform3DReticle_.translate = offset;
 }
 
 void Player::MoveUpdate() {
@@ -82,7 +84,9 @@ void Player::AttackUpdate() {
 	if (InputManager::GetInstance()->TriggerKey(DIK_SPACE)) {
 		Vector3 velocity(0.0f,0.0f,kBulletSpeed);
 
-		velocity = transform_.GetAffineMatrix().TransformNomal(velocity);
+		//velocity = transform_.GetAffineMatrix().TransformNomal(velocity);
+		velocity = transform3DReticle_.GetAffineMatrix().MatrixToTranslate() - transform_.GetAffineMatrix().MatrixToTranslate();
+		velocity = velocity.Normalize() * kBulletSpeed;
 
 		BaseBullet* newBullet = new PlayerBullet;
 		newBullet->Initialize("player_bullet", transform_.GetAffineMatrix().MatrixToTranslate(), velocity);
@@ -95,7 +99,7 @@ void Player::AttackUpdate() {
 void Player::Draw() {
 	model_.Draw(transform_);
 
-	model2_.Draw(transform3DReticle_);
+	sprite_.Draw({ {100.0f,100.0f},0.0f,{60.0f, 60.0f} });
 }
 
 void Player::RegisterGlobalVariables() {
