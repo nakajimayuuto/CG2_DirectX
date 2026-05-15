@@ -87,7 +87,7 @@ Matrix4x4& Matrix4x4::operator*=(const Matrix4x4& m1) {
 
 	for (int row = 0; row < 4; row++) {
 		for (int column = 0; column < 4; column++) {
-			matrix[column][row] = result.matrix[column][row];
+			matrix[row][column] = result.matrix[row][column];
 		}
 	}
 
@@ -667,16 +667,16 @@ Matrix4x4 Matrix4x4::MakeAffineMatrix(const Transform& transform){
 	return MakeScaleMatrix(transform.scale) * ((MakeRotateXMatrix(transform.rotate.x) * MakeRotateYMatrix(transform.rotate.y)) * MakeRotateZMatrix(transform.rotate.z)) * MakeTranslateMatrix(transform.translate);
 }
 
-Transform Matrix4x4::MatrixToTransform(){
+Transform Matrix4x4::GetMatrixToTransform(){
 	Transform result;
-	result.scale = MatrixToScale();
-	result.rotate = MatrixToRotate();
-	result.translate = MatrixToTranslate();
+	result.scale = GetMatrixToScale();
+	result.rotate = GetMatrixToRotate();
+	result.translate = GetMatrixToTranslate();
 
 	return result;
 }
 
-Vector3 Matrix4x4::MatrixToScale(){
+Vector3 Matrix4x4::GetMatrixToScale(){
 	Vector3 result;
 	result.x = std::sqrt(std::pow(matrix[0][0], 2.0f) + std::pow(matrix[1][0], 2.0f) + std::pow(matrix[2][0], 2.0f));
 	result.y = std::sqrt(std::pow(matrix[0][1], 2.0f) + std::pow(matrix[1][1], 2.0f) + std::pow(matrix[2][1], 2.0f));
@@ -684,7 +684,7 @@ Vector3 Matrix4x4::MatrixToScale(){
 	return result;
 }
 
-Vector3 Matrix4x4::MatrixToRotate(){
+Vector3 Matrix4x4::GetMatrixToRotate(){
 	Vector3 result;
 
 	result.y = std::atan2(-matrix[2][0],std::sqrt(std::pow(matrix[0][0], 2.0f)+ std::pow(matrix[1][0], 2.0f)));
@@ -694,7 +694,7 @@ Vector3 Matrix4x4::MatrixToRotate(){
 	return result;
 }
 
-Vector3 Matrix4x4::MatrixToTranslate(){
+Vector3 Matrix4x4::GetMatrixToTranslate(){
 	return {matrix[3][0],matrix[3][1],matrix[3][2]};
 }
 

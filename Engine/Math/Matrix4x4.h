@@ -37,10 +37,10 @@ public:
 
 	static Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
 	static Matrix4x4 MakeAffineMatrix(const Transform& transform);
-	Transform MatrixToTransform();
-	Vector3 MatrixToScale();
-	Vector3 MatrixToRotate();
-	Vector3 MatrixToTranslate();
+	Transform GetMatrixToTransform();
+	Vector3 GetMatrixToScale();
+	Vector3 GetMatrixToRotate();
+	Vector3 GetMatrixToTranslate();
 
 	static Matrix4x4 MakeOrthographicMatrix(Vertex4 vertex4, float zNear, float zFar);
 	static Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip);

@@ -74,9 +74,9 @@ void Renderer::Model::Initialize(const ModelInfo& info) {
 		wvpData_[i]->WVP = Matrix4x4::Identity();
 		wvpData_[i]->World = Matrix4x4::Identity();
 		uvTransform_[i].Initialize();
-		uvTransform_[i].scale = materialData_[i]->uvTransform.MatrixToTransform().scale;
-		uvTransform_[i].rotate = materialData_[i]->uvTransform.MatrixToTransform().rotate;
-		uvTransform_[i].translate = materialData_[i]->uvTransform.MatrixToTransform().translate;
+		uvTransform_[i].scale = materialData_[i]->uvTransform.GetMatrixToTransform().scale;
+		uvTransform_[i].rotate = materialData_[i]->uvTransform.GetMatrixToTransform().rotate;
+		uvTransform_[i].translate = materialData_[i]->uvTransform.GetMatrixToTransform().translate;
 
 		// 【VertexBufferViewを作成する】
 
@@ -571,6 +571,9 @@ void Renderer::ModelBox::Draw(const Transform& transform) {
 void Renderer::Sprite::Initialize(TextureInfo info) {
 	isVisible_ = true;
 
+	blendMode_ = BlendMode::kNormal;
+	uvTransform_.Initialize();
+
 	textureInfo_ = info;
 	/*=============================================================
 	Sprite用のResourceとView.
@@ -653,11 +656,15 @@ void Renderer::Sprite::Initialize(TextureInfo info) {
 	indexDataSprite[4] = 3;
 	indexDataSprite[5] = 2;
 
-	size_ = { 640.0f,360.0f };
+	size_ = { static_cast<float>(textureInfo_.width),static_cast<float>(textureInfo_.height) };
+	AdaptationSize();
 }
 
 void Renderer::Sprite::Initialize() {
 	isVisible_ = true;
+
+	blendMode_ = BlendMode::kNormal;
+	uvTransform_.Initialize();
 
 	textureInfo_ = TextureManager::GetInstance()->GetTextureInfo("white_template");
 	/*=============================================================
@@ -741,7 +748,8 @@ void Renderer::Sprite::Initialize() {
 	indexDataSprite[4] = 3;
 	indexDataSprite[5] = 2;
 
-	size_ = { 640.0f,360.0f };
+	size_ = { static_cast<float>(textureInfo_.width),static_cast<float>(textureInfo_.height) };
+	AdaptationSize();
 }
 
 void Renderer::Sprite::Draw(const Transform& transform) {
@@ -749,7 +757,12 @@ void Renderer::Sprite::Draw(const Transform& transform) {
 		return;
 	}
 
-	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+	Transform worldTransform = transform;
+
+	worldTransform.translate.x = transform .translate.x - (size_.x / 2.0f);
+	worldTransform.translate.y = transform .translate.y - (size_.y / 2.0f);
+
+	Matrix4x4 worldMatrix = worldTransform.GetAffineMatrix();
 
 	transformationMatrixData_->World = worldMatrix;
 	transformationMatrixData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
@@ -759,6 +772,8 @@ void Renderer::Sprite::Draw(const Transform& transform) {
 	三角形のSpriteの描画のコマンド.
 	=============================================================*/
 	// Spriteの描画。変更が必要なものだけ変更する.
+	GameSystem::GetInstance()->SetPipeline(blendMode_);
+
 	GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_); // VBVを設定.
 	GameSystem::GetInstance()->GetCommandList()->IASetIndexBuffer(&indexBufferView_); // IBVを設定.
 	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.

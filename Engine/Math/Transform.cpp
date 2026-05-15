@@ -66,9 +66,9 @@ void Transform::TransformSynthesis(const Transform& targetTransform) {
 
 	sourceMatrix *= targetMatrix;
 
-	scale = sourceMatrix.MatrixToScale();
-	rotate = sourceMatrix.MatrixToRotate();
-	translate = sourceMatrix.MatrixToTranslate();
+	scale = sourceMatrix.GetMatrixToScale();
+	rotate = sourceMatrix.GetMatrixToRotate();
+	translate = sourceMatrix.GetMatrixToTranslate();
 }
 
 void Transform2D::Initialize() {

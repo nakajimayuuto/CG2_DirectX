@@ -220,6 +220,8 @@ namespace Renderer {
 		Microsoft::WRL::ComPtr<ID3D12Resource> indexResource_ = nullptr;
 
 		D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
+
+		BlendMode blendMode_;
 	};
 
 	class Line {

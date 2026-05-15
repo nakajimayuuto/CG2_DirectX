@@ -29,7 +29,7 @@ public:
 
 	void SetParent(const Transform* parent) { transform_.SetParent(parent); };
 private:
-	void Reticle3DUpdate();
+	void Reticle2DUpdate();
 
 	void MoveUpdate();
 
@@ -57,6 +57,8 @@ private:
 	Renderer::Model model2_;
 	Renderer::Sprite sprite_;
 	Transform transform3DReticle_;
+
+	Transform transform2DReticle_;
 
 	static inline float kDistancePlayerTo3DReticle_ = 20.0f;
 };
