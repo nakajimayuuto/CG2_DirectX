@@ -1,28 +1,22 @@
-#include "ForwardEnemyApproachPhase.h"
+#include "ForwardEnemyApproachHomingPhase.h"
 #include "ForwardEnemyLeavePhase.h"
 #include "ForwardEnemy.h"
 #include "EnemyBullet.h"
 
-ForwardEnemyApproachPhase::~ForwardEnemyApproachPhase(){
+ForwardEnemyApproachHomingPhase::~ForwardEnemyApproachHomingPhase(){
 	for (TimedCall* timedCall : timedCalls_) {
 		delete timedCall;
 	}
 	timedCalls_.clear();
 }
 
-void ForwardEnemyApproachPhase::Initialize(ForwardEnemy* pEnemy) {
+void ForwardEnemyApproachHomingPhase::Initialize(ForwardEnemy* pEnemy) {
 	fireTimer_ = kFireInterval;
 	FireReset(pEnemy);
 }
 
-void ForwardEnemyApproachPhase::Update(ForwardEnemy* pEnemy){
+void ForwardEnemyApproachHomingPhase::Update(ForwardEnemy* pEnemy){
 	pEnemy->Translate({ 0.0f,0.0f,-kSpeed});
-	
-	//fireTimer_--;
-	//if (fireTimer_ < 0) {
-	//	FireReset(pEnemy);
-	//	fireTimer_ = kFireInterval;
-	//}
 
 	TimedCallRemoveCheck();
 
@@ -36,17 +30,17 @@ void ForwardEnemyApproachPhase::Update(ForwardEnemy* pEnemy){
 	}
 }
 
-void ForwardEnemyApproachPhase::FireReset(ForwardEnemy* pEnemy){
-	pEnemy->Fire(EnemyBullet::MoveType::kNormal);
+void ForwardEnemyApproachHomingPhase::FireReset(ForwardEnemy* pEnemy){
+	pEnemy->Fire(EnemyBullet::MoveType::kHoming);
 
-	std::function<void(void)> callBack = std::bind(&ForwardEnemyApproachPhase::FireReset, this, pEnemy);
+	std::function<void(void)> callBack = std::bind(&ForwardEnemyApproachHomingPhase::FireReset, this, pEnemy);
 
 	TimedCall* timedCall = new TimedCall(callBack,kFireInterval);
 
 	timedCalls_.push_back(timedCall);
 }
 
-void ForwardEnemyApproachPhase::TimedCallRemoveCheck(){
+void ForwardEnemyApproachHomingPhase::TimedCallRemoveCheck(){
 	timedCalls_.remove_if([](TimedCall* timedCall) {
 		if (timedCall->GetIsFinished()) {
 			delete timedCall;

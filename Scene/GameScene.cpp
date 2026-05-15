@@ -1,6 +1,8 @@
 #include "GameScene.h"
 #include "../Satlib.h"
 #include "../ForwardEnemy.h"
+#include "../ForwardEnemyApproachPhase.h"
+#include "../ForwardEnemyApproachHomingPhase.h"
 
 GameScene::~GameScene() {
 	delete player_;
@@ -42,7 +44,7 @@ void GameScene::Initialize() {
 
 	//;
 
-	SpawnEnemy({ 10.0f,50.0f,100.0f });
+	SpawnEnemy({ 10.0f,50.0f,100.0f },new ForwardEnemyApproachPhase());
 
 	RegisterGlobalVariables();
 
@@ -57,6 +59,7 @@ void GameScene::Initialize() {
 
 void GameScene::Update() {
 	BulletRemoveCheck();
+	EnemyRemoveCheck();
 #ifdef _DEBUG
 	if (InputManager::GetInstance()->TriggerKey(DIK_F3)) {
 		Camera::GetInstance()->ChangeCameraMode();
@@ -157,7 +160,16 @@ void GameScene::UpdateEnemyPopCommands(){
 			getline(line_stream, word, ',');
 			float z = static_cast<float>(std::atof(word.c_str()));
 
-			SpawnEnemy(Vector3(x,y,z));
+			
+			getline(line_stream, word, ',');
+
+			ForwardEnemyBasePhase* phase_ = new ForwardEnemyApproachPhase();
+
+			if (word == "HOMING") {
+				phase_ = new ForwardEnemyApproachHomingPhase();
+			};
+
+			SpawnEnemy(Vector3(x,y,z),phase_);
 		} else if (word.find("WAIT") == 0) {
 			getline(line_stream, word, ',');
 			int32_t waitTime = std::atoi(word.c_str());
@@ -175,11 +187,12 @@ void GameScene::AddBullet(BaseBullet* baseBullet) {
 	bullets_.push_back(baseBullet);
 }
 
-void GameScene::SpawnEnemy(const Vector3& position) {
+void GameScene::SpawnEnemy(const Vector3& position,ForwardEnemyBasePhase* type) {
 	BaseEnemy* newEnemy = new ForwardEnemy();
 	newEnemy->SetPlayer(player_);
 	dynamic_cast<ForwardEnemy*>(newEnemy)->SetGameScene(this);
 	newEnemy->Initialize(position);
+	dynamic_cast<ForwardEnemy*>(newEnemy)->SetPhase(type);
 	enemies_.push_back(newEnemy);
 }
 
@@ -187,6 +200,16 @@ void GameScene::BulletRemoveCheck() {
 	bullets_.remove_if([](BaseBullet* bullet) {
 		if (!bullet->GetIsActive()) {
 			delete bullet;
+			return true;
+		}
+		return false;
+		});
+}
+
+void GameScene::EnemyRemoveCheck(){
+	enemies_.remove_if([](BaseEnemy* enemy) {
+		if (!enemy->GetIsAlive()) {
+			delete enemy;
 			return true;
 		}
 		return false;

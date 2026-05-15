@@ -4,6 +4,7 @@
 #include "ForwardEnemyBasePhase.h"
 #include "BaseBullet.h"
 #include "./Scene//IScene.h"
+#include "EnemyBullet.h"
 #include <list>
 
 class ForwardEnemy : public BaseEnemy {
@@ -15,11 +16,13 @@ public:
 
 	void OnCollision() override;
 
-	void Fire();
+	void Fire(EnemyBullet::MoveType type);
 
 	void Translate(Vector3 translate);
 
 	Vector3 GetPosition() { return transform_.translate; };
+
+	void SetPhase(ForwardEnemyBasePhase* phase) { phase_ = phase;phase_->Initialize(this); };
 
 	void ChangePhase(ForwardEnemyBasePhase* phase) {
 		phase_ = phase; 

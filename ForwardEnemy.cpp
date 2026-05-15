@@ -1,7 +1,6 @@
 #include "ForwardEnemy.h"
 #include "ForwardEnemyApproachPhase.h"
 #include "ForwardEnemyLeavePhase.h"
-#include "EnemyBullet.h"
 #include "Player.h"
 #include "./Scene/GameScene.h"
 
@@ -15,6 +14,7 @@ void ForwardEnemy::Initialize(Vector3 position){
 	velocity_ = { 0.0f,0.0f,0.0f };
 	phase_ = new ForwardEnemyApproachPhase();
 	phase_->Initialize(this);
+	isAlive_ = true;
 
 	SetCollisionAttribute(kCollisionAttributeEnemy);
 	SetCollisionMask(kCollisionAttributePlayer);
@@ -29,9 +29,10 @@ void ForwardEnemy::Draw(){
 }
 
 void ForwardEnemy::OnCollision(){
+	isAlive_ = false;
 }
 
-void ForwardEnemy::Fire(){
+void ForwardEnemy::Fire(EnemyBullet::MoveType type){
 	Vector3 velocity(0.0f, 0.0f, -kBulletSpeed);
 
 	//velocity = transform_.GetAffineMatrix().TransformNomal(velocity);
@@ -47,6 +48,7 @@ void ForwardEnemy::Fire(){
 	newBullet->Initialize("enemy_bullet", transform_.translate, velocity);
 
 	dynamic_cast<EnemyBullet*>(newBullet)->SetPlayer(player_);
+	dynamic_cast<EnemyBullet*>(newBullet)->SetMoveType(type);
 
 	dynamic_cast<GameScene*>(gameScene_)->AddBullet(newBullet);
 }

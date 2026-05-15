@@ -6,6 +6,7 @@
 #include "../Skydome.h"
 #include "../BaseEnemy.h"
 #include "../RailCameraController.h"
+#include "../ForwardEnemyBasePhase.h"
 #include <sstream>
 
 class GameScene : public IScene{
@@ -22,9 +23,10 @@ public:
 
 	void AddBullet(BaseBullet* baseBullet);
 private:
-	void SpawnEnemy(const Vector3& position);
+	void SpawnEnemy(const Vector3& position, ForwardEnemyBasePhase* type);
 
 	void BulletRemoveCheck();
+	void EnemyRemoveCheck();
 
 	void CheckAllCollision();
 

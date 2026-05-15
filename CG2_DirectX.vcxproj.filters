@@ -163,6 +163,9 @@
     <Filter Include="ソース ファイル\RailCameraController">
       <UniqueIdentifier>{55acb6f9-0da0-4fd0-915a-e958f1063688}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Enemies\ForwardEnemy\ForwardEnemyState\EnemyHoming">
+      <UniqueIdentifier>{ff2f27ed-a5b3-479c-9ef2-9ca2a9ae5a0c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -288,9 +291,6 @@
     <ClCompile Include="BaseEnemy.cpp">
       <Filter>ソース ファイル\Enemies\BaseEnemy</Filter>
     </ClCompile>
-    <ClCompile Include="ForwardEnemy.cpp">
-      <Filter>ソース ファイル\Enemies\ForwardEnemy</Filter>
-    </ClCompile>
     <ClCompile Include="ForwardEnemyApproachPhase.cpp">
       <Filter>ソース ファイル\Enemies\ForwardEnemy\ForwardEnemyState\ForwardEnemyApproach</Filter>
     </ClCompile>
@@ -314,6 +314,12 @@
     </ClCompile>
     <ClCompile Include="RailCameraController.cpp">
       <Filter>ソース ファイル\RailCameraController</Filter>
+    </ClCompile>
+    <ClCompile Include="ForwardEnemy.cpp">
+      <Filter>ソース ファイル\Enemies\ForwardEnemy\ForwardEnemyState</Filter>
+    </ClCompile>
+    <ClCompile Include="ForwardEnemyApproachHomingPhase.cpp">
+      <Filter>ソース ファイル\Enemies\ForwardEnemy\ForwardEnemyState\EnemyHoming</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -484,6 +490,9 @@
     </ClInclude>
     <ClInclude Include="RailCameraController.h">
       <Filter>ソース ファイル\RailCameraController</Filter>
+    </ClInclude>
+    <ClInclude Include="ForwardEnemyApproachHomingPhase.h">
+      <Filter>ソース ファイル\Enemies\ForwardEnemy\ForwardEnemyState\EnemyHoming</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -30,19 +30,16 @@ void EnemyBullet::Initialize(const std::string& modelName, const Vector3& positi
 void EnemyBullet::Update() {
 	LifeTimeUpdate();
 
-	Vector3 toPlayer = player_->GetWorldPosition() - GetWorldPosition();
-
-	toPlayer = toPlayer.Normalize();
-
-	velocity_ = velocity_.Normalize();
-
-	velocity_ = Slerp(velocity_,toPlayer,kHomingRatio) * kSpeed;
-
-	transform_.translate += velocity_;
-
-	transform_.rotate.y = std::atan2(velocity_.x, velocity_.z);
-	Vector3 velocityXZ = { velocity_.x,0.0f,velocity_.z };
-	transform_.rotate.x = std::atan2(-velocity_.y, velocityXZ.Length());
+	switch (type_){
+	case EnemyBullet::MoveType::kNormal:
+		MoveUpdate();
+		break;
+	case EnemyBullet::MoveType::kHoming:
+		HomingUpdate();
+		break;
+	default:
+		break;
+	}
 }
 
 void EnemyBullet::LifeTimeUpdate() {
@@ -52,6 +49,26 @@ void EnemyBullet::LifeTimeUpdate() {
 		isActive_ = false;
 	}
 
+}
+
+void EnemyBullet::MoveUpdate(){
+	transform_.translate += velocity_;
+}
+
+void EnemyBullet::HomingUpdate(){
+	Vector3 toPlayer = player_->GetWorldPosition() - GetWorldPosition();
+
+	toPlayer = toPlayer.Normalize();
+
+	velocity_ = velocity_.Normalize();
+
+	velocity_ = Slerp(velocity_, toPlayer, kHomingRatio) * kSpeed;
+
+	transform_.translate += velocity_;
+
+	transform_.rotate.y = std::atan2(velocity_.x, velocity_.z);
+	Vector3 velocityXZ = { velocity_.x,0.0f,velocity_.z };
+	transform_.rotate.x = std::atan2(-velocity_.y, velocityXZ.Length());
 }
 
 void EnemyBullet::Draw() {

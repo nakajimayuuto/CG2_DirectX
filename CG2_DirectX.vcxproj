@@ -75,6 +75,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="ForwardEnemy.cpp" />
+    <ClCompile Include="ForwardEnemyApproachHomingPhase.cpp" />
     <ClCompile Include="ForwardEnemyApproachPhase.cpp" />
     <ClCompile Include="ForwardEnemyLeavePhase.cpp" />
     <ClCompile Include="main.cpp" />
@@ -131,6 +132,7 @@
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
     <ClInclude Include="ForwardEnemy.h" />
+    <ClInclude Include="ForwardEnemyApproachHomingPhase.h" />
     <ClInclude Include="ForwardEnemyApproachPhase.h" />
     <ClInclude Include="ForwardEnemyBasePhase.h" />
     <ClInclude Include="ForwardEnemyLeavePhase.h" />

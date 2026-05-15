@@ -6,6 +6,11 @@ class Player;
 
 class EnemyBullet : public BaseBullet{
 public:
+	enum class MoveType{
+		kNormal,
+		kHoming
+	};
+
 	~EnemyBullet();
 	void Initialize(const std::string& modelName, const Vector3& position, const Vector3& velocity) override;
 
@@ -15,12 +20,18 @@ public:
 
 	void OnCollision() override;
 
+	void SetMoveType(MoveType type) { type_ = type; };
+
 	void SetPlayer(Player* player) { player_ = player; };
 
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();
 private:
 	void LifeTimeUpdate();
+
+	void MoveUpdate();
+
+	void HomingUpdate();
 private:
 	Vector3 velocity_;
 
@@ -32,5 +43,7 @@ private:
 	static inline float kLifeTime = 5.0f;
 	float deathTimer_;
 	Player* player_ = nullptr;
+
+	MoveType type_;
 };
 
