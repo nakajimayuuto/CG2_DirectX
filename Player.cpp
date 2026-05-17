@@ -51,16 +51,21 @@ void Player::MoveUpdate() {
 	InputManager* input = InputManager::GetInstance();
 	Vector3 move = { 0.0f,0.0f,0.0f };
 
-	if (input->PressKey(DIK_LEFT)) {
-		move.x -= kCharacterSpeed;
-	} else if (input->PressKey(DIK_RIGHT)) {
-		move.x += kCharacterSpeed;
-	}
+	if (input->IsGamePadConnect()) {
+			move.x += input->GetLeftStickDirection().x * kCharacterSpeed;
+			move.y += input->GetLeftStickDirection().y * kCharacterSpeed;
+	} else {
+		if (input->PressKey(DIK_LEFT)) {
+			move.x -= kCharacterSpeed;
+		} else if (input->PressKey(DIK_RIGHT)) {
+			move.x += kCharacterSpeed;
+		}
 
-	if (input->PressKey(DIK_UP)) {
-		move.y += kCharacterSpeed;
-	} else if (input->PressKey(DIK_DOWN)) {
-		move.y -= kCharacterSpeed;
+		if (input->PressKey(DIK_UP)) {
+			move.y += kCharacterSpeed;
+		} else if (input->PressKey(DIK_DOWN)) {
+			move.y -= kCharacterSpeed;
+		}
 	}
 
 	transform_.translate += move;
@@ -73,15 +78,28 @@ void Player::MoveUpdate() {
 
 void Player::RotateUpdate() {
 	InputManager* input = InputManager::GetInstance();
+	if (input->IsGamePadConnect()) {
+		transform_.rotate.y += input->GetRightStickDirection().x * kRotSpeed;
+		transform_.rotate.x -= input->GetRightStickDirection().y * kRotSpeed;
+	} else {
+		if (input->PressKey(DIK_A)) {
+			transform_.rotate.y -= kRotSpeed;
+		} else if (input->PressKey(DIK_D)) {
+			transform_.rotate.y += kRotSpeed;
+		}
 
-	if (input->PressKey(DIK_A)) {
-		transform_.rotate.y -= kRotSpeed;
-	} else if (input->PressKey(DIK_D)) {
-		transform_.rotate.y += kRotSpeed;
+		if (input->PressKey(DIK_W)) {
+			transform_.rotate.x -= kRotSpeed;
+		} else if (input->PressKey(DIK_S)) {
+			transform_.rotate.x += kRotSpeed;
+		}
 	}
 
 	transform_.rotate.y = std::max(transform_.rotate.y, -kRotateLimitY);
 	transform_.rotate.y = std::min(transform_.rotate.y, kRotateLimitY);
+
+	transform_.rotate.x = std::max(transform_.rotate.x, -kRotateLimitX);
+	transform_.rotate.x = std::min(transform_.rotate.x, kRotateLimitX);
 }
 
 void Player::AttackUpdate() {

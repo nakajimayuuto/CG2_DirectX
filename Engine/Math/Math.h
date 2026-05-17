@@ -6,20 +6,6 @@
 #include "Vector3.h"
 
 /// <summary>
-/// ベクトルの長さを取得する
-/// </summary>
-/// <param name="vector2">長さを取得したいベクトル</param>
-/// <returns></returns>
-float Length(Vector2 vector2);
-
-/// <summary>
-/// 正規化されたベクトルを取得する
-/// </summary>
-/// <param name="vector2">正規化したいベクトル</param>
-/// <returns></returns>
-Vector2 Normalize(Vector2 vector2);
-
-/// <summary>
 /// DegreeをRadianに変換する
 /// </summary>
 /// <param name="degree">変換するDegree</param>

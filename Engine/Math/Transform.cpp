@@ -34,7 +34,6 @@ Transform Transform::GetInitialValue(const Vector3& scale, const Vector3& rotate
 Matrix4x4 Transform::GetAffineMatrix()const {
 	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(scale, rotate, translate);
 	if (parent_) {
-		worldMatrix = Matrix4x4::MakeAffineMatrix(scale, {0.0f,0.0f,0.0f}, translate);
 		worldMatrix *= parent_->GetAffineMatrix();
 	}
 	return worldMatrix;
