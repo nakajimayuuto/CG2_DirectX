@@ -56,6 +56,8 @@ public:
 
 	Matrix4x4 GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix);
 
+	Matrix4x4 GetVPVMatrix(Matrix4x4 matrix);
+
 	Matrix4x4 GetViewMatrix() { return  Matrix4x4::MakeAffineMatrix(scale_, rotate_, translate_); };
 
 	Matrix4x4 GetProjectionMatrix() {return Matrix4x4::MakePerspectiveFovMatrix(fovY_, windowWidth_ / windowHeight_, nearClip_, farClip_);}

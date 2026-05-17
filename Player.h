@@ -62,5 +62,6 @@ private:
 	Transform transform2DReticle_;
 
 	static inline float kDistancePlayerTo3DReticle_ = 20.0f;
+	static inline float kDistancePlayerTo2DReticle_ = 0.1f;
 };
 

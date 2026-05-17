@@ -26,8 +26,8 @@ void Player::Initialize(const Vector3& position) {
 void Player::Update() {
 	MoveUpdate();
 	RotateUpdate();
-	AttackUpdate();
 	Reticle2DUpdate();
+	AttackUpdate();
 
 	ImGui::Begin("Player");
 	ImGui::DragFloat3("transform", reinterpret_cast<float*>(&transform_.translate.x), 0.1f, -300.0f, 300.0f);
@@ -42,9 +42,30 @@ void Player::OnCollision() {
 }
 
 void Player::Reticle2DUpdate() {
-	Vector3 positionReticle = transform3DReticle_.GetAffineMatrix().GetMatrixToTranslate();
+	if (InputManager::GetInstance()->IsGamePadConnect()) {
+		Vector3 positionReticle = transform3DReticle_.GetAffineMatrix().GetMatrixToTranslate();
 
-	transform2DReticle_.translate = Camera::GetInstance()->GetCameraVector3(positionReticle, Matrix4x4::Identity());
+		transform2DReticle_.translate = Camera::GetInstance()->GetCameraVector3(positionReticle, Matrix4x4::Identity());
+	} else {
+		Vector2 mousePos = InputManager::GetInstance()->GetMousePos();
+		transform2DReticle_.translate = { mousePos.x,mousePos.y,0.0f };
+
+		Matrix4x4 matVPV = Camera::GetInstance()->GetVPVMatrix(transform_.GetAffineMatrix());
+		matVPV = matVPV.Inverse();
+		Vector3 posNear = { mousePos.x,mousePos.y,0.0f };
+		Vector3 posFar = { mousePos.x,mousePos.y,1.0f };
+
+		posNear = matVPV.MatrixTransform(posNear);
+		posFar = matVPV.MatrixTransform(posFar);
+
+		Vector3 mouseDirection = posFar - posNear;
+		mouseDirection.z *= 0.5f;
+		mouseDirection = mouseDirection.Normalize();
+		transform3DReticle_.Initialize();
+
+		transform3DReticle_.translate = (mouseDirection);
+	}
+
 }
 
 void Player::MoveUpdate() {
@@ -82,17 +103,17 @@ void Player::RotateUpdate() {
 		transform_.rotate.y += input->GetRightStickDirection().x * kRotSpeed;
 		transform_.rotate.x -= input->GetRightStickDirection().y * kRotSpeed;
 	} else {
-		if (input->PressKey(DIK_A)) {
-			transform_.rotate.y -= kRotSpeed;
-		} else if (input->PressKey(DIK_D)) {
-			transform_.rotate.y += kRotSpeed;
-		}
-
-		if (input->PressKey(DIK_W)) {
-			transform_.rotate.x -= kRotSpeed;
-		} else if (input->PressKey(DIK_S)) {
-			transform_.rotate.x += kRotSpeed;
-		}
+		//if (input->PressKey(DIK_A)) {
+		//	transform_.rotate.y -= kRotSpeed;
+		//} else if (input->PressKey(DIK_D)) {
+		//	transform_.rotate.y += kRotSpeed;
+		//}
+		//
+		//if (input->PressKey(DIK_W)) {
+		//	transform_.rotate.x -= kRotSpeed;
+		//} else if (input->PressKey(DIK_S)) {
+		//	transform_.rotate.x += kRotSpeed;
+		//}
 	}
 
 	transform_.rotate.y = std::max(transform_.rotate.y, -kRotateLimitY);

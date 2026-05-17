@@ -144,6 +144,10 @@ Matrix4x4 Camera::GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix){
 	return worldViewProjectionMatrix;
 }
 
+Matrix4x4 Camera::GetVPVMatrix(Matrix4x4 matrix) {
+	return GetWorldViewProjectionMatrix(matrix) * Matrix4x4::MakeViewportMatrix(viewportLeftTop_, windowWidth_, windowHeight_, minDepth_, maxDepth_);
+}
+
 void Camera::ChangeCameraMode(){
 	if (useDebugCamera_) {
 		useDebugCamera_ = false;
