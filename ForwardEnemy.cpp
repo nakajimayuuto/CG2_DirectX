@@ -1,4 +1,4 @@
-#include "ForwardEnemy.h"
+ #include "ForwardEnemy.h"
 #include "ForwardEnemyApproachPhase.h"
 #include "ForwardEnemyLeavePhase.h"
 #include "EnemyBullet.h"
@@ -57,9 +57,10 @@ void ForwardEnemy::Fire(){
 	Vector3 playerPos = player_->GetWorldPosition();
 	Vector3 enemyPos = GetWorldPosition();
 
-	velocity = playerPos - enemyPos;
-
-	velocity = velocity.Normalize() * kBulletSpeed;
+	//velocity = playerPos - enemyPos;
+	//
+	//velocity = velocity.Normalize() * kBulletSpeed;
+	velocity *= kBulletSpeed;
 
 	BaseBullet* newBullet = new EnemyBullet;
 	newBullet->Initialize("white_template", transform_.translate, velocity);
