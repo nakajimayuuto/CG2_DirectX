@@ -4,6 +4,7 @@
 #include "ForwardEnemyBasePhase.h"
 class ForwardEnemy : public BaseEnemy {
 public:
+	~ForwardEnemy();
 	void Initialize(Vector3 position) override;
 	void Update() override;
 	void Draw() override;
@@ -14,7 +15,7 @@ public:
 
 	Vector3 GetPosition() { return transform_.translate; };
 
-	void ChangePhase(ForwardEnemyBasePhase* phase) { phase_ = phase; };
+	void ChangePhase(ForwardEnemyBasePhase* phase) { delete phase_;phase_ = phase; };
 
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();

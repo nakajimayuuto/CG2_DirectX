@@ -2,6 +2,10 @@
 #include "ForwardEnemyApproachPhase.h"
 #include "ForwardEnemyLeavePhase.h"
 
+ForwardEnemy::~ForwardEnemy(){
+	delete phase_;
+}
+
 void ForwardEnemy::Initialize(Vector3 position){
 	model_.Initialize(TextureManager::GetInstance()->GetTextureInfo("enemy_texture"));
 	transform_.Initialize();
