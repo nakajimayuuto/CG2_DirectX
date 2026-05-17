@@ -1,8 +1,11 @@
 #include "RailCameraController.h"
+#include "Player.h"
 void RailCameraController::Initialize(const Transform& transform) {
 	camera_ = Camera::GetInstance();
 	transform_ = transform;
 	camera_->SetPosition({0.0f,0.0f,-30.0f});
+
+	type_ = CameraType::kThirdPoint;
 
 	//controlPoints_ = {
 	//	{0.0f,50.0f,0.0f},
@@ -55,7 +58,15 @@ void RailCameraController::Update() {
 	Vector3 velocityXZ = { target.x,0.0f,target.z };
 	transform_.rotate.x = std::atan2(-target.y, velocityXZ.Length());
 
-	camera_->SetTransform(transform_);
+	if (type_ == CameraType::kThirdPoint) {
+		camera_->SetTransform(transform_);
+	} else if (type_ == CameraType::kFirstPoint) {
+		Matrix4x4 matrix;
+		
+		matrix = transform_.GetAffineMatrix() * player_->GetTransform().GetAffineMatrix();
+
+		camera_->SetTransform(matrix.GetMatrixToTransform());
+	}
 }
 
 void RailCameraController::Draw() {

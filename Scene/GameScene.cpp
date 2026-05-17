@@ -41,8 +41,8 @@ void GameScene::Initialize() {
 	player_ = new Player();
 	player_->Initialize({ 0.0f,0.0f,50.0f });
 	player_->SetGameScene(this);
-	player_->SetParent(&railCameraController_->GetTransform());
-
+	//player_->SetRailCameraController(railCameraController_);
+	railCameraController_->SetPlayer(player_);
 	//;
 
 	SpawnEnemy({ 10.0f,50.0f,100.0f },new ForwardEnemyApproachPhase());

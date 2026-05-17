@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "PlayerBullet.h"
 #include "./Scene/GameScene.h"
+#include "RailCameraController.h"
 
 Player::~Player() {
 }
@@ -142,8 +143,9 @@ void Player::AttackUpdate() {
 void Player::Draw() {
 	sprite_.Draw(transform2DReticle_);
 
-	model_.Draw(transform_);
-
+	//if (cameraController_->GetCameraType() == RailCameraController::CameraType::kFirstPoint) {
+		model_.Draw(transform_);
+	//}
 }
 
 void Player::RegisterGlobalVariables() {

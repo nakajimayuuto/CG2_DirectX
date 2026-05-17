@@ -3,6 +3,8 @@
 #include "BaseBullet.h"
 #include <list>
 
+//class RailCameraController;
+
 /// <summary>
 /// 自キャラ
 /// </summary>
@@ -27,7 +29,7 @@ public:
 
 	Transform GetTransform()const { return transform_; };
 
-	void SetParent(const Transform* parent) { transform_.SetParent(parent); };
+	//void SetRailCameraController(RailCameraController* cameraController) { cameraController_ = cameraController; transform_.SetParent(&cameraController->GetTransform()); };
 private:
 	void Reticle2DUpdate();
 
@@ -46,14 +48,16 @@ private:
 	static inline float kRotateLimitX = Radian(10.0f);
 	static inline float kRotateLimitY = Radian(15.0f);
 
-	static inline float kBulletSpeed = 1.0f;
-	
+	static inline float kBulletSpeed = 2.0f;
+
 	Transform transform_;
 
 	Renderer::Model model_;
 
 	IScene* gameScene_ = nullptr;
 	
+	//RailCameraController* cameraController_ = nullptr;
+
 	// 3Dレティクル.
 	Renderer::Model model2_;
 	Renderer::Sprite sprite_;
