@@ -33,6 +33,41 @@ void InputKeyBoard::Update() {
 	keyBoard_->GetDeviceState(sizeof(keys_), keys_);
 }
 
+void InputMouse::Initialize(IDirectInput8* directInput) {
+
+	// キーボードデバイスの作成.
+	HRESULT result = directInput->CreateDevice(GUID_SysKeyboard, &mouse_, NULL);
+	assert(SUCCEEDED(result));
+
+	// 入力データ形式のリセット.
+	result = mouse_->SetDataFormat(&c_dfDIMouse2); // 標準形式.
+	assert(SUCCEEDED(result));
+
+	// 排他制御レベルのセット.
+	result = mouse_->SetCooperativeLevel(
+		GameSystem::GetInstance()->GetHWND(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
+	assert(SUCCEEDED(result));
+}
+
+void InputMouse::Update() {
+	preMouseState_ = mouseState_;
+	HRESULT result = mouse_->GetDeviceState(
+		sizeof(DIMOUSESTATE),
+		&mouseState_
+	);
+
+	if (FAILED(result)) {
+
+		mouse_->Acquire();
+
+		mouse_->GetDeviceState(
+			sizeof(DIMOUSESTATE2),
+			&mouseState_);
+	}
+
+	mouseState_.rgbButtons[];
+}
+
 bool InputKeyBoard::IsOperationDevice(){
 	for (size_t i = 0; i < 256; i++) {
 		if (keys_[i]) {
@@ -431,12 +466,14 @@ void InputManager::Initialize() {// DirectInputの初期化.
 	assert(SUCCEEDED(result));
 
 	keyBoard_.Initialize(directInput_);
+	mouse_.Initialize(directInput_);
 	gamePad_.Initialize();
 }
 
 
 void InputManager::Update() {
 	keyBoard_.Update();
+	mouse_.Update();
 	gamePad_.Update();
 }
 
