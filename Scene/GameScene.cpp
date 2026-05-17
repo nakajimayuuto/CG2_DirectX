@@ -69,18 +69,6 @@ void GameScene::Update() {
 	if (InputManager::GetInstance()->TriggerKey(DIK_R)) {
 		SceneManager::GetInstance()->ReloadScene();
 	}
-
-	if (InputManager::GetInstance()->GetGamePad().TriggerButton(INPUT_L1)) {
-		SceneManager::GetInstance()->ReloadScene();
-	}
-
-	if (InputManager::GetInstance()->GetGamePad().TriggerButton(INPUT_R3)) {
-		SceneManager::GetInstance()->ReloadScene();
-	}
-
-	if (InputManager::GetInstance()->GetGamePad().GetRightTrigger()) {
-		SceneManager::GetInstance()->ReloadScene();
-	}
 #endif // _DEBUG
 	UpdateEnemyPopCommands();
 

@@ -83,7 +83,17 @@ Vector3 Lerp(Vector3 before, Vector3 after, float time) {
 Vector3 Slerp(Vector3 before, Vector3 after, float time){
 	Vector3 result = before;
 	
-	float theta = before.Dot(after);
+	float theta = before.Dot(after) / (before.Length() * after.Length());
+
+	theta = std::clamp(theta, -1.0f, 1.0f);
+
+	if (theta == 1.0f) {
+		return before;
+	} else if (theta == -1.0f) {
+		theta = -0.5f;
+	}
+
+	theta = std::acos(theta);
 
 	auto SlerpFloat = [](float before, float after, float time, float theta) {return ((std::sin((1.0f - time) * theta) / std::sin(theta)) * before) + ((std::sin(time * theta) / std::sin(theta)) * after); };
 

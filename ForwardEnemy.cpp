@@ -5,9 +5,10 @@
 #include "./Scene/GameScene.h"
 
 ForwardEnemy::~ForwardEnemy() {
+	delete phase_;
 }
 
-void ForwardEnemy::Initialize(Vector3 position){
+void ForwardEnemy::Initialize(Vector3 position) {
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("enemy"));
 	transform_.Initialize();
 	transform_.translate = position;
@@ -20,19 +21,19 @@ void ForwardEnemy::Initialize(Vector3 position){
 	SetCollisionMask(kCollisionAttributePlayer);
 }
 
-void ForwardEnemy::Update(){
+void ForwardEnemy::Update() {
 	phase_->Update(this);
 }
 
-void ForwardEnemy::Draw(){
+void ForwardEnemy::Draw() {
 	model_.Draw(transform_);
 }
 
-void ForwardEnemy::OnCollision(){
+void ForwardEnemy::OnCollision() {
 	isAlive_ = false;
 }
 
-void ForwardEnemy::Fire(EnemyBullet::MoveType type){
+void ForwardEnemy::Fire(EnemyBullet::MoveType type) {
 	Vector3 velocity(0.0f, 0.0f, -kBulletSpeed);
 
 	//velocity = transform_.GetAffineMatrix().TransformNomal(velocity);
@@ -40,8 +41,9 @@ void ForwardEnemy::Fire(EnemyBullet::MoveType type){
 	Vector3 playerPos = player_->GetWorldPosition();
 	Vector3 enemyPos = GetWorldPosition();
 
-	velocity = playerPos - enemyPos;
-
+	if (type == EnemyBullet::MoveType::kNormal) {
+		velocity = playerPos - enemyPos;
+	}
 	velocity = velocity.Normalize() * kBulletSpeed;
 
 	BaseBullet* newBullet = new EnemyBullet;
@@ -53,21 +55,21 @@ void ForwardEnemy::Fire(EnemyBullet::MoveType type){
 	dynamic_cast<GameScene*>(gameScene_)->AddBullet(newBullet);
 }
 
-void ForwardEnemy::Translate(Vector3 translate){
+void ForwardEnemy::Translate(Vector3 translate) {
 	transform_.translate += translate;
 }
 
 void ForwardEnemy::RegisterGlobalVariables() {
 	const std::string name = "ForwardEnemy";
 	GlobalVariables* globalVariables = GlobalVariables::GetInstance();
-	
+
 	globalVariables->AddValue(name, "BulletSpeed", kBulletSpeed);
 }
 
 void ForwardEnemy::ApplyGlobalVariables() {
 	const std::string name = "ForwardEnemy";
 	GlobalVariables* globalVariables = GlobalVariables::GetInstance();
-	
+
 	kBulletSpeed = globalVariables->GetFloatValue(name, "BulletSpeed");
 
 
