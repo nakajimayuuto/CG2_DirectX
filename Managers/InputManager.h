@@ -186,12 +186,23 @@ public:
 
 	Vector2 GetMove() const { return { static_cast<float>(mouseState_.lX),static_cast<float>(mouseState_.lY) }; }
 
+	Vector2 GetPos() const { return mousePosition_; }
+	Vector2 GetPrePos() const { return preMousePosition_; }
+	Vector2 GetScreenPos() const { return mouseScreenPosition_; }
+	Vector2 GetPreScreenPos() const { return preMouseScreenPosition_; }
+
 	float GetWheel() const {return static_cast<float>(mouseState_.lZ);}
 private:
 	IDirectInputDevice8* mouse_ = nullptr;
 
 	DIMOUSESTATE2 mouseState_ = {};
 	DIMOUSESTATE2 preMouseState_ = {};
+
+	Vector2 mousePosition_;
+	Vector2 preMousePosition_;
+
+	Vector2 mouseScreenPosition_;
+	Vector2 preMouseScreenPosition_;
 };
 
 class InputManager {
@@ -207,24 +218,24 @@ public:
 	bool ReleaseKey(uint8_t inputKey) const { return keyBoard_.ReleaseKey(inputKey); };
 	bool NoneKey(uint8_t inputKey) const { return keyBoard_.NoneKey(inputKey); };
 
-	bool PressButton(PadButtoms button) const { return gamePad_.PressButton(button); };
-	bool TriggerButton(PadButtoms button) const { return gamePad_.TriggerButton(button); };
-	bool ReleaseButton(PadButtoms button) const { return gamePad_.ReleaseButton(button); };
-	bool NoneButton(PadButtoms button) const { return gamePad_.NoneButton(button); };
+	bool PressPadButton(PadButtoms button) const { return gamePad_.PressButton(button); };
+	bool TriggerPadButton(PadButtoms button) const { return gamePad_.TriggerButton(button); };
+	bool ReleasePadButton(PadButtoms button) const { return gamePad_.ReleaseButton(button); };
+	bool NonePadButton(PadButtoms button) const { return gamePad_.NoneButton(button); };
 
-	bool PressButton(PadButtoms button) const { return gamePad_.PressButton(button); };
-	bool TriggerButton(PadButtoms button) const { return gamePad_.TriggerButton(button); };
-	bool ReleaseButton(PadButtoms button) const { return gamePad_.ReleaseButton(button); };
-	bool NoneButton(PadButtoms button) const { return gamePad_.NoneButton(button); };
+	bool PressMouseButton(PadButtoms button) const { return gamePad_.PressButton(button); };
+	bool TriggerMouseButton(PadButtoms button) const { return gamePad_.TriggerButton(button); };
+	bool ReleaseMouseButton(PadButtoms button) const { return gamePad_.ReleaseButton(button); };
+	bool NoneMouseButton(PadButtoms button) const { return gamePad_.NoneButton(button); };
 
 	bool PressMouse(MouseButtom buttom) const { return mouse_.PressMouse(buttom); };
 	bool TriggerMouse(MouseButtom buttom) const { return mouse_.TriggerMouse(buttom); };
 	bool ReleaseMouse(MouseButtom buttom) const { return mouse_.ReleaseMouse(buttom); };
 	bool NoneMouse(MouseButtom buttom) const { return mouse_.NoneMouse(buttom);};
 
-	Vector2 GetMove() const { return mouse_.GetMove(); }
+	Vector2 GetMousePos() const { return mouse_.GetPos(); }
 
-	float GetWheel() const { return mouse_.GetWheel();}
+	float GetMouseWheel() const { return mouse_.GetWheel();}
 
 	// Lスティックの向き.
 	Vector2 GetLeftStickDirection() const { return gamePad_.GetLeftStickDirection(); };

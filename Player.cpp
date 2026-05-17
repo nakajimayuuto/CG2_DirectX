@@ -103,7 +103,7 @@ void Player::RotateUpdate() {
 }
 
 void Player::AttackUpdate() {
-	if (InputManager::GetInstance()->TriggerKey(DIK_SPACE) || InputManager::GetInstance()->TriggerButton(INPUT_R2)) {
+	if (InputManager::GetInstance()->TriggerKey(DIK_SPACE) || InputManager::GetInstance()->TriggerPadButton(INPUT_R2)) {
 		Vector3 velocity(0.0f, 0.0f, kBulletSpeed);
 
 		//velocity = transform_.GetAffineMatrix().TransformNomal(velocity);

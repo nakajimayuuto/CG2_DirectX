@@ -1,6 +1,8 @@
 #include "InputManager.h"
 #include "../Engine/SystemFile/GameSystem.h"
 #include <algorithm>
+#include <winuser.h>
+#include "../Engine/SystemFile/ImGui.h"
 
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")
@@ -36,7 +38,7 @@ void InputKeyBoard::Update() {
 void InputMouse::Initialize(IDirectInput8* directInput) {
 
 	// キーボードデバイスの作成.
-	HRESULT result = directInput->CreateDevice(GUID_SysKeyboard, &mouse_, NULL);
+	HRESULT result = directInput->CreateDevice(GUID_SysMouse, &mouse_, NULL);
 	assert(SUCCEEDED(result));
 
 	// 入力データ形式のリセット.
@@ -47,6 +49,9 @@ void InputMouse::Initialize(IDirectInput8* directInput) {
 	result = mouse_->SetCooperativeLevel(
 		GameSystem::GetInstance()->GetHWND(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
 	assert(SUCCEEDED(result));
+
+	mousePosition_ = { 0.0f,0.0f };
+	preMousePosition_ = { 0.0f,0.0f };
 }
 
 void InputMouse::Update() {
@@ -65,10 +70,19 @@ void InputMouse::Update() {
 			&mouseState_);
 	}
 
-	mouseState_.rgbButtons[];
+	preMousePosition_ = mousePosition_;
+	preMouseScreenPosition_ = mouseScreenPosition_;
+
+	POINT pos = { 0,0 };
+
+	GetCursorPos(&pos);
+	mouseScreenPosition_ = { static_cast<float>(pos.x),static_cast<float>(pos.y) };
+
+	ScreenToClient(GameSystem::GetInstance()->GetHWND(), &pos);
+	mousePosition_ = { static_cast<float>(pos.x),static_cast<float>(pos.y) };
 }
 
-bool InputKeyBoard::IsOperationDevice(){
+bool InputKeyBoard::IsOperationDevice() {
 	for (size_t i = 0; i < 256; i++) {
 		if (keys_[i]) {
 			return true;
@@ -155,12 +169,12 @@ Vector2 InputGamePad::GetPreRightStickDirection() const {
 	}
 
 	if (result.x == 0.0f && result.y == 0.0f) {
-		return {0.0f,0.0f};
+		return { 0.0f,0.0f };
 	}
 	return result.Normalize();
 }
 
-float InputGamePad::GetLeftStickInclination() const{
+float InputGamePad::GetLeftStickInclination() const {
 	Vector2 result;
 	result.x = static_cast<float>(state_.Gamepad.sThumbLX) / 32768.0f;
 	result.y = static_cast<float>(state_.Gamepad.sThumbLY) / 32768.0f;
@@ -188,7 +202,7 @@ float InputGamePad::GetPreRightStickInclination() const {
 	return result.Length();
 }
 
-bool InputGamePad::IsOperationDevice(){
+bool InputGamePad::IsOperationDevice() {
 	for (size_t i = 0; i < INPUT_MAX; i++) {
 		if (GetButtonPress(static_cast<PadButtoms>(i))) {
 			return true;
@@ -253,7 +267,7 @@ BYTE InputGamePad::GetButtonPress(PadButtoms button) const {
 		}
 	}
 
-	switch (button){
+	switch (button) {
 	case INPUT_A:
 		if ((state_.Gamepad.wButtons & XINPUT_GAMEPAD_A) != 0) {
 			return true;
@@ -477,7 +491,7 @@ void InputManager::Update() {
 	gamePad_.Update();
 }
 
-void InputManager::OperationModeCheck(){
+void InputManager::OperationModeCheck() {
 	if (gamePad_.IsOperationDevice()) {
 		operationMode_ = OperationMode::Pad;
 	}
