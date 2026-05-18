@@ -10,7 +10,7 @@ public:
 	float GetRadius() const { return radius_; };
 
 	void SetCollisionAttribute(uint32_t collisionAttribute) { collisionAttribute_ = collisionAttribute; };
-	void SetCollisionMask(uint32_t collisionMask) { collisionMask_ = ~collisionMask; };
+	void SetCollisionMask(uint32_t collisionMask) { collisionMask_ = collisionMask; };
 
 	uint32_t GetCollisionAttribute() { return collisionAttribute_; };
 	uint32_t GetCollisionMask() { return collisionMask_; };
