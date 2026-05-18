@@ -12,7 +12,7 @@ public:
 	void OnCollision() override = 0;
 
 	bool GetIsAlive() { return isAlive_; };
-	void SetPlayer(Player* player) { player_ = player; };
+	void SetTarget(Player* player) { player_ = player; };
 	Vector3 GetWorldPosition() override{ return { transform_.GetAffineMatrix().matrix[3][0],transform_.GetAffineMatrix().matrix[3][1],transform_.GetAffineMatrix().matrix[3][2] }; };
 
 	Transform GetTransform()const { return transform_; };

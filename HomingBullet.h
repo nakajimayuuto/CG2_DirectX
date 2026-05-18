@@ -1,17 +1,14 @@
 #pragma once
 #include "BaseBullet.h"
 #include "Satlib.h"
+#include "./Engine/Math/Collider.h"
 
 class Player;
 
-class EnemyBullet : public BaseBullet{
+class HomingBullet : public BaseBullet{
 public:
-	enum class MoveType{
-		kNormal,
-		kHoming
-	};
 
-	~EnemyBullet();
+	~HomingBullet();
 	void Initialize(const std::string& modelName, const Vector3& position, const Vector3& velocity) override;
 
 	void Update() override;
@@ -20,16 +17,12 @@ public:
 
 	void OnCollision() override;
 
-	void SetMoveType(MoveType type) { type_ = type; };
-
-	void SetPlayer(Player* player) { player_ = player; };
+	void SetTarget(Collider* player) { target_ = player; };
 
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();
 private:
 	void LifeTimeUpdate();
-
-	void MoveUpdate();
 
 	void HomingUpdate();
 private:
@@ -42,8 +35,6 @@ private:
 	// タイマー
 	static inline float kLifeTime = 5.0f;
 	float deathTimer_;
-	Player* player_ = nullptr;
-
-	MoveType type_;
+	Collider* target_ = nullptr;
 };
 

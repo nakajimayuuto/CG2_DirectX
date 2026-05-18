@@ -15,7 +15,7 @@ public:
 	void Update();
 	void Draw();
 
-	void SetPlayer(Player* player) { player_ = player; };
+	void SetTarget(Player* player) { player_ = player; };
 
 	CameraType GetCameraType() { return type_; };
 

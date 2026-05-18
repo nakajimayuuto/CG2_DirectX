@@ -1,7 +1,7 @@
 #include "ForwardEnemyApproachHomingPhase.h"
 #include "ForwardEnemyLeavePhase.h"
 #include "ForwardEnemy.h"
-#include "EnemyBullet.h"
+#include "HomingBullet.h"
 
 ForwardEnemyApproachHomingPhase::~ForwardEnemyApproachHomingPhase(){
 	for (TimedCall* timedCall : timedCalls_) {
@@ -31,7 +31,7 @@ void ForwardEnemyApproachHomingPhase::Update(ForwardEnemy* pEnemy){
 }
 
 void ForwardEnemyApproachHomingPhase::FireReset(ForwardEnemy* pEnemy){
-	pEnemy->Fire(EnemyBullet::MoveType::kHoming);
+	pEnemy->Fire(new HomingBullet());
 
 	std::function<void(void)> callBack = std::bind(&ForwardEnemyApproachHomingPhase::FireReset, this, pEnemy);
 

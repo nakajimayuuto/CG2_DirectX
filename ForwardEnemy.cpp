@@ -33,7 +33,7 @@ void ForwardEnemy::OnCollision() {
 	isAlive_ = false;
 }
 
-void ForwardEnemy::Fire(EnemyBullet::MoveType type) {
+void ForwardEnemy::Fire(BaseBullet* bullet) {
 	Vector3 velocity(0.0f, 0.0f, -kBulletSpeed);
 
 	//velocity = transform_.GetAffineMatrix().TransformNomal(velocity);
@@ -41,16 +41,19 @@ void ForwardEnemy::Fire(EnemyBullet::MoveType type) {
 	Vector3 playerPos = player_->GetWorldPosition();
 	Vector3 enemyPos = GetWorldPosition();
 
-	if (type == EnemyBullet::MoveType::kNormal) {
+	if (dynamic_cast<NormalBullet*>(bullet)) {
 		velocity = playerPos - enemyPos;
 	}
 	velocity = velocity.Normalize() * kBulletSpeed;
 
-	BaseBullet* newBullet = new EnemyBullet;
+	BaseBullet* newBullet = bullet;
 	newBullet->Initialize("enemy_bullet", transform_.translate, velocity);
+	newBullet->SetCollisionAttribute(kCollisionAttributeEnemy);
+	newBullet->SetCollisionMask(kCollisionAttributePlayer);
 
-	dynamic_cast<EnemyBullet*>(newBullet)->SetPlayer(player_);
-	dynamic_cast<EnemyBullet*>(newBullet)->SetMoveType(type);
+	if (dynamic_cast<HomingBullet*>(newBullet)) {
+		dynamic_cast<HomingBullet*>(newBullet)->SetTarget(player_);
+	}
 
 	dynamic_cast<GameScene*>(gameScene_)->AddBullet(newBullet);
 }

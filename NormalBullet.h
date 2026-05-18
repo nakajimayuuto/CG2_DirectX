@@ -2,7 +2,7 @@
 #include "Satlib.h"
 #include "BaseBullet.h"
 
-class PlayerBullet : public BaseBullet{
+class NormalBullet : public BaseBullet{
 public:
 	void Initialize(const std::string& modelName,const Vector3& position, const Vector3& velocity) override;
 

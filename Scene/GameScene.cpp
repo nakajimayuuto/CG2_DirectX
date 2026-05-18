@@ -42,7 +42,7 @@ void GameScene::Initialize() {
 	player_->Initialize({ 0.0f,0.0f,50.0f });
 	player_->SetGameScene(this);
 	player_->SetRailCameraController(railCameraController_);
-	railCameraController_->SetPlayer(player_);
+	railCameraController_->SetTarget(player_);
 	//;
 
 	SpawnEnemy({ 10.0f,50.0f,100.0f },new ForwardEnemyApproachPhase());
@@ -196,7 +196,7 @@ void GameScene::AddBullet(BaseBullet* baseBullet) {
 
 void GameScene::SpawnEnemy(const Vector3& position,ForwardEnemyBasePhase* type) {
 	BaseEnemy* newEnemy = new ForwardEnemy();
-	newEnemy->SetPlayer(player_);
+	newEnemy->SetTarget(player_);
 	dynamic_cast<ForwardEnemy*>(newEnemy)->SetGameScene(this);
 	newEnemy->Initialize(position);
 	dynamic_cast<ForwardEnemy*>(newEnemy)->SetPhase(type);

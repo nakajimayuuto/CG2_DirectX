@@ -1,5 +1,5 @@
 #include "Player.h"
-#include "PlayerBullet.h"
+#include "NormalBullet.h"
 #include "./Scene/GameScene.h"
 #include "RailCameraController.h"
 #include "LockOn.h"
@@ -176,9 +176,10 @@ void Player::AttackUpdate() {
 
 
 
-		BaseBullet* newBullet = new PlayerBullet;
+		BaseBullet* newBullet = new NormalBullet();
 		newBullet->Initialize("player_bullet", transform_.GetAffineMatrix().GetMatrixToTranslate(), velocity);
-
+		newBullet->SetCollisionAttribute(kCollisionAttributePlayer);
+		newBullet->SetCollisionMask(kCollisionAttributeEnemy);
 		dynamic_cast<GameScene*>(gameScene_)->AddBullet(newBullet);
 	}
 

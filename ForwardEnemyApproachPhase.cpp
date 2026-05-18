@@ -1,7 +1,7 @@
 #include "ForwardEnemyApproachPhase.h"
 #include "ForwardEnemyLeavePhase.h"
 #include "ForwardEnemy.h"
-#include "EnemyBullet.h"
+#include "NormalBullet.h"
 
 ForwardEnemyApproachPhase::~ForwardEnemyApproachPhase(){
 	for (TimedCall* timedCall : timedCalls_) {
@@ -37,7 +37,7 @@ void ForwardEnemyApproachPhase::Update(ForwardEnemy* pEnemy){
 }
 
 void ForwardEnemyApproachPhase::FireReset(ForwardEnemy* pEnemy){
-	pEnemy->Fire(EnemyBullet::MoveType::kNormal);
+	pEnemy->Fire(new NormalBullet());
 
 	std::function<void(void)> callBack = std::bind(&ForwardEnemyApproachPhase::FireReset, this, pEnemy);
 

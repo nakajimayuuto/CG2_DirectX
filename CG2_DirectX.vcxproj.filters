@@ -145,9 +145,6 @@
     <Filter Include="ソース ファイル\Player\PlayerBullet">
       <UniqueIdentifier>{49324556-8a07-4d57-b55b-7aab94cb73ac}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Enemies\ForwardEnemy\Bullet">
-      <UniqueIdentifier>{57c96197-d858-4f61-8ca8-a3bec5445f12}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\TimeCall">
       <UniqueIdentifier>{42e182b5-e8c1-492f-8adf-98572a0453e1}</UniqueIdentifier>
     </Filter>
@@ -168,6 +165,12 @@
     </Filter>
     <Filter Include="ソース ファイル\LockOn">
       <UniqueIdentifier>{98803f9f-0650-4207-b05c-d4acdc880a95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Bullets\Homing">
+      <UniqueIdentifier>{df577311-39e2-432b-867a-fc4e5ca55fe8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Bullets\Normal">
+      <UniqueIdentifier>{7e8ff0f5-03c6-419f-bfb9-5fa6046c4a89}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -288,9 +291,6 @@
     <ClCompile Include="Player.cpp">
       <Filter>ソース ファイル\Player</Filter>
     </ClCompile>
-    <ClCompile Include="PlayerBullet.cpp">
-      <Filter>ソース ファイル\Player\PlayerBullet</Filter>
-    </ClCompile>
     <ClCompile Include="BaseEnemy.cpp">
       <Filter>ソース ファイル\Enemies\BaseEnemy</Filter>
     </ClCompile>
@@ -299,9 +299,6 @@
     </ClCompile>
     <ClCompile Include="ForwardEnemyLeavePhase.cpp">
       <Filter>ソース ファイル\Enemies\ForwardEnemy\ForwardEnemyState\ForwardEnemyLeave</Filter>
-    </ClCompile>
-    <ClCompile Include="EnemyBullet.cpp">
-      <Filter>ソース ファイル\Enemies\ForwardEnemy\Bullet</Filter>
     </ClCompile>
     <ClCompile Include="TimedCall.cpp">
       <Filter>ソース ファイル\TimeCall</Filter>
@@ -326,6 +323,12 @@
     </ClCompile>
     <ClCompile Include="LockOn.cpp">
       <Filter>ソース ファイル\LockOn</Filter>
+    </ClCompile>
+    <ClCompile Include="HomingBullet.cpp">
+      <Filter>ソース ファイル\Bullets\Homing</Filter>
+    </ClCompile>
+    <ClCompile Include="NormalBullet.cpp">
+      <Filter>ソース ファイル\Bullets\Normal</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -455,9 +458,6 @@
     <ClInclude Include="Player.h">
       <Filter>ソース ファイル\Player</Filter>
     </ClInclude>
-    <ClInclude Include="PlayerBullet.h">
-      <Filter>ソース ファイル\Player\PlayerBullet</Filter>
-    </ClInclude>
     <ClInclude Include="BaseEnemy.h">
       <Filter>ソース ファイル\Enemies\BaseEnemy</Filter>
     </ClInclude>
@@ -475,9 +475,6 @@
     </ClInclude>
     <ClInclude Include="BaseBullet.h">
       <Filter>ソース ファイル\Bullets</Filter>
-    </ClInclude>
-    <ClInclude Include="EnemyBullet.h">
-      <Filter>ソース ファイル\Enemies\ForwardEnemy\Bullet</Filter>
     </ClInclude>
     <ClInclude Include="TimedCall.h">
       <Filter>ソース ファイル\TimeCall</Filter>
@@ -502,6 +499,12 @@
     </ClInclude>
     <ClInclude Include="LockOn.h">
       <Filter>ソース ファイル\LockOn</Filter>
+    </ClInclude>
+    <ClInclude Include="HomingBullet.h">
+      <Filter>ソース ファイル\Bullets\Homing</Filter>
+    </ClInclude>
+    <ClInclude Include="NormalBullet.h">
+      <Filter>ソース ファイル\Bullets\Normal</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

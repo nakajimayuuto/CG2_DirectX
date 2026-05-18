@@ -1,13 +1,13 @@
-#include "EnemyBullet.h"
+#include "HomingBullet.h"
 #include "Player.h"
 
-EnemyBullet::~EnemyBullet(){
-	delete player_;
+HomingBullet::~HomingBullet() {
+	delete target_;
 }
 
-void EnemyBullet::Initialize(const std::string& modelName, const Vector3& position, const Vector3& velocity) {
+void HomingBullet::Initialize(const std::string& modelName, const Vector3& position, const Vector3& velocity) {
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo(modelName));
-	model_.SetColor({1.0f,0.0f,0.0f,1.0f});
+	model_.SetColor({ 1.0f,0.0f,0.0f,1.0f });
 	transform_.Initialize();
 	transform_.translate = position;
 	transform_.scale.x = 1.0f;
@@ -22,27 +22,14 @@ void EnemyBullet::Initialize(const std::string& modelName, const Vector3& positi
 	deathTimer_ = kLifeTime;
 	isActive_ = true;
 
-	SetCollisionAttribute(kCollisionAttributeEnemy);
-	SetCollisionMask(kCollisionAttributePlayer);
-
 }
 
-void EnemyBullet::Update() {
+void HomingBullet::Update() {
 	LifeTimeUpdate();
-
-	switch (type_){
-	case EnemyBullet::MoveType::kNormal:
-		MoveUpdate();
-		break;
-	case EnemyBullet::MoveType::kHoming:
-		HomingUpdate();
-		break;
-	default:
-		break;
-	}
+	HomingUpdate();
 }
 
-void EnemyBullet::LifeTimeUpdate() {
+void HomingBullet::LifeTimeUpdate() {
 	deathTimer_ -= 1.0f / 60.0f;
 
 	if (deathTimer_ <= 0.0f) {
@@ -51,12 +38,8 @@ void EnemyBullet::LifeTimeUpdate() {
 
 }
 
-void EnemyBullet::MoveUpdate(){
-	transform_.translate += velocity_;
-}
-
-void EnemyBullet::HomingUpdate(){
-	Vector3 toPlayer = player_->GetWorldPosition() - GetWorldPosition();
+void HomingBullet::HomingUpdate() {
+	Vector3 toPlayer = target_->GetWorldPosition() - GetWorldPosition();
 
 	toPlayer = toPlayer.Normalize();
 
@@ -71,22 +54,22 @@ void EnemyBullet::HomingUpdate(){
 	transform_.rotate.x = std::atan2(-velocity_.y, velocityXZ.Length());
 }
 
-void EnemyBullet::Draw() {
+void HomingBullet::Draw() {
 	model_.Draw(transform_);
 }
 
-void EnemyBullet::OnCollision(){
+void HomingBullet::OnCollision() {
 	isActive_ = false;
 }
 
-void EnemyBullet::RegisterGlobalVariables() {
+void HomingBullet::RegisterGlobalVariables() {
 	const std::string name = "EnemyBullet";
 	GlobalVariables* globalVariables = GlobalVariables::GetInstance();
 
 	globalVariables->AddValue(name, "kLifeTime", kLifeTime);
 }
 
-void EnemyBullet::ApplyGlobalVariables() {
+void HomingBullet::ApplyGlobalVariables() {
 	const std::string name = "EnemyBullet";
 	GlobalVariables* globalVariables = GlobalVariables::GetInstance();
 

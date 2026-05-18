@@ -1,6 +1,6 @@
-#include "PlayerBullet.h"
+#include "NormalBullet.h"
 
-void PlayerBullet::Initialize(const std::string& modelName, const Vector3& position, const Vector3& velocity){
+void NormalBullet::Initialize(const std::string& modelName, const Vector3& position, const Vector3& velocity){
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo(modelName));
 	transform_.Initialize();
 	transform_.translate = position;
@@ -16,13 +16,13 @@ void PlayerBullet::Initialize(const std::string& modelName, const Vector3& posit
 
 }
 
-void PlayerBullet::Update(){
+void NormalBullet::Update(){
 	LifeTimeUpdate();
 
 	transform_.translate += velocity_;
 }
 
-void PlayerBullet::LifeTimeUpdate() {
+void NormalBullet::LifeTimeUpdate() {
 	deathTimer_ -= 1.0f / 60.0f;
 
 	if (deathTimer_ <= 0.0f) {
@@ -31,22 +31,22 @@ void PlayerBullet::LifeTimeUpdate() {
 
 }
 
-void PlayerBullet::Draw(){
+void NormalBullet::Draw(){
 	model_.Draw(transform_);
 }
 
-void PlayerBullet::OnCollision(){
+void NormalBullet::OnCollision(){
 	isActive_ = false;
 }
 
-void PlayerBullet::RegisterGlobalVariables() {
+void NormalBullet::RegisterGlobalVariables() {
 	const std::string name = "playerBullet";
 	GlobalVariables* globalVariables = GlobalVariables::GetInstance();
 
 	globalVariables->AddValue(name, "kLifeTime", kLifeTime);
 }
 
-void PlayerBullet::ApplyGlobalVariables() {
+void NormalBullet::ApplyGlobalVariables() {
 	const std::string name = "playerBullet";
 	GlobalVariables* globalVariables = GlobalVariables::GetInstance();
 
