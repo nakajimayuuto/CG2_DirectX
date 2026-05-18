@@ -2,6 +2,7 @@
 #include "PlayerBullet.h"
 #include "./Scene/GameScene.h"
 #include "RailCameraController.h"
+#include "LockOn.h"
 
 Player::~Player() {
 	delete cameraController_;
@@ -53,7 +54,7 @@ void Player::Reticle2DUpdate() {
 			transform2DReticle_.translate = {
 				static_cast<float>(Environment::GetInstance()->GetWindowSize().width) / 2.0f,
 				static_cast<float>(Environment::GetInstance()->GetWindowSize().height) / 2.0f,
-				kDistancePlayerTo3DReticle_ 
+				kDistancePlayerTo3DReticle_
 			};
 		} else {
 			Vector2 mousePos = InputManager::GetInstance()->GetMousePos();
@@ -162,8 +163,15 @@ void Player::AttackUpdate() {
 			velocity = velocity.Normalize() * kBulletSpeed;
 		} else {
 			//velocity = transform_.GetAffineMatrix().TransformNomal(velocity);
-			velocity = transform3DReticle_.GetAffineMatrix().GetMatrixToTranslate() - transform_.GetAffineMatrix().GetMatrixToTranslate();
-			velocity = velocity.Normalize() * kBulletSpeed;
+			if (lockOn_->GetIsLockOn()) {
+				BaseEnemy* target = lockOn_->GetTarget();
+
+				velocity = target->GetWorldPosition() - GetWorldPosition();
+				velocity = velocity.Normalize() * kBulletSpeed;
+			}else{
+				velocity = transform3DReticle_.GetAffineMatrix().GetMatrixToTranslate() - transform_.GetAffineMatrix().GetMatrixToTranslate();
+				velocity = velocity.Normalize() * kBulletSpeed;
+			}
 		}
 
 
@@ -177,10 +185,11 @@ void Player::AttackUpdate() {
 }
 
 void Player::Draw() {
-	sprite_.Draw(transform2DReticle_);
 
 	if (cameraController_->GetCameraType() == RailCameraController::CameraType::kThirdPoint) {
 		model_.Draw(transform_);
+	} else {
+		sprite_.Draw(transform2DReticle_);
 	}
 }
 

@@ -7,6 +7,7 @@
 #include "../BaseEnemy.h"
 #include "../RailCameraController.h"
 #include "../ForwardEnemyBasePhase.h"
+#include "../LockOn.h"
 #include <sstream>
 
 class GameScene : public IScene{
@@ -43,6 +44,8 @@ private:
 	Skydome* skydome_ = nullptr;
 
 	RailCameraController* railCameraController_ = nullptr;
+
+	LockOn* lockOn_ = nullptr;
 
 	Renderer::Model groundModel_;
 

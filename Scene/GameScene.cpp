@@ -54,6 +54,10 @@ void GameScene::Initialize() {
 
 	LoadEnemyPopData();
 
+	lockOn_ = new LockOn();
+	lockOn_->Initialize();
+	player_->SetLockOn(lockOn_);
+
 	isWait_ = false;
 	waitTimer_ = 0;
 }
@@ -85,6 +89,8 @@ void GameScene::Update() {
 	for (BaseBullet* bullet : bullets_) {
 		bullet->Update();
 	}
+
+	lockOn_->Update(player_,enemies_);
 
 	Camera::GetInstance()->Update();
 
@@ -233,6 +239,8 @@ void GameScene::Draw() {
 	for (BaseBullet* bullet : bullets_) {
 		bullet->Draw();
 	}
+
+	lockOn_->Draw();
 }
 
 void GameScene::RegisterGlobalVariables() {

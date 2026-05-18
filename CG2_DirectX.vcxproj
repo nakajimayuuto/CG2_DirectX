@@ -78,6 +78,7 @@
     <ClCompile Include="ForwardEnemyApproachHomingPhase.cpp" />
     <ClCompile Include="ForwardEnemyApproachPhase.cpp" />
     <ClCompile Include="ForwardEnemyLeavePhase.cpp" />
+    <ClCompile Include="LockOn.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Managers\CollisionManager.cpp" />
     <ClCompile Include="Managers\InputManager.cpp" />
@@ -136,6 +137,7 @@
     <ClInclude Include="ForwardEnemyApproachPhase.h" />
     <ClInclude Include="ForwardEnemyBasePhase.h" />
     <ClInclude Include="ForwardEnemyLeavePhase.h" />
+    <ClInclude Include="LockOn.h" />
     <ClInclude Include="Managers\CollisionManager.h" />
     <ClInclude Include="Managers\InputManager.h" />
     <ClInclude Include="Managers\ModelManager.h" />

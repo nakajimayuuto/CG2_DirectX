@@ -166,6 +166,9 @@
     <Filter Include="ソース ファイル\Enemies\ForwardEnemy\ForwardEnemyState\EnemyHoming">
       <UniqueIdentifier>{ff2f27ed-a5b3-479c-9ef2-9ca2a9ae5a0c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\LockOn">
+      <UniqueIdentifier>{98803f9f-0650-4207-b05c-d4acdc880a95}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -320,6 +323,9 @@
     </ClCompile>
     <ClCompile Include="ForwardEnemyApproachHomingPhase.cpp">
       <Filter>ソース ファイル\Enemies\ForwardEnemy\ForwardEnemyState\EnemyHoming</Filter>
+    </ClCompile>
+    <ClCompile Include="LockOn.cpp">
+      <Filter>ソース ファイル\LockOn</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -493,6 +499,9 @@
     </ClInclude>
     <ClInclude Include="ForwardEnemyApproachHomingPhase.h">
       <Filter>ソース ファイル\Enemies\ForwardEnemy\ForwardEnemyState\EnemyHoming</Filter>
+    </ClInclude>
+    <ClInclude Include="LockOn.h">
+      <Filter>ソース ファイル\LockOn</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

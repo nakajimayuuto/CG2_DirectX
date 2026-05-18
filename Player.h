@@ -4,6 +4,8 @@
 #include <list>
 #include "RailCameraController.h"
 
+class LockOn;
+
 /// <summary>
 /// 自キャラ
 /// </summary>
@@ -20,6 +22,8 @@ public:
 
 	void SetGameScene(IScene* gameScene) { gameScene_ = gameScene; };
 
+	void SetLockOn(LockOn* lockOn) { lockOn_ = lockOn; };
+
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();
 
@@ -27,6 +31,9 @@ public:
 		transform_.GetAffineMatrix().matrix[3][2] }; };
 
 	Transform GetTransform()const { return transform_; };
+
+	Transform GetTransformReticle2D()const { return transform2DReticle_; };
+	Vector2 GetPositionReticle2D()const { return { transform2DReticle_.translate.x,transform2DReticle_.translate.y }; };
 
 	void SetRailCameraController(RailCameraController* cameraController) { cameraController_ = cameraController; transform_.SetParent(&cameraController->GetTransform()); };
 private:
@@ -60,6 +67,8 @@ private:
 	IScene* gameScene_ = nullptr;
 	
 	RailCameraController* cameraController_ = nullptr;
+
+	LockOn* lockOn_ = nullptr;
 
 	// 3Dレティクル.
 	Renderer::Model model2_;
