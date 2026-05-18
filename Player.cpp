@@ -1,5 +1,6 @@
 #include "Player.h"
 #include "NormalBullet.h"
+#include "HomingBullet.h"
 #include "./Scene/GameScene.h"
 #include "RailCameraController.h"
 #include "LockOn.h"
@@ -155,6 +156,7 @@ void Player::RotateUpdate() {
 void Player::AttackUpdate() {
 	if (InputManager::GetInstance()->TriggerKey(DIK_SPACE) || InputManager::GetInstance()->TriggerPadButton(INPUT_R2)) {
 		Vector3 velocity(0.0f, 0.0f, kBulletSpeed);
+		BaseBullet* newBullet = new NormalBullet();
 
 		if (cameraController_->GetCameraType() == RailCameraController::CameraType::kFirstPoint) {
 			velocity = transform3DReticle_.GetAffineMatrix().GetMatrixToTranslate() - transform_.GetAffineMatrix().GetMatrixToTranslate();
@@ -168,7 +170,11 @@ void Player::AttackUpdate() {
 
 				velocity = target->GetWorldPosition() - GetWorldPosition();
 				velocity = velocity.Normalize() * kBulletSpeed;
-			}else{
+
+				delete newBullet;
+				newBullet = new HomingBullet();
+				dynamic_cast<HomingBullet*>(newBullet)->SetTarget(lockOn_->GetTarget());
+			} else {
 				velocity = transform3DReticle_.GetAffineMatrix().GetMatrixToTranslate() - transform_.GetAffineMatrix().GetMatrixToTranslate();
 				velocity = velocity.Normalize() * kBulletSpeed;
 			}
@@ -176,7 +182,6 @@ void Player::AttackUpdate() {
 
 
 
-		BaseBullet* newBullet = new NormalBullet();
 		newBullet->Initialize("player_bullet", transform_.GetAffineMatrix().GetMatrixToTranslate(), velocity);
 		newBullet->SetCollisionAttribute(kCollisionAttributePlayer);
 		newBullet->SetCollisionMask(kCollisionAttributeEnemy);

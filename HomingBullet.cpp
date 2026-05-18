@@ -39,6 +39,11 @@ void HomingBullet::LifeTimeUpdate() {
 }
 
 void HomingBullet::HomingUpdate() {
+	if (target_ == nullptr) {
+		transform_.translate += velocity_;
+		return;
+	}
+
 	Vector3 toPlayer = target_->GetWorldPosition() - GetWorldPosition();
 
 	toPlayer = toPlayer.Normalize();
