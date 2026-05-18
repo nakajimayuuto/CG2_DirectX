@@ -41,7 +41,7 @@ void GameScene::Initialize() {
 	player_ = new Player();
 	player_->Initialize({ 0.0f,0.0f,50.0f });
 	player_->SetGameScene(this);
-	//player_->SetRailCameraController(railCameraController_);
+	player_->SetRailCameraController(railCameraController_);
 	railCameraController_->SetPlayer(player_);
 	//;
 

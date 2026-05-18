@@ -1359,7 +1359,7 @@ static ImGuiInputEvent* FindLatestInputEvent(ImGuiInputEventType type, int arg =
             continue;
         if (type == ImGuiInputEventType_Key && e->Key.Key != arg)
             continue;
-        if (type == ImGuiInputEventType_MouseButton && e->MouseButton.Button != arg)
+        if (type == ImGuiInputEventType_MouseButton && e->MouseButtons.Button != arg)
             continue;
         return e;
     }
@@ -1483,15 +1483,15 @@ void ImGuiIO::AddMouseButtonEvent(int mouse_button, bool down)
 
     // Filter duplicate
     const ImGuiInputEvent* latest_event = FindLatestInputEvent(ImGuiInputEventType_MouseButton, (int)mouse_button);
-    const bool latest_button_down = latest_event ? latest_event->MouseButton.Down : g.IO.MouseDown[mouse_button];
+    const bool latest_button_down = latest_event ? latest_event->MouseButtons.Down : g.IO.MouseDown[mouse_button];
     if (latest_button_down == down)
         return;
 
     ImGuiInputEvent e;
     e.Type = ImGuiInputEventType_MouseButton;
     e.Source = ImGuiInputSource_Mouse;
-    e.MouseButton.Button = mouse_button;
-    e.MouseButton.Down = down;
+    e.MouseButtons.Button = mouse_button;
+    e.MouseButtons.Down = down;
     g.InputEventsQueue.push_back(e);
 }
 
@@ -8646,7 +8646,7 @@ static void DebugPrintInputEvent(const char* prefix, const ImGuiInputEvent* e)
 {
     ImGuiContext& g = *GImGui;
     if (e->Type == ImGuiInputEventType_MousePos)    { if (e->MousePos.PosX == -FLT_MAX && e->MousePos.PosY == -FLT_MAX) IMGUI_DEBUG_LOG_IO("%s: MousePos (-FLT_MAX, -FLT_MAX)\n", prefix); else IMGUI_DEBUG_LOG_IO("%s: MousePos (%.1f, %.1f)\n", prefix, e->MousePos.PosX, e->MousePos.PosY); return; }
-    if (e->Type == ImGuiInputEventType_MouseButton) { IMGUI_DEBUG_LOG_IO("%s: MouseButton %d %s\n", prefix, e->MouseButton.Button, e->MouseButton.Down ? "Down" : "Up"); return; }
+    if (e->Type == ImGuiInputEventType_MouseButton) { IMGUI_DEBUG_LOG_IO("%s: MouseButton %d %s\n", prefix, e->MouseButtons.Button, e->MouseButtons.Down ? "Down" : "Up"); return; }
     if (e->Type == ImGuiInputEventType_MouseWheel)  { IMGUI_DEBUG_LOG_IO("%s: MouseWheel (%.3f, %.3f)\n", prefix, e->MouseWheel.WheelX, e->MouseWheel.WheelY); return; }
     if (e->Type == ImGuiInputEventType_Key)         { IMGUI_DEBUG_LOG_IO("%s: Key \"%s\" %s\n", prefix, ImGui::GetKeyName(e->Key.Key), e->Key.Down ? "Down" : "Up"); return; }
     if (e->Type == ImGuiInputEventType_Text)        { IMGUI_DEBUG_LOG_IO("%s: Text: %c (U+%08X)\n", prefix, e->Text.Char, e->Text.Char); return; }
@@ -8688,11 +8688,11 @@ void ImGui::UpdateInputEvents(bool trickle_fast_inputs)
         else if (e->Type == ImGuiInputEventType_MouseButton)
         {
             // Trickling Rule: Stop processing queued events if we got multiple action on the same button
-            const ImGuiMouseButton button = e->MouseButton.Button;
+            const ImGuiMouseButton button = e->MouseButtons.Button;
             IM_ASSERT(button >= 0 && button < ImGuiMouseButton_COUNT);
             if (trickle_fast_inputs && ((mouse_button_changed & (1 << button)) || mouse_wheeled))
                 break;
-            io.MouseDown[button] = e->MouseButton.Down;
+            io.MouseDown[button] = e->MouseButtons.Down;
             mouse_button_changed |= (1 << button);
         }
         else if (e->Type == ImGuiInputEventType_MouseWheel)

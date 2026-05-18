@@ -1,11 +1,15 @@
 #include "RailCameraController.h"
 #include "Player.h"
+RailCameraController::~RailCameraController(){
+	delete player_;
+}
+
 void RailCameraController::Initialize(const Transform& transform) {
 	camera_ = Camera::GetInstance();
 	transform_ = transform;
 	camera_->SetPosition({0.0f,0.0f,-30.0f});
 
-	type_ = CameraType::kThirdPoint;
+	type_ = CameraType::kFirstPoint;
 
 	//controlPoints_ = {
 	//	{0.0f,50.0f,0.0f},
@@ -62,9 +66,7 @@ void RailCameraController::Update() {
 		camera_->SetTransform(transform_);
 	} else if (type_ == CameraType::kFirstPoint) {
 		Matrix4x4 matrix;
-		
-		matrix = transform_.GetAffineMatrix() * player_->GetTransform().GetAffineMatrix();
-
+		matrix =player_->GetTransform().GetAffineMatrix();
 		camera_->SetTransform(matrix.GetMatrixToTransform());
 	}
 }

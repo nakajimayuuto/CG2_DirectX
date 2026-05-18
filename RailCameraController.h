@@ -9,6 +9,7 @@ public:
 		kFirstPoint,
 		kThirdPoint,
 	};
+	~RailCameraController();
 
 	void Initialize(const Transform& transform);
 	void Update();

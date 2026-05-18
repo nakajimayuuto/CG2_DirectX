@@ -82,6 +82,16 @@ void InputMouse::Update() {
 	mousePosition_ = { static_cast<float>(pos.x),static_cast<float>(pos.y) };
 }
 
+void InputMouse::SetCursorPosition(Vector2 position) {
+	POINT pos;
+	pos.x = static_cast<int>(position.x);
+	pos.y = static_cast<int>(position.y);
+
+	ClientToScreen(GameSystem::GetInstance()->GetHWND(), &pos);
+
+	SetCursorPos(pos.x,pos.y);
+}
+
 bool InputKeyBoard::IsOperationDevice() {
 	for (size_t i = 0; i < 256; i++) {
 		if (keys_[i]) {
@@ -204,7 +214,7 @@ float InputGamePad::GetPreRightStickInclination() const {
 
 bool InputGamePad::IsOperationDevice() {
 	for (size_t i = 0; i < INPUT_MAX; i++) {
-		if (GetButtonPress(static_cast<PadButtoms>(i))) {
+		if (GetButtonPress(static_cast<PadButtons>(i))) {
 			return true;
 		}
 	}
@@ -212,7 +222,7 @@ bool InputGamePad::IsOperationDevice() {
 	return false;
 }
 
-BYTE InputGamePad::GetButtonPress(PadButtoms button) const {
+BYTE InputGamePad::GetButtonPress(PadButtons button) const {
 	if (button == INPUT_R2) {
 		return state_.Gamepad.bRightTrigger >= kSinkingState_;
 	} else if (button == INPUT_L2) {
@@ -343,7 +353,7 @@ BYTE InputGamePad::GetButtonPress(PadButtoms button) const {
 	return false;
 }
 
-BYTE InputGamePad::GetPreButtonPress(PadButtoms button) const {
+BYTE InputGamePad::GetPreButtonPress(PadButtons button) const {
 	if (button == INPUT_R2) {
 		return preState_.Gamepad.bRightTrigger >= kSinkingState_;
 	} else if (button == INPUT_L2) {

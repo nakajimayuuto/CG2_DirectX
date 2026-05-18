@@ -4,6 +4,7 @@
 #include "RailCameraController.h"
 
 Player::~Player() {
+	delete cameraController_;
 }
 
 void Player::Initialize(const Vector3& position) {
@@ -48,23 +49,31 @@ void Player::Reticle2DUpdate() {
 
 		transform2DReticle_.translate = Camera::GetInstance()->GetCameraVector3(positionReticle, Matrix4x4::Identity());
 	} else {
-		Vector2 mousePos = InputManager::GetInstance()->GetMousePos();
-		transform2DReticle_.translate = { mousePos.x,mousePos.y,0.0f };
+		if (cameraController_->GetCameraType() == RailCameraController::CameraType::kFirstPoint) {
+			transform2DReticle_.translate = {
+				static_cast<float>(Environment::GetInstance()->GetWindowSize().width) / 2.0f,
+				static_cast<float>(Environment::GetInstance()->GetWindowSize().height) / 2.0f,
+				kDistancePlayerTo3DReticle_ 
+			};
+		} else {
+			Vector2 mousePos = InputManager::GetInstance()->GetMousePos();
+			transform2DReticle_.translate = { mousePos.x,mousePos.y,0.0f };
 
-		Matrix4x4 matVPV = Camera::GetInstance()->GetVPVMatrix(transform_.GetAffineMatrix());
-		matVPV = matVPV.Inverse();
-		Vector3 posNear = { mousePos.x,mousePos.y,0.0f };
-		Vector3 posFar = { mousePos.x,mousePos.y,1.0f };
+			Matrix4x4 matVPV = Camera::GetInstance()->GetVPVMatrix(transform_.GetAffineMatrix());
+			matVPV = matVPV.Inverse();
+			Vector3 posNear = { mousePos.x,mousePos.y,0.0f };
+			Vector3 posFar = { mousePos.x,mousePos.y,1.0f };
 
-		posNear = matVPV.MatrixTransform(posNear);
-		posFar = matVPV.MatrixTransform(posFar);
+			posNear = matVPV.MatrixTransform(posNear);
+			posFar = matVPV.MatrixTransform(posFar);
 
-		Vector3 mouseDirection = posFar - posNear;
-		mouseDirection.z *= 0.5f;
-		mouseDirection = mouseDirection.Normalize();
-		transform3DReticle_.Initialize();
+			Vector3 mouseDirection = posFar - posNear;
+			mouseDirection.z *= 0.5f;
+			mouseDirection = mouseDirection.Normalize();
+			transform3DReticle_.Initialize();
 
-		transform3DReticle_.translate = (mouseDirection);
+			transform3DReticle_.translate = (mouseDirection);
+		}
 	}
 
 }
@@ -74,18 +83,18 @@ void Player::MoveUpdate() {
 	Vector3 move = { 0.0f,0.0f,0.0f };
 
 	if (input->IsGamePadConnect()) {
-			move.x += input->GetLeftStickDirection().x * kCharacterSpeed;
-			move.y += input->GetLeftStickDirection().y * kCharacterSpeed;
+		move.x += input->GetLeftStickDirection().x * kCharacterSpeed;
+		move.y += input->GetLeftStickDirection().y * kCharacterSpeed;
 	} else {
-		if (input->PressKey(DIK_LEFT)) {
+		if (input->PressKey(DIK_LEFT) || input->PressKey(DIK_A)) {
 			move.x -= kCharacterSpeed;
-		} else if (input->PressKey(DIK_RIGHT)) {
+		} else if (input->PressKey(DIK_RIGHT) || input->PressKey(DIK_D)) {
 			move.x += kCharacterSpeed;
 		}
 
-		if (input->PressKey(DIK_UP)) {
+		if (input->PressKey(DIK_UP) || input->PressKey(DIK_W)) {
 			move.y += kCharacterSpeed;
-		} else if (input->PressKey(DIK_DOWN)) {
+		} else if (input->PressKey(DIK_DOWN) || input->PressKey(DIK_S)) {
 			move.y -= kCharacterSpeed;
 		}
 	}
@@ -104,33 +113,60 @@ void Player::RotateUpdate() {
 		transform_.rotate.y += input->GetRightStickDirection().x * kRotSpeed;
 		transform_.rotate.x -= input->GetRightStickDirection().y * kRotSpeed;
 	} else {
-		//if (input->PressKey(DIK_A)) {
-		//	transform_.rotate.y -= kRotSpeed;
-		//} else if (input->PressKey(DIK_D)) {
-		//	transform_.rotate.y += kRotSpeed;
-		//}
-		//
-		//if (input->PressKey(DIK_W)) {
-		//	transform_.rotate.x -= kRotSpeed;
-		//} else if (input->PressKey(DIK_S)) {
-		//	transform_.rotate.x += kRotSpeed;
-		//}
+		if (cameraController_->GetCameraType() == RailCameraController::CameraType::kFirstPoint) {
+			Vector3 cameraRotate;
+			if (input->GetInstance()->GetMouse().GetMoveLength() >= 0.2f) {
+				cameraRotate.x = input->GetMouse().GetMove().y;
+				cameraRotate.y = input->GetMouse().GetMove().x;
+				cameraRotate.z = 0.0f;
+			} else {
+				cameraRotate = { 0.0f,0.0f,0.0f };
+			}
+
+			input->GetMouse().SetCursorPosition(
+				{
+					static_cast<float>(Environment::GetInstance()->GetWindowSize().width) / 2.0f,
+					static_cast<float>(Environment::GetInstance()->GetWindowSize().height) / 2.0f
+				}
+			);
+
+			transform_.rotate += (cameraRotate.Normalize() * kFirstPointRotSpeed);
+		}
 	}
 
-	transform_.rotate.y = std::max(transform_.rotate.y, -kRotateLimitY);
-	transform_.rotate.y = std::min(transform_.rotate.y, kRotateLimitY);
+	Vector2 rotate;
 
-	transform_.rotate.x = std::max(transform_.rotate.x, -kRotateLimitX);
-	transform_.rotate.x = std::min(transform_.rotate.x, kRotateLimitX);
+	if (cameraController_->GetCameraType() == RailCameraController::CameraType::kFirstPoint) {
+		rotate.x = kFirstPointRotateLimitX;
+		rotate.y = kFirstPointRotateLimitY;
+	} else {
+		rotate.x = kRotateLimitX;
+		rotate.y = kRotateLimitY;
+	}
+
+	transform_.rotate.y = std::max(transform_.rotate.y, -rotate.y);
+	transform_.rotate.y = std::min(transform_.rotate.y, rotate.y);
+
+	transform_.rotate.x = std::max(transform_.rotate.x, -rotate.x);
+	transform_.rotate.x = std::min(transform_.rotate.x, rotate.x);
 }
 
 void Player::AttackUpdate() {
 	if (InputManager::GetInstance()->TriggerKey(DIK_SPACE) || InputManager::GetInstance()->TriggerPadButton(INPUT_R2)) {
 		Vector3 velocity(0.0f, 0.0f, kBulletSpeed);
 
-		//velocity = transform_.GetAffineMatrix().TransformNomal(velocity);
-		velocity = transform3DReticle_.GetAffineMatrix().GetMatrixToTranslate() - transform_.GetAffineMatrix().GetMatrixToTranslate();
-		velocity = velocity.Normalize() * kBulletSpeed;
+		if (cameraController_->GetCameraType() == RailCameraController::CameraType::kFirstPoint) {
+			velocity = transform3DReticle_.GetAffineMatrix().GetMatrixToTranslate() - transform_.GetAffineMatrix().GetMatrixToTranslate();
+			velocity.x *= -1.0f;
+			velocity.y *= -1.0f;
+			velocity = velocity.Normalize() * kBulletSpeed;
+		} else {
+			//velocity = transform_.GetAffineMatrix().TransformNomal(velocity);
+			velocity = transform3DReticle_.GetAffineMatrix().GetMatrixToTranslate() - transform_.GetAffineMatrix().GetMatrixToTranslate();
+			velocity = velocity.Normalize() * kBulletSpeed;
+		}
+
+
 
 		BaseBullet* newBullet = new PlayerBullet;
 		newBullet->Initialize("player_bullet", transform_.GetAffineMatrix().GetMatrixToTranslate(), velocity);
@@ -143,9 +179,9 @@ void Player::AttackUpdate() {
 void Player::Draw() {
 	sprite_.Draw(transform2DReticle_);
 
-	//if (cameraController_->GetCameraType() == RailCameraController::CameraType::kFirstPoint) {
+	if (cameraController_->GetCameraType() == RailCameraController::CameraType::kThirdPoint) {
 		model_.Draw(transform_);
-	//}
+	}
 }
 
 void Player::RegisterGlobalVariables() {
