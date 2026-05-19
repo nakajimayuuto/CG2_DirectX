@@ -13,9 +13,6 @@ GameScene::~GameScene() {
 	}
 	bullets_.clear();
 
-	for (BaseEnemy* enemy : enemies_) {
-		delete enemy;
-	}
 	enemies_.clear();
 }
 
@@ -78,8 +75,8 @@ void GameScene::Update() {
 
 	ApplyGlobalVariables();
 
-	for (BaseEnemy* enemy : enemies_) {
-		enemy->Update();
+	for (std::shared_ptr<BaseEnemy> enemy : enemies_) {
+		enemy.get()->Update();
 	}
 
 	railCameraController_->Update();
@@ -90,7 +87,13 @@ void GameScene::Update() {
 		bullet->Update();
 	}
 
-	lockOn_->Update(player_,enemies_);
+	std::list<std::weak_ptr<BaseEnemy>> enemies;
+
+	for (std::shared_ptr<BaseEnemy> enemy : enemies_) {
+		enemies.push_back(enemy);
+	}
+
+	lockOn_->Update(player_,enemies);
 
 	Camera::GetInstance()->Update();
 
@@ -102,8 +105,8 @@ void GameScene::CheckAllCollision() {
 	manager->ClearColliderList();
 	manager->AddColliderList(player_);
 
-	for (BaseEnemy* enemy : enemies_) {
-		manager->AddColliderList(enemy);
+	for (std::shared_ptr<BaseEnemy> enemy : enemies_) {
+		manager->AddColliderList(enemy.get());
 	}
 
 	for (BaseBullet* bullet : bullets_) {
@@ -195,11 +198,11 @@ void GameScene::AddBullet(BaseBullet* baseBullet) {
 }
 
 void GameScene::SpawnEnemy(const Vector3& position,ForwardEnemyBasePhase* type) {
-	BaseEnemy* newEnemy = new ForwardEnemy();
+	std::shared_ptr<BaseEnemy> newEnemy = std::make_shared<ForwardEnemy>();
 	newEnemy->SetTarget(player_);
-	dynamic_cast<ForwardEnemy*>(newEnemy)->SetGameScene(this);
+	dynamic_cast<ForwardEnemy*>(newEnemy.get())->SetGameScene(this);
 	newEnemy->Initialize(position);
-	dynamic_cast<ForwardEnemy*>(newEnemy)->SetPhase(type);
+	dynamic_cast<ForwardEnemy*>(newEnemy.get())->SetPhase(type);
 	enemies_.push_back(newEnemy);
 }
 
@@ -232,8 +235,8 @@ void GameScene::Draw() {
 
 	railCameraController_->Draw();
 
-	for(BaseEnemy* enemy : enemies_){
-		enemy->Draw();
+	for(std::shared_ptr<BaseEnemy> enemy : enemies_){
+		enemy.get()->Draw();
 	}
 
 	for (BaseBullet* bullet : bullets_) {

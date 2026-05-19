@@ -17,7 +17,7 @@ public:
 
 	void OnCollision() override;
 
-	void SetTarget(Collider* player) { target_ = player; };
+	void SetTarget(std::weak_ptr<Collider> player) { target_ = player; };
 
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();
@@ -35,6 +35,6 @@ private:
 	// タイマー
 	static inline float kLifeTime = 5.0f;
 	float deathTimer_;
-	Collider* target_ = nullptr;
+	std::weak_ptr<Collider> target_;
 };
 

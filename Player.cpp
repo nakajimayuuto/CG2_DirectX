@@ -166,14 +166,14 @@ void Player::AttackUpdate() {
 		} else {
 			//velocity = transform_.GetAffineMatrix().TransformNomal(velocity);
 			if (lockOn_->GetIsLockOn()) {
-				BaseEnemy* target = lockOn_->GetTarget();
+				std::weak_ptr<BaseEnemy> target = lockOn_->GetTarget();
 
-				velocity = target->GetWorldPosition() - GetWorldPosition();
+				velocity = target.lock()->GetWorldPosition() - GetWorldPosition();
 				velocity = velocity.Normalize() * kBulletSpeed;
 
 				delete newBullet;
 				newBullet = new HomingBullet();
-				dynamic_cast<HomingBullet*>(newBullet)->SetTarget(lockOn_->GetTarget());
+				dynamic_cast<HomingBullet*>(newBullet)->SetTarget(target);
 			} else {
 				velocity = transform3DReticle_.GetAffineMatrix().GetMatrixToTranslate() - transform_.GetAffineMatrix().GetMatrixToTranslate();
 				velocity = velocity.Normalize() * kBulletSpeed;

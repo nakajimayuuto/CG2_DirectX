@@ -52,7 +52,7 @@ void ForwardEnemy::Fire(BaseBullet* bullet) {
 	newBullet->SetCollisionMask(kCollisionAttributePlayer);
 
 	if (dynamic_cast<HomingBullet*>(newBullet)) {
-		dynamic_cast<HomingBullet*>(newBullet)->SetTarget(player_);
+		dynamic_cast<HomingBullet*>(newBullet)->SetTarget(std::make_shared<Player>(player_));
 	}
 
 	dynamic_cast<GameScene*>(gameScene_)->AddBullet(newBullet);

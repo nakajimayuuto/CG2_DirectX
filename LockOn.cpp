@@ -7,15 +7,15 @@ void LockOn::Initialize() {
 	transform_.Initialize();
 }
 
-void LockOn::Update(Player* player, std::list<BaseEnemy*>& enemies) {
-	std::list<std::pair<float, BaseEnemy*>>targets;
+void LockOn::Update(Player* player, std::list<std::weak_ptr<BaseEnemy>>& enemies) {
+	std::list<std::pair<float, std::weak_ptr<BaseEnemy>>>targets;
 
 	Vector3 playerPos = player->GetWorldPosition();
 	playerPos = Camera::GetInstance()->GetCameraVector3(playerPos, Matrix4x4::Identity());
 
 
-	for (BaseEnemy* enemy : enemies) {
-		Vector3 positionWorld = enemy->GetWorldPosition();
+	for (std::weak_ptr<BaseEnemy> enemy : enemies) {
+		Vector3 positionWorld = enemy.lock()->GetWorldPosition();
 
 		Vector3 positionScreen = Camera::GetInstance()->GetCameraVector3(positionWorld, Matrix4x4::Identity());
 
@@ -32,7 +32,7 @@ void LockOn::Update(Player* player, std::list<BaseEnemy*>& enemies) {
 		}
 	}
 
-	target_ = nullptr;
+	target_;
 	isLockOn_ = false;
 	//sprite_.SetIsVisible(false);
 
@@ -41,7 +41,7 @@ void LockOn::Update(Player* player, std::list<BaseEnemy*>& enemies) {
 
 		target_ = targets.front().second;
 
-		transform_.translate = target_->GetWorldPosition();
+		transform_.translate = target_.lock()->GetWorldPosition();
 
 		transform_.translate = Camera::GetInstance()->GetCameraVector3(transform_.translate, Matrix4x4::Identity());
 		sprite_.SetIsVisible(true);
