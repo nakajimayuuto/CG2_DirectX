@@ -3,6 +3,7 @@
 
 class BaseBullet : public Collider{
 public:
+	~BaseBullet() override = default;
 	virtual void Initialize(const std::string& modelName, const Vector3& position, const Vector3& velocity) = 0;
 
 	virtual void Update() = 0;

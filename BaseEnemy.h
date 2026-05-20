@@ -5,7 +5,7 @@
 class BaseEnemy : public Collider {
 public:
 	BaseEnemy() = default;
-	~BaseEnemy() = default;
+	~BaseEnemy() override = default;
 	virtual void Initialize(Vector3 position) = 0;
 	virtual void Update() = 0;
 	virtual void Draw() = 0;

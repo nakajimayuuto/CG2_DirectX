@@ -6,7 +6,6 @@
 #include "RailCameraController.h"
 
 ForwardEnemy::~ForwardEnemy() {
-	delete phase_;
 }
 
 void ForwardEnemy::Initialize(Vector3 position) {
@@ -14,7 +13,7 @@ void ForwardEnemy::Initialize(Vector3 position) {
 	transform_.Initialize();
 	transform_.translate = position;
 	velocity_ = { 0.0f,0.0f,0.0f };
-	phase_ = new ForwardEnemyApproachPhase();
+	phase_ = std::make_unique<ForwardEnemyApproachPhase>();
 	phase_->Initialize(this);
 	isAlive_ = true;
 
@@ -58,7 +57,7 @@ void ForwardEnemy::Fire(BaseBullet* bullet) {
 		dynamic_cast<HomingBullet*>(newBullet)->SetTarget(player);
 	}
 
-	dynamic_cast<GameScene*>(gameScene_)->AddBullet(newBullet);
+	//dynamic_cast<GameScene*>(gameScene_)->AddBullet(newBullet);
 }
 
 void ForwardEnemy::Translate(Vector3 translate) {

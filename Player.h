@@ -10,7 +10,7 @@
 class Player : public Collider{
 public:
 	Player() = default;
-	~Player();
+	~Player() override;
 	void Initialize(const Vector3& position);
 
 	void Update();

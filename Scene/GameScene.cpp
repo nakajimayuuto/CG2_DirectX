@@ -36,12 +36,13 @@ void GameScene::Initialize() {
 	player_ = new Player();
 	player_->Initialize({ 0.0f,0.0f,50.0f });
 	player_->SetGameScene(this);
-	player_->SetRailCameraController(railCameraController_);
 	//;
+
+	RegisterGlobalVariables();
 
 	SpawnEnemy({ 10.0f,50.0f,100.0f },new ForwardEnemyApproachPhase());
 
-	RegisterGlobalVariables();
+	player_->SetRailCameraController(railCameraController_);
 
 	skydome_ = new Skydome();
 	skydome_->Initialize();
@@ -67,7 +68,7 @@ void GameScene::Update() {
 		SceneManager::GetInstance()->ReloadScene();
 	}
 #endif // _DEBUG
-	UpdateEnemyPopCommands();
+	//UpdateEnemyPopCommands();
 
 	ApplyGlobalVariables();
 
@@ -203,9 +204,9 @@ void GameScene::SpawnEnemy(const Vector3& position,ForwardEnemyBasePhase* type) 
 	std::shared_ptr<BaseEnemy> newEnemy = std::make_shared<ForwardEnemy>();
 
 	newEnemy->SetTarget(player_);
-	dynamic_cast<ForwardEnemy*>(newEnemy.get())->SetGameScene(this);
+	//dynamic_cast<ForwardEnemy*>(newEnemy.get())->SetGameScene(this);
 	newEnemy->Initialize(position);
-	dynamic_cast<ForwardEnemy*>(newEnemy.get())->SetPhase(type);
+	dynamic_cast<ForwardEnemy*>(newEnemy.get())->SetPhase(std::unique_ptr<ForwardEnemyBasePhase>(type));
 
 	enemies_.push_back(newEnemy);
 }

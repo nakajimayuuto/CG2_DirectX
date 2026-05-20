@@ -5,7 +5,7 @@
 class Collider {
 public:
 	Collider() = default;
-	~Collider() = default;
+	virtual ~Collider() = default;
 	virtual void OnCollision() {};
 
 	void SetRadius(float radius) { radius_ = radius; };

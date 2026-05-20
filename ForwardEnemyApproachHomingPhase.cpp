@@ -25,7 +25,7 @@ void ForwardEnemyApproachHomingPhase::Update(ForwardEnemy* pEnemy){
 	}
 
 	if (pEnemy->GetPosition().z <= (Camera::GetInstance()->GetPosition().z) - 5.0f) {
-		pEnemy->ChangePhase(new ForwardEnemyLeavePhase);
+		pEnemy->ChangePhase(std::unique_ptr<ForwardEnemyLeavePhase>());
 	
 	}
 }
