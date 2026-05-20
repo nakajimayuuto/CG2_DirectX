@@ -1,7 +1,5 @@
 #include "RailCameraController.h"
-#include "Player.h"
 RailCameraController::~RailCameraController(){
-	delete player_;
 }
 
 void RailCameraController::Initialize(const Transform& transform) {
@@ -65,9 +63,7 @@ void RailCameraController::Update() {
 	if (type_ == CameraType::kThirdPoint) {
 		camera_->SetTransform(transform_);
 	} else if (type_ == CameraType::kFirstPoint) {
-		Matrix4x4 matrix;
-		matrix =player_->GetTransform().GetAffineMatrix();
-		camera_->SetTransform(matrix.GetMatrixToTransform());
+		camera_->SetTransform(matrix_.GetMatrixToTransform());
 	}
 }
 

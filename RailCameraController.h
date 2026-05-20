@@ -1,8 +1,6 @@
 #pragma once
 #include "Satlib.h"
 
-class Player;
-
 class RailCameraController{
 public:
 	enum class CameraType {
@@ -15,7 +13,7 @@ public:
 	void Update();
 	void Draw();
 
-	void SetTarget(Player* player) { player_ = player; };
+	void SetTargetMatrix(Matrix4x4 matrix) { matrix_ = matrix; };
 
 	CameraType GetCameraType() { return type_; };
 
@@ -29,7 +27,7 @@ private:
 
 	float timer_;
 
-	Player* player_ = nullptr;
+	Matrix4x4 matrix_;
 
 	CameraType type_;
 

@@ -4,6 +4,8 @@
 #include "CollisionConfig.h"
 class Collider {
 public:
+	Collider() = default;
+	~Collider() = default;
 	virtual void OnCollision() {};
 
 	void SetRadius(float radius) { radius_ = radius; };

@@ -4,13 +4,12 @@
 #include <list>
 #include "RailCameraController.h"
 
-class LockOn;
-
 /// <summary>
 /// 自キャラ
 /// </summary>
 class Player : public Collider{
 public:
+	Player() = default;
 	~Player();
 	void Initialize(const Vector3& position);
 
@@ -22,7 +21,9 @@ public:
 
 	void SetGameScene(IScene* gameScene) { gameScene_ = gameScene; };
 
-	void SetLockOn(LockOn* lockOn) { lockOn_ = lockOn; };
+	void SetIsLockOn(bool isLockOn) { isLockOn_ = isLockOn; };
+
+	void SetTarget(std::weak_ptr<Collider> target) { target_ = target; }
 
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();
@@ -68,7 +69,9 @@ private:
 	
 	RailCameraController* cameraController_ = nullptr;
 
-	LockOn* lockOn_ = nullptr;
+	std::weak_ptr<Collider> target_;
+
+	bool isLockOn_ = false;
 
 	// 3Dレティクル.
 	Renderer::Model model2_;

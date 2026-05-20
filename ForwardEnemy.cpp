@@ -3,6 +3,7 @@
 #include "ForwardEnemyLeavePhase.h"
 #include "Player.h"
 #include "./Scene/GameScene.h"
+#include "RailCameraController.h"
 
 ForwardEnemy::~ForwardEnemy() {
 	delete phase_;
@@ -51,8 +52,10 @@ void ForwardEnemy::Fire(BaseBullet* bullet) {
 	newBullet->SetCollisionAttribute(kCollisionAttributeEnemy);
 	newBullet->SetCollisionMask(kCollisionAttributePlayer);
 
+	std::shared_ptr<Collider> player(player_);
+
 	if (dynamic_cast<HomingBullet*>(newBullet)) {
-		dynamic_cast<HomingBullet*>(newBullet)->SetTarget(player_);
+		dynamic_cast<HomingBullet*>(newBullet)->SetTarget(player);
 	}
 
 	dynamic_cast<GameScene*>(gameScene_)->AddBullet(newBullet);

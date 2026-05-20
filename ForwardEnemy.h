@@ -10,6 +10,7 @@
 
 class ForwardEnemy : public BaseEnemy {
 public:
+	ForwardEnemy() = default;
 	~ForwardEnemy();
 	void Initialize(Vector3 position) override;
 	void Update() override;
@@ -23,7 +24,7 @@ public:
 
 	Vector3 GetPosition() { return transform_.translate; };
 
-	void SetPhase(ForwardEnemyBasePhase* phase) { delete phase_; phase_ = phase; phase_->Initialize(this); };
+	void SetPhase(ForwardEnemyBasePhase* phase) { delete phase_; phase_ = phase; };
 
 	void ChangePhase(ForwardEnemyBasePhase* phase) {
 		phase_ = phase; 
