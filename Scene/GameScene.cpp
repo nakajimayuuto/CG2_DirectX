@@ -40,7 +40,7 @@ void GameScene::Initialize() {
 
 	RegisterGlobalVariables();
 
-	SpawnEnemy({ 10.0f,50.0f,100.0f },new ForwardEnemyApproachPhase());
+	//SpawnEnemy({ 10.0f,50.0f,100.0f },new ForwardEnemyApproachPhase());
 
 	player_->SetRailCameraController(railCameraController_);
 
@@ -72,8 +72,13 @@ void GameScene::Update() {
 
 	ApplyGlobalVariables();
 
-	for (std::shared_ptr<BaseEnemy> enemy : enemies_) {
-		enemy->Update();
+	if (enemies_.size() < 10000) {
+		for (std::shared_ptr<BaseEnemy> enemy : enemies_) {
+			if (!enemy) {
+				continue;
+			}
+			enemy->Update();
+		}
 	}
 
 
@@ -203,8 +208,8 @@ void GameScene::AddBullet(BaseBullet* baseBullet) {
 void GameScene::SpawnEnemy(const Vector3& position,ForwardEnemyBasePhase* type) {
 	std::shared_ptr<BaseEnemy> newEnemy = std::make_shared<ForwardEnemy>();
 
-	newEnemy->SetTarget(player_);
-	//dynamic_cast<ForwardEnemy*>(newEnemy.get())->SetGameScene(this);
+	//newEnemy->SetTarget(std::unique_ptr<Player>(player_));
+	dynamic_cast<ForwardEnemy*>(newEnemy.get())->SetGameScene(std::unique_ptr<GameScene>(this));
 	newEnemy->Initialize(position);
 	dynamic_cast<ForwardEnemy*>(newEnemy.get())->SetPhase(std::unique_ptr<ForwardEnemyBasePhase>(type));
 
@@ -224,10 +229,9 @@ void GameScene::BulletRemoveCheck() {
 void GameScene::EnemyRemoveCheck(){
 	enemies_.remove_if([](std::shared_ptr<BaseEnemy> enemy) {
 		if (!enemy->GetIsAlive()) {
-			enemy = nullptr;
 			return true;
 		}
-		return false;
+		return true;
 		});
 }
 
