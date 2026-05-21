@@ -10,7 +10,8 @@
 
 class ForwardEnemy : public BaseEnemy {
 public:
-	~ForwardEnemy();
+	ForwardEnemy() = default;
+	~ForwardEnemy() override;
 	void Initialize(Vector3 position) override;
 	void Update() override;
 	void Draw() override;
@@ -23,14 +24,14 @@ public:
 
 	Vector3 GetPosition() { return transform_.translate; };
 
-	void SetPhase(ForwardEnemyBasePhase* phase) { delete phase_; phase_ = phase; phase_->Initialize(this); };
+	void SetPhase(std::unique_ptr<ForwardEnemyBasePhase> phase) { phase_ = std::move(phase);};
 
-	void ChangePhase(ForwardEnemyBasePhase* phase) {
-		phase_ = phase; 
+	void ChangePhase(std::unique_ptr<ForwardEnemyBasePhase> phase) {
+		phase_ = std::move(phase);
 		phase_->Initialize(this);
 	};
 
-	void SetGameScene(IScene* gameScene) { gameScene_ = gameScene; };
+	void SetGameScene(std::unique_ptr<IScene> gameScene) { gameScene_ = std::move(gameScene); };
 
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();
@@ -41,8 +42,8 @@ private:
 
 	Vector3 velocity_;
 
-	IScene* gameScene_ = nullptr;
+	std::unique_ptr<IScene> gameScene_ = nullptr;
 
-	ForwardEnemyBasePhase* phase_ = nullptr;
+	std::unique_ptr<ForwardEnemyBasePhase> phase_ = nullptr;
 };
 

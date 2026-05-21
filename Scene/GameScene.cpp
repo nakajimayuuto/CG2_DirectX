@@ -5,18 +5,12 @@
 #include "../ForwardEnemyApproachHomingPhase.h"
 
 GameScene::~GameScene() {
-	delete player_;
 	delete skydome_;
 
 	for (BaseBullet* bullet : bullets_) {
 		delete bullet;
 	}
 	bullets_.clear();
-
-	for (BaseEnemy* enemy : enemies_) {
-		delete enemy;
-	}
-	enemies_.clear();
 }
 
 void GameScene::Initialize() {
@@ -38,16 +32,16 @@ void GameScene::Initialize() {
 	railCameraController_ = new RailCameraController();
 	railCameraController_->Initialize(Transform::GetInitialValue());
 
-	player_ = new Player();
+	player_ = std::make_shared<Player>();
 	player_->Initialize({ 0.0f,0.0f,50.0f });
 	player_->SetGameScene(this);
-	player_->SetRailCameraController(railCameraController_);
-	railCameraController_->SetTarget(player_);
 	//;
 
-	SpawnEnemy({ 10.0f,50.0f,100.0f },new ForwardEnemyApproachPhase());
-
 	RegisterGlobalVariables();
+
+	SpawnEnemy({ 10.0f,50.0f,100.0f }, new ForwardEnemyApproachPhase());
+
+	player_->SetRailCameraController(railCameraController_);
 
 	skydome_ = new Skydome();
 	skydome_->Initialize();
@@ -56,7 +50,6 @@ void GameScene::Initialize() {
 
 	lockOn_ = new LockOn();
 	lockOn_->Initialize();
-	player_->SetLockOn(lockOn_);
 
 	isWait_ = false;
 	waitTimer_ = 0;
@@ -78,19 +71,35 @@ void GameScene::Update() {
 
 	ApplyGlobalVariables();
 
-	for (BaseEnemy* enemy : enemies_) {
+	for (std::shared_ptr<BaseEnemy> enemy : enemies_) {
+		if (!enemy) {
+			continue;
+		}
 		enemy->Update();
 	}
 
+
+
 	railCameraController_->Update();
+	railCameraController_->SetTargetMatrix(player_->GetTransform().GetAffineMatrix());
 
 	player_->Update();
+	player_->SetIsLockOn(lockOn_->GetIsLockOn());
+	player_->SetTarget(lockOn_->GetTarget());
 
 	for (BaseBullet* bullet : bullets_) {
 		bullet->Update();
 	}
 
-	lockOn_->Update(player_,enemies_);
+	std::list<std::weak_ptr<BaseEnemy>> enemies;
+
+	for (std::shared_ptr<BaseEnemy> enemy : enemies_) {
+		std::weak_ptr<BaseEnemy> weakEnemy = enemy;
+
+		enemies.push_back(weakEnemy);
+	}
+
+	lockOn_->Update(player_, enemies);
 
 	Camera::GetInstance()->Update();
 
@@ -100,10 +109,10 @@ void GameScene::Update() {
 void GameScene::CheckAllCollision() {
 	CollisionManager* manager = CollisionManager::GetInstance();
 	manager->ClearColliderList();
-	manager->AddColliderList(player_);
+	manager->AddColliderList(player_.get());
 
-	for (BaseEnemy* enemy : enemies_) {
-		manager->AddColliderList(enemy);
+	for (std::shared_ptr<BaseEnemy> enemy : enemies_) {
+		manager->AddColliderList(enemy.get());
 	}
 
 	for (BaseBullet* bullet : bullets_) {
@@ -135,7 +144,7 @@ void GameScene::CheckCollisionPair(Collider* colliderA, Collider* colliderB) {
 	}
 }
 
-void GameScene::UpdateEnemyPopCommands(){
+void GameScene::UpdateEnemyPopCommands() {
 	if (isWait_) {
 		waitTimer_--;
 		if (waitTimer_ <= 0) {
@@ -146,7 +155,7 @@ void GameScene::UpdateEnemyPopCommands(){
 
 	std::string line;
 
-	while(getline(enemyPopCommands,line)){
+	while (getline(enemyPopCommands, line)) {
 		std::istringstream line_stream(line);
 
 		std::string word;
@@ -167,7 +176,7 @@ void GameScene::UpdateEnemyPopCommands(){
 			getline(line_stream, word, ',');
 			float z = static_cast<float>(std::atof(word.c_str()));
 
-			
+
 			getline(line_stream, word, ',');
 
 			ForwardEnemyBasePhase* phase_ = new ForwardEnemyApproachPhase();
@@ -176,7 +185,7 @@ void GameScene::UpdateEnemyPopCommands(){
 				phase_ = new ForwardEnemyApproachHomingPhase();
 			};
 
-			SpawnEnemy(Vector3(x,y,z),phase_);
+			SpawnEnemy(Vector3(x, y, z), phase_);
 		} else if (word.find("WAIT") == 0) {
 			getline(line_stream, word, ',');
 			int32_t waitTime = std::atoi(word.c_str());
@@ -194,12 +203,14 @@ void GameScene::AddBullet(BaseBullet* baseBullet) {
 	bullets_.push_back(baseBullet);
 }
 
-void GameScene::SpawnEnemy(const Vector3& position,ForwardEnemyBasePhase* type) {
-	BaseEnemy* newEnemy = new ForwardEnemy();
+void GameScene::SpawnEnemy(const Vector3& position, ForwardEnemyBasePhase* type) {
+	std::shared_ptr<BaseEnemy> newEnemy = std::make_shared<ForwardEnemy>();
+
 	newEnemy->SetTarget(player_);
-	dynamic_cast<ForwardEnemy*>(newEnemy)->SetGameScene(this);
+	dynamic_cast<ForwardEnemy*>(newEnemy.get())->SetGameScene(std::unique_ptr<GameScene>(this));
 	newEnemy->Initialize(position);
-	dynamic_cast<ForwardEnemy*>(newEnemy)->SetPhase(type);
+	dynamic_cast<ForwardEnemy*>(newEnemy.get())->ChangePhase(std::unique_ptr<ForwardEnemyBasePhase>(type));
+
 	enemies_.push_back(newEnemy);
 }
 
@@ -213,10 +224,9 @@ void GameScene::BulletRemoveCheck() {
 		});
 }
 
-void GameScene::EnemyRemoveCheck(){
-	enemies_.remove_if([](BaseEnemy* enemy) {
+void GameScene::EnemyRemoveCheck() {
+	enemies_.remove_if([](std::shared_ptr<BaseEnemy> enemy) {
 		if (!enemy->GetIsAlive()) {
-			delete enemy;
 			return true;
 		}
 		return false;
@@ -232,7 +242,7 @@ void GameScene::Draw() {
 
 	railCameraController_->Draw();
 
-	for(BaseEnemy* enemy : enemies_){
+	for (std::shared_ptr<BaseEnemy> enemy : enemies_) {
 		enemy->Draw();
 	}
 

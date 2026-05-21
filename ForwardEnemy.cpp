@@ -3,9 +3,10 @@
 #include "ForwardEnemyLeavePhase.h"
 #include "Player.h"
 #include "./Scene/GameScene.h"
+#include "RailCameraController.h"
 
-ForwardEnemy::~ForwardEnemy() {
-	delete phase_;
+	ForwardEnemy::~ForwardEnemy() {
+	gameScene_.release();
 }
 
 void ForwardEnemy::Initialize(Vector3 position) {
@@ -13,7 +14,7 @@ void ForwardEnemy::Initialize(Vector3 position) {
 	transform_.Initialize();
 	transform_.translate = position;
 	velocity_ = { 0.0f,0.0f,0.0f };
-	phase_ = new ForwardEnemyApproachPhase();
+	phase_ = std::make_unique<ForwardEnemyApproachPhase>();
 	phase_->Initialize(this);
 	isAlive_ = true;
 
@@ -34,11 +35,12 @@ void ForwardEnemy::OnCollision() {
 }
 
 void ForwardEnemy::Fire(BaseBullet* bullet) {
+	//return;
 	Vector3 velocity(0.0f, 0.0f, -kBulletSpeed);
 
-	//velocity = transform_.GetAffineMatrix().TransformNomal(velocity);
+	velocity = transform_.GetAffineMatrix().TransformNomal(velocity);
 
-	Vector3 playerPos = player_->GetWorldPosition();
+	Vector3 playerPos = player_.lock().get()->GetWorldPosition();
 	Vector3 enemyPos = GetWorldPosition();
 
 	if (dynamic_cast<NormalBullet*>(bullet)) {
@@ -55,7 +57,7 @@ void ForwardEnemy::Fire(BaseBullet* bullet) {
 		dynamic_cast<HomingBullet*>(newBullet)->SetTarget(player_);
 	}
 
-	dynamic_cast<GameScene*>(gameScene_)->AddBullet(newBullet);
+	dynamic_cast<GameScene*>(gameScene_.get())->AddBullet(newBullet);
 }
 
 void ForwardEnemy::Translate(Vector3 translate) {

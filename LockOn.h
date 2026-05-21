@@ -7,15 +7,15 @@ class Player;
 class LockOn {
 public:
 	void Initialize();
-	void Update(Player* player,std::list<BaseEnemy*>& enemies);
+	void Update(std::weak_ptr<Player> player,std::list<std::weak_ptr<BaseEnemy>>& enemies);
 	void Draw();
 	bool GetIsLockOn() { return isLockOn_; };
 
-	BaseEnemy* GetTarget() { return target_; }
+	std::weak_ptr<BaseEnemy> GetTarget() { return target_; }
 private:
 	static inline float kDistanceLockOn = 100.0f;
 
-	BaseEnemy* target_ = nullptr;
+	std::weak_ptr<BaseEnemy> target_;
 
 	Renderer::Sprite sprite_;
 	Transform transform_;

@@ -37,9 +37,9 @@ private:
 
 	void LoadEnemyPopData();
 private:
-	Player* player_ = nullptr;
+	std::shared_ptr<Player> player_;
 
-	std::list<BaseEnemy*> enemies_;
+	std::list<std::shared_ptr<BaseEnemy>> enemies_;
 
 	Skydome* skydome_ = nullptr;
 

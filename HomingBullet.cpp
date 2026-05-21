@@ -2,7 +2,6 @@
 #include "Player.h"
 
 HomingBullet::~HomingBullet() {
-	delete target_;
 }
 
 void HomingBullet::Initialize(const std::string& modelName, const Vector3& position, const Vector3& velocity) {
@@ -39,12 +38,12 @@ void HomingBullet::LifeTimeUpdate() {
 }
 
 void HomingBullet::HomingUpdate() {
-	if (target_ == nullptr) {
+	if (target_.lock() == nullptr) {
 		transform_.translate += velocity_;
 		return;
 	}
 
-	Vector3 toPlayer = target_->GetWorldPosition() - GetWorldPosition();
+	Vector3 toPlayer = target_.lock().get()->GetWorldPosition() - GetWorldPosition();
 
 	toPlayer = toPlayer.Normalize();
 

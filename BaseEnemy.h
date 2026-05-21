@@ -1,10 +1,11 @@
 #pragma once
 #include "Satlib.h"
-
-class Player;
+#include "Player.h"
 
 class BaseEnemy : public Collider {
 public:
+	BaseEnemy() = default;
+	~BaseEnemy() override = default;
 	virtual void Initialize(Vector3 position) = 0;
 	virtual void Update() = 0;
 	virtual void Draw() = 0;
@@ -12,14 +13,14 @@ public:
 	void OnCollision() override = 0;
 
 	bool GetIsAlive() { return isAlive_; };
-	void SetTarget(Player* player) { player_ = player; };
+	void SetTarget(std::weak_ptr<Player> player) { player_ = player; };
 	Vector3 GetWorldPosition() override{ return { transform_.GetAffineMatrix().matrix[3][0],transform_.GetAffineMatrix().matrix[3][1],transform_.GetAffineMatrix().matrix[3][2] }; };
 
 	Transform GetTransform()const { return transform_; };
 protected:
 	bool isAlive_ = false;
 
-	Player* player_ = nullptr;
+	std::weak_ptr<Player> player_;
 
 	Transform transform_;
 	Renderer::Model model_;
