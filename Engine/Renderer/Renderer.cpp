@@ -210,6 +210,7 @@ void Renderer::Model::SetColor(Vector4 color) {
 		materialResource_[i]->Map(0, nullptr, reinterpret_cast<void**>(&materialData_[i]));
 	}
 };
+
 void Renderer::Model::SetColor(Vector4 color, const std::string& meshName) {
 	for (uint32_t i = 0; i < modelMax_; i++) {
 		if (modelData_[i].meshName != meshName) {
@@ -224,6 +225,7 @@ void Renderer::Model::SetColor(Vector4 color, const std::string& meshName) {
 Vector4 Renderer::Model::GetColor() {
 	return materialData_[0]->color;
 };
+
 Vector4 Renderer::Model::GetColor(const std::string& meshName) {
 	for (uint32_t i = 0; i < modelMax_; i++) {
 		if (modelData_[i].meshName != meshName) {
@@ -244,6 +246,7 @@ void Renderer::Model::SetUvTransform(const Transform& uvTransform) {
 		uvTransform_[i] = uvTransform;
 	}
 };
+
 void Renderer::Model::SetUvTransform(const Transform& uvTransform, const std::string& meshName) {
 	for (uint32_t i = 0; i < modelMax_; i++) {
 		if (modelData_[i].meshName != meshName) {
@@ -258,6 +261,7 @@ void Renderer::Model::SetUvTransform(const Transform& uvTransform, const std::st
 Transform Renderer::Model::GetUvTransform() {
 	return uvTransform_[0];
 };
+
 Transform Renderer::Model::GetUvTransform(const std::string& meshName) {
 	for (uint32_t i = 0; i < modelMax_; i++) {
 		if (modelData_[i].meshName != meshName) {
@@ -278,6 +282,7 @@ void Renderer::Model::SetLightingType(LightingType type) {
 		materialData_[i]->lightingType = static_cast<int32_t>(type);
 	}
 };
+
 void Renderer::Model::SetLightingType(LightingType type, const std::string& meshName) {
 	for (uint32_t i = 0; i < modelMax_; i++) {
 		if (modelData_[i].meshName != meshName) {
@@ -292,6 +297,7 @@ void Renderer::Model::SetLightingType(LightingType type, const std::string& mesh
 Renderer::LightingType Renderer::Model::GetLightingType() {
 	return static_cast<LightingType>(materialData_[0]->lightingType);
 };
+
 Renderer::LightingType Renderer::Model::GetLightingType(const std::string& meshName) {
 	for (uint32_t i = 0; i < modelMax_; i++) {
 		if (modelData_[i].meshName != meshName) {
@@ -759,8 +765,8 @@ void Renderer::Sprite::Draw(const Transform& transform) {
 
 	Transform worldTransform = transform;
 
-	worldTransform.translate.x = transform .translate.x - (size_.x / 2.0f);
-	worldTransform.translate.y = transform .translate.y - (size_.y / 2.0f);
+	worldTransform.translate.x = transform.translate.x - (size_.x / 2.0f);
+	worldTransform.translate.y = transform.translate.y - (size_.y / 2.0f);
 
 	Matrix4x4 worldMatrix = worldTransform.GetAffineMatrix();
 
@@ -845,7 +851,7 @@ void Renderer::Line::Initialize() {
 		lineDatas_[i]->blendMode_ = BlendMode::kLine;
 
 		// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
-		lineDatas_[i]->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData)* 2);
+		lineDatas_[i]->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * 2);
 
 		// 【MaterialResourceを生成する】
 		// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
@@ -885,17 +891,17 @@ void Renderer::Line::Initialize() {
 	currentDrawLineIndex_ = 0;
 }
 
-void Renderer::Line::Draw(const Vector3& startVector3, const Vector3& endVector3,const Vector4& color) {
+void Renderer::Line::Draw(const Vector3& startVector3, const Vector3& endVector3, const Vector4& color) {
 
-	Vector3 centerVector3 = (static_cast<Vector3>(startVector3) + endVector3 ) / 2.0f;
-	Vector3 diff = (static_cast<Vector3>(startVector3) - endVector3 );
+	Vector3 centerVector3 = (static_cast<Vector3>(startVector3) + endVector3) / 2.0f;
+	Vector3 diff = (static_cast<Vector3>(startVector3) - endVector3);
 
-	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix({1.0f,1.0f,1.0f}, {0.0f,0.0f,0.0f}, centerVector3);
+	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, centerVector3);
 
-	lineDatas_[currentDrawLineIndex_]->vertexData[0].position = { -diff.x / 2.0f,-diff.y / 2.0f ,-diff.z / 2.0f ,1.0f};
-	lineDatas_[currentDrawLineIndex_]->vertexData[0].texcoord = {0.0f,1.0f};
+	lineDatas_[currentDrawLineIndex_]->vertexData[0].position = { -diff.x / 2.0f,-diff.y / 2.0f ,-diff.z / 2.0f ,1.0f };
+	lineDatas_[currentDrawLineIndex_]->vertexData[0].texcoord = { 0.0f,1.0f };
 	lineDatas_[currentDrawLineIndex_]->vertexData[0].normal = { 0.0f,0.0f,0.0f };
-	lineDatas_[currentDrawLineIndex_]->vertexData[1].position = { diff.x / 2.0f,diff.y / 2.0f ,diff.z / 2.0f ,1.0f};
+	lineDatas_[currentDrawLineIndex_]->vertexData[1].position = { diff.x / 2.0f,diff.y / 2.0f ,diff.z / 2.0f ,1.0f };
 	lineDatas_[currentDrawLineIndex_]->vertexData[1].texcoord = { 0.0f,1.0f };
 	lineDatas_[currentDrawLineIndex_]->vertexData[1].normal = { 0.0f,0.0f,0.0f };
 
@@ -925,4 +931,99 @@ void Renderer::Line::Draw(const Vector3& startVector3, const Vector3& endVector3
 	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
 	GameSystem::GetInstance()->GetCommandList()->DrawInstanced(2, 1, 0, 0);
 	currentDrawLineIndex_++;
+}
+
+void Renderer::ModelTriangle::Initialize(TextureInfo info) {
+	blendMode_ = BlendMode::kNormal;
+
+	textureInfo_ = info;
+	
+	isVisible_ = true;
+	uvTransform_.Initialize();
+	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
+	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * 3);
+
+	// 【MaterialResourceを生成する】
+	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
+	materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+	// マテリアルにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
+	// 今回は赤を書き込んでみる
+	materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	materialData_->lightingType = static_cast<uint32_t>(LightingType::kHalfLambert);
+	materialData_->uvTransform = Matrix4x4::Identity();
+
+	// 【TransformationMatrix】
+	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
+	wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+	// データを書き込む.
+	// 書き込むためのアドレスを取得.
+	wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&wvpData_));
+	// 単位行列を書き込んでおく.
+	wvpData_->WVP = Matrix4x4::Identity();
+	wvpData_->World = Matrix4x4::Identity();
+
+	// 【VertexBufferViewを作成する】
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
+	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * 3);
+	// 1頂点あたりのサイズ.
+	vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+	// 【Resourceにデータを書き込む】
+
+	// 書き込むためのアドレスを取得.
+	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+
+	vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
+	vertexData[0].texcoord = { 0.0f,1.0f };
+	vertexData[0].normal = { 0.0f,0.0f,1.0f };
+
+	vertexData[1].position = { 0.0f,0.5f,0.0f,1.0f };
+	vertexData[1].texcoord = { 0.5f,0.0f };
+	vertexData[1].normal = { 0.0f,0.0f,1.0f };
+
+	vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
+	vertexData[2].texcoord = { 1.0f,1.0f };
+	vertexData[2].normal = { 0.0f,0.0f,1.0f };
+
+	uvTransform_.Initialize();
+}
+
+void Renderer::ModelTriangle::Draw(const Transform& transform) {
+	if (!isVisible_) {
+		return;
+	}
+
+	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+
+	wvpData_->World = worldMatrix;
+	wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+
+	materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransform_);
+
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = GameSystem::GetInstance()->GetCommandList();
+
+	/*=============================================================
+	三角形の描画のコマンド.
+	=============================================================*/
+	GameSystem::GetInstance()->SetPipeline(blendMode_);
+
+	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_); // VBVを設定.
+	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	// CBufferの場所を設定.
+	// マテリアル用のCBufferの場所.
+	commandList->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
+	// WVP用のCBufferの場所.
+	commandList->SetGraphicsRootConstantBufferView(1, wvpResource_->GetGPUVirtualAddress());
+	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
+	commandList->SetGraphicsRootDescriptorTable(2, textureInfo_.textureSrvHandlesGPU);
+	// DirectionalLight用のCBufferの場所.
+	commandList->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
+	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
+	commandList->DrawInstanced(3, 1, 0, 0);
 }

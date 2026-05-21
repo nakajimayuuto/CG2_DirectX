@@ -13,5 +13,8 @@ public:
 
 	void Draw() override;
 private:
+	Transform transform_;
+
+	Renderer::ModelTriangle model_;
 };
 
