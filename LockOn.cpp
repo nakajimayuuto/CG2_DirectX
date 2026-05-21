@@ -43,14 +43,60 @@ void LockOn::Update(std::weak_ptr<Player> player, std::list<std::weak_ptr<BaseEn
 		transform_.translate = target_.lock().get()->GetWorldPosition();
 
 		transform_.translate = Camera::GetInstance()->GetCameraVector3(transform_.translate, Matrix4x4::Identity());
-		sprite_.SetIsVisible(true);
+
+		bool targetPush = true;
+
+		for (TargetLockOn& target : targets_) {
+			if (target.target.lock() == target_.lock()) {
+				targetPush = false;
+				break;
+			}
+		}
+
+		if (targetPush) {
+			TargetLockOn newTarget;
+			newTarget.target = target_;
+			newTarget.transform = transform_;
+			newTarget.sprite.Initialize(TextureManager::GetInstance()->GetTextureInfo("reticle"));
+			
+			targets_.push_back(newTarget);
+		}
+
 		isLockOn_ = true;
 	} else {
 		transform_.translate.x = player.lock().get()->GetPositionReticle2D().x;
 		transform_.translate.y = player.lock().get()->GetPositionReticle2D().y;
 	}
+
+	for (TargetLockOn& target : targets_) {
+		if (target.target.expired()) {
+			continue;
+		}
+		target.transform.translate = target.target.lock().get()->GetWorldPosition();
+		target.transform.translate = Camera::GetInstance()->GetCameraVector3(target.transform.translate, Matrix4x4::Identity());
+	}
 }
 
 void LockOn::Draw() {
+	for (TargetLockOn& target : targets_) {
+		if (target.target.expired()) {
+			continue;
+		}
+		target.sprite.Draw(target.transform);
+	}
+
 	sprite_.Draw(transform_);
+}
+
+std::list<std::weak_ptr<Collider>> LockOn::GetTargets(){
+	std::list<std::weak_ptr<Collider>> newTargets;
+
+	for (TargetLockOn& target : targets_) {
+		if (target.target.expired()) {
+			continue;
+		}
+		newTargets.push_back(target.target);
+	}
+
+	return newTargets;
 }

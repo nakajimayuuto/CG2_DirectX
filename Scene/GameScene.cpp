@@ -83,9 +83,10 @@ void GameScene::Update() {
 	railCameraController_->Update();
 	railCameraController_->SetTargetMatrix(player_->GetTransform().GetAffineMatrix());
 
-	player_->Update();
 	player_->SetIsLockOn(lockOn_->GetIsLockOn());
-	player_->SetTarget(lockOn_->GetTarget());
+	player_->SetTargets(lockOn_->GetTargets());
+	player_->Update();
+	//player_->SetTarget(lockOn_->GetTarget());
 
 	for (BaseBullet* bullet : bullets_) {
 		bullet->Update();

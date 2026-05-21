@@ -25,6 +25,8 @@ public:
 
 	void SetTarget(std::weak_ptr<Collider> target) { target_ = target; }
 
+	void SetTargets(std::list<std::weak_ptr<Collider>> targets) { targets_ = targets; }
+
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();
 
@@ -70,6 +72,8 @@ private:
 	RailCameraController* cameraController_ = nullptr;
 
 	std::weak_ptr<Collider> target_;
+
+	std::list<std::weak_ptr<Collider>> targets_;
 
 	bool isLockOn_ = false;
 

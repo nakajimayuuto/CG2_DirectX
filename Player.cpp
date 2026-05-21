@@ -163,33 +163,41 @@ void Player::AttackUpdate() {
 			velocity.y *= -1.0f;
 			velocity = velocity.Normalize() * kBulletSpeed;
 		} else {
-			//velocity = transform_.GetAffineMatrix().TransformNomal(velocity);
-			if (isLockOn_) {
-				if (target_.expired()) {
-					return;
+			for (std::weak_ptr<Collider> listTarget : targets_) {
+				if (listTarget.expired()) {
+					continue;
 				}
 
-				std::weak_ptr<Collider> target = target_;
+				std::weak_ptr<Collider> target = listTarget;
 
 				velocity = target.lock()->GetWorldPosition() - GetWorldPosition();
 				velocity = velocity.Normalize() * kBulletSpeed;
 
-				delete newBullet;
 				newBullet = new HomingBullet();
 				dynamic_cast<HomingBullet*>(newBullet)->SetTarget(target);
 				newBullet->Initialize("homing_bullet", transform_.GetAffineMatrix().GetMatrixToTranslate(), velocity);
-			} else {
-				velocity = transform3DReticle_.GetAffineMatrix().GetMatrixToTranslate() - transform_.GetAffineMatrix().GetMatrixToTranslate();
-				velocity = velocity.Normalize() * kBulletSpeed;
-				newBullet->Initialize("normal_bullet", transform_.GetAffineMatrix().GetMatrixToTranslate(), velocity);
+
+				newBullet->SetCollisionAttribute(kCollisionAttributePlayer);
+				newBullet->SetCollisionMask(kCollisionAttributeEnemy);
+				dynamic_cast<GameScene*>(gameScene_)->AddBullet(newBullet);
 			}
+
+			targets_.clear();
+
+
+			newBullet = new NormalBullet();
+			velocity = transform3DReticle_.GetAffineMatrix().GetMatrixToTranslate() - transform_.GetAffineMatrix().GetMatrixToTranslate();
+			velocity = velocity.Normalize() * kBulletSpeed;
+			newBullet->Initialize("normal_bullet", transform_.GetAffineMatrix().GetMatrixToTranslate(), velocity);
+
+			newBullet->SetCollisionAttribute(kCollisionAttributePlayer);
+			newBullet->SetCollisionMask(kCollisionAttributeEnemy);
+			dynamic_cast<GameScene*>(gameScene_)->AddBullet(newBullet);
+
 		}
 
 
 
-		newBullet->SetCollisionAttribute(kCollisionAttributePlayer);
-		newBullet->SetCollisionMask(kCollisionAttributeEnemy);
-		dynamic_cast<GameScene*>(gameScene_)->AddBullet(newBullet);
 	}
 
 }
