@@ -118,6 +118,9 @@
     <Filter Include="Scene\TitleScene">
       <UniqueIdentifier>{b5ab3c07-8cbf-405a-b63f-1a53b445a335}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Math\TimedCall">
+      <UniqueIdentifier>{1eeb4c6d-60a5-4f63-8be6-cd1f45a9c2a5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -233,6 +236,9 @@
     </ClCompile>
     <ClCompile Include="Scene\TitleScene.cpp">
       <Filter>Scene\TitleScene</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Math\TimedCall.cpp">
+      <Filter>Engine\Math\TimedCall</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -358,6 +364,9 @@
     </ClInclude>
     <ClInclude Include="Scene\TitleScene.h">
       <Filter>Scene\TitleScene</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Math\TimedCall.h">
+      <Filter>Engine\Math\TimedCall</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

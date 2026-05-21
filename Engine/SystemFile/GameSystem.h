@@ -51,6 +51,19 @@ struct D3DResourceLeakChecker {
 	}
 };
 
+enum class BlendMode {
+	kNone, // ブレンドモード無し.
+	kNormal, // 通常.
+	kAdd, // 加算.
+	kSubtract, // 減算.
+	kMultily, // 乗算.
+	kScreen, // スクリーン.
+
+	kNormalCullNone, // 通常ブレンド。背面カリング無し.
+	kLine, // 線の描画に使用.
+	kCount, // ブレンドモードの最大数.
+};
+
 class GameSystem {
 
 	// GameSystemで使うやつ.
@@ -70,6 +83,9 @@ public:
 	void EndFrame();
 
 	void Finalize();
+
+	void RegisterGlobalVariables();
+	void ApplyGlobalVariables();
 
 	Microsoft::WRL::ComPtr<ID3D12Device> GetDevice() { return device; };
 
@@ -96,18 +112,20 @@ public:
 
 	std::ofstream& GetLogStream() { return logStream; };
 
-	// わからん.
-	void SetCullMode(D3D12_CULL_MODE mode);
+	struct Pipeline {
+		Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
+	};
 
-	void CreatePipeline(D3D12_CULL_MODE cullMode);
+	// シェーダーの設定はここでやる.
+	void CreatePipeline(BlendMode blendMode);
+
+	void SetPipeline(BlendMode blendMode);
 private:
 
 	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 	std::ofstream CreateLogFile();
-
-	void RegisterGlobalVariables();
-	void ApplyGlobalVariables();
 
 public:
 	// ログを表示する.
@@ -201,10 +219,12 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource = nullptr;
 
-	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
+	//Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
+	//
+	//Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
 
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
+	Pipeline pipeline_[static_cast<uint32_t>(BlendMode::kCount)];
 };
 

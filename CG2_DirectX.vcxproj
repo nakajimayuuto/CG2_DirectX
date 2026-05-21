@@ -22,6 +22,7 @@
     <ClCompile Include="Engine\Math\Matrix4x4.cpp" />
     <ClCompile Include="Engine\Math\Random.cpp" />
     <ClCompile Include="Engine\Math\Shape.cpp" />
+    <ClCompile Include="Engine\Math\TimedCall.cpp" />
     <ClCompile Include="Engine\Math\Transform.cpp" />
     <ClCompile Include="Engine\Math\Vector2.cpp" />
     <ClCompile Include="Engine\Math\Vector3.cpp" />
@@ -88,6 +89,7 @@
     <ClInclude Include="Engine\Math\Matrix4x4.h" />
     <ClInclude Include="Engine\Math\Random.h" />
     <ClInclude Include="Engine\Math\Shape.h" />
+    <ClInclude Include="Engine\Math\TimedCall.h" />
     <ClInclude Include="Engine\Math\Transform.h" />
     <ClInclude Include="Engine\Math\Vector2.h" />
     <ClInclude Include="Engine\Math\Vector3.h" />
