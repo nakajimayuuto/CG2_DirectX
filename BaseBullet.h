@@ -15,6 +15,8 @@ public:
 	bool GetIsActive() { return isActive_; };
 	Vector3 GetWorldPosition() override { return { transform_.GetAffineMatrix().matrix[3][0],transform_.GetAffineMatrix().matrix[3][1],transform_.GetAffineMatrix().matrix[3][2] }; };
 	Transform GetTransform()const { return transform_; };
+
+	void ChangeColor(Vector4 color) { model_.SetColor(color); };
 protected:
 	bool isActive_;
 	

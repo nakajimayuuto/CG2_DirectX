@@ -6,7 +6,6 @@ HomingBullet::~HomingBullet() {
 
 void HomingBullet::Initialize(const std::string& modelName, const Vector3& position, const Vector3& velocity) {
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo(modelName));
-	model_.SetColor({ 1.0f,0.0f,0.0f,1.0f });
 	transform_.Initialize();
 	transform_.translate = position;
 	transform_.scale.x = 1.0f;

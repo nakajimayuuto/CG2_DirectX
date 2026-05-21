@@ -23,8 +23,8 @@ void GameScene::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("skydome", "Resource/skydome", "skydome.obj");
 	ModelManager::GetInstance()->RegisterObj("player", "Resource/player", "player.obj");
 	ModelManager::GetInstance()->RegisterObj("enemy", "Resource/shield_enemy", "shield_enemy.obj");
-	ModelManager::GetInstance()->RegisterObj("enemy_bullet", "Resource/death_particle", "death_particle.obj");
-	ModelManager::GetInstance()->RegisterObj("player_bullet", "Resource/bullet", "bullet.obj");
+	ModelManager::GetInstance()->RegisterObj("homing_bullet", "Resource/death_particle", "death_particle.obj");
+	ModelManager::GetInstance()->RegisterObj("normal_bullet", "Resource/bullet", "bullet.obj");
 	ModelManager::GetInstance()->RegisterObj("ground", "Resource/Ground", "ground.obj");
 
 	groundModel_.Initialize(ModelManager::GetInstance()->GetModelInfo("ground"));

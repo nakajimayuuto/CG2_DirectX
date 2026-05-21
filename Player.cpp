@@ -12,7 +12,6 @@ Player::~Player() {
 void Player::Initialize(const Vector3& position) {
 	transform_.Initialize();
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
-	model2_.Initialize(ModelManager::GetInstance()->GetModelInfo("enemy_bullet"));
 	sprite_.Initialize(TextureManager::GetInstance()->GetTextureInfo("reticle"));
 	sprite_.SetColor({ 1.0f,0.0f,0.0f,1.0f });
 
@@ -178,15 +177,16 @@ void Player::AttackUpdate() {
 				delete newBullet;
 				newBullet = new HomingBullet();
 				dynamic_cast<HomingBullet*>(newBullet)->SetTarget(target);
+				newBullet->Initialize("homing_bullet", transform_.GetAffineMatrix().GetMatrixToTranslate(), velocity);
 			} else {
 				velocity = transform3DReticle_.GetAffineMatrix().GetMatrixToTranslate() - transform_.GetAffineMatrix().GetMatrixToTranslate();
 				velocity = velocity.Normalize() * kBulletSpeed;
+				newBullet->Initialize("normal_bullet", transform_.GetAffineMatrix().GetMatrixToTranslate(), velocity);
 			}
 		}
 
 
 
-		newBullet->Initialize("player_bullet", transform_.GetAffineMatrix().GetMatrixToTranslate(), velocity);
 		newBullet->SetCollisionAttribute(kCollisionAttributePlayer);
 		newBullet->SetCollisionMask(kCollisionAttributeEnemy);
 		dynamic_cast<GameScene*>(gameScene_)->AddBullet(newBullet);

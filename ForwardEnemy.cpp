@@ -5,7 +5,7 @@
 #include "./Scene/GameScene.h"
 #include "RailCameraController.h"
 
-	ForwardEnemy::~ForwardEnemy() {
+ForwardEnemy::~ForwardEnemy() {
 	gameScene_.release();
 }
 
@@ -49,14 +49,17 @@ void ForwardEnemy::Fire(BaseBullet* bullet) {
 	velocity = velocity.Normalize() * kBulletSpeed;
 
 	BaseBullet* newBullet = bullet;
-	newBullet->Initialize("enemy_bullet", transform_.translate, velocity);
-	newBullet->SetCollisionAttribute(kCollisionAttributeEnemy);
-	newBullet->SetCollisionMask(kCollisionAttributePlayer);
 
 	if (dynamic_cast<HomingBullet*>(newBullet)) {
 		dynamic_cast<HomingBullet*>(newBullet)->SetTarget(player_);
+		newBullet->Initialize("homing_bullet", transform_.translate, velocity);
+	} else {
+		newBullet->Initialize("normal_bullet", transform_.translate, velocity);
 	}
 
+	newBullet->SetCollisionAttribute(kCollisionAttributeEnemy);
+	newBullet->SetCollisionMask(kCollisionAttributePlayer);
+	newBullet->ChangeColor({ 1.0f,0.0f,0.0f,1.0f });
 	dynamic_cast<GameScene*>(gameScene_.get())->AddBullet(newBullet);
 }
 

@@ -18,12 +18,6 @@ void ForwardEnemyApproachPhase::Initialize(ForwardEnemy* pEnemy) {
 void ForwardEnemyApproachPhase::Update(ForwardEnemy* pEnemy){
 	pEnemy->Translate({ 0.0f,0.0f,-kSpeed});
 	
-	//fireTimer_--;
-	//if (fireTimer_ < 0) {
-	//	FireReset(pEnemy);
-	//	fireTimer_ = kFireInterval;
-	//}
-
 	TimedCallRemoveCheck();
 
 	for (TimedCall* timedCall : timedCalls_) {
@@ -31,8 +25,7 @@ void ForwardEnemyApproachPhase::Update(ForwardEnemy* pEnemy){
 	}
 
 	if (pEnemy->GetPosition().z <= (Camera::GetInstance()->GetPosition().z) - 5.0f) {
-		pEnemy->ChangePhase(std::unique_ptr<ForwardEnemyLeavePhase>());
-	
+		pEnemy->ChangePhase(std::make_unique<ForwardEnemyLeavePhase>());
 	}
 }
 

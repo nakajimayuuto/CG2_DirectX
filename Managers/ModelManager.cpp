@@ -31,13 +31,6 @@ void ModelManager::RegisterObj(const std::string& name, const std::string& direc
 	}
 }
 
-//ModelData ModelManager::GetModelData(const std::string& name) {
-//	auto it = models_.find(name);
-//
-//	assert(it != models_.end());
-//	return it->second.modelData;
-//}
-
 ModelInfo ModelManager::GetModelInfo(const std::string& name) {
 	auto it = models_.find(name);
 
