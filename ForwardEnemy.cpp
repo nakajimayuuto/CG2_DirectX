@@ -5,7 +5,8 @@
 #include "./Scene/GameScene.h"
 #include "RailCameraController.h"
 
-ForwardEnemy::~ForwardEnemy() {
+	ForwardEnemy::~ForwardEnemy() {
+	gameScene_.release();
 }
 
 void ForwardEnemy::Initialize(Vector3 position) {
@@ -58,7 +59,7 @@ void ForwardEnemy::Fire(BaseBullet* bullet) {
 		dynamic_cast<HomingBullet*>(newBullet)->SetTarget(player);
 	}
 
-	dynamic_cast<GameScene*>(gameScene_.get())->AddBullet(newBullet);
+	//dynamic_cast<GameScene*>(gameScene_.get())->AddBullet(newBullet);
 }
 
 void ForwardEnemy::Translate(Vector3 translate) {

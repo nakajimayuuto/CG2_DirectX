@@ -40,7 +40,7 @@ void GameScene::Initialize() {
 
 	RegisterGlobalVariables();
 
-	//SpawnEnemy({ 10.0f,50.0f,100.0f },new ForwardEnemyApproachPhase());
+	SpawnEnemy({ 10.0f,50.0f,100.0f }, new ForwardEnemyApproachPhase());
 
 	player_->SetRailCameraController(railCameraController_);
 
@@ -72,14 +72,13 @@ void GameScene::Update() {
 
 	ApplyGlobalVariables();
 
-	if (enemies_.size() < 10000) {
-		for (std::shared_ptr<BaseEnemy> enemy : enemies_) {
-			if (!enemy) {
-				continue;
-			}
-			enemy->Update();
+	for (std::shared_ptr<BaseEnemy> enemy : enemies_) {
+		if (!enemy) {
+			continue;
 		}
+		enemy->Update();
 	}
+
 
 
 	railCameraController_->Update();
@@ -101,7 +100,7 @@ void GameScene::Update() {
 		enemies.push_back(weakEnemy);
 	}
 
-	lockOn_->Update(player_,enemies);
+	lockOn_->Update(player_, enemies);
 
 	Camera::GetInstance()->Update();
 
@@ -146,7 +145,7 @@ void GameScene::CheckCollisionPair(Collider* colliderA, Collider* colliderB) {
 	}
 }
 
-void GameScene::UpdateEnemyPopCommands(){
+void GameScene::UpdateEnemyPopCommands() {
 	if (isWait_) {
 		waitTimer_--;
 		if (waitTimer_ <= 0) {
@@ -157,7 +156,7 @@ void GameScene::UpdateEnemyPopCommands(){
 
 	std::string line;
 
-	while(getline(enemyPopCommands,line)){
+	while (getline(enemyPopCommands, line)) {
 		std::istringstream line_stream(line);
 
 		std::string word;
@@ -178,7 +177,7 @@ void GameScene::UpdateEnemyPopCommands(){
 			getline(line_stream, word, ',');
 			float z = static_cast<float>(std::atof(word.c_str()));
 
-			
+
 			getline(line_stream, word, ',');
 
 			ForwardEnemyBasePhase* phase_ = new ForwardEnemyApproachPhase();
@@ -187,7 +186,7 @@ void GameScene::UpdateEnemyPopCommands(){
 				phase_ = new ForwardEnemyApproachHomingPhase();
 			};
 
-			SpawnEnemy(Vector3(x,y,z),phase_);
+			SpawnEnemy(Vector3(x, y, z), phase_);
 		} else if (word.find("WAIT") == 0) {
 			getline(line_stream, word, ',');
 			int32_t waitTime = std::atoi(word.c_str());
@@ -205,7 +204,7 @@ void GameScene::AddBullet(BaseBullet* baseBullet) {
 	bullets_.push_back(baseBullet);
 }
 
-void GameScene::SpawnEnemy(const Vector3& position,ForwardEnemyBasePhase* type) {
+void GameScene::SpawnEnemy(const Vector3& position, ForwardEnemyBasePhase* type) {
 	std::shared_ptr<BaseEnemy> newEnemy = std::make_shared<ForwardEnemy>();
 
 	//newEnemy->SetTarget(std::unique_ptr<Player>(player_));
@@ -226,12 +225,12 @@ void GameScene::BulletRemoveCheck() {
 		});
 }
 
-void GameScene::EnemyRemoveCheck(){
+void GameScene::EnemyRemoveCheck() {
 	enemies_.remove_if([](std::shared_ptr<BaseEnemy> enemy) {
 		if (!enemy->GetIsAlive()) {
 			return true;
 		}
-		return true;
+		return false;
 		});
 }
 
@@ -244,7 +243,7 @@ void GameScene::Draw() {
 
 	railCameraController_->Draw();
 
-	for(std::shared_ptr<BaseEnemy> enemy : enemies_){
+	for (std::shared_ptr<BaseEnemy> enemy : enemies_) {
 		enemy->Draw();
 	}
 
