@@ -7,10 +7,10 @@ void LockOn::Initialize() {
 	transform_.Initialize();
 }
 
-void LockOn::Update(Player* player, std::list<std::weak_ptr<BaseEnemy>>& enemies) {
+void LockOn::Update(std::weak_ptr<Player> player, std::list<std::weak_ptr<BaseEnemy>>& enemies) {
 	std::list<std::pair<float, std::weak_ptr<BaseEnemy>>>targets;
 
-	Vector3 playerPos = player->GetWorldPosition();
+	Vector3 playerPos = player.lock().get()->GetWorldPosition();
 	playerPos = Camera::GetInstance()->GetCameraVector3(playerPos, Matrix4x4::Identity());
 
 
@@ -25,7 +25,7 @@ void LockOn::Update(Player* player, std::list<std::weak_ptr<BaseEnemy>>& enemies
 
 		Vector2 positionScreenV2 = { positionScreen.x,positionScreen.y };
 
-		float distance = (player->GetPositionReticle2D() - positionScreenV2).Length();
+		float distance = (player.lock().get()->GetPositionReticle2D() - positionScreenV2).Length();
 
 		if (distance <= kDistanceLockOn) {
 			targets.emplace_back(std::make_pair(distance, enemy));
@@ -46,8 +46,8 @@ void LockOn::Update(Player* player, std::list<std::weak_ptr<BaseEnemy>>& enemies
 		sprite_.SetIsVisible(true);
 		isLockOn_ = true;
 	} else {
-		transform_.translate.x = player->GetPositionReticle2D().x;
-		transform_.translate.y = player->GetPositionReticle2D().y;
+		transform_.translate.x = player.lock().get()->GetPositionReticle2D().x;
+		transform_.translate.y = player.lock().get()->GetPositionReticle2D().y;
 	}
 }
 

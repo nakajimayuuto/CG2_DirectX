@@ -166,6 +166,10 @@ void Player::AttackUpdate() {
 		} else {
 			//velocity = transform_.GetAffineMatrix().TransformNomal(velocity);
 			if (isLockOn_) {
+				if (target_.expired()) {
+					return;
+				}
+
 				std::weak_ptr<Collider> target = target_;
 
 				velocity = target.lock()->GetWorldPosition() - GetWorldPosition();

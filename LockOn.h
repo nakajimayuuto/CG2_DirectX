@@ -7,7 +7,7 @@ class Player;
 class LockOn {
 public:
 	void Initialize();
-	void Update(Player* player,std::list<std::weak_ptr<BaseEnemy>>& enemies);
+	void Update(std::weak_ptr<Player> player,std::list<std::weak_ptr<BaseEnemy>>& enemies);
 	void Draw();
 	bool GetIsLockOn() { return isLockOn_; };
 

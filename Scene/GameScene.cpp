@@ -5,7 +5,6 @@
 #include "../ForwardEnemyApproachHomingPhase.h"
 
 GameScene::~GameScene() {
-	delete player_;
 	delete skydome_;
 
 	for (BaseBullet* bullet : bullets_) {
@@ -33,7 +32,7 @@ void GameScene::Initialize() {
 	railCameraController_ = new RailCameraController();
 	railCameraController_->Initialize(Transform::GetInitialValue());
 
-	player_ = new Player();
+	player_ = std::make_shared<Player>();
 	player_->Initialize({ 0.0f,0.0f,50.0f });
 	player_->SetGameScene(this);
 	//;
@@ -68,7 +67,7 @@ void GameScene::Update() {
 		SceneManager::GetInstance()->ReloadScene();
 	}
 #endif // _DEBUG
-	//UpdateEnemyPopCommands();
+	UpdateEnemyPopCommands();
 
 	ApplyGlobalVariables();
 
@@ -110,7 +109,7 @@ void GameScene::Update() {
 void GameScene::CheckAllCollision() {
 	CollisionManager* manager = CollisionManager::GetInstance();
 	manager->ClearColliderList();
-	manager->AddColliderList(player_);
+	manager->AddColliderList(player_.get());
 
 	for (std::shared_ptr<BaseEnemy> enemy : enemies_) {
 		manager->AddColliderList(enemy.get());
@@ -207,10 +206,10 @@ void GameScene::AddBullet(BaseBullet* baseBullet) {
 void GameScene::SpawnEnemy(const Vector3& position, ForwardEnemyBasePhase* type) {
 	std::shared_ptr<BaseEnemy> newEnemy = std::make_shared<ForwardEnemy>();
 
-	//newEnemy->SetTarget(std::unique_ptr<Player>(player_));
+	newEnemy->SetTarget(player_);
 	dynamic_cast<ForwardEnemy*>(newEnemy.get())->SetGameScene(std::unique_ptr<GameScene>(this));
 	newEnemy->Initialize(position);
-	dynamic_cast<ForwardEnemy*>(newEnemy.get())->SetPhase(std::unique_ptr<ForwardEnemyBasePhase>(type));
+	dynamic_cast<ForwardEnemy*>(newEnemy.get())->ChangePhase(std::unique_ptr<ForwardEnemyBasePhase>(type));
 
 	enemies_.push_back(newEnemy);
 }

@@ -40,7 +40,7 @@ void ForwardEnemy::Fire(BaseBullet* bullet) {
 
 	velocity = transform_.GetAffineMatrix().TransformNomal(velocity);
 
-	Vector3 playerPos = {0.0f,0.0f,1.0f};//player_.get()->GetWorldPosition();
+	Vector3 playerPos = player_.lock().get()->GetWorldPosition();
 	Vector3 enemyPos = GetWorldPosition();
 
 	if (dynamic_cast<NormalBullet*>(bullet)) {
@@ -53,13 +53,11 @@ void ForwardEnemy::Fire(BaseBullet* bullet) {
 	newBullet->SetCollisionAttribute(kCollisionAttributeEnemy);
 	newBullet->SetCollisionMask(kCollisionAttributePlayer);
 
-	std::shared_ptr<Collider> player(player_.get());
-
 	if (dynamic_cast<HomingBullet*>(newBullet)) {
-		dynamic_cast<HomingBullet*>(newBullet)->SetTarget(player);
+		dynamic_cast<HomingBullet*>(newBullet)->SetTarget(player_);
 	}
 
-	//dynamic_cast<GameScene*>(gameScene_.get())->AddBullet(newBullet);
+	dynamic_cast<GameScene*>(gameScene_.get())->AddBullet(newBullet);
 }
 
 void ForwardEnemy::Translate(Vector3 translate) {

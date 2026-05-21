@@ -43,7 +43,7 @@ void HomingBullet::HomingUpdate() {
 		return;
 	}
 
-	Vector3 toPlayer = target_.lock()->GetWorldPosition() - GetWorldPosition();
+	Vector3 toPlayer = target_.lock().get()->GetWorldPosition() - GetWorldPosition();
 
 	toPlayer = toPlayer.Normalize();
 

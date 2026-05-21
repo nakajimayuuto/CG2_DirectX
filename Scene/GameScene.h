@@ -37,7 +37,7 @@ private:
 
 	void LoadEnemyPopData();
 private:
-	Player* player_ = nullptr;
+	std::shared_ptr<Player> player_;
 
 	std::list<std::shared_ptr<BaseEnemy>> enemies_;
 
