@@ -1000,13 +1000,13 @@ void Renderer::ModelTriangle::SetVertexPosition(const Vector3& topVertex, const 
 
 	float topTexcoordX = (topVertex.x - leftVertex.x) / (rightVertex.x - leftVertex.x);
 
-	vertexData[1].texcoord = { topTexcoordX,1.0f };
+	vertexData[1].texcoord = { topTexcoordX,0.0f };
 }
 
 Vector3* Renderer::ModelTriangle::GetVertexPosition(){
-	Vector3* vertexPosition;
-	vertexPosition[0] = { vertexData[0].position.x,vertexData[0].position.y,vertexData[0].position.z };
-	vertexPosition[1] = { vertexData[1].position.x,vertexData[1].position.y,vertexData[1].position.z };
+	Vector3 vertexPosition[3] = { 0.0f };
+	vertexPosition[0] = { vertexData[1].position.x,vertexData[1].position.y,vertexData[1].position.z };
+	vertexPosition[1] = { vertexData[0].position.x,vertexData[0].position.y,vertexData[0].position.z };
 	vertexPosition[2] = { vertexData[2].position.x,vertexData[2].position.y,vertexData[2].position.z };
 	return vertexPosition;
 }

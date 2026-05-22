@@ -7,6 +7,10 @@
 
 class GameScene : public IScene{
 public:
+	enum class Phase{
+		kTriangleSandBox,
+		kTriangleMovie,
+	};
 	~GameScene();
 	void Initialize() override;
 
@@ -46,6 +50,8 @@ private:
 	
 	Transform transform_;
 
+	std::array<TriangleData,4> effectTriangleData_;
+
 	TestItem lightingType[3];
 
 	TestItem textureType[3];
@@ -55,5 +61,6 @@ private:
 	uint32_t triangleIndex_;
 
 	bool isTriangleEffect_;
+
 };
 

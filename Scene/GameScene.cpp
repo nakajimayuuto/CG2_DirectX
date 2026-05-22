@@ -2,13 +2,21 @@
 #include "../Satlib.h"
 
 void GameScene::Initialize() {
-	TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resource/uvChecker.png");
+	TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resource/otoware.png");
 	TextureManager::GetInstance()->RegisterTexture("monsterBall", "Resource/monsterBall.png");
 	model_.Initialize(TextureManager::GetInstance()->GetTextureInfo("uvChecker"));
 	transform_.Initialize();
 	CreateTriangle({ -1.0f,0.0f,0.0f });
 	CreateTriangle({ 1.0f,0.0f,0.0f });
 	Camera::GetInstance()->SetPosition({ 0.0f,0.0f,-10.0f });
+
+	for (uint32_t i = 0; i < 4;i++) {
+		effectTriangleData_[i].transform.Initialize();
+		effectTriangleData_[i].transform.SetParent(&transform_);
+		effectTriangleData_[i].model.Initialize(TextureManager::GetInstance()->GetTextureInfo("uvChecker"));
+		effectTriangleData_[i].model.SetVertexPosition({ 0.0f,0.5f,0.0f }, { -0.5f,-0.5f,-0.5f }, { 0.5f,-0.5f,-0.5f });
+		effectTriangleData_[i].transform.rotate.y = static_cast<float>(Radian(90.0f) * i);
+	}
 
 	isTriangleEffect_ = false;
 }
@@ -26,9 +34,7 @@ void GameScene::Update() {
 		}
 	}
 
-	if (isTriangleEffect_) {
-		ImGui::DragFloat3();
-	} else {
+	if (!isTriangleEffect_) {
 		if (ImGui::Button("CreateTriangle")) {
 			CreateTriangle({ 0.0f,0.0f,0.0f });
 		}
@@ -117,6 +123,10 @@ void GameScene::Update() {
 	}
 	ImGui::End();
 
+	if (isTriangleEffect_) {
+		transform_.rotate.y += Radian(1.0f);
+	}
+
 	Camera::GetInstance()->Update();
 }
 
@@ -124,8 +134,10 @@ void GameScene::Draw() {
 
 	//	testModel_.Draw(testTransform_);
 	if (isTriangleEffect_) {
-	
-	model_.Draw(transform_);
+		
+		for (uint32_t i = 0; i < 4; i++) {
+			effectTriangleData_[i].model.Draw(effectTriangleData_[i].transform);
+		}
 	
 	} else {
 	
