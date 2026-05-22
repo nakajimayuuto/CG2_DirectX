@@ -8,6 +8,7 @@
 #include "../../externals/DirectXTex/DirectXTex.h"
 #include "../../externals/DirectXTex/d3dx12.h"
 #include "../SystemFile/GameSystem.h"
+#include <array>
 
 namespace Renderer {
 	enum class LightingType {
@@ -219,6 +220,47 @@ namespace Renderer {
 		Microsoft::WRL::ComPtr<ID3D12Resource> indexResource_ = nullptr;
 
 		D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
+
+		BlendMode blendMode_;
+	};
+
+	class Line {
+	public:
+		static Line* GetInstance();
+
+		void Initialize();
+
+		void Draw(const Vector3& startVector3, const Vector3& endVector3, const Vector4& color);
+
+		void ClearDrawIndex() { currentDrawLineIndex_ = 0; };
+	private:
+		struct LineData {
+			Material* materialData_ = nullptr;
+
+			TransformationMatrix* wvpData_ = nullptr;
+
+			VertexData* vertexData = nullptr;
+
+			TextureInfo textureInfo_;
+
+			Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_;
+
+			Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_;
+
+			Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_;
+
+			D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
+
+			Transform uvTransform_;
+
+			BlendMode blendMode_;
+		};
+
+		static inline const uint32_t kLineMax = 500;
+
+		uint32_t currentDrawLineIndex_;
+
+		std::array<LineData*, kLineMax> lineDatas_;
 	};
 }
 

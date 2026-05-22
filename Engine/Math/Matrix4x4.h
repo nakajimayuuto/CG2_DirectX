@@ -1,9 +1,10 @@
 #pragma once
 #include "Vector3.h"
 #include "Vertex.h"
-#include "Transform.h"
 #include "assert.h"
 #include <cmath>
+
+class Transform;
 
 class Matrix4x4 {
 public:
@@ -25,6 +26,8 @@ public:
 	static Matrix4x4 GetTranspose(Matrix4x4 matrix);
 	static Matrix4x4 Identity();
 	Vector3 MatrixTransform(const Vector3& vector);
+	
+	Vector3 TransformNomal(const Vector3& vector);
 
 	static Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
 	static Matrix4x4 MakeScaleMatrix(const Vector3& scale);
@@ -34,6 +37,10 @@ public:
 
 	static Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
 	static Matrix4x4 MakeAffineMatrix(const Transform& transform);
+	Transform GetMatrixToTransform();
+	Vector3 GetMatrixToScale();
+	Vector3 GetMatrixToRotate();
+	Vector3 GetMatrixToTranslate();
 
 	static Matrix4x4 MakeOrthographicMatrix(Vertex4 vertex4, float zNear, float zFar);
 	static Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip);

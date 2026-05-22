@@ -6,6 +6,7 @@
 #include "./Engine/SystemFile/ImGui.h"
 #include "./Engine/SystemFile/Debug.h"
 
+#include "./Engine/Math/TimedCall.h"
 #include "./Engine/Math/Collision.h"
 #include "./Engine/Math/Easing.h"
 #include "./Engine/Math/Random.h"
@@ -17,6 +18,7 @@
 #include "./Engine/Renderer/Renderer.h"
 #include "./Engine/Renderer/Camera.h"
 
+#include "./Managers/CollisionManager.h"	
 #include "./Managers/ModelManager.h"
 #include "./Managers/SceneManager.h"
 #include "./Managers/SoundManager.h"

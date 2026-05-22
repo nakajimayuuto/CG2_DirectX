@@ -73,16 +73,16 @@ void Camera::DebugUpdate(){
 	}
 
 	if (useMoving) {
-		if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
+		if (InputManager::GetInstance()->PressKey(DIK_D)) {
 			debugTranslate_.x += 0.05f;
 		}
-		if (InputManager::GetInstance()->PressKey(DIK_LEFT)) {
+		if (InputManager::GetInstance()->PressKey(DIK_A)) {
 			debugTranslate_.x -= 0.05f;
 		}
-		if (InputManager::GetInstance()->PressKey(DIK_UP)) {
+		if (InputManager::GetInstance()->PressKey(DIK_W)) {
 			debugTranslate_.z += 0.05f;
 		}
-		if (InputManager::GetInstance()->PressKey(DIK_DOWN)) {
+		if (InputManager::GetInstance()->PressKey(DIK_S)) {
 			debugTranslate_.z -= 0.05f;
 		}
 		if (InputManager::GetInstance()->PressKey(DIK_SPACE)) {
@@ -92,16 +92,16 @@ void Camera::DebugUpdate(){
 			debugTranslate_.y -= 0.05f;
 		}
 	}else {
-		if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
+		if (InputManager::GetInstance()->PressKey(DIK_D)) {
 			debugRotate.x += Radian(1.0f);
 		}
-		if (InputManager::GetInstance()->PressKey(DIK_LEFT)) {
+		if (InputManager::GetInstance()->PressKey(DIK_A)) {
 			debugRotate.x -= Radian(1.0f);
 		}
-		if (InputManager::GetInstance()->PressKey(DIK_UP)) {
+		if (InputManager::GetInstance()->PressKey(DIK_W)) {
 			debugRotate.y -= Radian(1.0f);
 		}
-		if (InputManager::GetInstance()->PressKey(DIK_DOWN)) {
+		if (InputManager::GetInstance()->PressKey(DIK_S)) {
 			debugRotate.y += Radian(1.0f);
 		}
 	}
@@ -113,9 +113,9 @@ void Camera::DebugUpdate(){
 
 	debugMatRot_ = matRotDelta * debugMatRot_;
 
-	matrix_ = Matrix4x4::MakeScaleMatrix(debugScale_);
+	//matrix_ = Matrix4x4::MakeScaleMatrix(debugScale_);
+	matrix_ = debugMatRot_;
 	matrix_ *= Matrix4x4::MakeTranslateMatrix(debugTranslate_);
-	matrix_ *= debugMatRot_;
 }
 
 Vector3 Camera::GetCameraVector3(Vector3 vector3, Matrix4x4 matrix) {
@@ -142,6 +142,10 @@ Matrix4x4 Camera::GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix){
 	Matrix4x4 projectionMatrix = Matrix4x4::MakeOrthographicMatrix({ {0.0f,0.0f},{0.0f,0.0f},{0.0f,0.0f},{windowWidth_,windowHeight_} }, 0.0f, 100.0f);
 	Matrix4x4 worldViewProjectionMatrix = matrix * viewMatrix * projectionMatrix;
 	return worldViewProjectionMatrix;
+}
+
+Matrix4x4 Camera::GetVPVMatrix(Matrix4x4 matrix) {
+	return GetWorldViewProjectionMatrix(matrix) * Matrix4x4::MakeViewportMatrix(viewportLeftTop_, windowWidth_, windowHeight_, minDepth_, maxDepth_);
 }
 
 void Camera::ChangeCameraMode(){

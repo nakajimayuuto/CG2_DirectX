@@ -118,6 +118,15 @@
     <Filter Include="Scene\TitleScene">
       <UniqueIdentifier>{b5ab3c07-8cbf-405a-b63f-1a53b445a335}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Math\TimedCall">
+      <UniqueIdentifier>{75576351-e183-47e7-863c-652a1c589cbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Math\Collider">
+      <UniqueIdentifier>{be77444e-ee0c-475a-bc70-caa48e1842f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\CollisionManager">
+      <UniqueIdentifier>{75e4a3fa-ae68-4f4e-b8c3-7ab462d16ebc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -233,6 +242,15 @@
     </ClCompile>
     <ClCompile Include="Scene\TitleScene.cpp">
       <Filter>Scene\TitleScene</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Math\TimedCall.cpp">
+      <Filter>Engine\Math\TimedCall</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Math\Collider.cpp">
+      <Filter>Engine\Math\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\CollisionManager.cpp">
+      <Filter>Managers\CollisionManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -358,6 +376,18 @@
     </ClInclude>
     <ClInclude Include="Scene\TitleScene.h">
       <Filter>Scene\TitleScene</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Math\TimedCall.h">
+      <Filter>Engine\Math\TimedCall</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Math\Collider.h">
+      <Filter>Engine\Math\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Math\CollisionConfig.h">
+      <Filter>Engine\Math\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\CollisionManager.h">
+      <Filter>Managers\CollisionManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

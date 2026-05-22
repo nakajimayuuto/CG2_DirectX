@@ -52,15 +52,16 @@ struct D3DResourceLeakChecker {
 };
 
 enum class BlendMode {
-	kNone,
-	kNormal,
-	kNormalCullNone,
-	kAdd,
-	kSubtract,
-	kMultily,
-	kScreen,
+	kNone, // ブレンドモード無し.
+	kNormal, // 通常.
+	kAdd, // 加算.
+	kSubtract, // 減算.
+	kMultily, // 乗算.
+	kScreen, // スクリーン.
 
-	kCount,
+	kNormalCullNone, // 通常ブレンド。背面カリング無し.
+	kLine, // 線の描画に使用.
+	kCount, // ブレンドモードの最大数.
 };
 
 class GameSystem {

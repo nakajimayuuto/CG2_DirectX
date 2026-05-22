@@ -1,11 +1,6 @@
 #include "Renderer.h"
 #include <vector>
 Renderer::Model::~Model() {
-	//for (uint32_t i = 0; i < modelMax_; i++) {
-	//	delete materialData_[i];
-	//
-	//	delete wvpData_[i];
-	//}
 	materialData_.clear();
 
 	wvpData_.clear();
@@ -65,7 +60,7 @@ void Renderer::Model::Initialize(const ModelInfo& info) {
 		// 今回は赤を書き込んでみる
 		materialData_[i]->color = modelData_[i].materialData.matarial.color;
 		materialData_[i]->lightingType = static_cast<uint32_t>(LightingType::kHalfLambert);
-		materialData_[i]->uvTransform = Matrix4x4::Identity();
+		materialData_[i]->uvTransform = modelData_[i].materialData.matarial.uvTransform;
 
 		// 【TransformationMatrix】
 		// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
@@ -79,7 +74,9 @@ void Renderer::Model::Initialize(const ModelInfo& info) {
 		wvpData_[i]->WVP = Matrix4x4::Identity();
 		wvpData_[i]->World = Matrix4x4::Identity();
 		uvTransform_[i].Initialize();
-
+		uvTransform_[i].scale = materialData_[i]->uvTransform.GetMatrixToTransform().scale;
+		uvTransform_[i].rotate = materialData_[i]->uvTransform.GetMatrixToTransform().rotate;
+		uvTransform_[i].translate = materialData_[i]->uvTransform.GetMatrixToTransform().translate;
 
 		// 【VertexBufferViewを作成する】
 
@@ -110,7 +107,7 @@ void Renderer::Model::Draw(const Transform& transform) {
 			return;
 		}
 
-		Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform);
+		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
 
 		wvpData_[i]->World = worldMatrix;
 		wvpData_[i]->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
@@ -418,7 +415,7 @@ void Renderer::ModelSphere::Draw(const Transform& transform) {
 		return;
 	}
 
-	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform);
+	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
 
 	wvpData_->World = worldMatrix;
 	wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
@@ -542,7 +539,7 @@ void Renderer::ModelBox::Draw(const Transform& transform) {
 		return;
 	}
 
-	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform);
+	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
 
 	wvpData_->World = worldMatrix;
 	wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
@@ -573,6 +570,9 @@ void Renderer::ModelBox::Draw(const Transform& transform) {
 
 void Renderer::Sprite::Initialize(TextureInfo info) {
 	isVisible_ = true;
+
+	blendMode_ = BlendMode::kNormal;
+	uvTransform_.Initialize();
 
 	textureInfo_ = info;
 	/*=============================================================
@@ -656,11 +656,15 @@ void Renderer::Sprite::Initialize(TextureInfo info) {
 	indexDataSprite[4] = 3;
 	indexDataSprite[5] = 2;
 
-	size_ = { 640.0f,360.0f };
+	size_ = { static_cast<float>(textureInfo_.width),static_cast<float>(textureInfo_.height) };
+	AdaptationSize();
 }
 
 void Renderer::Sprite::Initialize() {
 	isVisible_ = true;
+
+	blendMode_ = BlendMode::kNormal;
+	uvTransform_.Initialize();
 
 	textureInfo_ = TextureManager::GetInstance()->GetTextureInfo("white_template");
 	/*=============================================================
@@ -744,7 +748,8 @@ void Renderer::Sprite::Initialize() {
 	indexDataSprite[4] = 3;
 	indexDataSprite[5] = 2;
 
-	size_ = { 640.0f,360.0f };
+	size_ = { static_cast<float>(textureInfo_.width),static_cast<float>(textureInfo_.height) };
+	AdaptationSize();
 }
 
 void Renderer::Sprite::Draw(const Transform& transform) {
@@ -752,7 +757,12 @@ void Renderer::Sprite::Draw(const Transform& transform) {
 		return;
 	}
 
-	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform);
+	Transform worldTransform = transform;
+
+	worldTransform.translate.x = transform .translate.x - (size_.x / 2.0f);
+	worldTransform.translate.y = transform .translate.y - (size_.y / 2.0f);
+
+	Matrix4x4 worldMatrix = worldTransform.GetAffineMatrix();
 
 	transformationMatrixData_->World = worldMatrix;
 	transformationMatrixData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
@@ -762,6 +772,8 @@ void Renderer::Sprite::Draw(const Transform& transform) {
 	三角形のSpriteの描画のコマンド.
 	=============================================================*/
 	// Spriteの描画。変更が必要なものだけ変更する.
+	GameSystem::GetInstance()->SetPipeline(blendMode_);
+
 	GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_); // VBVを設定.
 	GameSystem::GetInstance()->GetCommandList()->IASetIndexBuffer(&indexBufferView_); // IBVを設定.
 	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
@@ -819,4 +831,98 @@ void Renderer::Sprite::AdaptationSize() {
 	vertexData[3].position = { size_.x,0.0f,0.0f,1.0f }; // 右上.
 	vertexData[3].texcoord = { 1.0f,0.0f };
 	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
+}
+
+Renderer::Line* Renderer::Line::GetInstance() {
+	static Renderer::Line instance;
+	return &instance;
+}
+
+void Renderer::Line::Initialize() {
+	for (uint32_t i = 0; i < kLineMax; i++) {
+		lineDatas_[i] = new Renderer::Line::LineData();
+		lineDatas_[i]->textureInfo_ = TextureManager::GetInstance()->GetTextureInfo("white_template");
+		lineDatas_[i]->blendMode_ = BlendMode::kLine;
+
+		// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
+		lineDatas_[i]->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData)* 2);
+
+		// 【MaterialResourceを生成する】
+		// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
+		lineDatas_[i]->materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+		// マテリアルにデータを書き込む.
+		// 書き込むためのアドレスを取得.
+		lineDatas_[i]->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&lineDatas_[i]->materialData_));
+		// 今回は赤を書き込んでみる
+		lineDatas_[i]->materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+		lineDatas_[i]->materialData_->lightingType = static_cast<uint32_t>(LightingType::kNone);
+		lineDatas_[i]->materialData_->uvTransform = Matrix4x4::Identity();
+
+		// 【TransformationMatrix】
+		// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
+		lineDatas_[i]->wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+		// データを書き込む.
+		// 書き込むためのアドレスを取得.
+		lineDatas_[i]->wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&lineDatas_[i]->wvpData_));
+		// 単位行列を書き込んでおく.
+		lineDatas_[i]->wvpData_->WVP = Matrix4x4::Identity();
+		lineDatas_[i]->wvpData_->World = Matrix4x4::Identity();
+
+		// 【VertexBufferViewを作成する】
+		// 頂点バッファビューを作成する.
+		// リソースの先頭のアドレスから使う.
+		lineDatas_[i]->vertexBufferView_.BufferLocation = lineDatas_[i]->vertexResource_->GetGPUVirtualAddress();
+		// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
+		lineDatas_[i]->vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * 2);
+		// 1頂点あたりのサイズ.
+		lineDatas_[i]->vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+		// 【Resourceにデータを書き込む】
+		// 書き込むためのアドレスを取得.
+		lineDatas_[i]->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&lineDatas_[i]->vertexData));
+	}
+
+	currentDrawLineIndex_ = 0;
+}
+
+void Renderer::Line::Draw(const Vector3& startVector3, const Vector3& endVector3,const Vector4& color) {
+
+	Vector3 centerVector3 = (static_cast<Vector3>(startVector3) + endVector3 ) / 2.0f;
+	Vector3 diff = (static_cast<Vector3>(startVector3) - endVector3 );
+
+	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix({1.0f,1.0f,1.0f}, {0.0f,0.0f,0.0f}, centerVector3);
+
+	lineDatas_[currentDrawLineIndex_]->vertexData[0].position = { -diff.x / 2.0f,-diff.y / 2.0f ,-diff.z / 2.0f ,1.0f};
+	lineDatas_[currentDrawLineIndex_]->vertexData[0].texcoord = {0.0f,1.0f};
+	lineDatas_[currentDrawLineIndex_]->vertexData[0].normal = { 0.0f,0.0f,0.0f };
+	lineDatas_[currentDrawLineIndex_]->vertexData[1].position = { diff.x / 2.0f,diff.y / 2.0f ,diff.z / 2.0f ,1.0f};
+	lineDatas_[currentDrawLineIndex_]->vertexData[1].texcoord = { 0.0f,1.0f };
+	lineDatas_[currentDrawLineIndex_]->vertexData[1].normal = { 0.0f,0.0f,0.0f };
+
+	lineDatas_[currentDrawLineIndex_]->wvpData_->World = worldMatrix;
+	lineDatas_[currentDrawLineIndex_]->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+
+	lineDatas_[currentDrawLineIndex_]->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(lineDatas_[currentDrawLineIndex_]->uvTransform_);
+	lineDatas_[currentDrawLineIndex_]->materialData_->color = color;
+
+	/*=============================================================
+	三角形の描画のコマンド.
+	=============================================================*/
+	GameSystem::GetInstance()->SetPipeline(lineDatas_[currentDrawLineIndex_]->blendMode_);
+
+	GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &lineDatas_[currentDrawLineIndex_]->vertexBufferView_); // VBVを設定.
+	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
+	GameSystem::GetInstance()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
+	// CBufferの場所を設定.
+	// マテリアル用のCBufferの場所.
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(0, lineDatas_[currentDrawLineIndex_]->materialResource_->GetGPUVirtualAddress());
+	// WVP用のCBufferの場所.
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(1, lineDatas_[currentDrawLineIndex_]->wvpResource_->GetGPUVirtualAddress());
+	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootDescriptorTable(2, lineDatas_[currentDrawLineIndex_]->textureInfo_.textureSrvHandlesGPU);
+	// DirectionalLight用のCBufferの場所.
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
+	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
+	GameSystem::GetInstance()->GetCommandList()->DrawInstanced(2, 1, 0, 0);
+	currentDrawLineIndex_++;
 }

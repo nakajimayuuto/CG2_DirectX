@@ -1,27 +1,5 @@
 #include "Math.h"
 
-float Length(Vector2 vector2) {
-	float length = sqrt(pow(vector2.x, 2.0f) + pow(vector2.y, 2.0f));
-
-	return length;
-};
-
-
-Vector2 Normalize(Vector2 vector2) {
-	float length = Length(vector2);
-	Vector2 normalize;
-
-	normalize.x = 0.0f;
-	normalize.y = 0.0f;
-
-	if (length != 0.0f) {
-		normalize.x = vector2.x / length;
-		normalize.y = vector2.y / length;
-	}
-
-	return normalize;
-};
-
 
 float Radian(float degree) {
 
@@ -119,9 +97,10 @@ float Rotate(float pos, float centerPos, float theta) {
 }
 
 float VectorToRadian(Vector2 vector) {
-	float lengthV1 = Length(vector);
-	float lengthV2 = Length({ 1.0f,0.0f });
-	float dotProduct = DotProduct(vector, { 1.0f,0.0f });
+	Vector2 rightVector = { 1.0f, 0.0f };
+	float lengthV1 = vector.Length();
+	float lengthV2 = rightVector.Length();
+	float dotProduct = DotProduct(vector, rightVector);
 
 	if (vector.y < 0.0f) {
 		return -acos(dotProduct / (lengthV1 * lengthV2));
@@ -137,15 +116,16 @@ Vector2 RadianToVector(float radian) {
 		sin(Degree(radian) * std::numbers::pi_v<float> / 180.0f)
 	};
 
-	return Normalize(vector2);
+	return vector2.Normalize();
 }
 
 
 
 float VectorToDegree(Vector2 vector) {
-	float lengthV1 = Length(vector);
-	float lengthV2 = Length({ 1.0f,0.0f });
-	float dotProduct = DotProduct(vector, { 1.0f,0.0f });
+	Vector2 rightVector = { 1.0f, 0.0f };
+	float lengthV1 = vector.Length();
+	float lengthV2 = rightVector.Length();
+	float dotProduct = DotProduct(vector, rightVector);
 
 	if (vector.y < 0.0f) {
 		return -Degree(acos(dotProduct / (lengthV1 * lengthV2)));
@@ -161,5 +141,5 @@ Vector2 DegreeToVector(float degree) {
 		sin(degree * std::numbers::pi_v<float> / 180.0f)
 	};
 
-	return Normalize(vector2);
+	return vector2.Normalize();
 }

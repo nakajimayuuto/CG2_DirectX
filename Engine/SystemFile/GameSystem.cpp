@@ -15,6 +15,7 @@
 #include <strsafe.h>
 #include <filesystem>
 #include <chrono>
+#include "../Renderer/Renderer.h"
 
 GameSystem* GameSystem::GetInstance() {
 	static GameSystem gameSystem;
@@ -337,6 +338,8 @@ void GameSystem::Initialize() {
 
 	TextureManager::GetInstance()->RegisterTexture("white_template", "Resource/white_template.png");
 
+	Renderer::Line::GetInstance()->Initialize();
+
 	GlobalVariables::GetInstance()->LoadFiles();
 
 	RegisterGlobalVariables();
@@ -493,6 +496,7 @@ void GameSystem::CreatePipeline(BlendMode blendMode) {
 	switch (blendMode) {
 	case BlendMode::kNormal:
 	case BlendMode::kNormalCullNone:
+	case BlendMode::kLine:
 		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
 		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
 		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
@@ -556,7 +560,11 @@ void GameSystem::CreatePipeline(BlendMode blendMode) {
 	graphicsPipelineStateDesc.NumRenderTargets = 1;
 	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	// 利用するとトポロジ(形状)のタイプ。三角形.
-	graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	if (blendMode == BlendMode::kLine) {
+		graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+	} else {
+		graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	}
 	// どのように画面に色を打ち込むかの設定 (気にしなくていい)
 	graphicsPipelineStateDesc.SampleDesc.Count = 1;
 	graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
@@ -601,6 +609,8 @@ bool GameSystem::BeginFrame() {
 	}
 
 	InputManager::GetInstance()->Update();
+
+	Renderer::Line::GetInstance()->ClearDrawIndex();
 
 #ifdef USE_IMGUI
 	ImGui_ImplDX12_NewFrame();
