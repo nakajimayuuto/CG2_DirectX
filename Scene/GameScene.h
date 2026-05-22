@@ -53,5 +53,7 @@ private:
 	std::list<TriangleData> triangleDatas_;
 
 	uint32_t triangleIndex_;
+
+	bool isTriangleEffect_;
 };
 

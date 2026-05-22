@@ -989,6 +989,28 @@ void Renderer::ModelTriangle::Initialize(TextureInfo info) {
 	vertexData[2].normal = { 0.0f,0.0f,1.0f };
 }
 
+void Renderer::ModelTriangle::SetVertexPosition(const Vector3& topVertex, const Vector3& leftVertex, const Vector3& rightVertex) {
+	vertexData[0].position = { leftVertex.x,leftVertex.y,leftVertex.z,1.0f };
+	vertexData[0].texcoord = { 0.0f,1.0f };
+
+	vertexData[1].position = { topVertex.x,topVertex.y,topVertex.z,1.0f };
+
+	vertexData[2].position = { rightVertex.x,rightVertex.y,rightVertex.z,1.0f };
+	vertexData[2].texcoord = { 1.0f,1.0f };
+
+	float topTexcoordX = (topVertex.x - leftVertex.x) / (rightVertex.x - leftVertex.x);
+
+	vertexData[1].texcoord = { topTexcoordX,1.0f };
+}
+
+Vector3* Renderer::ModelTriangle::GetVertexPosition(){
+	Vector3* vertexPosition;
+	vertexPosition[0] = { vertexData[0].position.x,vertexData[0].position.y,vertexData[0].position.z };
+	vertexPosition[1] = { vertexData[1].position.x,vertexData[1].position.y,vertexData[1].position.z };
+	vertexPosition[2] = { vertexData[2].position.x,vertexData[2].position.y,vertexData[2].position.z };
+	return vertexPosition;
+}
+
 void Renderer::ModelTriangle::Draw(const Transform& transform) {
 	if (!isVisible_) {
 		return;

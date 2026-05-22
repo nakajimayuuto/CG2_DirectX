@@ -275,6 +275,9 @@ namespace Renderer {
 
 		void ChangeTexture(const TextureInfo& info) { textureInfo_.textureSrvHandlesGPU = info.textureSrvHandlesGPU; };
 
+		void SetVertexPosition(const Vector3& topVertex, const Vector3& leftVertex, const Vector3& rightVertex);
+		Vector3* GetVertexPosition();
+
 		void SetColor(Vector4 color) { materialData_->color = color; };
 
 		Vector4 GetColor() { return materialData_->color; };
