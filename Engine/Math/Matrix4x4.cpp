@@ -673,6 +673,7 @@ Transform Matrix4x4::GetMatrixToTransform(){
 	result.rotate = GetMatrixToRotate();
 	result.translate = GetMatrixToTranslate();
 
+
 	return result;
 }
 

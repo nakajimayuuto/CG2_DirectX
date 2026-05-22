@@ -1,4 +1,5 @@
-﻿#include "Shape.h"
+#include "Shape.h"
+#include "Matrix4x4.h"
 
 OBB& OBB::operator=(const Matrix4x4& matrix){
     for (uint32_t i = 0; i < 3; i++) {

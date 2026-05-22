@@ -768,9 +768,9 @@ static void ShowDemoWindowWidgets()
             // Using the _simplified_ one-liner Combo() api here
             // See "Combo" section for examples of how to use the more flexible BeginCombo()/EndCombo() api.
             IMGUI_DEMO_MARKER("Widgets/Basic/Combo");
-            const char* items[] = { "AAAA", "BBBB", "CCCC", "DDDD", "EEEE", "FFFF", "GGGG", "HHHH", "IIIIIII", "JJJJ", "KKKKKKK" };
+            const char* lightingType[] = { "AAAA", "BBBB", "CCCC", "DDDD", "EEEE", "FFFF", "GGGG", "HHHH", "IIIIIII", "JJJJ", "KKKKKKK" };
             static int item_current = 0;
-            ImGui::Combo("combo", &item_current, items, IM_ARRAYSIZE(items));
+            ImGui::Combo("combo", &item_current, lightingType, IM_ARRAYSIZE(lightingType));
             ImGui::SameLine(); HelpMarker(
                 "Using the simplified one-liner Combo API here.\nRefer to the \"Combo\" section below for an explanation of how to use the more flexible and general BeginCombo/EndCombo API.");
         }
@@ -779,9 +779,9 @@ static void ShowDemoWindowWidgets()
             // Using the _simplified_ one-liner ListBox() api here
             // See "List boxes" section for examples of how to use the more flexible BeginListBox()/EndListBox() api.
             IMGUI_DEMO_MARKER("Widgets/Basic/ListBox");
-            const char* items[] = { "Apple", "Banana", "Cherry", "Kiwi", "Mango", "Orange", "Pineapple", "Strawberry", "Watermelon" };
+            const char* lightingType[] = { "Apple", "Banana", "Cherry", "Kiwi", "Mango", "Orange", "Pineapple", "Strawberry", "Watermelon" };
             static int item_current = 1;
-            ImGui::ListBox("listbox", &item_current, items, IM_ARRAYSIZE(items), 4);
+            ImGui::ListBox("listbox", &item_current, lightingType, IM_ARRAYSIZE(lightingType), 4);
             ImGui::SameLine(); HelpMarker(
                 "Using the simplified one-liner ListBox API here.\nRefer to the \"List boxes\" section below for an explanation of how to use the more flexible and general BeginListBox/EndListBox API.");
         }
@@ -1117,15 +1117,15 @@ static void ShowDemoWindowWidgets()
         // Using the generic BeginCombo() API, you have full control over how to display the combo contents.
         // (your selection data could be an index, a pointer to the object, an id for the object, a flag intrusively
         // stored in the object itself, etc.)
-        const char* items[] = { "AAAA", "BBBB", "CCCC", "DDDD", "EEEE", "FFFF", "GGGG", "HHHH", "IIII", "JJJJ", "KKKK", "LLLLLLL", "MMMM", "OOOOOOO" };
+        const char* lightingType[] = { "AAAA", "BBBB", "CCCC", "DDDD", "EEEE", "FFFF", "GGGG", "HHHH", "IIII", "JJJJ", "KKKK", "LLLLLLL", "MMMM", "OOOOOOO" };
         static int item_current_idx = 0; // Here we store our selection data as an index.
-        const char* combo_preview_value = items[item_current_idx];  // Pass in the preview value visible before opening the combo (it could be anything)
+        const char* combo_preview_value = lightingType[item_current_idx];  // Pass in the preview value visible before opening the combo (it could be anything)
         if (ImGui::BeginCombo("combo 1", combo_preview_value, flags))
         {
-            for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+            for (int n = 0; n < IM_ARRAYSIZE(lightingType); n++)
             {
                 const bool is_selected = (item_current_idx == n);
-                if (ImGui::Selectable(items[n], is_selected))
+                if (ImGui::Selectable(lightingType[n], is_selected))
                     item_current_idx = n;
 
                 // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
@@ -1143,12 +1143,12 @@ static void ShowDemoWindowWidgets()
         // Simplified one-liner Combo() using an array of const char*
         // This is not very useful (may obsolete): prefer using BeginCombo()/EndCombo() for full control.
         static int item_current_3 = -1; // If the selection isn't within 0..count, Combo won't display a preview
-        ImGui::Combo("combo 3 (array)", &item_current_3, items, IM_ARRAYSIZE(items));
+        ImGui::Combo("combo 3 (array)", &item_current_3, lightingType, IM_ARRAYSIZE(lightingType));
 
         // Simplified one-liner Combo() using an accessor function
         struct Funcs { static bool ItemGetter(void* data, int n, const char** out_str) { *out_str = ((const char**)data)[n]; return true; } };
         static int item_current_4 = 0;
-        ImGui::Combo("combo 4 (function)", &item_current_4, &Funcs::ItemGetter, items, IM_ARRAYSIZE(items));
+        ImGui::Combo("combo 4 (function)", &item_current_4, &Funcs::ItemGetter, lightingType, IM_ARRAYSIZE(lightingType));
 
         ImGui::TreePop();
     }
@@ -1159,14 +1159,14 @@ static void ShowDemoWindowWidgets()
         // Using the generic BeginListBox() API, you have full control over how to display the combo contents.
         // (your selection data could be an index, a pointer to the object, an id for the object, a flag intrusively
         // stored in the object itself, etc.)
-        const char* items[] = { "AAAA", "BBBB", "CCCC", "DDDD", "EEEE", "FFFF", "GGGG", "HHHH", "IIII", "JJJJ", "KKKK", "LLLLLLL", "MMMM", "OOOOOOO" };
+        const char* lightingType[] = { "AAAA", "BBBB", "CCCC", "DDDD", "EEEE", "FFFF", "GGGG", "HHHH", "IIII", "JJJJ", "KKKK", "LLLLLLL", "MMMM", "OOOOOOO" };
         static int item_current_idx = 0; // Here we store our selection data as an index.
         if (ImGui::BeginListBox("listbox 1"))
         {
-            for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+            for (int n = 0; n < IM_ARRAYSIZE(lightingType); n++)
             {
                 const bool is_selected = (item_current_idx == n);
-                if (ImGui::Selectable(items[n], is_selected))
+                if (ImGui::Selectable(lightingType[n], is_selected))
                     item_current_idx = n;
 
                 // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
@@ -1180,10 +1180,10 @@ static void ShowDemoWindowWidgets()
         ImGui::Text("Full-width:");
         if (ImGui::BeginListBox("##listbox 2", ImVec2(-FLT_MIN, 5 * ImGui::GetTextLineHeightWithSpacing())))
         {
-            for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+            for (int n = 0; n < IM_ARRAYSIZE(lightingType); n++)
             {
                 const bool is_selected = (item_current_idx == n);
-                if (ImGui::Selectable(items[n], is_selected))
+                if (ImGui::Selectable(lightingType[n], is_selected))
                     item_current_idx = n;
 
                 // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
@@ -2362,8 +2362,8 @@ static void ShowDemoWindowWidgets()
         if (item_type == 11){ ret = ImGui::MenuItem("ITEM: MenuItem"); }                                // Testing menu item (they use ImGuiButtonFlags_PressedOnRelease button policy)
         if (item_type == 12){ ret = ImGui::TreeNode("ITEM: TreeNode"); if (ret) ImGui::TreePop(); }     // Testing tree node
         if (item_type == 13){ ret = ImGui::TreeNodeEx("ITEM: TreeNode w/ ImGuiTreeNodeFlags_OpenOnDoubleClick", ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_NoTreePushOnOpen); } // Testing tree node with ImGuiButtonFlags_PressedOnDoubleClick button policy.
-        if (item_type == 14){ const char* items[] = { "Apple", "Banana", "Cherry", "Kiwi" }; static int current = 1; ret = ImGui::Combo("ITEM: Combo", &current, items, IM_ARRAYSIZE(items)); }
-        if (item_type == 15){ const char* items[] = { "Apple", "Banana", "Cherry", "Kiwi" }; static int current = 1; ret = ImGui::ListBox("ITEM: ListBox", &current, items, IM_ARRAYSIZE(items), IM_ARRAYSIZE(items)); }
+        if (item_type == 14){ const char* lightingType[] = { "Apple", "Banana", "Cherry", "Kiwi" }; static int current = 1; ret = ImGui::Combo("ITEM: Combo", &current, lightingType, IM_ARRAYSIZE(lightingType)); }
+        if (item_type == 15){ const char* lightingType[] = { "Apple", "Banana", "Cherry", "Kiwi" }; static int current = 1; ret = ImGui::ListBox("ITEM: ListBox", &current, lightingType, IM_ARRAYSIZE(lightingType), IM_ARRAYSIZE(lightingType)); }
 
         bool hovered_delay_none = ImGui::IsItemHovered();
         bool hovered_delay_short = ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort);
@@ -2758,9 +2758,9 @@ static void ShowDemoWindowLayout()
         // Various
         static float f0 = 1.0f, f1 = 2.0f, f2 = 3.0f;
         ImGui::PushItemWidth(80);
-        const char* items[] = { "AAAA", "BBBB", "CCCC", "DDDD" };
+        const char* lightingType[] = { "AAAA", "BBBB", "CCCC", "DDDD" };
         static int item = -1;
-        ImGui::Combo("Combo", &item, items, IM_ARRAYSIZE(items)); ImGui::SameLine();
+        ImGui::Combo("Combo", &item, lightingType, IM_ARRAYSIZE(lightingType)); ImGui::SameLine();
         ImGui::SliderFloat("X", &f0, 0.0f, 5.0f); ImGui::SameLine();
         ImGui::SliderFloat("Y", &f1, 0.0f, 5.0f); ImGui::SameLine();
         ImGui::SliderFloat("Z", &f2, 0.0f, 5.0f);
@@ -2773,7 +2773,7 @@ static void ShowDemoWindowLayout()
         {
             if (i > 0) ImGui::SameLine();
             ImGui::PushID(i);
-            ImGui::ListBox("", &selection[i], items, IM_ARRAYSIZE(items));
+            ImGui::ListBox("", &selection[i], lightingType, IM_ARRAYSIZE(lightingType));
             ImGui::PopID();
             //if (ImGui::IsItemHovered()) ImGui::SetTooltip("ListBox %d hovered", i);
         }
@@ -5110,14 +5110,14 @@ static void ShowDemoWindowTables()
     if (ImGui::TreeNode("Sorting"))
     {
         // Create item list
-        static ImVector<MyItem> items;
-        if (items.Size == 0)
+        static ImVector<MyItem> lightingType;
+        if (lightingType.Size == 0)
         {
-            items.resize(50, MyItem());
-            for (int n = 0; n < items.Size; n++)
+            lightingType.resize(50, MyItem());
+            for (int n = 0; n < lightingType.Size; n++)
             {
                 const int template_n = n % IM_ARRAYSIZE(template_items_names);
-                MyItem& item = items[n];
+                MyItem& item = lightingType[n];
                 item.ID = n;
                 item.Name = template_items_names[template_n];
                 item.Quantity = (n * n - n) % 20; // Assign default quantities
@@ -5157,20 +5157,20 @@ static void ShowDemoWindowTables()
                 if (sorts_specs->SpecsDirty)
                 {
                     MyItem::s_current_sort_specs = sorts_specs; // Store in variable accessible by the sort function.
-                    if (items.Size > 1)
-                        qsort(&items[0], (size_t)items.Size, sizeof(items[0]), MyItem::CompareWithSortSpecs);
+                    if (lightingType.Size > 1)
+                        qsort(&lightingType[0], (size_t)lightingType.Size, sizeof(lightingType[0]), MyItem::CompareWithSortSpecs);
                     MyItem::s_current_sort_specs = NULL;
                     sorts_specs->SpecsDirty = false;
                 }
 
             // Demonstrate using clipper for large vertical lists
             ImGuiListClipper clipper;
-            clipper.Begin(items.Size);
+            clipper.Begin(lightingType.Size);
             while (clipper.Step())
                 for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++)
                 {
                     // Display a data item
-                    MyItem* item = &items[row_n];
+                    MyItem* item = &lightingType[row_n];
                     ImGui::PushID(item->ID);
                     ImGui::TableNextRow();
                     ImGui::TableNextColumn();
@@ -5331,16 +5331,16 @@ static void ShowDemoWindowTables()
         }
 
         // Update item list if we changed the number of items
-        static ImVector<MyItem> items;
+        static ImVector<MyItem> lightingType;
         static ImVector<int> selection;
         static bool items_need_sort = false;
-        if (items.Size != items_count)
+        if (lightingType.Size != items_count)
         {
-            items.resize(items_count, MyItem());
+            lightingType.resize(items_count, MyItem());
             for (int n = 0; n < items_count; n++)
             {
                 const int template_n = n % IM_ARRAYSIZE(template_items_names);
-                MyItem& item = items[n];
+                MyItem& item = lightingType[n];
                 item.ID = n;
                 item.Name = template_items_names[template_n];
                 item.Quantity = (template_n == 3) ? 10 : (template_n == 4) ? 20 : 0; // Assign default quantities
@@ -5371,10 +5371,10 @@ static void ShowDemoWindowTables()
             ImGuiTableSortSpecs* sorts_specs = ImGui::TableGetSortSpecs();
             if (sorts_specs && sorts_specs->SpecsDirty)
                 items_need_sort = true;
-            if (sorts_specs && items_need_sort && items.Size > 1)
+            if (sorts_specs && items_need_sort && lightingType.Size > 1)
             {
                 MyItem::s_current_sort_specs = sorts_specs; // Store in variable accessible by the sort function.
-                qsort(&items[0], (size_t)items.Size, sizeof(items[0]), MyItem::CompareWithSortSpecs);
+                qsort(&lightingType[0], (size_t)lightingType.Size, sizeof(lightingType[0]), MyItem::CompareWithSortSpecs);
                 MyItem::s_current_sort_specs = NULL;
                 sorts_specs->SpecsDirty = false;
             }
@@ -5394,7 +5394,7 @@ static void ShowDemoWindowTables()
 #if 1
             // Demonstrate using clipper for large vertical lists
             ImGuiListClipper clipper;
-            clipper.Begin(items.Size);
+            clipper.Begin(lightingType.Size);
             while (clipper.Step())
             {
                 for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd; row_n++)
@@ -5404,7 +5404,7 @@ static void ShowDemoWindowTables()
                 for (int row_n = 0; row_n < items.Size; row_n++)
 #endif
                 {
-                    MyItem* item = &items[row_n];
+                    MyItem* item = &lightingType[row_n];
                     //if (!filter.PassFilter(item->Name))
                     //    continue;
 

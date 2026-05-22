@@ -1603,26 +1603,26 @@ static int IMGUI_CDECL ShrinkWidthItemComparer(const void* lhs, const void* rhs)
 
 // Shrink excess width from a set of item, by removing width from the larger items first.
 // Set items Width to -1.0f to disable shrinking this item.
-void ImGui::ShrinkWidths(ImGuiShrinkWidthItem* items, int count, float width_excess)
+void ImGui::ShrinkWidths(ImGuiShrinkWidthItem* lightingType, int count, float width_excess)
 {
     if (count == 1)
     {
-        if (items[0].Width >= 0.0f)
-            items[0].Width = ImMax(items[0].Width - width_excess, 1.0f);
+        if (lightingType[0].Width >= 0.0f)
+            lightingType[0].Width = ImMax(lightingType[0].Width - width_excess, 1.0f);
         return;
     }
-    ImQsort(items, (size_t)count, sizeof(ImGuiShrinkWidthItem), ShrinkWidthItemComparer);
+    ImQsort(lightingType, (size_t)count, sizeof(ImGuiShrinkWidthItem), ShrinkWidthItemComparer);
     int count_same_width = 1;
     while (width_excess > 0.0f && count_same_width < count)
     {
-        while (count_same_width < count && items[0].Width <= items[count_same_width].Width)
+        while (count_same_width < count && lightingType[0].Width <= lightingType[count_same_width].Width)
             count_same_width++;
-        float max_width_to_remove_per_item = (count_same_width < count && items[count_same_width].Width >= 0.0f) ? (items[0].Width - items[count_same_width].Width) : (items[0].Width - 1.0f);
+        float max_width_to_remove_per_item = (count_same_width < count && lightingType[count_same_width].Width >= 0.0f) ? (lightingType[0].Width - lightingType[count_same_width].Width) : (lightingType[0].Width - 1.0f);
         if (max_width_to_remove_per_item <= 0.0f)
             break;
         float width_to_remove_per_item = ImMin(width_excess / count_same_width, max_width_to_remove_per_item);
         for (int item_n = 0; item_n < count_same_width; item_n++)
-            items[item_n].Width -= width_to_remove_per_item;
+            lightingType[item_n].Width -= width_to_remove_per_item;
         width_excess -= width_to_remove_per_item * count_same_width;
     }
 
@@ -1631,15 +1631,15 @@ void ImGui::ShrinkWidths(ImGuiShrinkWidthItem* items, int count, float width_exc
     width_excess = 0.0f;
     for (int n = 0; n < count; n++)
     {
-        float width_rounded = ImFloor(items[n].Width);
-        width_excess += items[n].Width - width_rounded;
-        items[n].Width = width_rounded;
+        float width_rounded = ImFloor(lightingType[n].Width);
+        width_excess += lightingType[n].Width - width_rounded;
+        lightingType[n].Width = width_rounded;
     }
     while (width_excess > 0.0f)
         for (int n = 0; n < count && width_excess > 0.0f; n++)
         {
-            float width_to_add = ImMin(items[n].InitialWidth - items[n].Width, 1.0f);
-            items[n].Width += width_to_add;
+            float width_to_add = ImMin(lightingType[n].InitialWidth - lightingType[n].Width, 1.0f);
+            lightingType[n].Width += width_to_add;
             width_excess -= width_to_add;
         }
 }
@@ -1864,9 +1864,9 @@ void ImGui::EndComboPreview()
 // Getter for the old Combo() API: const char*[]
 static bool Items_ArrayGetter(void* data, int idx, const char** out_text)
 {
-    const char* const* items = (const char* const*)data;
+    const char* const* lightingType = (const char* const*)data;
     if (out_text)
-        *out_text = items[idx];
+        *out_text = lightingType[idx];
     return true;
 }
 
@@ -1937,9 +1937,9 @@ bool ImGui::Combo(const char* label, int* current_item, bool (*items_getter)(voi
 }
 
 // Combo box helper allowing to pass an array of strings.
-bool ImGui::Combo(const char* label, int* current_item, const char* const items[], int items_count, int height_in_items)
+bool ImGui::Combo(const char* label, int* current_item, const char* const lightingType[], int items_count, int height_in_items)
 {
-    const bool value_changed = Combo(label, current_item, Items_ArrayGetter, (void*)items, items_count, height_in_items);
+    const bool value_changed = Combo(label, current_item, Items_ArrayGetter, (void*)lightingType, items_count, height_in_items);
     return value_changed;
 }
 
@@ -6570,9 +6570,9 @@ void ImGui::EndListBox()
     EndGroup(); // This is only required to be able to do IsItemXXX query on the whole ListBox including label
 }
 
-bool ImGui::ListBox(const char* label, int* current_item, const char* const items[], int items_count, int height_items)
+bool ImGui::ListBox(const char* label, int* current_item, const char* const lightingType[], int items_count, int height_items)
 {
-    const bool value_changed = ListBox(label, current_item, Items_ArrayGetter, (void*)items, items_count, height_items);
+    const bool value_changed = ListBox(label, current_item, Items_ArrayGetter, (void*)lightingType, items_count, height_items);
     return value_changed;
 }
 

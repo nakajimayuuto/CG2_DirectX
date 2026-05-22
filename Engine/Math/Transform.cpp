@@ -17,6 +17,7 @@ void Transform::Initialize() {
 	translate.z = 0.0f;
 }
 
+
 Transform Transform::GetInitialValue(){
 	Transform transform;
 	transform.Initialize();
