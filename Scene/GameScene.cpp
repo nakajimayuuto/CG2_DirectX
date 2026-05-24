@@ -3,8 +3,12 @@
 
 void GameScene::Initialize() {
 	// 使用するテクスチャの読み込み.
-	TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resource/otoware.png");
+	ModelManager::GetInstance()->RegisterObj("skydome", "Resource/skydome", "skydome.obj");
+
+	// 使用するテクスチャの読み込み.
+	TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resource/uvChecker.png");
 	TextureManager::GetInstance()->RegisterTexture("monsterBall", "Resource/monsterBall.png");
+	TextureManager::GetInstance()->RegisterTexture("effect_triangle", "Resource/effect_triangle.png");
 
 	// カメラ位置の調整
 	Camera::GetInstance()->SetPosition({ 0.0f,0.0f,-10.0f });
@@ -17,11 +21,13 @@ void GameScene::Initialize() {
 	parentTransform_.Initialize();
 	parentTransformMini_.Initialize();
 
+	Vector3 vertexPosition[3] = { { 0.0f,kTriangleSize,0.0f }, { kTriangleSize * -1.04f,-kTriangleSize,kTriangleSize * -0.6f }, { kTriangleSize * 1.04f,-kTriangleSize,kTriangleSize * -0.6f } };
+
 	for (uint32_t i = 0; i < kEffectTriangle; i++) {
 		effectTriangleData_[i].transform.Initialize();
 		effectTriangleData_[i].transform.SetParent(&parentTransform_);
-		effectTriangleData_[i].model.Initialize(TextureManager::GetInstance()->GetTextureInfo("uvChecker"));
-		effectTriangleData_[i].model.SetVertexPosition({ 0.0f,1.0f,0.0f }, { -1.05f,-1.0f,-0.6f }, { 1.05f,-1.0f,-0.6f });
+		effectTriangleData_[i].model.Initialize(TextureManager::GetInstance()->GetTextureInfo("effect_triangle"));
+		effectTriangleData_[i].model.SetVertexPosition(vertexPosition[0], vertexPosition[1], vertexPosition[2]);
 		effectTriangleData_[i].transform.rotate.y = static_cast<float>(Radian(120.0f) * i);
 		effectTriangleData_[i].model.SetBlendMode(BlendMode::kNormalCullNone);
 	}
@@ -29,19 +35,24 @@ void GameScene::Initialize() {
 	for (uint32_t i = kEffectTriangle; i < kEffectTriangle + kEffectTriangleMini; i++) {
 		effectTriangleData_[i].transform.Initialize();
 		effectTriangleData_[i].transform.SetParent(&parentTransformMini_);
-		effectTriangleData_[i].model.Initialize(TextureManager::GetInstance()->GetTextureInfo("uvChecker"));
-		effectTriangleData_[i].model.SetVertexPosition({ 0.0f,0.25f,0.0f }, { -0.2625f,-0.25f,-0.12f }, { 0.2625f,-0.25f,-0.12f });
+		effectTriangleData_[i].model.Initialize(TextureManager::GetInstance()->GetTextureInfo("effect_triangle"));
+		effectTriangleData_[i].model.SetVertexPosition(vertexPosition[0] / 4.0f, vertexPosition[1] / 4.0f, vertexPosition[2] / 4.0f);
 		effectTriangleData_[i].transform.rotate.y = static_cast<float>(Radian(120.0f) * i);
 		effectTriangleData_[i].model.SetBlendMode(BlendMode::kNormalCullNone);
 	}
 
 	effectTriangleData_[kEffectTriangle + kEffectTriangleMini].transform.Initialize();
 	effectTriangleData_[kEffectTriangle + kEffectTriangleMini].transform.SetParent(&parentTransform_);
-	effectTriangleData_[kEffectTriangle + kEffectTriangleMini].model.Initialize(TextureManager::GetInstance()->GetTextureInfo("uvChecker"));
-	effectTriangleData_[kEffectTriangle + kEffectTriangleMini].model.SetVertexPosition({ 0.0f,-1.0f,1.2f }, { -1.05f,-1.0f,-0.6f }, { 1.05f,-1.0f,-0.6f });
+	effectTriangleData_[kEffectTriangle + kEffectTriangleMini].model.Initialize(TextureManager::GetInstance()->GetTextureInfo("effect_triangle"));
+	effectTriangleData_[kEffectTriangle + kEffectTriangleMini].model.SetVertexPosition({ 0.0f,-kTriangleSize,kTriangleSize * 1.2f }, { kTriangleSize * -1.05f,-kTriangleSize,kTriangleSize * -0.6f }, { kTriangleSize * 1.05f,-kTriangleSize,kTriangleSize * -0.6f });
 	effectTriangleData_[kEffectTriangle + kEffectTriangleMini].model.SetBlendMode(BlendMode::kNormalCullNone);
 
 	deltaTime_ = DeltaTime::GetInstance();
+
+	skydome_ = new Skydome();
+	skydome_->Initialize();
+
+	DirectionalLight::GetInstance()->GetDirectionalLightData()->direction = { 0.0f,0.0f,-1.0f };
 }
 
 void GameScene::Update() {
@@ -150,6 +161,13 @@ void GameScene::Update() {
 			}
 			ImGui::PopID();
 		}
+	} else {
+		if (ImGui::Button("PlayAnimation")) {
+			if (state_ == State::kTriangleEffect){ 
+			state_ = State::kTriangleEffectAnimation;
+			EffectAnimationInitialize();
+			}
+		}
 	}
 	ImGui::End();
 
@@ -166,7 +184,7 @@ void GameScene::Update() {
 }
 
 void GameScene::EffectUpdate() {
-	if (InputManager::GetInstance()->GetMouse().TriggerMouse(MouseButtons::MOUSE_LEFT)) {
+	if (InputManager::GetInstance()->TriggerKey(DIK_SPACE)) {
 		state_ = State::kTriangleEffectAnimation;
 		EffectAnimationInitialize();
 	}
@@ -205,7 +223,7 @@ void GameScene::EffectAnimationUpdate() {
 
 		for (uint32_t i = 0; i < kEffectTriangle; i++) {
 			triangleMatrix = Matrix4x4::MakeRotateYMatrix(Radian(static_cast<float>(120.0f * i)));
-			triangleMatrix = Matrix4x4::MakeTranslateMatrix({0.0f,0.0f,trianglePositionZ}) * triangleMatrix;
+			triangleMatrix = Matrix4x4::MakeTranslateMatrix({ 0.0f,0.0f,trianglePositionZ }) * triangleMatrix;
 			effectTriangleData_[i].transform.translate = triangleMatrix.GetMatrixToTranslate();
 		}
 
@@ -246,6 +264,8 @@ void GameScene::EffectAnimationUpdate() {
 
 void GameScene::Draw() {
 
+	skydome_->Draw();
+
 	switch (state_) {
 	case GameScene::State::kTriangleDebug:
 		for (TriangleData& triangleData : triangleDatas_) {
@@ -280,7 +300,7 @@ void GameScene::CreateTriangle(const Vector3& position) {
 
 	newTriangleData.textureType[0] = { "uvChecker",true };
 	newTriangleData.textureType[1] = { "monsterBall",false };
-	newTriangleData.textureType[2] = { "white_template",false };
+	newTriangleData.textureType[2] = { "effect_triangle",false };
 	newTriangleData.number = triangleIndex_;
 	newTriangleData.isDelete = false;;
 	triangleDatas_.push_back(newTriangleData);

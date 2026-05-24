@@ -1,5 +1,13 @@
 #pragma once
-class Skydome
-{
+#include "Satlib.h"
+class Skydome{
+public:
+	void Initialize();
+
+	void Draw();
+private:
+	Transform transform_;
+
+	Renderer::Model model_;
 };
 

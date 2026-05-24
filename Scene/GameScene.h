@@ -4,6 +4,7 @@
 #include "../Satlib.h"
 #include "IScene.h"
 #include <list>
+#include "../Skydome.h"
 
 class GameScene : public IScene {
 public:
@@ -86,10 +87,14 @@ private:
 	static inline const float kTrianglePositionZ = 0.0f;
 	static inline const float kTriangleActionPositionZ = -2.0f;
 
+	static inline const float kTriangleSize = 1.0f;
+
 	State state_;
 
 	AnimationPhase phase_;
 
 	DeltaTime* deltaTime_;
+
+	Skydome* skydome_ = nullptr;
 };
 
