@@ -16,6 +16,7 @@
 #include <filesystem>
 #include <chrono>
 #include "../Renderer/Renderer.h"
+#include "DeltaTime.h"
 
 GameSystem* GameSystem::GetInstance() {
 	static GameSystem gameSystem;
@@ -342,6 +343,8 @@ void GameSystem::Initialize() {
 
 	GlobalVariables::GetInstance()->LoadFiles();
 
+	DeltaTime::GetInstance()->Initialize();
+
 	RegisterGlobalVariables();
 }
 
@@ -623,6 +626,8 @@ bool GameSystem::BeginFrame() {
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
 	ApplyGlobalVariables();
+
+	DeltaTime::GetInstance()->Update();
 
 	return true;
 }

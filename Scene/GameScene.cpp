@@ -2,39 +2,69 @@
 #include "../Satlib.h"
 
 void GameScene::Initialize() {
+	// 使用するテクスチャの読み込み.
 	TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resource/otoware.png");
 	TextureManager::GetInstance()->RegisterTexture("monsterBall", "Resource/monsterBall.png");
-	model_.Initialize(TextureManager::GetInstance()->GetTextureInfo("uvChecker"));
-	transform_.Initialize();
-	CreateTriangle({ -1.0f,0.0f,0.0f });
-	CreateTriangle({ 1.0f,0.0f,0.0f });
+
+	// カメラ位置の調整
 	Camera::GetInstance()->SetPosition({ 0.0f,0.0f,-10.0f });
 
-	for (uint32_t i = 0; i < 4;i++) {
+	// デバッグ用の三角形の生成.
+	CreateTriangle({ -1.0f,0.0f,0.0f });
+	CreateTriangle({ 1.0f,0.0f,0.0f });
+
+	// 演出用データの初期化.
+	parentTransform_.Initialize();
+	parentTransformMini_.Initialize();
+
+	for (uint32_t i = 0; i < kEffectTriangle; i++) {
 		effectTriangleData_[i].transform.Initialize();
-		effectTriangleData_[i].transform.SetParent(&transform_);
+		effectTriangleData_[i].transform.SetParent(&parentTransform_);
 		effectTriangleData_[i].model.Initialize(TextureManager::GetInstance()->GetTextureInfo("uvChecker"));
-		effectTriangleData_[i].model.SetVertexPosition({ 0.0f,0.5f,0.0f }, { -0.5f,-0.5f,-0.5f }, { 0.5f,-0.5f,-0.5f });
-		effectTriangleData_[i].transform.rotate.y = static_cast<float>(Radian(90.0f) * i);
+		effectTriangleData_[i].model.SetVertexPosition({ 0.0f,1.0f,0.0f }, { -1.05f,-1.0f,-0.6f }, { 1.05f,-1.0f,-0.6f });
+		effectTriangleData_[i].transform.rotate.y = static_cast<float>(Radian(120.0f) * i);
+		effectTriangleData_[i].model.SetBlendMode(BlendMode::kNormalCullNone);
 	}
 
-	isTriangleEffect_ = false;
+	for (uint32_t i = kEffectTriangle; i < kEffectTriangle + kEffectTriangleMini; i++) {
+		effectTriangleData_[i].transform.Initialize();
+		effectTriangleData_[i].transform.SetParent(&parentTransformMini_);
+		effectTriangleData_[i].model.Initialize(TextureManager::GetInstance()->GetTextureInfo("uvChecker"));
+		effectTriangleData_[i].model.SetVertexPosition({ 0.0f,0.25f,0.0f }, { -0.2625f,-0.25f,-0.12f }, { 0.2625f,-0.25f,-0.12f });
+		effectTriangleData_[i].transform.rotate.y = static_cast<float>(Radian(120.0f) * i);
+		effectTriangleData_[i].model.SetBlendMode(BlendMode::kNormalCullNone);
+	}
+
+	effectTriangleData_[kEffectTriangle + kEffectTriangleMini].transform.Initialize();
+	effectTriangleData_[kEffectTriangle + kEffectTriangleMini].transform.SetParent(&parentTransform_);
+	effectTriangleData_[kEffectTriangle + kEffectTriangleMini].model.Initialize(TextureManager::GetInstance()->GetTextureInfo("uvChecker"));
+	effectTriangleData_[kEffectTriangle + kEffectTriangleMini].model.SetVertexPosition({ 0.0f,-1.0f,1.2f }, { -1.05f,-1.0f,-0.6f }, { 1.05f,-1.0f,-0.6f });
+	effectTriangleData_[kEffectTriangle + kEffectTriangleMini].model.SetBlendMode(BlendMode::kNormalCullNone);
+
+	deltaTime_ = DeltaTime::GetInstance();
 }
 
 void GameScene::Update() {
 	DeleteTriangle();
 
 	ImGui::Begin("Triangles");
-	ImGui::Text("isTriangleEffect : %s", isTriangleEffect_ ? "true" : "false");
+	ImGui::Text("AnimationMode : %s", state_ != State::kTriangleDebug ? "true" : "false");
 	if (ImGui::Button("Change")) {
-		if (isTriangleEffect_) {
-			isTriangleEffect_ = false;
-		} else {
-			isTriangleEffect_ = true;
+		switch (state_) {
+		case GameScene::State::kTriangleDebug:
+			EffectInitialize();
+			state_ = State::kTriangleEffect;
+			break;
+		case GameScene::State::kTriangleEffect:
+		case GameScene::State::kTriangleEffectAnimation:
+			state_ = State::kTriangleDebug;
+			break;
+		default:
+			break;
 		}
 	}
 
-	if (!isTriangleEffect_) {
+	if (state_ == State::kTriangleDebug) {
 		if (ImGui::Button("CreateTriangle")) {
 			CreateTriangle({ 0.0f,0.0f,0.0f });
 		}
@@ -123,27 +153,119 @@ void GameScene::Update() {
 	}
 	ImGui::End();
 
-	if (isTriangleEffect_) {
-		transform_.rotate.y += Radian(1.0f);
+	switch (state_) {
+	case GameScene::State::kTriangleEffect:
+		EffectUpdate();
+		break;
+	case GameScene::State::kTriangleEffectAnimation:
+		EffectAnimationUpdate();
+		break;
 	}
 
 	Camera::GetInstance()->Update();
 }
 
+void GameScene::EffectUpdate() {
+	if (InputManager::GetInstance()->GetMouse().TriggerMouse(MouseButtons::MOUSE_LEFT)) {
+		state_ = State::kTriangleEffectAnimation;
+		EffectAnimationInitialize();
+	}
+
+	parentTransform_.rotate.y += Radian(kRotateSpeed) * deltaTime_->GetDeltaTime();
+	parentTransformMini_.rotate.y -= Radian(kRotateSpeed) * deltaTime_->GetDeltaTime();
+
+	if (parentTransform_.rotate.y > Radian(360.0f)) {
+		parentTransform_.rotate.y -= Radian(360.0f);
+	}
+
+	if (parentTransformMini_.rotate.y < Radian(0.0f)) {
+		parentTransformMini_.rotate.y += Radian(360.0f);
+	}
+}
+
+void GameScene::EffectAnimationInitialize() {
+	phase_ = AnimationPhase::kOpen;
+	animationTimer_ = 0.0f;
+}
+
+void GameScene::EffectAnimationUpdate() {
+	animationTimer_ += deltaTime_->GetDeltaTime();
+
+	float rotateSpeed = 0.0f;
+	float trianglePositionZ = 0.0f;
+	Matrix4x4 triangleMatrix = Matrix4x4::Identity();
+
+	switch (phase_) {
+	case GameScene::AnimationPhase::kOpen:
+		rotateSpeed = Easing(kRotateSpeed, kRotateActionSpeed, animationTimer_, kOpenAnimationMax, EaseType::kEaseOut);
+		trianglePositionZ = Easing(kTrianglePositionZ, kTriangleActionPositionZ, animationTimer_, kOpenAnimationMax, EaseType::kEaseOut);
+		parentTransform_.rotate.y += Radian(rotateSpeed) * deltaTime_->GetDeltaTime();
+		parentTransformMini_.rotate.y -= Radian(rotateSpeed) * deltaTime_->GetDeltaTime();
+
+
+		for (uint32_t i = 0; i < kEffectTriangle; i++) {
+			triangleMatrix = Matrix4x4::MakeRotateYMatrix(Radian(static_cast<float>(120.0f * i)));
+			triangleMatrix = Matrix4x4::MakeTranslateMatrix({0.0f,0.0f,trianglePositionZ}) * triangleMatrix;
+			effectTriangleData_[i].transform.translate = triangleMatrix.GetMatrixToTranslate();
+		}
+
+		if (animationTimer_ >= kOpenAnimationMax) {
+			animationTimer_ = 0.0f;
+			phase_ = AnimationPhase::kStay;
+		}
+		break;
+	case GameScene::AnimationPhase::kStay:
+		parentTransform_.rotate.y += Radian(kRotateActionSpeed) * deltaTime_->GetDeltaTime();
+		parentTransformMini_.rotate.y -= Radian(kRotateActionSpeed) * deltaTime_->GetDeltaTime();
+
+		if (animationTimer_ >= kStayAnimationMax) {
+			animationTimer_ = 0.0f;
+			phase_ = AnimationPhase::kClose;
+		}
+		break;
+	case GameScene::AnimationPhase::kClose:
+		rotateSpeed = Easing(kRotateActionSpeed, kRotateSpeed, animationTimer_, kCloseAnimationMax, EaseType::kEaseIn);
+		trianglePositionZ = Easing(kTriangleActionPositionZ, kTrianglePositionZ, animationTimer_, kCloseAnimationMax, EaseType::kEaseIn);
+		parentTransform_.rotate.y += Radian(rotateSpeed) * deltaTime_->GetDeltaTime();
+		parentTransformMini_.rotate.y -= Radian(rotateSpeed) * deltaTime_->GetDeltaTime();
+
+		for (uint32_t i = 0; i < kEffectTriangle; i++) {
+			triangleMatrix = Matrix4x4::MakeRotateYMatrix(Radian(static_cast<float>(120.0f * i)));
+			triangleMatrix = Matrix4x4::MakeTranslateMatrix({ 0.0f,0.0f,trianglePositionZ }) * triangleMatrix;
+			effectTriangleData_[i].transform.translate = triangleMatrix.GetMatrixToTranslate();
+		}
+
+		if (animationTimer_ >= kCloseAnimationMax) {
+			animationTimer_ = 0.0f;
+			state_ = State::kTriangleEffect;
+		}
+		break;
+	}
+}
+
+
 void GameScene::Draw() {
 
-	//	testModel_.Draw(testTransform_);
-	if (isTriangleEffect_) {
-		
-		for (uint32_t i = 0; i < 4; i++) {
-			effectTriangleData_[i].model.Draw(effectTriangleData_[i].transform);
-		}
-	
-	} else {
-	
+	switch (state_) {
+	case GameScene::State::kTriangleDebug:
 		for (TriangleData& triangleData : triangleDatas_) {
 			triangleData.model.Draw(triangleData.transform);
 		}
+		break;
+	case GameScene::State::kTriangleEffect:
+	case GameScene::State::kTriangleEffectAnimation:
+		for (uint32_t i = 0; i < kEffectTriangle + kEffectTriangleMini + 1; i++) {
+			effectTriangleData_[i].model.Draw(effectTriangleData_[i].transform);
+		}
+		break;
+	}
+}
+
+void GameScene::EffectInitialize() {
+	parentTransform_.Initialize();
+
+	for (uint32_t i = 0; i < kEffectTriangle; i++) {
+		effectTriangleData_[i].transform.translate.z = kTrianglePositionZ;
 	}
 }
 

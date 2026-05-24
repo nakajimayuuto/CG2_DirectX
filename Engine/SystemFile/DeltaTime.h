@@ -10,6 +10,8 @@ private:
 
 	float deltaTime;
 public:
+	static DeltaTime* GetInstance();
+
 	DeltaTime() { Initialize(); };
 
 	void Initialize();

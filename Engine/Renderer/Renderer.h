@@ -285,6 +285,8 @@ namespace Renderer {
 		void SetLightingType(LightingType type) { materialData_->lightingType = static_cast<uint32_t>(type); };
 
 		LightingType GetLightingType() { return static_cast<LightingType>(materialData_->lightingType); };
+
+		void SetBlendMode(BlendMode blendMode) { blendMode_ = blendMode; };
 	private:
 
 		Material* materialData_ = nullptr;

@@ -1,5 +1,10 @@
 #include "DeltaTime.h"
 
+DeltaTime* DeltaTime::GetInstance() {
+	static DeltaTime instance;
+	return &instance;
+}
+
 void DeltaTime::Initialize() {
 	frameTime = clock();
 	preFrameTime = clock();

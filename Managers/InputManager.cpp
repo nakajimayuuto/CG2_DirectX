@@ -52,12 +52,17 @@ void InputMouse::Initialize(IDirectInput8* directInput) {
 
 	mousePosition_ = { 0.0f,0.0f };
 	preMousePosition_ = { 0.0f,0.0f };
+
+	mouseScreenPosition_ = { 0.0f,0.0f };
+	preMouseScreenPosition_ = { 0.0f,0.0f };
+	ZeroMemory(&mouseState_, sizeof(DIMOUSESTATE2));
+	ZeroMemory(&preMouseState_, sizeof(DIMOUSESTATE2));
 }
 
 void InputMouse::Update() {
 	preMouseState_ = mouseState_;
 	HRESULT result = mouse_->GetDeviceState(
-		sizeof(DIMOUSESTATE),
+		sizeof(DIMOUSESTATE2),
 		&mouseState_
 	);
 
@@ -65,10 +70,23 @@ void InputMouse::Update() {
 
 		mouse_->Acquire();
 
-		mouse_->GetDeviceState(
+		result = mouse_->GetDeviceState(
 			sizeof(DIMOUSESTATE2),
 			&mouseState_);
 	}
+
+	if ((mouseState_.rgbButtons[0] & 0x80) != 0) {
+		result;
+	}
+	//ImGui::Begin("mouse");
+	//
+	//for (uint32_t i = 0; i < 8; i ++) {
+	//	ImGui::PushID(i);
+	//	ImGui::Text("rgbButtom %d %d", i, mouseState_.rgbButtons[i]);
+	//	ImGui::PopID();
+	//}
+	//
+	//ImGui::End();
 
 	preMousePosition_ = mousePosition_;
 	preMouseScreenPosition_ = mouseScreenPosition_;
@@ -89,7 +107,7 @@ void InputMouse::SetCursorPosition(Vector2 position) {
 
 	ClientToScreen(GameSystem::GetInstance()->GetHWND(), &pos);
 
-	SetCursorPos(pos.x,pos.y);
+	SetCursorPos(pos.x, pos.y);
 }
 
 bool InputKeyBoard::IsOperationDevice() {

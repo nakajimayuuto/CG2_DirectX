@@ -127,6 +127,9 @@
     <Filter Include="Managers\CollisionManager">
       <UniqueIdentifier>{75e4a3fa-ae68-4f4e-b8c3-7ab462d16ebc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Skydome">
+      <UniqueIdentifier>{3c17d3d0-3b88-4e69-adb3-22aedd773e33}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -251,6 +254,9 @@
     </ClCompile>
     <ClCompile Include="Managers\CollisionManager.cpp">
       <Filter>Managers\CollisionManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Skydome.cpp">
+      <Filter>ソース ファイル\Skydome</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -388,6 +394,9 @@
     </ClInclude>
     <ClInclude Include="Managers\CollisionManager.h">
       <Filter>Managers\CollisionManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Skydome.h">
+      <Filter>ソース ファイル\Skydome</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

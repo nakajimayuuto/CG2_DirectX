@@ -41,6 +41,8 @@ float Easing(float before, float after, float time, float timeMax, EaseType type
 	const float c1 = 1.7158f;
 	const float c3 = c1 + 1.0f;
 
+	x = std::clamp(x,0.0f,1.0f);
+
 	switch (type) {
 	case EaseType::kConstant:
 		easedTime = x;
@@ -62,7 +64,7 @@ float Easing(float before, float after, float time, float timeMax, EaseType type
 		easedTime = 1.0f + c3 * pow(x - 1.0f, 3.0f) + c1 * pow(x - 1.0f, 2.0f);
 		break;
 	}
-	
+
 	return (1.0f - easedTime) * before + easedTime * after;
 }
 

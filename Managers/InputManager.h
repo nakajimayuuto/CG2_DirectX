@@ -179,10 +179,10 @@ public:
 
 	void Update();
 
-	bool PressMouse(MouseButtons button) const { return mouseState_.rgbButtons[button] & 0x80; };
-	bool TriggerMouse(MouseButtons button) const { return (mouseState_.rgbButtons[button] & 0x80 && !preMouseState_.rgbButtons[button] & 0x80); };
-	bool ReleaseMouse(MouseButtons button) const { return (!mouseState_.rgbButtons[button] & 0x80 && preMouseState_.rgbButtons[button] & 0x80); };
-	bool NoneMouse(MouseButtons button) const { return (!mouseState_.rgbButtons[button] & 0x80 && !preMouseState_.rgbButtons[button] & 0x80); };
+	bool PressMouse(MouseButtons button) const { return (mouseState_.rgbButtons[static_cast<uint32_t>(button)] & 0x80) != 0; };
+	bool TriggerMouse(MouseButtons button) const {return ((mouseState_.rgbButtons[static_cast<uint32_t>(button)] & 0x80) != 0) && !((preMouseState_.rgbButtons[static_cast<uint32_t>(button)] & 0x80) != 0); };
+	bool ReleaseMouse(MouseButtons button) const { return !((mouseState_.rgbButtons[static_cast<uint32_t>(button)] & 0x80) != 0) && !((preMouseState_.rgbButtons[static_cast<uint32_t>(button)] & 0x80) != 0); };
+	bool NoneMouse(MouseButtons button) const { return !((mouseState_.rgbButtons[static_cast<uint32_t>(button)] & 0x80) != 0) && !((preMouseState_.rgbButtons[static_cast<uint32_t>(button)] & 0x80) != 0); };
 
 	Vector2 GetMove() const { return { static_cast<float>(mouseState_.lX),static_cast<float>(mouseState_.lY) }; }
 	float GetMoveLength() const { return GetMove().Length(); }
