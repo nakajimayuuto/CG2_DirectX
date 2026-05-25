@@ -1,8 +1,9 @@
 #include "GameScene.h"
 
 void GameScene::Initialize() {
-	//transform_.Initialize();
-	//model_.Initialize();
+	ModelManager::GetInstance()->RegisterObj("player","Resource/player","player.obj");
+	transform_.Initialize();
+	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
 }
 
 void GameScene::Update() {
@@ -16,4 +17,5 @@ void GameScene::Update() {
 }
 
 void GameScene::Draw() {
+	model_.Draw(transform_);
 }
