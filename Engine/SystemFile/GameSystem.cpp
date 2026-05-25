@@ -345,6 +345,8 @@ void GameSystem::Initialize() {
 
 	DeltaTime::GetInstance()->Initialize();
 
+	Environment::GetInstance()->Initialize();
+
 	RegisterGlobalVariables();
 }
 

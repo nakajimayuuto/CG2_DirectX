@@ -112,6 +112,12 @@ public:
 
 	std::ofstream& GetLogStream() { return logStream; };
 
+	Microsoft::WRL::ComPtr<IDXGISwapChain4> GetSwapChain() { return swapChain; }
+
+	D3D12_VIEWPORT GetViewport() { return viewport; };
+
+	void SetViewport(D3D12_VIEWPORT setViewport) { viewport = setViewport; };
+
 	struct Pipeline {
 		Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
 		Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;

@@ -9,9 +9,17 @@ public:
 	uint32_t height;
 };
 
+enum WindowMode {
+	kWindowed, // ウィンドウの状態.
+	kExclusiveFullscreen, //排他的フルスクリーン。せっかくだし作ろうとしたけどうまくいかなかった.
+	kFullscreen, // フルスクリーン.
+};
+
 class Environment{
 public:
 	static Environment* GetInstance();
+
+	void Initialize();
 
 	void GameFinished() { isGameFinished_ = true; };
 
@@ -20,10 +28,25 @@ public:
 	LPCWSTR GetWindowTitle() { return kWindowTitle_; };
 	WindowSize GetWindowSize() { return kWindowSize_; };
 
+	void SetWindowMode(WindowMode mode);
+
+	WindowMode GetWindowMode() { return currentWindowMode_; };
+private:
+	void SetBorderlessFullscreen();
+
+	void SetWindowed();
 private:
 	const LPCWSTR kWindowTitle_ = L"SaturnCGEngine";
 
 	const WindowSize kWindowSize_ = {1280,720};
 
+	float aspect_;
+
 	bool isGameFinished_ = false;
+
+	WindowSize monitorSize_;
+
+	WindowMode currentWindowMode_;
+
+	RECT windowRect{};
 };
