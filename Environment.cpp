@@ -10,7 +10,7 @@ void Environment::Initialize() {
 	monitorSize_.width = GetSystemMetrics(SM_CXSCREEN);
 	monitorSize_.height = GetSystemMetrics(SM_CYSCREEN);
 
-	aspect_ = kWindowSize_.width / kWindowSize_.height;
+	aspect_ = static_cast<float>(kWindowSize_.width) / static_cast<float>(kWindowSize_.height);
 
 	currentWindowMode_ = kWindowed;
 

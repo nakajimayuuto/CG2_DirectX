@@ -48,6 +48,8 @@ public:
 
 	void SetTransform(const Transform& transform) { scale_ = transform.scale; rotate_ = transform.rotate; translate_ = transform.translate; };
 
+	Transform GetTransform() { return Transform::GetInitialValue(scale_,rotate_,translate_); };
+
 	Vector3 GetPosition() { return translate_; };
 
 	Vector3 GetCameraVector3(Vector3 vector3,Matrix4x4 matrix);
@@ -61,6 +63,10 @@ public:
 	Matrix4x4 GetViewMatrix() { return  Matrix4x4::MakeAffineMatrix(scale_, rotate_, translate_); };
 
 	Matrix4x4 GetProjectionMatrix() {return Matrix4x4::MakePerspectiveFovMatrix(fovY_, windowWidth_ / windowHeight_, nearClip_, farClip_);}
+
+	void SetWindowSize(float windowWidth, float windowHeight) { windowWidth_ = windowWidth; windowHeight_ = windowHeight; };
+
+	Vector2 GetWindowSize() { return {windowWidth_,windowHeight_}; };
 
 	void ChangeCameraMode();
 
