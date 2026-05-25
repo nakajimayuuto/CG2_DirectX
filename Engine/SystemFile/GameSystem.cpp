@@ -327,6 +327,22 @@ void GameSystem::Initialize() {
 	io.Fonts->Build();
 #endif // USE_IMGUI
 
+	// 【ビューポート】
+	// クライアント領域のサイズと一緒にして画面全体に表示.
+	viewport.Width = static_cast<FLOAT>(Environment::GetInstance()->GetWindowSize().width);
+	viewport.Height = static_cast<FLOAT>(Environment::GetInstance()->GetWindowSize().height);
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+
+	// 【シザー矩形】
+	// 基本的にビューポートと同じ矩形が構成されるようにする.
+	scissorRect.left = 0;
+	scissorRect.right = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().width);
+	scissorRect.top = 0;
+	scissorRect.bottom = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().height);
+
 	for (uint32_t i = 0; i < static_cast<uint32_t>(BlendMode::kCount); i++) {
 		CreatePipeline(static_cast<BlendMode>(i));
 	}
@@ -370,22 +386,6 @@ void GameSystem::CreatePipeline(BlendMode blendMode) {
 	//
 	// もともとPSOがあった場所(03_01にて変更).
 	//
-
-	// 【ビューポート】
-	// クライアント領域のサイズと一緒にして画面全体に表示.
-	viewport.Width = static_cast<FLOAT>(Environment::GetInstance()->GetWindowSize().width);
-	viewport.Height = static_cast<FLOAT>(Environment::GetInstance()->GetWindowSize().height);
-	viewport.TopLeftX = 0;
-	viewport.TopLeftY = 0;
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-
-	// 【シザー矩形】
-	// 基本的にビューポートと同じ矩形が構成されるようにする.
-	scissorRect.left = 0;
-	scissorRect.right = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().width);
-	scissorRect.top = 0;
-	scissorRect.bottom = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().height);
 
 	/*=============================================================
 	DepthStencilTextureをつくる
@@ -617,6 +617,8 @@ bool GameSystem::BeginFrame() {
 
 	Renderer::Line::GetInstance()->ClearDrawIndex();
 
+	WindowSizeUpdate();
+
 #ifdef USE_IMGUI
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -807,6 +809,71 @@ std::ofstream GameSystem::CreateLogFile() {
 	std::ofstream logStream(logFilePath);
 
 	return logStream;
+}
+
+void GameSystem::WindowSizeUpdate(){
+	RECT windowRect;
+	GetWindowRect(GameSystem::GetInstance()->GetHWND(), &windowRect);
+
+	Camera::GetInstance()->
+	//
+	//float windowWidth = windowRect.right - windowRect.left;
+	//float windowHeight = windowRect.bottom - windowRect.top;
+	//float viewportWidth;
+	//float viewportHeight;
+	//float viewportX = 0.0f;
+	//float viewportY = 0.0f;
+	//float windowAspect = windowWidth / windowHeight;
+	//
+	//if (windowAspect > Environment::GetInstance()->GetAspect()){
+	//	// 横に広すぎる → 左右黒帯
+	//	viewportHeight = windowHeight;
+	//	viewportWidth = viewportHeight * Environment::GetInstance()->GetAspect();
+	//
+	//	viewportX = (windowWidth - viewportWidth) * 0.5f;
+	//} else
+	//{
+	//	// 縦に広すぎる → 上下黒帯
+	//	viewportWidth = windowWidth;
+	//	viewportHeight = viewportWidth / Environment::GetInstance()->GetAspect();
+	//
+	//	viewportY = (windowHeight - viewportHeight) * 0.5f;
+	//}
+	//
+	//D3D12_VIEWPORT viewport{};
+	//
+	//viewport.TopLeftX = viewportX;
+	//viewport.TopLeftY = viewportY;
+	//viewport.Width = viewportWidth;
+	//viewport.Height = viewportHeight;
+	//viewport.MinDepth = 0.0f;
+	//viewport.MaxDepth = 1.0f;
+	//
+	//commandList->RSSetViewports(
+	//	1,
+	//	&viewport
+	//);
+	//
+	//D3D12_RECT scissorRect{};
+	//
+	//scissorRect.left =
+	//	static_cast<LONG>(viewportX);
+	//
+	//scissorRect.top =
+	//	static_cast<LONG>(viewportY);
+	//
+	//scissorRect.right =
+	//	static_cast<LONG>(
+	//		viewportX + viewportWidth);
+	//
+	//scissorRect.bottom =
+	//	static_cast<LONG>(
+	//		viewportY + viewportHeight);
+	//
+	//commandList->RSSetScissorRects(
+	//	1,
+	//	&scissorRect
+	//);
 }
 
 void GameSystem::Log(const std::string& message) {

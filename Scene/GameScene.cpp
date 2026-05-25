@@ -1,7 +1,8 @@
 #include "GameScene.h"
 
 void GameScene::Initialize() {
-
+	//transform_.Initialize();
+	//model_.Initialize();
 }
 
 void GameScene::Update() {

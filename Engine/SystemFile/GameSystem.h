@@ -133,6 +133,8 @@ private:
 
 	std::ofstream CreateLogFile();
 
+	void WindowSizeUpdate();
+
 public:
 	// ログを表示する.
 	static void Log(const std::string& message);

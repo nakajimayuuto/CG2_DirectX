@@ -13,5 +13,7 @@ public:
 	void Draw() override;
 private:
 private:
+	Renderer::Model model_;
+	Transform transform_;
 };
 

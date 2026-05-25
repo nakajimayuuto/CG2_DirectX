@@ -15,6 +15,13 @@ enum WindowMode {
 	kFullscreen, // フルスクリーン.
 };
 
+enum AspectMode {
+	kNone, // アスペクト比の調節無し.
+	kAspectWindowFixed, // アスペクト比をウィンドウを変化させて調節する.
+	kAspectFrameFixed,  // アスペクト比をフレームを作って調節する.
+	kAspectFrame, // kAspectFrameFixedのフレーム無し版.
+};
+
 class Environment{
 public:
 	static Environment* GetInstance();
@@ -31,6 +38,8 @@ public:
 	void SetWindowMode(WindowMode mode);
 
 	WindowMode GetWindowMode() { return currentWindowMode_; };
+
+	float GetAspect() { return aspect_; }
 private:
 	void SetBorderlessFullscreen();
 
