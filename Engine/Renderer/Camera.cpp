@@ -1,7 +1,10 @@
+#define NOMINMAX
 #include "Camera.h"
 #include "../../Managers/InputManager.h"
 #include "../Math/Math.h"
 #include "../SystemFile/GlobalVariables.h"
+#include "../../Environment.h"
+#include "../SystemFile/GameSystem.h"
 
 Camera* Camera::GetInstance() {
 	static Camera instance;
@@ -29,7 +32,9 @@ void Camera::Initialize(float windowWidth, float windowHeight) {
 	debugScale_ = { 1.0f,1.0f,1.0f };
 	debugTranslate_ = { 0.0f,0.0f,-10.0f };
 
-	debugMatRot_ = Matrix4x4::MakeAffineMatrix(debugScale_,rotate_,debugTranslate_);
+	aspectScale_ = { 1.0f,1.0f,1.0f };
+
+	debugMatRot_ = Matrix4x4::MakeAffineMatrix(debugScale_, rotate_, debugTranslate_);
 }
 
 void Camera::Initialize() {
@@ -50,7 +55,7 @@ void Camera::Initialize() {
 	debugScale_ = { 1.0f,1.0f,1.0f };
 	debugTranslate_ = { 0.0f,0.0f,-10.0f };
 
-	debugMatRot_ = Matrix4x4::MakeAffineMatrix(debugScale_,rotate_,debugTranslate_);
+	debugMatRot_ = Matrix4x4::MakeAffineMatrix(debugScale_, rotate_, debugTranslate_);
 }
 
 void Camera::Update() {
@@ -64,7 +69,7 @@ void Camera::Update() {
 	matrix_ = Matrix4x4::MakeAffineMatrix(scale_, rotate_, translate_);
 }
 
-void Camera::DebugUpdate(){
+void Camera::DebugUpdate() {
 	Vector3 debugRotate = { 0.0f,0.0f,0.0f };
 	bool useMoving = false;
 
@@ -91,7 +96,7 @@ void Camera::DebugUpdate(){
 		if (InputManager::GetInstance()->PressKey(DIK_LCONTROL)) {
 			debugTranslate_.y -= 0.05f;
 		}
-	}else {
+	} else {
 		if (InputManager::GetInstance()->PressKey(DIK_D)) {
 			debugRotate.x += Radian(1.0f);
 		}
@@ -105,7 +110,7 @@ void Camera::DebugUpdate(){
 			debugRotate.y += Radian(1.0f);
 		}
 	}
-	
+
 
 	Matrix4x4 matRotDelta = Matrix4x4::Identity();
 	matRotDelta *= Matrix4x4::MakeRotateYMatrix(debugRotate.x);
@@ -130,17 +135,79 @@ Vector3 Camera::GetCameraVector3(Vector3 vector3, Matrix4x4 matrix) {
 	return result;
 }
 
-Matrix4x4 Camera::GetWorldViewProjectionMatrix(Matrix4x4 matrix){
+Matrix4x4 Camera::GetWorldViewProjectionMatrix(Matrix4x4 matrix) {
 	Matrix4x4 viewMatrix = matrix_.Inverse();
 	Matrix4x4 projectionMatrix = Matrix4x4::MakePerspectiveFovMatrix(fovY_, windowWidth_ / windowHeight_, nearClip_, farClip_);
 	Matrix4x4 worldViewProjectionMatrix = matrix * viewMatrix * projectionMatrix;
-	return worldViewProjectionMatrix;
+	if (windowWidth_ / windowHeight_ > Environment::GetInstance()->GetAspect()) {
+		return worldViewProjectionMatrix;
+	}
+
+	return worldViewProjectionMatrix * Matrix4x4::MakeScaleMatrix({ aspectScale_.x / aspectScale_.y,aspectScale_.x / aspectScale_.y,aspectScale_.x / aspectScale_.y });
 }
 
-Matrix4x4 Camera::GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix){
-	Matrix4x4 viewMatrix = matrix_.Identity();
-	Matrix4x4 projectionMatrix = Matrix4x4::MakeOrthographicMatrix({ {0.0f,0.0f},{0.0f,0.0f},{0.0f,0.0f},{windowWidth_,windowHeight_} }, 0.0f, 100.0f);
-	Matrix4x4 worldViewProjectionMatrix = matrix * viewMatrix * projectionMatrix;
+Matrix4x4 Camera::GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix) {
+	Matrix4x4 viewMatrix;
+	Matrix4x4 projectionMatrix;
+	Matrix4x4 worldViewProjectionMatrix;
+	viewMatrix = matrix_.Identity();
+	projectionMatrix =Matrix4x4::MakeOrthographicMatrix({viewportLeftTop_,{0.0f,0.0f},{0.0f,0.0f},{windowWidth_,windowHeight_}},0.0f,100.0f);
+
+	// 旧式の式(ガハハwww).
+	if (false) {
+		worldViewProjectionMatrix = matrix * viewMatrix * projectionMatrix;
+
+		return worldViewProjectionMatrix;
+	}
+
+	float baseWidth = 1280.0f;
+	float baseHeight = 720.0f;
+
+	float targetAspect = Environment::GetInstance()->GetAspect();
+
+	float windowAspect = windowWidth_ / windowHeight_;
+
+	float virtualWidth;
+	float virtualHeight;
+
+	// ★修正ポイント
+	// Windowの縦横ではなく
+	// 基準Aspectとの比較で判定
+	if (windowAspect < targetAspect){
+		// 16:9より狭い（縦長寄り）
+		// 横幅を基準
+
+		virtualWidth = windowWidth_;
+		virtualHeight = windowWidth_ / targetAspect;
+	} else{
+		// 16:9より広い（横長寄り）
+		// 高さを基準
+
+		virtualHeight = windowHeight_;
+		virtualWidth = windowHeight_ * targetAspect;
+	}
+
+
+	// スケール率
+	float scaleX = virtualWidth / baseWidth;
+	float scaleY = virtualHeight / baseHeight;
+
+	// 中央配置
+	float offsetX = (windowWidth_ - virtualWidth) * 0.5f;
+	float offsetY = (windowHeight_ - virtualHeight) * 0.5f;
+
+	// 中央基準スケール
+	float centerX = baseWidth * 0.5f;
+	float centerY = baseHeight * 0.5f;
+
+	Matrix4x4 moveToCenter = Matrix4x4::MakeTranslateMatrix({-centerX,-centerY,0.0f});
+
+	Matrix4x4 scaleMatrix = Matrix4x4::MakeScaleMatrix({scaleX,scaleY,1.0f});
+
+	Matrix4x4 moveBack = Matrix4x4::MakeTranslateMatrix({virtualWidth * 0.5f + offsetX,virtualHeight * 0.5f + offsetY,0.0f});
+
+	worldViewProjectionMatrix = matrix * viewMatrix * moveToCenter * scaleMatrix * moveBack * projectionMatrix;
+
 	return worldViewProjectionMatrix;
 }
 
@@ -148,7 +215,7 @@ Matrix4x4 Camera::GetVPVMatrix(Matrix4x4 matrix) {
 	return GetWorldViewProjectionMatrix(matrix) * Matrix4x4::MakeViewportMatrix(viewportLeftTop_, windowWidth_, windowHeight_, minDepth_, maxDepth_);
 }
 
-void Camera::ChangeCameraMode(){
+void Camera::ChangeCameraMode() {
 	if (useDebugCamera_) {
 		useDebugCamera_ = false;
 	} else {

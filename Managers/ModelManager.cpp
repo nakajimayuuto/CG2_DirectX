@@ -136,7 +136,7 @@ std::vector<ModelData>ModelManager::LoadObjFile(const std::string& directoryPath
 		} else if (identifier == "f") {
 			VertexData triangle[4];
 			bool useQuad = false;
-			// 面は三角形限定。その他は未対応.
+			// 面は三角形と四角形限定。その他は未対応.
 			for (uint32_t faceVertex = 0; faceVertex < 4; ++faceVertex) {
 				std::string vertexDefinition;
 				s >> vertexDefinition;

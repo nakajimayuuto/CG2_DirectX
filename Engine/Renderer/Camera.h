@@ -2,7 +2,7 @@
 #include "../Math/Matrix4x4.h"
 #include "../Math/Transform.h"
 
-class Camera{
+class Camera {
 	Vector3 scale_;
 	Vector3 rotate_;
 	Vector3 translate_;
@@ -19,7 +19,7 @@ class Camera{
 	float fovY_;
 	float nearClip_;
 	float farClip_;
-	float minDepth_; 
+	float minDepth_;
 	float maxDepth_;
 
 
@@ -30,6 +30,8 @@ class Camera{
 	Matrix4x4 debugMatRot_;
 
 	bool useDebugCamera_;
+
+	Vector3 aspectScale_;
 public:
 
 	static Camera* GetInstance();
@@ -41,12 +43,14 @@ public:
 	void Update();
 
 	void DebugUpdate();
-		
+
 	void SetPosition(Vector3 vector3) { translate_ = vector3; }
 
 	void SetRotate(Vector3 rotate) { rotate_ = rotate; };
 
 	void SetTransform(const Transform& transform) { scale_ = transform.scale; rotate_ = transform.rotate; translate_ = transform.translate; };
+
+	void SetAspectScale(const Vector3& aspectScale) { aspectScale_ = aspectScale; };
 
 	Transform GetTransform() { return Transform::GetInitialValue(scale_,rotate_,translate_); };
 
@@ -56,7 +60,7 @@ public:
 
 	Matrix4x4 GetWorldViewProjectionMatrix(Matrix4x4 matrix);
 
-	Matrix4x4 GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix);
+	Matrix4x4 GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix);	
 
 	Matrix4x4 GetVPVMatrix(Matrix4x4 matrix);
 

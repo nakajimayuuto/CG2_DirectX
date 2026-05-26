@@ -617,8 +617,6 @@ bool GameSystem::BeginFrame() {
 
 	Renderer::Line::GetInstance()->ClearDrawIndex();
 
-	WindowSizeUpdate();
-
 #ifdef USE_IMGUI
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -637,6 +635,8 @@ bool GameSystem::BeginFrame() {
 }
 
 void GameSystem::DrawSetup() {
+	WindowSizeUpdate();
+
 #ifdef USE_IMGUI
 	// ImGuiの内部コマンドを生成する.
 	ImGui::Render();
@@ -766,7 +766,7 @@ void GameSystem::WindowSizeUpdate() {
 	GetClientRect(GameSystem::GetInstance()->GetHWND(), &clientRect);
 
 	//Camera::GetInstance()->
-	
+
 	float windowWidth = static_cast<float>(clientRect.right - clientRect.left);
 	float windowHeight = static_cast<float>(clientRect.bottom - clientRect.top);
 	//float viewportWidth;
@@ -775,13 +775,20 @@ void GameSystem::WindowSizeUpdate() {
 	//float viewportY = 0.0f;
 	float windowAspect = windowWidth / windowHeight;
 	float targetAspect = Environment::GetInstance()->GetAspect();
-
+	Vector3 aspectScale;
 	//Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
-	if(windowAspect == targetAspect){
-	}else if (windowAspect > targetAspect) {
-		Camera::GetInstance()->SetWindowSize(windowWidth,windowHeight);
-	}else{
-		Camera::GetInstance()->SetWindowSize(windowWidth,windowHeight);
+	aspectScale.x = windowWidth / Environment::GetInstance()->GetWindowSize().width;
+	aspectScale.y = windowHeight / Environment::GetInstance()->GetWindowSize().height;
+	aspectScale.z = 1.0f;
+	if (windowAspect == targetAspect) {
+		Camera::GetInstance()->SetAspectScale(aspectScale);
+		Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
+	} else if (windowAspect > targetAspect) {
+		Camera::GetInstance()->SetAspectScale(aspectScale);
+		Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
+	} else {
+		Camera::GetInstance()->SetAspectScale(aspectScale);
+		Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
 		//Camera::GetInstance()->SetWindowSize(Camera::GetInstance()->GetWindowSize().x, windowHeight* (windowHeight / Camera::GetInstance()->GetWindowSize().y));
 	}
 
