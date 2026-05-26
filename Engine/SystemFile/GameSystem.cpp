@@ -635,7 +635,7 @@ bool GameSystem::BeginFrame() {
 }
 
 void GameSystem::DrawSetup() {
-	WindowSizeUpdate();
+	//WindowSizeUpdate();
 
 #ifdef USE_IMGUI
 	// ImGuiの内部コマンドを生成する.
@@ -780,17 +780,10 @@ void GameSystem::WindowSizeUpdate() {
 	aspectScale.x = windowWidth / Environment::GetInstance()->GetWindowSize().width;
 	aspectScale.y = windowHeight / Environment::GetInstance()->GetWindowSize().height;
 	aspectScale.z = 1.0f;
-	if (windowAspect == targetAspect) {
-		Camera::GetInstance()->SetAspectScale(aspectScale);
-		Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
-	} else if (windowAspect > targetAspect) {
-		Camera::GetInstance()->SetAspectScale(aspectScale);
-		Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
-	} else {
-		Camera::GetInstance()->SetAspectScale(aspectScale);
-		Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
-		//Camera::GetInstance()->SetWindowSize(Camera::GetInstance()->GetWindowSize().x, windowHeight* (windowHeight / Camera::GetInstance()->GetWindowSize().y));
-	}
+
+	Camera::GetInstance()->SetAspectScale(aspectScale);
+	Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
+
 
 
 	//
@@ -857,24 +850,79 @@ void GameSystem::ApplyGlobalVariables() {
 	DirectionalLight::GetInstance()->ApplyGlobalVariables();
 };
 
-LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-#ifdef USE_IMGUI
-	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
-		return true;
-	}
-#endif // USE_IMGUI
+//LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+//#ifdef USE_IMGUI
+//	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
+//		return true;
+//	}
+//#endif // USE_IMGUI
+//
+//	// メッセージに応じてゲーム固有の処理を行う.
+//	switch (msg) {
+//		//ウィンドウが破棄された.
+//	case WM_DESTROY:
+//		// OSに対して、アプリの終了を伝える.
+//		PostQuitMessage(0);
+//		return 0;
+//	}
+//
+//	// 標準のメッセージ処理を行う.
+//	return DefWindowProc(hwnd, msg, wparam, lparam);
+//}
 
-	// メッセージに応じてゲーム固有の処理を行う.
-	switch (msg) {
-		//ウィンドウが破棄された.
+LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
+	float aspect = Environment::GetInstance()->GetAspect();
+
+	switch (msg)
+	{
+	case WM_SIZING:
+	{
+		RECT* rect = reinterpret_cast<RECT*>(lParam);
+
+		int width = rect->right - rect->left;
+		int height = rect->bottom - rect->top;
+
+		switch (wParam)
+		{
+			// 左右をドラッグ → 高さを補正
+		case WMSZ_LEFT:
+		case WMSZ_RIGHT:
+		{
+			int newHeight = static_cast<int>(width / aspect);
+			rect->bottom = rect->top + newHeight;
+			break;
+		}
+
+		// 上下をドラッグ → 幅を補正
+		case WMSZ_TOP:
+		case WMSZ_BOTTOM:
+		{
+			int newWidth = static_cast<int>(height * aspect);
+			rect->right = rect->left + newWidth;
+			break;
+		}
+
+		// 四隅ドラッグ
+		case WMSZ_TOPLEFT:
+		case WMSZ_TOPRIGHT:
+		case WMSZ_BOTTOMLEFT:
+		case WMSZ_BOTTOMRIGHT:
+		{
+			int newHeight = static_cast<int>(width / aspect);
+			rect->bottom = rect->top + newHeight;
+			break;
+		}
+		}
+
+		return TRUE;
+	}
+
 	case WM_DESTROY:
-		// OSに対して、アプリの終了を伝える.
 		PostQuitMessage(0);
 		return 0;
 	}
 
-	// 標準のメッセージ処理を行う.
-	return DefWindowProc(hwnd, msg, wparam, lparam);
+	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
 std::ofstream GameSystem::CreateLogFile() {
