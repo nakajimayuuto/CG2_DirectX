@@ -19,7 +19,7 @@ void LockOn::Update(Player* player, std::list<BaseEnemy*>& enemies) {
 
 		Vector3 positionScreen = Camera::GetInstance()->GetCameraVector3(positionWorld, Matrix4x4::Identity());
 
-		if (positionScreen.z <= playerPos.z) {
+		if (positionWorld.z <= playerPos.z) {
 			continue;
 		}
 
@@ -34,7 +34,7 @@ void LockOn::Update(Player* player, std::list<BaseEnemy*>& enemies) {
 
 	target_ = nullptr;
 	isLockOn_ = false;
-	//sprite_.SetIsVisible(false);
+	sprite_.SetIsVisible(false);
 
 	if (!targets.empty()) {
 		targets.sort();
