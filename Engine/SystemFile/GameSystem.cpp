@@ -878,23 +878,29 @@ void GameSystem::ApplyGlobalVariables() {
 //		return true;
 //	}
 //
+//	RECT* rect;
+//	int width;
+//	int height;
+//	int newHeight;
+//	int newWidth;
+//
 //	switch (msg) {
 //	case WM_SIZING:
-//		RECT* rect = reinterpret_cast<RECT*>(lparam);
-//		int width = rect->right - rect->left;
-//		int height = rect->bottom - rect->top;
+//		rect = reinterpret_cast<RECT*>(lparam);
+//		width = rect->right - rect->left;
+//		height = rect->bottom - rect->top;
 //
 //		switch (wparam){
 //		case WMSZ_LEFT:
 //		case WMSZ_RIGHT:
 //			// 左右をドラッグ → 高さを補正
-//			int newHeight = static_cast<int>(width / aspect);
+//			newHeight = static_cast<int>(width / aspect);
 //			rect->bottom = rect->top + newHeight;
 //			break;
 //		case WMSZ_TOP:
 //		case WMSZ_BOTTOM:
 //			// 上下をドラッグ → 幅を補正
-//			int newWidth = static_cast<int>(height * aspect);
+//			newWidth = static_cast<int>(height * aspect);
 //			rect->right = rect->left + newWidth;
 //			break;
 //		case WMSZ_TOPLEFT:
@@ -902,7 +908,7 @@ void GameSystem::ApplyGlobalVariables() {
 //		case WMSZ_BOTTOMLEFT:
 //		case WMSZ_BOTTOMRIGHT:
 //			// 四隅ドラッグ
-//			int newHeight = static_cast<int>(width / aspect);
+//			newHeight = static_cast<int>(width / aspect);
 //			rect->bottom = rect->top + newHeight;
 //			break;
 //		}
@@ -916,6 +922,10 @@ void GameSystem::ApplyGlobalVariables() {
 //}
 
 LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
+		return true;
+	}
+
 	float aspect = Environment::GetInstance()->GetAspect();
 	switch (msg)
 	{
@@ -963,18 +973,23 @@ LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPAR
 		int currentPosX = rect->left;
 		int currentPosY = rect->top;
 
+		Log(std::format("Rect l:{},r:{},t:{},b:{}\n", rect->left, rect->right, rect->top, rect->bottom));
+		Log(std::format("Rect w:{},h:{}\n", width,height));
+
 		switch (wparam) {
 		case WMSZ_LEFT:
 		case WMSZ_RIGHT:
 			// 左右をドラッグ → 高さを補正
 			newHeight = static_cast<int>(clientWidth / aspect);
 			rect->bottom = newHeight;
+			currentPosX = rect->left;
 			break;
 		case WMSZ_TOP:
 		case WMSZ_BOTTOM:
 			// 上下をドラッグ → 幅を補正
 			newWidth = static_cast<int>(clientHeight * aspect);
 			rect->right = newWidth;
+			currentPosY = rect->top;
 			break;
 		case WMSZ_TOPLEFT:
 		case WMSZ_TOPRIGHT:
@@ -983,6 +998,7 @@ LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPAR
 			// 四隅ドラッグ
 			newHeight = static_cast<int>(clientWidth / aspect);
 			rect->bottom = newHeight;
+			currentPosX = rect->left;
 			break;
 		}
 
@@ -1011,7 +1027,6 @@ LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPAR
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-
 std::ofstream GameSystem::CreateLogFile() {
 	// ログのディレクトリを用意.
 	std::filesystem::create_directory("logs");
@@ -1033,6 +1048,10 @@ std::ofstream GameSystem::CreateLogFile() {
 }
 
 void GameSystem::Log(const std::string& message) {
+	OutputDebugStringA(message.c_str());
+}
+
+void GameSystem::ExportLog(const std::string& message){
 	GameSystem::GetInstance()->GetLogStream() << message << std::endl;
 	OutputDebugStringA(message.c_str());
 }

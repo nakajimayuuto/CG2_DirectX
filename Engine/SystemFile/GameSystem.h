@@ -139,6 +139,8 @@ public:
 	// ログを表示する.
 	static void Log(const std::string& message);
 
+	static void ExportLog(const std::string& message);
+
 	// CompileShader関数(どうやってファイル分けするかね).
 	static IDxcBlob* CompileShader(
 		// CompilerするShaderファイルへのパス.
