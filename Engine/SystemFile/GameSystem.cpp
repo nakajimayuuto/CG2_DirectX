@@ -870,49 +870,135 @@ void GameSystem::ApplyGlobalVariables() {
 //	return DefWindowProc(hwnd, msg, wparam, lparam);
 //}
 
-LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
+// タイトルバー含めて16:9にする.
+//LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+//	float aspect = Environment::GetInstance()->GetAspect();
+//
+//	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
+//		return true;
+//	}
+//
+//	switch (msg) {
+//	case WM_SIZING:
+//		RECT* rect = reinterpret_cast<RECT*>(lparam);
+//		int width = rect->right - rect->left;
+//		int height = rect->bottom - rect->top;
+//
+//		switch (wparam){
+//		case WMSZ_LEFT:
+//		case WMSZ_RIGHT:
+//			// 左右をドラッグ → 高さを補正
+//			int newHeight = static_cast<int>(width / aspect);
+//			rect->bottom = rect->top + newHeight;
+//			break;
+//		case WMSZ_TOP:
+//		case WMSZ_BOTTOM:
+//			// 上下をドラッグ → 幅を補正
+//			int newWidth = static_cast<int>(height * aspect);
+//			rect->right = rect->left + newWidth;
+//			break;
+//		case WMSZ_TOPLEFT:
+//		case WMSZ_TOPRIGHT:
+//		case WMSZ_BOTTOMLEFT:
+//		case WMSZ_BOTTOMRIGHT:
+//			// 四隅ドラッグ
+//			int newHeight = static_cast<int>(width / aspect);
+//			rect->bottom = rect->top + newHeight;
+//			break;
+//		}
+//		return TRUE;
+//	case WM_DESTROY:
+//		PostQuitMessage(0);
+//		return 0;
+//	}
+//
+//	return DefWindowProc(hwnd, msg, wparam, lparam);
+//}
+
+LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	float aspect = Environment::GetInstance()->GetAspect();
-	// 16:9になってないやん！(使える)
 	switch (msg)
 	{
 	case WM_SIZING:
 	{
-		RECT* rect = reinterpret_cast<RECT*>(lParam);
+		RECT* rect = reinterpret_cast<RECT*>(lparam);
+
+		DWORD style =
+			static_cast<DWORD>(
+				GetWindowLongPtr(hwnd, GWL_STYLE));
+
+		DWORD exStyle =
+			static_cast<DWORD>(
+				GetWindowLongPtr(hwnd, GWL_EXSTYLE));
+
+		RECT borderRect = { 0,0,0,0 };
+
+		AdjustWindowRectEx(
+			&borderRect,
+			style,
+			FALSE,
+			exStyle);
+
+		int borderWidth =
+			borderRect.right - borderRect.left;
+
+		int borderHeight =
+			borderRect.bottom - borderRect.top;
 
 		int width = rect->right - rect->left;
 		int height = rect->bottom - rect->top;
+		//--------------------------------------
+		// クライアントサイズへ変換
+		//--------------------------------------
+		int clientWidth = width - borderWidth;
 
-		switch (wParam)
-		{
-			// 左右をドラッグ → 高さを補正
+		int clientHeight = height - borderHeight;
+
+
+		rect->bottom = clientHeight;
+		rect->right = clientWidth;
+		int newWidth;
+		int newHeight;
+
+		int currentPosX = rect->left;
+		int currentPosY = rect->top;
+
+		switch (wparam) {
 		case WMSZ_LEFT:
 		case WMSZ_RIGHT:
-		{
-			int newHeight = static_cast<int>(width / aspect);
-			rect->bottom = rect->top + newHeight;
+			// 左右をドラッグ → 高さを補正
+			newHeight = static_cast<int>(clientWidth / aspect);
+			rect->bottom = newHeight;
 			break;
-		}
-
-		// 上下をドラッグ → 幅を補正
 		case WMSZ_TOP:
 		case WMSZ_BOTTOM:
-		{
-			int newWidth = static_cast<int>(height * aspect);
-			rect->right = rect->left + newWidth;
+			// 上下をドラッグ → 幅を補正
+			newWidth = static_cast<int>(clientHeight * aspect);
+			rect->right = newWidth;
 			break;
-		}
-
-		// 四隅ドラッグ
 		case WMSZ_TOPLEFT:
 		case WMSZ_TOPRIGHT:
 		case WMSZ_BOTTOMLEFT:
 		case WMSZ_BOTTOMRIGHT:
-		{
-			int newHeight = static_cast<int>(width / aspect);
-			rect->bottom = rect->top + newHeight;
+			// 四隅ドラッグ
+			newHeight = static_cast<int>(clientWidth / aspect);
+			rect->bottom = newHeight;
 			break;
 		}
-		}
+
+		rect->left = 0;
+		rect->top = 0;
+
+		AdjustWindowRectEx(
+			rect,
+			style,
+			FALSE,
+			exStyle);
+
+		rect->left = currentPosX;
+		rect->top = currentPosY;
+		rect->right = rect->right + currentPosX + borderWidth;
+		rect->bottom = rect->bottom + currentPosY + borderHeight;
 
 		return TRUE;
 	}
@@ -922,8 +1008,9 @@ LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 		return 0;
 	}
 
-	return DefWindowProc(hwnd, msg, wParam, lParam);
+	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
+
 
 std::ofstream GameSystem::CreateLogFile() {
 	// ログのディレクトリを用意.
