@@ -872,7 +872,7 @@ void GameSystem::ApplyGlobalVariables() {
 
 LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
 	float aspect = Environment::GetInstance()->GetAspect();
-
+	// 16:9になってないやん！(使える)
 	switch (msg)
 	{
 	case WM_SIZING:
