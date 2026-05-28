@@ -2,7 +2,6 @@
 #include "Player.h"
 
 EnemyBullet::~EnemyBullet(){
-	delete player_;
 }
 
 void EnemyBullet::Initialize(const std::string& modelName, const Vector3& position, const Vector3& velocity) {

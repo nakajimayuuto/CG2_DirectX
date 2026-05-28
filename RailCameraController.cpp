@@ -11,17 +11,6 @@ void RailCameraController::Initialize(const Transform& transform) {
 
 	type_ = CameraType::kFirstPoint;
 
-	//controlPoints_ = {
-	//	{0.0f,50.0f,0.0f},
-	//	{0.0f,50.0f,10.0f},
-	//	{0.0f,50.0f,20.0f},
-	//	{0.0f,60.0f,30.0f},
-	//	{0.0f,65.0f,40.0f},
-	//	{0.0f,60.0f,50.0f},
-	//	{0.0f,50.0f,60.0f},
-	//	{0.0f,50.0f,70.0f}
-	//};
-
 	controlPoints_ = {
 		{0.0f,50.0f,0.0f},
 		{0.0f,50.0f,10.0f},

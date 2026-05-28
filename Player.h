@@ -62,7 +62,6 @@ private:
 	RailCameraController* cameraController_ = nullptr;
 
 	// 3Dレティクル.
-	Renderer::Model model2_;
 	Renderer::Sprite sprite_;
 	Transform transform3DReticle_;
 
