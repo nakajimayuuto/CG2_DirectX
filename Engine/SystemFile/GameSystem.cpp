@@ -796,8 +796,7 @@ void GameSystem::WindowSizeUpdate() {
 
 	float targetAspect = Environment::GetInstance()->GetAspect();
 
-	float windowAspect =
-		windowWidth / windowHeight;
+	float windowAspect = windowWidth / windowHeight;
 
 	float viewportWidth;
 	float viewportHeight;
@@ -806,23 +805,23 @@ void GameSystem::WindowSizeUpdate() {
 
 	if (windowAspect > targetAspect) {
 		viewportHeight = windowHeight;
-		viewportWidth = viewportHeight * targetAspect;
+		viewportWidth = viewportHeight * targetAspect *(Environment::GetInstance()->GetWindowSize().width / windowWidth);
 		if (windowWidth > Environment::GetInstance()->GetWindowSize().width) {
 			viewportWidth = Environment::GetInstance()->GetWindowSize().width * (targetAspect / windowAspect);
 			viewportX = (Environment::GetInstance()->GetWindowSize().width - viewportWidth) * 0.5f;
 		} else {
-			viewportX = (windowWidth - viewportWidth) * 0.5f;
+			viewportX = (windowWidth - (viewportHeight * targetAspect)) * 0.5f * (Environment::GetInstance()->GetWindowSize().width / windowWidth);
 		}
 
 		viewportHeight = Environment::GetInstance()->GetWindowSize().height;
 	} else {
 		viewportWidth = windowWidth;
-		viewportHeight = viewportWidth / targetAspect;
+		viewportHeight = viewportWidth / targetAspect * (Environment::GetInstance()->GetWindowSize().height / windowHeight);
 		if (windowHeight > Environment::GetInstance()->GetWindowSize().height) {
 			viewportHeight = Environment::GetInstance()->GetWindowSize().height / (targetAspect / windowAspect);
 			viewportY = (Environment::GetInstance()->GetWindowSize().height - viewportHeight) * 0.5f;
 		} else {
-			viewportY = (windowHeight - viewportHeight) * 0.5f;
+			viewportY = (windowHeight - (viewportWidth / targetAspect)) * 0.5f * (Environment::GetInstance()->GetWindowSize().height / windowHeight);
 		}
 
 
