@@ -53,7 +53,7 @@ private:
 private:
 	const LPCWSTR kWindowTitle_ = L"SaturnCGEngine";
 
-	const WindowSize kWindowSize_ = { 1280,720 };//{1280,720};
+	const WindowSize kWindowSize_ = { 1000,1000 };//{1280,720};
 
 	float aspect_;
 
