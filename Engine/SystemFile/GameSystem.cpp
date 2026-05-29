@@ -771,81 +771,99 @@ void GameSystem::WindowSizeUpdate() {
 		return;
 	}
 
+	//RECT clientRect{};
+	//GetClientRect(GameSystem::GetInstance()->GetHWND(), &clientRect);
+	//
+	////Camera::GetInstance()->
+	//
+	//float windowWidth = static_cast<float>(clientRect.right - clientRect.left);
+	//float windowHeight = static_cast<float>(clientRect.bottom - clientRect.top);
+	//float windowAspect = windowWidth / windowHeight;
+	//float targetAspect = Environment::GetInstance()->GetAspect();
+	//Vector3 aspectScale;
+	////Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
+	//aspectScale.x = windowWidth / Environment::GetInstance()->GetWindowSize().width;
+	//aspectScale.y = windowHeight / Environment::GetInstance()->GetWindowSize().height;
+	//aspectScale.z = 1.0f;
+	//
+	//Camera::GetInstance()->SetAspectScale(aspectScale);
+	//Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
+
 	RECT clientRect{};
 	GetClientRect(GameSystem::GetInstance()->GetHWND(), &clientRect);
-
-	//Camera::GetInstance()->
-
 	float windowWidth = static_cast<float>(clientRect.right - clientRect.left);
 	float windowHeight = static_cast<float>(clientRect.bottom - clientRect.top);
-	//float viewportWidth;
-	//float viewportHeight;
-	//float viewportX = 0.0f;
-	//float viewportY = 0.0f;
-	float windowAspect = windowWidth / windowHeight;
-	float targetAspect = Environment::GetInstance()->GetAspect();
-	Vector3 aspectScale;
-	//Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
-	aspectScale.x = windowWidth / Environment::GetInstance()->GetWindowSize().width;
-	aspectScale.y = windowHeight / Environment::GetInstance()->GetWindowSize().height;
-	aspectScale.z = 1.0f;
 
-	Camera::GetInstance()->SetAspectScale(aspectScale);
-	Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
+	constexpr float targetAspect =
+		16.0f / 9.0f;
 
+	float windowAspect =
+		windowWidth / windowHeight;
 
+	float viewportWidth;
+	float viewportHeight;
+	float viewportX = 0.0f;
+	float viewportY = 0.0f;
 
-	//
-	//if (windowAspect > targetAspect)
-	//{
-	//	viewportHeight = windowHeight;
-	//	viewportWidth =
-	//		viewportHeight * targetAspect;
-	//
-	//	viewportX =
-	//		(windowWidth - viewportWidth);
-	//} else{
-	//	viewportWidth = windowWidth;
-	//
-	//	viewportHeight =
-	//		viewportWidth / targetAspect;
-	//
-	//	viewportY =
-	//		(windowHeight - viewportHeight);
-	//}
-	//
-	//viewport = {};
-	//viewport.TopLeftX = viewportX;
-	//viewport.TopLeftY = viewportY;
-	//viewport.Width = viewportWidth;
-	//viewport.Height = viewportHeight;
-	//viewport.MinDepth = 0.0f;
-	//viewport.MaxDepth = 1.0f;
-	//
-	//commandList->RSSetViewports(
-	//	1,
-	//	&viewport
-	//);
-	//
-	//scissorRect = {};
-	//scissorRect.left =
-	//	static_cast<LONG>(viewportX * 0.5f);
-	//
-	//scissorRect.top =
-	//	static_cast<LONG>(viewportY * 0.5f);
-	//
-	//scissorRect.right =
-	//	static_cast<LONG>(
-	//		viewportX + viewportWidth);
-	//
-	//scissorRect.bottom =
-	//	static_cast<LONG>(
-	//		viewportY + viewportHeight);
-	//
-	//commandList->RSSetScissorRects(
-	//	1,
-	//	&scissorRect
-	//);
+	if (windowAspect > targetAspect) {
+		//if (windowWidth > Environment::GetInstance()->GetWindowSize().width) {
+		//	viewportWidth = windowWidth;
+		//	viewportHeight = viewportWidth / targetAspect;
+		//	viewportY = (windowHeight - viewportHeight) * 0.5f;
+		//
+		//	viewportWidth = Environment::GetInstance()->GetWindowSize().width;
+		//}
+
+		viewportHeight = windowHeight;
+		viewportWidth = viewportHeight * targetAspect;
+		//if (windowWidth > Environment::GetInstance()->GetWindowSize().width) {
+		//	viewportX = (windowWidth - viewportWidth) * 0.5f;
+		//	viewportWidth = windowWidth / (targetAspect / windowAspect);
+		//}else{
+			viewportX = (windowWidth - viewportWidth) * 0.5f;
+		//}
+
+		viewportHeight = Environment::GetInstance()->GetWindowSize().height;
+	} else {
+		if (windowHeight > Environment::GetInstance()->GetWindowSize().height) {
+			viewportHeight = windowHeight;
+			viewportWidth = viewportHeight * targetAspect;
+			viewportX = (windowWidth - viewportWidth) * 0.5f;
+		
+			viewportHeight = Environment::GetInstance()->GetWindowSize().height;
+		}
+
+		viewportWidth = windowWidth;
+		viewportHeight = viewportWidth / targetAspect;
+		viewportY = (windowHeight - viewportHeight) * 0.5f;
+
+		viewportWidth = Environment::GetInstance()->GetWindowSize().width;
+	}
+
+	// こっちがカメラの位置みたいなやつ.
+	viewport = {};
+	viewport.TopLeftX = viewportX;
+	viewport.TopLeftY = viewportY;
+	viewport.Width = viewportWidth;
+	viewport.Height = viewportHeight;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+
+	// こっちがカメラ描画する範囲みたいなやつ.
+	scissorRect = {};
+	scissorRect.left =
+		static_cast<LONG>(viewportX);
+
+	scissorRect.top =
+		static_cast<LONG>(viewportY);
+
+	scissorRect.right =
+		static_cast<LONG>(
+			viewportX + viewportWidth);
+
+	scissorRect.bottom =
+		static_cast<LONG>(
+			viewportY + viewportHeight);
 }
 
 
