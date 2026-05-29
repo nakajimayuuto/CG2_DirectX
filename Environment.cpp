@@ -14,7 +14,10 @@ void Environment::Initialize() {
 
 	currentWindowMode_ = kWindowed;
 
-	GetWindowRect(GameSystem::GetInstance()->GetHWND(),&windowRect);
+	aspectMode_ = kAspectNone;
+
+	GetWindowRect(GameSystem::GetInstance()->GetHWND(), &windowRect);
+	currentStyle = GetWindowLongPtr(GameSystem::GetInstance()->GetHWND(), GWL_STYLE);
 }
 
 void Environment::SetWindowMode(WindowMode mode) {
@@ -27,7 +30,7 @@ void Environment::SetWindowMode(WindowMode mode) {
 		//if (currentWindowMode_ == kExclusiveFullscreen) {
 		//	GameSystem::GetInstance()->GetSwapChain().Get()->SetFullscreenState(FALSE, nullptr);
 		//} else {
-			SetWindowed();
+		SetWindowed();
 		//}
 		break;
 	case kExclusiveFullscreen:
@@ -43,9 +46,73 @@ void Environment::SetWindowMode(WindowMode mode) {
 	currentWindowMode_ = mode;
 }
 
-void Environment::SetBorderlessFullscreen(){
+void Environment::SetAspectMode(AspectMode aspectMode) {
+	if (aspectMode_ == aspectMode) {
+		return;
+	}
+
+	RECT currentRect = {0,0,0,0,};
+	GetWindowRect(GameSystem::GetInstance()->GetHWND(), &currentRect);
+
+	switch (aspectMode) {
+	case kAspectNone:
+	case kAspectWindowFixed:
+		Camera::GetInstance()->SetWindowSize(kWindowSize_.width, kWindowSize_.height);
+		currentStyle = WS_OVERLAPPEDWINDOW;
+
+		SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, currentStyle);
+		SetWindowPos(
+			GameSystem::GetInstance()->GetHWND(),
+			HWND_TOP,
+			currentRect.left,
+			currentRect.top,
+			windowRect.right - windowRect.left,
+			windowRect.bottom - windowRect.top,
+			SWP_FRAMECHANGED | SWP_SHOWWINDOW
+		);
+		break;
+	case kAspectNoChange:
+		Camera::GetInstance()->SetWindowSize(kWindowSize_.width, kWindowSize_.height);
+
+		// リサイズと最大化を禁止
+		currentStyle = WS_OVERLAPPED |
+			WS_CAPTION |
+			WS_SYSMENU;
+
+		SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, currentStyle);
+		SetWindowPos(
+			GameSystem::GetInstance()->GetHWND(),
+			HWND_TOP,
+			currentRect.left,
+			currentRect.top,
+			windowRect.right - windowRect.left,
+			windowRect.bottom - windowRect.top,
+			SWP_FRAMECHANGED | SWP_SHOWWINDOW
+		);
+		break;
+	case kAspectFrameFixed:
+	case kAspectChangeEverytime:
+		currentStyle = WS_OVERLAPPEDWINDOW;
+
+		SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, currentStyle);
+		SetWindowPos(
+			GameSystem::GetInstance()->GetHWND(),
+			HWND_TOP,
+			currentRect.left,
+			currentRect.top,
+			currentRect.right - currentRect.left,
+			currentRect.bottom - currentRect.top,
+			SWP_FRAMECHANGED | SWP_SHOWWINDOW
+		);
+		break;
+	}
+
+	aspectMode_ = aspectMode;
+}
+
+void Environment::SetBorderlessFullscreen() {
 	GetWindowRect(GameSystem::GetInstance()->GetHWND(), &windowRect);
-	SetWindowLong(GameSystem::GetInstance()->GetHWND(),GWL_STYLE,WS_POPUP);
+	SetWindowLong(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, WS_POPUP);
 
 
 	SetWindowPos(
@@ -56,11 +123,11 @@ void Environment::SetBorderlessFullscreen(){
 		monitorSize_.width,
 		monitorSize_.height,
 		SWP_FRAMECHANGED | SWP_SHOWWINDOW
-		);
+	);
 }
 
-void Environment::SetWindowed(){
-	SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, WS_OVERLAPPEDWINDOW);
+void Environment::SetWindowed() {
+	SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, currentStyle);
 
 	SetWindowPos(
 		GameSystem::GetInstance()->GetHWND(),

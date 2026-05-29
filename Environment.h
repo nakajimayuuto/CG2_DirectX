@@ -16,10 +16,12 @@ enum WindowMode {
 };
 
 enum AspectMode {
-	kNone, // アスペクト比の調節無し.
+	kAspectNone, // アスペクト比の調節無し.
+	kAspectNoChange, // 変更できなくする.
 	kAspectWindowFixed, // アスペクト比をウィンドウを変化させて調節する.
 	kAspectFrameFixed,  // アスペクト比をフレームを作って調節する.
-	kAspectFrame, // kAspectFrameFixedのフレーム無し版.
+	kAspectChangeEverytime, // kAspectFrameFixedのフレーム無し版.
+	kAspectCountMax // アスペクトモードの要素数.
 };
 
 class Environment{
@@ -39,6 +41,10 @@ public:
 
 	WindowMode GetWindowMode() { return currentWindowMode_; };
 
+	void SetAspectMode(AspectMode aspectMode);
+
+	AspectMode GetAspectMode() { return aspectMode_; };
+
 	float GetAspect() { return aspect_; }
 private:
 	void SetBorderlessFullscreen();
@@ -47,7 +53,7 @@ private:
 private:
 	const LPCWSTR kWindowTitle_ = L"SaturnCGEngine";
 
-	const WindowSize kWindowSize_ = {1280,720};
+	const WindowSize kWindowSize_ = { 360,720 };//{1280,720};
 
 	float aspect_;
 
@@ -56,6 +62,10 @@ private:
 	WindowSize monitorSize_;
 
 	WindowMode currentWindowMode_;
+
+	AspectMode aspectMode_;
+
+	LONG_PTR currentStyle;
 
 	RECT windowRect{};
 };

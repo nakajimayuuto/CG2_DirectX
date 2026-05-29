@@ -139,11 +139,12 @@ Matrix4x4 Camera::GetWorldViewProjectionMatrix(Matrix4x4 matrix) {
 	Matrix4x4 viewMatrix = matrix_.Inverse();
 	Matrix4x4 projectionMatrix = Matrix4x4::MakePerspectiveFovMatrix(fovY_, windowWidth_ / windowHeight_, nearClip_, farClip_);
 	Matrix4x4 worldViewProjectionMatrix = matrix * viewMatrix * projectionMatrix;
-	if (windowWidth_ / windowHeight_ > Environment::GetInstance()->GetAspect()) {
-		return worldViewProjectionMatrix;
-	}
+	//if (windowWidth_ / windowHeight_ > Environment::GetInstance()->GetAspect()) {
+	//	return worldViewProjectionMatrix;
+	//}
 
-	return worldViewProjectionMatrix * Matrix4x4::MakeScaleMatrix({ aspectScale_.x / aspectScale_.y,aspectScale_.x / aspectScale_.y,aspectScale_.x / aspectScale_.y });
+	//return worldViewProjectionMatrix * Matrix4x4::MakeScaleMatrix({ aspectScale_.x / aspectScale_.y,aspectScale_.x / aspectScale_.y,aspectScale_.x / aspectScale_.y });
+	return worldViewProjectionMatrix;
 }
 
 Matrix4x4 Camera::GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix) {
@@ -160,8 +161,8 @@ Matrix4x4 Camera::GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix) {
 		return worldViewProjectionMatrix;
 	}
 
-	float baseWidth = 1280.0f;
-	float baseHeight = 720.0f;
+	float baseWidth = static_cast<float>(Environment::GetInstance()->GetWindowSize().width);
+	float baseHeight = static_cast<float>(Environment::GetInstance()->GetWindowSize().height);
 
 	float targetAspect = Environment::GetInstance()->GetAspect();
 
@@ -177,13 +178,13 @@ Matrix4x4 Camera::GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix) {
 		// 16:9より狭い（縦長寄り）
 		// 横幅を基準
 
-		virtualWidth = windowWidth_;
+		virtualWidth = windowWidth_ * 2.0f;
 		virtualHeight = windowWidth_ / targetAspect;
 	} else{
 		// 16:9より広い（横長寄り）
 		// 高さを基準
 
-		virtualHeight = windowHeight_;
+		virtualHeight = windowHeight_ * 2.0f;
 		virtualWidth = windowHeight_ * targetAspect;
 	}
 

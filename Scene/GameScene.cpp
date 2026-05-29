@@ -37,6 +37,10 @@ void GameScene::Initialize() {
 	frameSpriteRight_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
 	frameSpriteRight_.SetSize(Environment::GetInstance()->GetWindowSize());
 	frameSpriteRight_.SetColor({0.0f,0.0f,0.0f,1.0f});
+
+	backGroundSprite_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
+	backGroundSprite_.SetSize(Environment::GetInstance()->GetWindowSize());
+	backGroundSprite_.SetColor({ 0.1f,0.25f,0.5f,1.0f });
 }
 
 void GameScene::Update() {
@@ -52,7 +56,26 @@ void GameScene::Update() {
 			windowRect.bottom - windowRect.top,
 			SWP_FRAMECHANGED | SWP_SHOWWINDOW
 		);
+
 	}
+
+	if (InputManager::GetInstance()->TriggerKey(DIK_F11)) {
+		if (Environment::GetInstance()->GetWindowMode() == kFullscreen) {
+			Environment::GetInstance()->SetWindowMode(kWindowed);
+		} else {
+			Environment::GetInstance()->SetWindowMode(kFullscreen);
+		}
+	}
+
+	Environment* environment = Environment::GetInstance();
+
+	ImGui::Begin("AspectMode");
+
+	int imInt = static_cast<int>(environment->GetAspectMode());
+	ImGui::SliderInt("mode",&imInt,0,kAspectCountMax - 1);
+	environment->SetAspectMode(static_cast<AspectMode>(imInt));
+
+	ImGui::End();
 
 	ImGui::Begin("ObjectMove");
 
@@ -74,12 +97,13 @@ void GameScene::Update() {
 }
 
 void GameScene::Draw() {
+	backGroundSprite_.Draw(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f ,0.0f,0.0f}, { backGroundSprite_.GetSize().x / 2.0f,backGroundSprite_.GetSize().y / 2.0f ,100.0f}));
 
 	//skydome_->Draw();
 
 	model_.Draw(transform_);
 
-	sprite_.Draw(transformSprite_);
+	//sprite_.Draw(transformSprite_);
 
 	frameSpriteLeft_.Draw({ {1.0f,1.0f},0.0f, {-frameSpriteLeft_.GetSize().x / 2.0f,frameSpriteLeft_.GetSize().y / 2.0f} });
 	frameSpriteRight_.Draw({ {1.0f,1.0f},0.0f, {Environment::GetInstance()->GetWindowSize().width + (frameSpriteRight_.GetSize().x / 2.0f),frameSpriteRight_.GetSize().y / 2.0f } });

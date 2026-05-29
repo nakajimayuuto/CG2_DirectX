@@ -52,7 +52,7 @@ struct D3DResourceLeakChecker {
 };
 
 enum class BlendMode {
-	kNone, // ブレンドモード無し.
+	kAspectNone, // ブレンドモード無し.
 	kNormal, // 通常.
 	kAdd, // 加算.
 	kSubtract, // 減算.

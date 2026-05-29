@@ -12,7 +12,7 @@
 
 namespace Renderer {
 	enum class LightingType {
-		kNone = 0,
+		kAspectNone = 0,
 		kHalfLambert = 1,
 		kLambert = 2,
 	};

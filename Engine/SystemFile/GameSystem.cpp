@@ -635,7 +635,7 @@ bool GameSystem::BeginFrame() {
 }
 
 void GameSystem::DrawSetup() {
-	//WindowSizeUpdate();
+	WindowSizeUpdate();
 
 #ifdef USE_IMGUI
 	// ImGuiの内部コマンドを生成する.
@@ -668,7 +668,8 @@ void GameSystem::DrawSetup() {
 	// 描画先のRTVとDSVを設定する.
 	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
 	// 指定した色で画面全体をクリアする.
-	float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };// 青っぽい色。RGBAの順.
+	//float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };// 青っぽい色。RGBAの順.
+	float clearColor[] = { 0.0f,0.0f,0.0f,1.0f };// 青っぽい色。RGBAの順.
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 
 
@@ -762,6 +763,14 @@ void GameSystem::Finalize() {
 }
 
 void GameSystem::WindowSizeUpdate() {
+	if (
+		Environment::GetInstance()->GetAspectMode() == kAspectNone ||
+		Environment::GetInstance()->GetAspectMode() == kAspectWindowFixed ||
+		Environment::GetInstance()->GetAspectMode() == kAspectNoChange
+		) {
+		return;
+	}
+
 	RECT clientRect{};
 	GetClientRect(GameSystem::GetInstance()->GetHWND(), &clientRect);
 
@@ -922,6 +931,89 @@ void GameSystem::ApplyGlobalVariables() {
 //}
 
 LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+	float aspect = Environment::GetInstance()->GetAspect();
+
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
+		return true;
+	}
+
+	RECT* rect;
+	int width;
+	int height;
+	int newHeight;
+	int newWidth;
+
+	DWORD style;
+	DWORD exStyle;
+	RECT borderRect;
+	int borderWidth;
+	int borderHeight;
+
+	switch (msg) {
+	case WM_SIZING:
+		if (Environment::GetInstance()->GetAspectMode() == kAspectWindowFixed) {
+			rect = reinterpret_cast<RECT*>(lparam);
+			width = rect->right - rect->left;
+			height = rect->bottom - rect->top;
+
+			style = static_cast<DWORD>(GetWindowLongPtr(hwnd, GWL_STYLE));
+			exStyle = static_cast<DWORD>(GetWindowLongPtr(hwnd, GWL_EXSTYLE));
+
+			borderRect = { 0,0,0,0 };
+
+			AdjustWindowRectEx(
+				&borderRect,
+				style,
+				FALSE,
+				exStyle);
+
+			borderWidth = borderRect.right - borderRect.left;
+
+			borderHeight = borderRect.bottom - borderRect.top;
+
+			Log(std::format("Rect l:{},r:{},t:{},b:{}\n", rect->left, rect->right, rect->top, rect->bottom));
+			Log(std::format("Rect w:{},h:{}\n", width, height));
+
+			width -= borderWidth;
+			height -= borderHeight;
+
+			switch (wparam) {
+			case WMSZ_LEFT:
+			case WMSZ_RIGHT:
+				// 左右をドラッグ → 高さを補正
+				newHeight = static_cast<int>(width / aspect);
+				rect->bottom = rect->top + newHeight + borderHeight;
+				break;
+			case WMSZ_TOP:
+			case WMSZ_BOTTOM:
+				// 上下をドラッグ → 幅を補正
+				newWidth = static_cast<int>(height * aspect);
+				rect->right = rect->left + newWidth + borderWidth;
+				break;
+			case WMSZ_TOPLEFT:
+			case WMSZ_TOPRIGHT:
+			case WMSZ_BOTTOMLEFT:
+			case WMSZ_BOTTOMRIGHT:
+				// 四隅ドラッグ
+				newHeight = static_cast<int>(width / aspect);
+				rect->bottom = rect->top + newHeight + borderHeight;
+				break;
+			}
+			width += borderWidth;
+			height += borderHeight;
+		}
+
+		return TRUE;
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		return 0;
+	}
+
+	return DefWindowProc(hwnd, msg, wparam, lparam);
+}
+
+/*
+LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
 		return true;
 	}
@@ -1026,6 +1118,7 @@ LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPAR
 
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
+*/
 
 std::ofstream GameSystem::CreateLogFile() {
 	// ログのディレクトリを用意.
@@ -1051,7 +1144,7 @@ void GameSystem::Log(const std::string& message) {
 	OutputDebugStringA(message.c_str());
 }
 
-void GameSystem::ExportLog(const std::string& message){
+void GameSystem::ExportLog(const std::string& message) {
 	GameSystem::GetInstance()->GetLogStream() << message << std::endl;
 	OutputDebugStringA(message.c_str());
 }
