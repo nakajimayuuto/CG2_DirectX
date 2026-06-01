@@ -88,7 +88,7 @@ public:
 
 	void DrawSphere(const Transform& transform,const TextureInfo& textureInfo, const Vector4& color);
 
-	void DrawBox();
+	void DrawBox(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color);
 
 	void DrawModel();
 private:
