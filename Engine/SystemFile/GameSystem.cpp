@@ -355,7 +355,9 @@ void GameSystem::Initialize() {
 
 	TextureManager::GetInstance()->RegisterTexture("white_template", "Resource/white_template.png");
 
-	Renderer::Line::GetInstance()->Initialize();
+	//Renderer::Line::GetInstance()->Initialize();
+
+	Renderer::GetInstance()->Initialize();
 
 	GlobalVariables::GetInstance()->LoadFiles();
 
@@ -615,7 +617,8 @@ bool GameSystem::BeginFrame() {
 
 	InputManager::GetInstance()->Update();
 
-	Renderer::Line::GetInstance()->ClearDrawIndex();
+	//Renderer::Line::GetInstance()->ClearDrawIndex();
+	Renderer::GetInstance()->ClearDrawIndex();
 
 #ifdef USE_IMGUI
 	ImGui_ImplDX12_NewFrame();

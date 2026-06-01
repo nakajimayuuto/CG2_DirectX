@@ -21,26 +21,26 @@ void GameScene::Initialize() {
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
 	transform_.Initialize();
 
-	sprite_.Initialize(TextureManager::GetInstance()->GetTextureInfo("uvChecker"));
-	transformSprite_.Initialize();
-	transformSprite_.translate.x = (sprite_.GetSize().x / 2.0f);
-	transformSprite_.translate.y = (sprite_.GetSize().y / 2.0f);
+	//sprite_.Initialize(TextureManager::GetInstance()->GetTextureInfo("uvChecker"));
+	//transformSprite_.Initialize();
+	//transformSprite_.translate.x = (sprite_.GetSize().x / 2.0f);
+	//transformSprite_.translate.y = (sprite_.GetSize().y / 2.0f);
 
 	transform_.rotate.y = Radian(-30.0f);
 	DirectionalLight::GetInstance()->GetDirectionalLightData()->direction = { 0.0f,0.0f,1.0f };
 	GetWindowRect(GameSystem::GetInstance()->GetHWND(), &windowRect);
 
-	frameSpriteLeft_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
-	frameSpriteLeft_.SetSize(Environment::GetInstance()->GetWindowSize());
-	frameSpriteLeft_.SetColor({0.0f,0.0f,0.0f,1.0f});
-
-	frameSpriteRight_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
-	frameSpriteRight_.SetSize(Environment::GetInstance()->GetWindowSize());
-	frameSpriteRight_.SetColor({0.0f,0.0f,0.0f,1.0f});
-
-	backGroundSprite_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
-	backGroundSprite_.SetSize(Environment::GetInstance()->GetWindowSize());
-	backGroundSprite_.SetColor({ 0.1f,0.25f,0.5f,1.0f });
+	//frameSpriteLeft_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
+	//frameSpriteLeft_.SetSize(Environment::GetInstance()->GetWindowSize());
+	//frameSpriteLeft_.SetColor({0.0f,0.0f,0.0f,1.0f});
+	//
+	//frameSpriteRight_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
+	//frameSpriteRight_.SetSize(Environment::GetInstance()->GetWindowSize());
+	//frameSpriteRight_.SetColor({0.0f,0.0f,0.0f,1.0f});
+	//
+	//backGroundSprite_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
+	//backGroundSprite_.SetSize(Environment::GetInstance()->GetWindowSize());
+	//backGroundSprite_.SetColor({ 0.1f,0.25f,0.5f,1.0f });
 }
 
 void GameScene::Update() {
@@ -85,11 +85,11 @@ void GameScene::Update() {
 	ImGui::DragFloat3("ModelTranslate",reinterpret_cast<float*>(&transform_.translate),0.1f,-20.0f,20.0f);
 	transform_.rotate = Radian(imRotate);
 
-	float imRotateX = Degree(transformSprite_.rotate.x);
-	ImGui::DragFloat2("SpriteScale",reinterpret_cast<float*>(&transformSprite_.scale),0.1f,0.0f,10.0f);
-	ImGui::DragFloat3("SpriteRotate",reinterpret_cast<float*>(&imRotateX),0.1f,-20.0f,20.0f);
-	ImGui::DragFloat2("SpriteTranslate",reinterpret_cast<float*>(&transformSprite_.translate),10.0f,0.0f,1280.0f);
-	transformSprite_.rotate.x = Radian(imRotateX);
+	//float imRotateX = Degree(transformSprite_.rotate.x);
+	//ImGui::DragFloat2("SpriteScale",reinterpret_cast<float*>(&transformSprite_.scale),0.1f,0.0f,10.0f);
+	//ImGui::DragFloat3("SpriteRotate",reinterpret_cast<float*>(&imRotateX),0.1f,-20.0f,20.0f);
+	//ImGui::DragFloat2("SpriteTranslate",reinterpret_cast<float*>(&transformSprite_.translate),10.0f,0.0f,1280.0f);
+	//transformSprite_.rotate.x = Radian(imRotateX);
 
 	ImGui::End();
 
@@ -97,14 +97,20 @@ void GameScene::Update() {
 }
 
 void GameScene::Draw() {
-	backGroundSprite_.Draw(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f ,0.0f,0.0f}, { backGroundSprite_.GetSize().x / 2.0f,backGroundSprite_.GetSize().y / 2.0f ,100.0f}));
+	//	backGroundSprite_.Draw(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f ,0.0f,0.0f}, { backGroundSprite_.GetSize().x / 2.0f,backGroundSprite_.GetSize().y / 2.0f ,100.0f}));
 
-	//skydome_->Draw();
+		//skydome_->Draw();
 
-	model_.Draw(transform_);
+		//model_.Draw(transform_);
 
-	sprite_.Draw(transformSprite_);
+	Renderer::GetInstance()->DrawLine({ 0.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }, {1.0f,1.0f,1.0f,1.0f});
 
-	frameSpriteLeft_.Draw({ {1.0f,1.0f},0.0f, {-frameSpriteLeft_.GetSize().x / 2.0f,frameSpriteLeft_.GetSize().y / 2.0f} });
-	frameSpriteRight_.Draw({ {1.0f,1.0f},0.0f, {Environment::GetInstance()->GetWindowSize().width + (frameSpriteRight_.GetSize().x / 2.0f),frameSpriteRight_.GetSize().y / 2.0f } });
+	Renderer::GetInstance()->DrawLine({ 1.0f,1.0f,1.0f }, { 1.0f,-1.0f,1.0f }, {1.0f,1.0f,1.0f,1.0f});
+
+	Renderer::GetInstance()->DrawSphere(transform_, TextureManager::GetInstance()->GetTextureInfo("uvChecker"), {1.0f,1.0f,1.0f,1.0f});
+
+	//sprite_.Draw(transformSprite_);
+
+	//frameSpriteLeft_.Draw({ {1.0f,1.0f},0.0f, {-frameSpriteLeft_.GetSize().x / 2.0f,frameSpriteLeft_.GetSize().y / 2.0f} });
+	//frameSpriteRight_.Draw({ {1.0f,1.0f},0.0f, {Environment::GetInstance()->GetWindowSize().width + (frameSpriteRight_.GetSize().x / 2.0f),frameSpriteRight_.GetSize().y / 2.0f } });
 }

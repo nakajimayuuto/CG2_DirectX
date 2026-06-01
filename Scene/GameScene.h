@@ -16,17 +16,17 @@ public:
 	void Draw() override;
 private:
 private:
-	Renderer::Model model_;
+	Model model_;
 	Transform transform_;
 
-	Renderer::Sprite sprite_;
-	Transform transformSprite_;
+	//Renderer::Sprite sprite_;
+	//Transform transformSprite_;
 
 	Skydome* skydome_ = nullptr;
 
 	RECT windowRect;
 
-	Renderer::Sprite frameSpriteLeft_;
-	Renderer::Sprite frameSpriteRight_;
-	Renderer::Sprite backGroundSprite_;
+	//Renderer::Sprite frameSpriteLeft_;
+	//Renderer::Sprite frameSpriteRight_;
+	//Renderer::Sprite backGroundSprite_;
 };

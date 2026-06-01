@@ -7,7 +7,5 @@ public:
 	void Draw();
 private:
 	Transform transform_;
-
-	Renderer::Model model_;
 };
 
