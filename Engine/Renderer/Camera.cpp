@@ -139,11 +139,6 @@ Matrix4x4 Camera::GetWorldViewProjectionMatrix(Matrix4x4 matrix) {
 	Matrix4x4 viewMatrix = matrix_.Inverse();
 	Matrix4x4 projectionMatrix = Matrix4x4::MakePerspectiveFovMatrix(fovY_, windowWidth_ / windowHeight_, nearClip_, farClip_);
 	Matrix4x4 worldViewProjectionMatrix = matrix * viewMatrix * projectionMatrix;
-	//if (windowWidth_ / windowHeight_ > Environment::GetInstance()->GetAspect()) {
-	//	return worldViewProjectionMatrix;
-	//}
-
-	//return worldViewProjectionMatrix * Matrix4x4::MakeScaleMatrix({ aspectScale_.x / aspectScale_.y,aspectScale_.x / aspectScale_.y,aspectScale_.x / aspectScale_.y });
 	return worldViewProjectionMatrix;
 }
 
@@ -152,62 +147,8 @@ Matrix4x4 Camera::GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix) {
 	Matrix4x4 projectionMatrix;
 	Matrix4x4 worldViewProjectionMatrix;
 	viewMatrix = matrix_.Identity();
-	projectionMatrix =Matrix4x4::MakeOrthographicMatrix({viewportLeftTop_,{0.0f,0.0f},{0.0f,0.0f},{windowWidth_,windowHeight_}},0.0f,100.0f);
-
-	// 旧式の式(ガハハwww).
-	if (false) {
-		worldViewProjectionMatrix = matrix * viewMatrix * projectionMatrix;
-
-		return worldViewProjectionMatrix;
-	}
-
-	float baseWidth = static_cast<float>(Environment::GetInstance()->GetWindowSize().width);
-	float baseHeight = static_cast<float>(Environment::GetInstance()->GetWindowSize().height);
-
-	float targetAspect = Environment::GetInstance()->GetAspect();
-
-	float windowAspect = windowWidth_ / windowHeight_;
-
-	float virtualWidth;
-	float virtualHeight;
-
-	// ★修正ポイント
-	// Windowの縦横ではなく
-	// 基準Aspectとの比較で判定
-	if (windowAspect < targetAspect){
-		// 16:9より狭い（縦長寄り）
-		// 横幅を基準
-
-		virtualWidth = windowWidth_ * 2.0f;
-		virtualHeight = windowWidth_ / targetAspect;
-	} else{
-		// 16:9より広い（横長寄り）
-		// 高さを基準
-
-		virtualHeight = windowHeight_ * 2.0f;
-		virtualWidth = windowHeight_ * targetAspect;
-	}
-
-
-	// スケール率
-	float scaleX = virtualWidth / baseWidth;
-	float scaleY = virtualHeight / baseHeight;
-
-	// 中央配置
-	float offsetX = (windowWidth_ - virtualWidth) * 0.5f;
-	float offsetY = (windowHeight_ - virtualHeight) * 0.5f;
-
-	// 中央基準スケール
-	float centerX = baseWidth * 0.5f;
-	float centerY = baseHeight * 0.5f;
-
-	Matrix4x4 moveToCenter = Matrix4x4::MakeTranslateMatrix({-centerX,-centerY,0.0f});
-
-	Matrix4x4 scaleMatrix = Matrix4x4::MakeScaleMatrix({scaleX,scaleY,1.0f});
-
-	Matrix4x4 moveBack = Matrix4x4::MakeTranslateMatrix({virtualWidth * 0.5f + offsetX,virtualHeight * 0.5f + offsetY,0.0f});
-
-	worldViewProjectionMatrix = matrix * viewMatrix * moveToCenter * scaleMatrix * moveBack * projectionMatrix;
+	projectionMatrix = Matrix4x4::MakeOrthographicMatrix({ viewportLeftTop_,{0.0f,0.0f},{0.0f,0.0f},{windowWidth_,windowHeight_} }, 0.0f, 100.0f);
+	worldViewProjectionMatrix = matrix * viewMatrix * projectionMatrix;
 
 	return worldViewProjectionMatrix;
 }

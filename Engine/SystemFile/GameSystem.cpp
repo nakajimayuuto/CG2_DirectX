@@ -771,24 +771,6 @@ void GameSystem::WindowSizeUpdate() {
 		return;
 	}
 
-	//RECT clientRect{};
-	//GetClientRect(GameSystem::GetInstance()->GetHWND(), &clientRect);
-	//
-	////Camera::GetInstance()->
-	//
-	//float windowWidth = static_cast<float>(clientRect.right - clientRect.left);
-	//float windowHeight = static_cast<float>(clientRect.bottom - clientRect.top);
-	//float windowAspect = windowWidth / windowHeight;
-	//float targetAspect = Environment::GetInstance()->GetAspect();
-	//Vector3 aspectScale;
-	////Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
-	//aspectScale.x = windowWidth / Environment::GetInstance()->GetWindowSize().width;
-	//aspectScale.y = windowHeight / Environment::GetInstance()->GetWindowSize().height;
-	//aspectScale.z = 1.0f;
-	//
-	//Camera::GetInstance()->SetAspectScale(aspectScale);
-	//Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
-
 	RECT clientRect{};
 	GetClientRect(GameSystem::GetInstance()->GetHWND(), &clientRect);
 	float windowWidth = static_cast<float>(clientRect.right - clientRect.left);
@@ -839,19 +821,10 @@ void GameSystem::WindowSizeUpdate() {
 
 	// こっちがカメラ描画する範囲みたいなやつ.
 	scissorRect = {};
-	scissorRect.left =
-		static_cast<LONG>(viewportX);
-
-	scissorRect.top =
-		static_cast<LONG>(viewportY);
-
-	scissorRect.right =
-		static_cast<LONG>(
-			viewportX + viewportWidth);
-
-	scissorRect.bottom =
-		static_cast<LONG>(
-			viewportY + viewportHeight);
+	scissorRect.left = static_cast<LONG>(viewportX);
+	scissorRect.top = static_cast<LONG>(viewportY);
+	scissorRect.right = static_cast<LONG>( viewportX + viewportWidth);
+	scissorRect.bottom = static_cast<LONG>( viewportY + viewportHeight);
 }
 
 
@@ -864,77 +837,6 @@ void GameSystem::ApplyGlobalVariables() {
 	Camera::GetInstance()->ApplyGlobalVariables();
 	DirectionalLight::GetInstance()->ApplyGlobalVariables();
 };
-
-//LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-//#ifdef USE_IMGUI
-//	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
-//		return true;
-//	}
-//#endif // USE_IMGUI
-//
-//	// メッセージに応じてゲーム固有の処理を行う.
-//	switch (msg) {
-//		//ウィンドウが破棄された.
-//	case WM_DESTROY:
-//		// OSに対して、アプリの終了を伝える.
-//		PostQuitMessage(0);
-//		return 0;
-//	}
-//
-//	// 標準のメッセージ処理を行う.
-//	return DefWindowProc(hwnd, msg, wparam, lparam);
-//}
-
-// タイトルバー含めて16:9にする.
-//LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-//	float aspect = Environment::GetInstance()->GetAspect();
-//
-//	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
-//		return true;
-//	}
-//
-//	RECT* rect;
-//	int width;
-//	int height;
-//	int newHeight;
-//	int newWidth;
-//
-//	switch (msg) {
-//	case WM_SIZING:
-//		rect = reinterpret_cast<RECT*>(lparam);
-//		width = rect->right - rect->left;
-//		height = rect->bottom - rect->top;
-//
-//		switch (wparam){
-//		case WMSZ_LEFT:
-//		case WMSZ_RIGHT:
-//			// 左右をドラッグ → 高さを補正
-//			newHeight = static_cast<int>(width / aspect);
-//			rect->bottom = rect->top + newHeight;
-//			break;
-//		case WMSZ_TOP:
-//		case WMSZ_BOTTOM:
-//			// 上下をドラッグ → 幅を補正
-//			newWidth = static_cast<int>(height * aspect);
-//			rect->right = rect->left + newWidth;
-//			break;
-//		case WMSZ_TOPLEFT:
-//		case WMSZ_TOPRIGHT:
-//		case WMSZ_BOTTOMLEFT:
-//		case WMSZ_BOTTOMRIGHT:
-//			// 四隅ドラッグ
-//			newHeight = static_cast<int>(width / aspect);
-//			rect->bottom = rect->top + newHeight;
-//			break;
-//		}
-//		return TRUE;
-//	case WM_DESTROY:
-//		PostQuitMessage(0);
-//		return 0;
-//	}
-//
-//	return DefWindowProc(hwnd, msg, wparam, lparam);
-//}
 
 LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	float aspect = Environment::GetInstance()->GetAspect();
@@ -957,7 +859,18 @@ LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPAR
 
 	switch (msg) {
 	case WM_SIZING:
-		if (Environment::GetInstance()->GetAspectMode() == kAspectWindowFixed) {
+		if (
+			Environment::GetInstance()->GetAspectMode() == kAspectWindowFixed ||
+			Environment::GetInstance()->GetAspectMode() == kAspectWindowAndFrameFixed
+			) {
+
+			if (
+				Environment::GetInstance()->GetAspectMode() == kAspectWindowAndFrameFixed &&
+				Environment::GetInstance()->GetWindowMode() == kFullscreen
+				) {
+				break;
+			}
+
 			rect = reinterpret_cast<RECT*>(lparam);
 			width = rect->right - rect->left;
 			height = rect->bottom - rect->top;

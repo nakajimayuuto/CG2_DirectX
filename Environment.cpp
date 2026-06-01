@@ -14,7 +14,7 @@ void Environment::Initialize() {
 
 	currentWindowMode_ = kWindowed;
 
-	aspectMode_ = kAspectFrameFixed;
+	aspectMode_ = kAspectWindowAndFrameFixed;
 
 	GetWindowRect(GameSystem::GetInstance()->GetHWND(), &windowRect);
 	currentStyle = GetWindowLongPtr(GameSystem::GetInstance()->GetHWND(), GWL_STYLE);
@@ -27,14 +27,7 @@ void Environment::SetWindowMode(WindowMode mode) {
 
 	switch (mode) {
 	case kWindowed:
-		//if (currentWindowMode_ == kExclusiveFullscreen) {
-		//	GameSystem::GetInstance()->GetSwapChain().Get()->SetFullscreenState(FALSE, nullptr);
-		//} else {
 		SetWindowed();
-		//}
-		break;
-	case kExclusiveFullscreen:
-		//GameSystem::GetInstance()->GetSwapChain().Get()->SetFullscreenState(TRUE, nullptr);
 		break;
 	case kFullscreen:
 		SetBorderlessFullscreen();

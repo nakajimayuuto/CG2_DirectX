@@ -21,6 +21,7 @@ enum AspectMode {
 	kAspectWindowFixed, // アスペクト比をウィンドウを変化させて調節する.
 	kAspectFrameFixed,  // アスペクト比をフレームを作って調節する.
 	kAspectChangeEverytime, // kAspectFrameFixedのフレーム無し版.
+	kAspectWindowAndFrameFixed, // アスペクト比をウィンドウを変化させたりフレームを作ったりして調節する.
 	kAspectCountMax // アスペクトモードの要素数.
 };
 

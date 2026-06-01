@@ -103,7 +103,7 @@ void GameScene::Draw() {
 
 	model_.Draw(transform_);
 
-	//sprite_.Draw(transformSprite_);
+	sprite_.Draw(transformSprite_);
 
 	frameSpriteLeft_.Draw({ {1.0f,1.0f},0.0f, {-frameSpriteLeft_.GetSize().x / 2.0f,frameSpriteLeft_.GetSize().y / 2.0f} });
 	frameSpriteRight_.Draw({ {1.0f,1.0f},0.0f, {Environment::GetInstance()->GetWindowSize().width + (frameSpriteRight_.GetSize().x / 2.0f),frameSpriteRight_.GetSize().y / 2.0f } });
