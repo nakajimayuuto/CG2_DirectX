@@ -74,9 +74,10 @@ void Environment::SetAspectMode(AspectMode aspectMode) {
 	case kAspectNoChange:
 		Camera::GetInstance()->SetWindowSize(kWindowSize_.width, kWindowSize_.height);
 
-		// リサイズと最大化を禁止
-		currentStyle = WS_OVERLAPPED |
-			WS_CAPTION |
+		currentStyle = 
+			WS_OVERLAPPED | 
+			WS_CAPTION | 
+			WS_MINIMIZEBOX |
 			WS_SYSMENU;
 
 		SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, currentStyle);
