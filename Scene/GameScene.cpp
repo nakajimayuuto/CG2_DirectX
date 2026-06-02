@@ -21,10 +21,10 @@ void GameScene::Initialize() {
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
 	transform_.Initialize();
 
-	//sprite_.Initialize(TextureManager::GetInstance()->GetTextureInfo("uvChecker"));
-	//transformSprite_.Initialize();
-	//transformSprite_.translate.x = (sprite_.GetSize().x / 2.0f);
-	//transformSprite_.translate.y = (sprite_.GetSize().y / 2.0f);
+	sprite_.Initialize(TextureManager::GetInstance()->GetTextureInfo("uvChecker"));
+	transformSprite_.Initialize();
+	transformSprite_.translate.x = (sprite_.GetSize().x / 2.0f);
+	transformSprite_.translate.y = (sprite_.GetSize().y / 2.0f);
 
 	transform_.rotate.y = Radian(-30.0f);
 	DirectionalLight::GetInstance()->GetDirectionalLightData()->direction = { 0.0f,0.0f,1.0f };
@@ -72,7 +72,7 @@ void GameScene::Update() {
 	ImGui::Begin("AspectMode");
 
 	int imInt = static_cast<int>(environment->GetAspectMode());
-	ImGui::SliderInt("mode",&imInt,0,kAspectCountMax - 1);
+	ImGui::SliderInt("mode", &imInt, 0, kAspectCountMax - 1);
 	environment->SetAspectMode(static_cast<AspectMode>(imInt));
 
 	ImGui::End();
@@ -80,9 +80,15 @@ void GameScene::Update() {
 	ImGui::Begin("ObjectMove");
 
 	Vector3 imRotate = Degree(transform_.rotate);
-	ImGui::DragFloat3("ModelScale",reinterpret_cast<float*>(&transform_.scale),0.1f,0.0f,5.0f);
-	ImGui::DragFloat3("ModelRotate",reinterpret_cast<float*>(&imRotate),0.1f,-20.0f,20.0f);
-	ImGui::DragFloat3("ModelTranslate",reinterpret_cast<float*>(&transform_.translate),0.1f,-20.0f,20.0f);
+	ImGui::DragFloat3("ModelScale", reinterpret_cast<float*>(&transform_.scale), 0.1f, 0.0f, 5.0f);
+	ImGui::DragFloat3("ModelRotate", reinterpret_cast<float*>(&imRotate), 0.1f, -20.0f, 20.0f);
+	ImGui::DragFloat3("ModelTranslate", reinterpret_cast<float*>(&transform_.translate), 0.1f, -20.0f, 20.0f);
+	Vector4 imColor = model_.GetColor();
+	ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&imColor));
+	model_.SetColor(imColor);
+	imColor = sprite_.GetColor();
+	ImGui::ColorEdit4("ColorSprite", reinterpret_cast<float*>(&imColor));
+	sprite_.SetColor(imColor);
 	transform_.rotate = Radian(imRotate);
 
 	//float imRotateX = Degree(transformSprite_.rotate.x);
@@ -103,13 +109,25 @@ void GameScene::Draw() {
 
 		//model_.Draw(transform_);
 
-	Renderer::GetInstance()->DrawLine({ 0.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }, {1.0f,1.0f,1.0f,1.0f});
+	Renderer::GetInstance()->DrawLine({ 0.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }, { 1.0f,1.0f,1.0f,1.0f });
 
-	Renderer::GetInstance()->DrawLine({ 1.0f,1.0f,1.0f }, { 1.0f,-1.0f,1.0f }, {1.0f,1.0f,1.0f,1.0f});
+	Renderer::GetInstance()->DrawLine({ 1.0f,1.0f,1.0f }, { 1.0f,-1.0f,1.0f }, { 1.0f,1.0f,1.0f,1.0f });
 
 	//Renderer::GetInstance()->DrawSphere(transform_, TextureManager::GetInstance()->GetTextureInfo("uvChecker"), {1.0f,1.0f,1.0f,1.0f});
 
-	Renderer::GetInstance()->DrawBox(transform_, TextureManager::GetInstance()->GetTextureInfo("uvChecker"), {1.0f,1.0f,1.0f,1.0f});
+	//Renderer::GetInstance()->DrawBox(transform_, TextureManager::GetInstance()->GetTextureInfo("uvChecker"), {1.0f,1.0f,1.0f,1.0f});
+	//Renderer::GetInstance()->DrawModel(transform_,ModelManager::GetInstance()->GetModelInfo("player"), {1.0f,1.0f,1.0f,1.0f});
+	for (uint32_t i = 0; i < 10; i++) {
+		transform_.translate.x = i;
+		transformSprite_.translate.x = (sprite_.GetSize().x / 2.0f) + (i * 10.0f);
+		transformSprite_.translate.y = (sprite_.GetSize().y / 2.0f);
+		Renderer::GetInstance()->DrawModel(transform_, &model_);
+		Renderer::GetInstance()->DrawSprite(transformSprite_, sprite_);
+	}
+
+	transform_.Initialize();
+	transformSprite_.Initialize();
+
 	//sprite_.Draw(transformSprite_);
 
 	//frameSpriteLeft_.Draw({ {1.0f,1.0f},0.0f, {-frameSpriteLeft_.GetSize().x / 2.0f,frameSpriteLeft_.GetSize().y / 2.0f} });

@@ -15,12 +15,40 @@ enum class LightingType {
 	kLambert = 2,
 };
 
+struct ModelElement {
+	uint32_t modelMax_;
+
+	Material* materialData_ = nullptr;
+
+	TransformationMatrix* wvpData_ = nullptr;
+
+	ModelData modelData_;
+
+	VertexData* vertexData = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_ = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_ = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_ = nullptr;
+
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource_ = nullptr;
+
+	D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
+
+	Transform uvTransform_;
+
+	BlendMode blendMode_;
+};
+
 class Model {
 public:
 	~Model();
 	void Initialize(const ModelInfo& info);
 
-	void Draw(const Transform& transform);
+	void Draw(const Transform& transform) const;
 
 	void SetIsVisible(bool isVisible);
 	void SetIsVisible(bool isVisible, const std::string& meshName);
@@ -50,6 +78,10 @@ public:
 	LightingType GetLightingType(const std::string& meshName);
 
 	void SetBlendMode(BlendMode blendMode) { blendMode_ = blendMode; };
+
+	uint32_t GetModelCountMax()const { return modelMax_; };
+
+	std::vector<ModelElement*> GetModelElement()const;
 private:
 	uint32_t modelMax_;
 
@@ -67,9 +99,72 @@ private:
 
 	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> wvpResource_;
 
+	VertexData* vertexData = nullptr;
+
 	std::vector<D3D12_VERTEX_BUFFER_VIEW> vertexBufferView_{};
 
 	std::vector<Transform> uvTransform_;
+
+	BlendMode blendMode_;
+};
+
+class Sprite {
+public:
+	void Initialize(TextureInfo info);
+	void Initialize();
+
+	void Draw(const Transform& transform);
+
+	void Draw(const Transform2D& transform);
+
+	void SetIsVisible(bool isVisible) { isVisible_ = isVisible; };
+
+	bool GetIsVisible() { return isVisible_; };
+
+	void ChangeTexture(const TextureInfo& info) { textureInfo_.textureSrvHandlesGPU = info.textureSrvHandlesGPU; };
+
+	void SetColor(Vector4 color) { materialData_->color = color; };
+
+	Vector4 GetColor() { return materialData_->color; };
+
+	void SetUvTransform(const Transform& transform) { uvTransform_ = transform; }
+
+	void SetSize(Vector2 size);
+	void SetSize(WindowSize windowSize);
+
+	Vector2 GetSize()const { return size_; };
+
+	ModelElement* GetModelElement()const;
+private:
+	void AdaptationSize();
+private:
+	Vector2 size_;
+
+	Transform uvTransform_;
+
+	Material* materialData_ = nullptr;
+
+	VertexData* vertexData = nullptr;
+
+	TransformationMatrix* transformationMatrixData_ = nullptr;
+
+	bool isVisible_;
+
+	const uint32_t kSubdivision_ = 16;
+
+	TextureInfo textureInfo_;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_ = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_ = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource_ = nullptr;
+
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource_ = nullptr;
+
+	D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
 
 	BlendMode blendMode_;
 };
@@ -82,45 +177,100 @@ public:
 
 	void SetBlendMode(BlendMode blendmode);
 
+	void SetLightingType(LightingType lightingType);
+
 	void ClearDrawIndex();
 
+	/// <summary>
+	/// 線の描画.
+	/// </summary>
+	/// <param name="startVector3">始点の位置</param>
+	/// <param name="endVector3">終点の位置</param>
+	/// <param name="color">色</param>
 	void DrawLine(const Vector3& startVector3, const Vector3& endVector3, const Vector4& color);
 
+	/// <summary>
+	/// 球の描画.
+	/// </summary>
+	/// <param name="transform">トランスフォーム</param>
+	/// <param name="textureInfo">テクスチャインフォ</param>
+	/// <param name="color">色</param>
 	void DrawSphere(const Transform& transform,const TextureInfo& textureInfo, const Vector4& color);
 
+	/// <summary>
+	/// 球の描画.
+	/// </summary>
+	/// <param name="transform">トランスフォーム</param>
+	/// <param name="name">テクスチャネーム</param>
+	/// <param name="color">色</param>
+	void DrawSphere(const Transform& transform, const std::string& name, const Vector4& color) { DrawSphere(transform,TextureManager::GetInstance()->GetTextureInfo(name), color); };
+
+	/// <summary>
+	/// ボックスの描画.
+	/// </summary>
+	/// <param name="transform">トランスフォーム</param>
+	/// <param name="textureInfo">テクスチャインフォ</param>
+	/// <param name="color">色</param>
 	void DrawBox(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color);
 
-	void DrawModel();
+	/// <summary>
+	/// ボックスの描画.
+	/// </summary>
+	/// <param name="transform">トランスフォーム</param>
+	/// <param name="name">テクスチャネーム</param>
+	/// <param name="color">色</param>
+	void DrawBox(const Transform& transform, const std::string& name, const Vector4& color) { DrawBox(transform, TextureManager::GetInstance()->GetTextureInfo(name), color); };
+
+
+
+
+
+	/// <summary>
+	/// モデルの描画.
+	/// </summary>
+	/// <param name="transform">トランスフォーム</param>
+	/// <param name="modelInfo">モデルインフォ</param>
+	/// <param name="color">色</param>
+	void DrawModel(const Transform& transform, const ModelInfo& modelInfo, const Vector4& color);
+
+	/// <summary>
+	/// モデルの描画.
+	/// </summary>
+	/// <param name="transform">トランスフォーム</param>
+	/// <param name="name">モデルネーム</param>
+	/// <param name="color">色</param>
+	void DrawModel(const Transform& transform, const std::string& name, const Vector4& color) { DrawModel(transform, ModelManager::GetInstance()->GetModelInfo(name), color); };
+
+	/// <summary>
+	/// モデルの描画.
+	/// </summary>
+	/// <param name="transform">トランスフォーム</param>
+	/// <param name="model">モデル</param>
+	void DrawModel(const Transform& transform, const Model* model);
+
+	/// <summary>
+	/// スプライトの描画.
+	/// </summary>
+	/// <param name="transform">トランスフォーム</param>
+	/// <param name="textureInfo">テクスチャインフォ</param>
+	/// <param name="color">色</param>
+	void DrawSprite(const Transform& transform,const TextureInfo& textureInfo, const Vector4& color);
+
+	/// <summary>
+	/// スプライトの描画.
+	/// </summary>
+	/// <param name="transform">トランスフォーム</param>
+	/// <param name="name">モデルネーム</param>
+	/// <param name="color">色</param>
+	void DrawSprite(const Transform& transform, const std::string& name, const Vector4& color) { DrawSprite(transform, TextureManager::GetInstance()->GetTextureInfo(name), color); };
+
+	/// <summary>
+	/// スプライトの描画.
+	/// </summary>
+	/// <param name="transform">トランスフォーム</param>
+	/// <param name="sprite">スプライト</param>
+	void DrawSprite(const Transform& transform,const Sprite& sprite);
 private:
-	struct ModelElement {
-		uint32_t modelMax_;
-
-		Material* materialData_ = nullptr;
-
-		TransformationMatrix* wvpData_ = nullptr;
-
-		bool isVisible_;
-
-		ModelData modelData_;
-
-		VertexData* vertexData = nullptr;
-
-		Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_ = nullptr;
-
-		Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_ = nullptr;
-
-		Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_ = nullptr;
-
-		D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
-
-		Microsoft::WRL::ComPtr<ID3D12Resource> indexResource_ = nullptr;
-
-		D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
-
-		Transform uvTransform_;
-
-		BlendMode blendMode_;
-	};
 
 	void CreateLine(ModelElement* newElement);
 
@@ -128,13 +278,21 @@ private:
 
 	void CreateBox(ModelElement* newElement);
 
-	void CreateModel(ModelElement* newElement);
+	void CreateNewModel(std::vector<ModelElement*> newElements, const uint32_t modelMax);
+
+	void CreateModel(std::vector<ModelElement*> newElements, const uint32_t modelMax);
+
+	void CreateNewSprite(ModelElement* newElement,float width,float height);
+
+	void CreateSprite(ModelElement* newElement, float width, float height);
 private:
 
 
-	std::vector<ModelElement*> modelElement;
+	//std::vector<ModelElement*> modelElement;
 
 	BlendMode blendMode_;
+
+	LightingType lightingType_;
 
 	uint32_t currentDrawIndex_;
 };
@@ -226,65 +384,6 @@ private:
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
 
 	Transform uvTransform_;
-
-	BlendMode blendMode_;
-};
-
-class Sprite {
-public:
-	void Initialize(TextureInfo info);
-	void Initialize();
-
-	void Draw(const Transform& transform);
-
-	void Draw(const Transform2D& transform);
-
-	void SetIsVisible(bool isVisible) { isVisible_ = isVisible; };
-
-	bool GetIsVisible() { return isVisible_; };
-
-	void ChangeTexture(const TextureInfo& info) { textureInfo_.textureSrvHandlesGPU = info.textureSrvHandlesGPU; };
-
-	void SetColor(Vector4 color) { materialData_->color = color; };
-
-	Vector4 GetColor() { return materialData_->color; };
-
-	void SetUvTransform(const Transform& transform) { uvTransform_ = transform; }
-
-	void SetSize(Vector2 size);
-	void SetSize(WindowSize windowSize);
-
-	Vector2 GetSize() { return size_; };
-private:
-	void AdaptationSize();
-private:
-	Vector2 size_;
-
-	Transform uvTransform_;
-
-	Material* materialData_ = nullptr;
-
-	VertexData* vertexData = nullptr;
-
-	TransformationMatrix* transformationMatrixData_ = nullptr;
-
-	bool isVisible_;
-
-	const uint32_t kSubdivision_ = 16;
-
-	TextureInfo textureInfo_;
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_ = nullptr;
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_ = nullptr;
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource_ = nullptr;
-
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource_ = nullptr;
-
-	D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
 
 	BlendMode blendMode_;
 };

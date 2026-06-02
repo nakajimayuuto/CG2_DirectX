@@ -101,7 +101,7 @@ void Model::Initialize(const ModelInfo& info) {
 	}
 }
 
-void Model::Draw(const Transform& transform) {
+void Model::Draw(const Transform& transform) const {
 	for (uint32_t i = 0; i < modelMax_; i++) {
 		if (!isVisible_[i]) {
 			return;
@@ -300,7 +300,311 @@ LightingType Model::GetLightingType(const std::string& meshName) {
 
 		return static_cast<LightingType>(materialData_[i]->lightingType);
 	}
-};
+}
+
+std::vector<ModelElement*> Model::GetModelElement() const {
+	ModelElement* modelElement;
+	std::vector<ModelElement*> modelElements;
+
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		modelElement = new ModelElement();
+		modelElement->modelMax_ = modelMax_;
+		modelElement->materialData_ = materialData_[i];
+		modelElement->wvpData_ = wvpData_[i];
+		modelElement->modelData_ = modelData_[i];
+		modelElement->vertexResource_ = vertexResource_[i];
+		modelElement->materialResource_ = materialResource_[i];
+		modelElement->wvpResource_ = wvpResource_[i];
+		modelElement->vertexBufferView_ = vertexBufferView_[i];
+		modelElement->uvTransform_ = uvTransform_[i];
+		modelElement->blendMode_ = blendMode_;
+
+		modelElements.push_back(modelElement);
+	}
+	return modelElements;
+}
+
+void Sprite::Initialize(TextureInfo info) {
+	isVisible_ = true;
+
+	blendMode_ = BlendMode::kNormal;
+	uvTransform_.Initialize();
+
+	textureInfo_ = info;
+	/*=============================================================
+	Sprite用のResourceとView.
+	=============================================================*/
+	// 【VertexResourceを生成する】
+	// 実際に頂点リソースを作る.
+	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * 4);
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ.
+	vertexBufferView_.SizeInBytes = sizeof(VertexData) * 4;
+	// 1頂点あたりのサイズ.
+	vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+	// 【IndexResourceを生成する】
+	// 実際に頂点リソースを作る.
+	indexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * 6);
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	indexBufferView_.BufferLocation = indexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズはインデックス6つ分のサイズ.
+	indexBufferView_.SizeInBytes = sizeof(uint32_t) * 6;
+	// インデックスはuint32_tとする.
+	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+
+
+	// 【MaterialResourceを生成する】
+	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
+	//Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceSprite
+	materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+	// マテリアルにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
+	// 今回は赤を書き込んでみる
+	materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	materialData_->lightingType = static_cast<uint32_t>(LightingType::kAspectNone);
+	materialData_->uvTransform = Matrix4x4::Identity();
+
+	// 【TransformationMatrix】
+	//Sprite用のTransformationMatrixを作る。Matrix4x4 1つ分のサイズを用意する.
+	transformationMatrixResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+	// データを書き込む.
+	// 書き込むためのアドレスを取得.
+	transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_));
+	// 単位行列を書き込んでおく.
+	transformationMatrixData_->WVP = Matrix4x4::Identity();
+	transformationMatrixData_->World = Matrix4x4::Identity();
+
+	// 【Resourceにデータを書き込む】
+
+	// 頂点リソースにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	// 1枚目の三角形.
+	vertexData[0].position = { 0.0f,360.0f,0.0f,1.0f }; // 左下.
+	vertexData[0].texcoord = { 0.0f,1.0f };
+	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f }; // 左上.
+	vertexData[1].texcoord = { 0.0f,0.0f };
+	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[2].position = { 640.0f,360.0f,0.0f,1.0f }; // 右下.
+	vertexData[2].texcoord = { 1.0f,1.0f };
+	vertexData[2].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[3].position = { 640.0f,0.0f,0.0f,1.0f }; // 右上.
+	vertexData[3].texcoord = { 1.0f,0.0f };
+	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
+
+	// インデックスリソースにデータを書き込む.
+	uint32_t* indexDataSprite = nullptr;
+	// 書き込むためのアドレスを取得.
+	indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
+	// 1枚目の三角形.
+	indexDataSprite[0] = 0;
+	indexDataSprite[1] = 1;
+	indexDataSprite[2] = 2;
+	indexDataSprite[3] = 1;
+	indexDataSprite[4] = 3;
+	indexDataSprite[5] = 2;
+
+	size_ = { static_cast<float>(textureInfo_.width),static_cast<float>(textureInfo_.height) };
+	AdaptationSize();
+}
+
+void Sprite::Initialize() {
+	isVisible_ = true;
+
+	blendMode_ = BlendMode::kNormal;
+	uvTransform_.Initialize();
+
+	textureInfo_ = TextureManager::GetInstance()->GetTextureInfo("white_template");
+	/*=============================================================
+	Sprite用のResourceとView.
+	=============================================================*/
+	// 【VertexResourceを生成する】
+	// 実際に頂点リソースを作る.
+	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * 4);
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ.
+	vertexBufferView_.SizeInBytes = sizeof(VertexData) * 4;
+	// 1頂点あたりのサイズ.
+	vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+	// 【IndexResourceを生成する】
+	// 実際に頂点リソースを作る.
+	indexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * 6);
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	indexBufferView_.BufferLocation = indexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズはインデックス6つ分のサイズ.
+	indexBufferView_.SizeInBytes = sizeof(uint32_t) * 6;
+	// インデックスはuint32_tとする.
+	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+
+
+	// 【MaterialResourceを生成する】
+	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
+	//Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceSprite
+	materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+	// マテリアルにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
+	// 今回は赤を書き込んでみる
+	materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	materialData_->lightingType = static_cast<uint32_t>(LightingType::kAspectNone);
+	materialData_->uvTransform = Matrix4x4::Identity();
+
+	// 【TransformationMatrix】
+	//Sprite用のTransformationMatrixを作る。Matrix4x4 1つ分のサイズを用意する.
+	transformationMatrixResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+	// データを書き込む.
+	// 書き込むためのアドレスを取得.
+	transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_));
+	// 単位行列を書き込んでおく.
+	transformationMatrixData_->WVP = Matrix4x4::Identity();
+	transformationMatrixData_->World = Matrix4x4::Identity();
+
+	// 【Resourceにデータを書き込む】
+
+	// 頂点リソースにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	// 1枚目の三角形.
+	vertexData[0].position = { 0.0f,360.0f,0.0f,1.0f }; // 左下.
+	vertexData[0].texcoord = { 0.0f,1.0f };
+	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f }; // 左上.
+	vertexData[1].texcoord = { 0.0f,0.0f };
+	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[2].position = { 640.0f,360.0f,0.0f,1.0f }; // 右下.
+	vertexData[2].texcoord = { 1.0f,1.0f };
+	vertexData[2].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[3].position = { 640.0f,0.0f,0.0f,1.0f }; // 右上.
+	vertexData[3].texcoord = { 1.0f,0.0f };
+	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
+
+	// インデックスリソースにデータを書き込む.
+	uint32_t* indexDataSprite = nullptr;
+	// 書き込むためのアドレスを取得.
+	indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
+	// 1枚目の三角形.
+	indexDataSprite[0] = 0;
+	indexDataSprite[1] = 1;
+	indexDataSprite[2] = 2;
+	indexDataSprite[3] = 1;
+	indexDataSprite[4] = 3;
+	indexDataSprite[5] = 2;
+
+	size_ = { static_cast<float>(textureInfo_.width),static_cast<float>(textureInfo_.height) };
+	AdaptationSize();
+}
+
+void Sprite::Draw(const Transform& transform) {
+	if (!isVisible_) {
+		return;
+	}
+
+	Transform worldTransform = transform;
+
+	worldTransform.translate.x = transform.translate.x - (size_.x / 2.0f);
+	worldTransform.translate.y = transform.translate.y - (size_.y / 2.0f);
+
+	Matrix4x4 worldMatrix = worldTransform.GetAffineMatrix();
+
+	transformationMatrixData_->World = worldMatrix;
+	transformationMatrixData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
+
+	materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransform_);
+	/*=============================================================
+	三角形のSpriteの描画のコマンド.
+	=============================================================*/
+	// Spriteの描画。変更が必要なものだけ変更する.
+	GameSystem::GetInstance()->SetPipeline(blendMode_);
+
+	GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_); // VBVを設定.
+	GameSystem::GetInstance()->GetCommandList()->IASetIndexBuffer(&indexBufferView_); // IBVを設定.
+	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
+	GameSystem::GetInstance()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	// マテリアル用のCBufferの場所.
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
+	// transformationMatrixCBufferの場所.
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource_->GetGPUVirtualAddress());
+	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureInfo_.textureSrvHandlesGPU);
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
+	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
+	GameSystem::GetInstance()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
+
+
+
+}
+
+void Sprite::Draw(const Transform2D& transform) {
+	Transform transform3D;
+	transform3D.scale.x = transform.scale.x;
+	transform3D.scale.y = transform.scale.y;
+	transform3D.scale.z = 1.0f;
+	transform3D.rotate.x = transform.rotate;
+	transform3D.rotate.y = 0.0f;
+	transform3D.rotate.z = 0.0f;
+	transform3D.translate.x = transform.translate.x;
+	transform3D.translate.y = transform.translate.y;
+	transform3D.translate.z = 0.0f;
+	;
+	Draw(transform3D);
+}
+
+void Sprite::SetSize(Vector2 size) {
+	size_ = size;
+	AdaptationSize();
+}
+
+void Sprite::SetSize(WindowSize windowSize) {
+	size_ = { static_cast<float>(windowSize.width),static_cast<float>(windowSize.height) };
+	AdaptationSize();
+}
+
+void Sprite::AdaptationSize() {
+	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	vertexData[0].position = { 0.0f,size_.y,0.0f,1.0f }; // 左下.
+	vertexData[0].texcoord = { 0.0f,1.0f };
+	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f }; // 左上.
+	vertexData[1].texcoord = { 0.0f,0.0f };
+	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[2].position = { size_.x,size_.y,0.0f,1.0f }; // 右下.
+	vertexData[2].texcoord = { 1.0f,1.0f };
+	vertexData[2].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[3].position = { size_.x,0.0f,0.0f,1.0f }; // 右上.
+	vertexData[3].texcoord = { 1.0f,0.0f };
+	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
+}
+
+ModelElement* Sprite::GetModelElement() const {
+	ModelElement* modelElement;
+	modelElement = new ModelElement();
+	modelElement->materialData_ = materialData_;
+	modelElement->wvpData_ = transformationMatrixData_;
+	modelElement->modelData_.textureSrvHandlesGPU = textureInfo_.textureSrvHandlesGPU;
+	modelElement->vertexResource_ = vertexResource_;
+	modelElement->materialResource_ = materialResource_;
+	modelElement->wvpResource_ = transformationMatrixResource_;
+	modelElement->vertexBufferView_ = vertexBufferView_;
+	modelElement->uvTransform_ = uvTransform_;
+	modelElement->indexResource_ = indexResource_;
+	modelElement->indexBufferView_ = indexBufferView_;
+	modelElement->blendMode_ = blendMode_;
+	return modelElement;
+}
 
 Renderer* Renderer::GetInstance() {
 	static Renderer instance;
@@ -309,11 +613,31 @@ Renderer* Renderer::GetInstance() {
 
 void Renderer::Initialize() {
 	currentDrawIndex_ = 0;
+
+	blendMode_ = BlendMode::kNormal;
+
+	lightingType_ = LightingType::kHalfLambert;
 }
 
 void Renderer::ClearDrawIndex() {
 	currentDrawIndex_ = 0;
-	modelElement.clear();
+	//modelElement.clear();
+}
+
+void Renderer::SetBlendMode(BlendMode blendMode) {
+	if (blendMode == blendMode_) {
+		return;
+	}
+
+	blendMode_ = blendMode;
+}
+
+void Renderer::SetLightingType(LightingType lightingType) {
+	if (lightingType == lightingType_) {
+		return;
+	}
+
+	lightingType_ = lightingType;
 }
 
 void Renderer::DrawLine(const Vector3& startVector3, const Vector3& endVector3, const Vector4& color) {
@@ -363,7 +687,7 @@ void Renderer::DrawLine(const Vector3& startVector3, const Vector3& endVector3, 
 	currentDrawIndex_++;
 }
 
-void Renderer::DrawSphere(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color){
+void Renderer::DrawSphere(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color) {
 	const uint32_t kSubdivision_ = 16;
 
 	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
@@ -397,7 +721,7 @@ void Renderer::DrawSphere(const Transform& transform, const TextureInfo& texture
 	GameSystem::GetInstance()->GetCommandList()->DrawIndexedInstanced(kSubdivision_ * kSubdivision_ * 6, 1, 0, 0, 0);
 }
 
-void Renderer::DrawBox(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color){
+void Renderer::DrawBox(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color) {
 	ModelElement* newElement;
 	newElement = new ModelElement();
 	CreateBox(newElement);
@@ -429,6 +753,175 @@ void Renderer::DrawBox(const Transform& transform, const TextureInfo& textureInf
 	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
 	GameSystem::GetInstance()->GetCommandList()->DrawInstanced(UINT(newElement->modelData_.vertices.size()), 1, 0, 0);
 }
+
+void Renderer::DrawModel(const Transform& transform, const ModelInfo& modelInfo, const Vector4& color) {
+	uint32_t modelMax_ = static_cast<uint32_t>(modelInfo.modelData.size());
+	std::vector<ModelElement*> newElements;
+	newElements.resize(modelMax_);
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		newElements[i] = new ModelElement();
+		newElements[i]->modelData_ = modelInfo.modelData[i];
+	}
+
+	CreateNewModel(newElements, modelMax_);
+
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+
+		newElements[i]->wvpData_->World = worldMatrix;
+		newElements[i]->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+
+		newElements[i]->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(newElements[i]->uvTransform_);
+
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = GameSystem::GetInstance()->GetCommandList();
+
+		/*=============================================================
+		三角形の描画のコマンド.
+		=============================================================*/
+		GameSystem::GetInstance()->SetPipeline(blendMode_);
+
+		commandList->IASetVertexBuffers(0, 1, &newElements[i]->vertexBufferView_); // VBVを設定.
+		// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
+		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		// CBufferの場所を設定.
+		// マテリアル用のCBufferの場所.
+		commandList->SetGraphicsRootConstantBufferView(0, newElements[i]->materialResource_->GetGPUVirtualAddress());
+		// WVP用のCBufferの場所.
+		commandList->SetGraphicsRootConstantBufferView(1, newElements[i]->wvpResource_->GetGPUVirtualAddress());
+		// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
+		commandList->SetGraphicsRootDescriptorTable(2, newElements[i]->modelData_.textureSrvHandlesGPU);
+		// DirectionalLight用のCBufferの場所.
+		commandList->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
+		// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
+		commandList->DrawInstanced(UINT(newElements[i]->modelData_.vertices.size()), 1, 0, 0);
+	}
+}
+
+void Renderer::DrawModel(const Transform& transform, const Model* model) {
+	uint32_t modelMax_ = static_cast<uint32_t>(model->GetModelCountMax());
+	std::vector<ModelElement*> newElements;
+	newElements.resize(modelMax_);
+	newElements = model->GetModelElement();
+
+	CreateModel(newElements, modelMax_);
+
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+
+		newElements[i]->wvpData_->World = worldMatrix;
+		newElements[i]->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+
+		newElements[i]->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(newElements[i]->uvTransform_);
+
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = GameSystem::GetInstance()->GetCommandList();
+
+		/*=============================================================
+		三角形の描画のコマンド.
+		=============================================================*/
+		GameSystem::GetInstance()->SetPipeline(blendMode_);
+
+		commandList->IASetVertexBuffers(0, 1, &newElements[i]->vertexBufferView_); // VBVを設定.
+		// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
+		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		// CBufferの場所を設定.
+		// マテリアル用のCBufferの場所.
+		commandList->SetGraphicsRootConstantBufferView(0, newElements[i]->materialResource_->GetGPUVirtualAddress());
+		// WVP用のCBufferの場所.
+		commandList->SetGraphicsRootConstantBufferView(1, newElements[i]->wvpResource_->GetGPUVirtualAddress());
+		// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
+		commandList->SetGraphicsRootDescriptorTable(2, newElements[i]->modelData_.textureSrvHandlesGPU);
+		// DirectionalLight用のCBufferの場所.
+		commandList->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
+		// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
+		commandList->DrawInstanced(UINT(newElements[i]->modelData_.vertices.size()), 1, 0, 0);
+	}
+
+}
+
+void Renderer::DrawSprite(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color) {
+	Transform worldTransform = transform;
+
+	Vector2 size;
+	size.x = textureInfo.width;
+	size.y = textureInfo.height;
+
+	ModelElement* newElement;
+	newElement = new ModelElement();
+	newElement->modelData_.textureSrvHandlesGPU = textureInfo.textureSrvHandlesGPU;
+
+	CreateNewSprite(newElement, size.x, size.y);
+
+	worldTransform.translate.x = transform.translate.x - (size.x / 2.0f);
+	worldTransform.translate.y = transform.translate.y - (size.y / 2.0f);
+
+	Matrix4x4 worldMatrix = worldTransform.GetAffineMatrix();
+
+	newElement->wvpData_->World = worldMatrix;
+	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
+
+	newElement->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(newElement->uvTransform_);
+	/*=============================================================
+	三角形のSpriteの描画のコマンド.
+	=============================================================*/
+	// Spriteの描画。変更が必要なものだけ変更する.
+	GameSystem::GetInstance()->SetPipeline(blendMode_);
+
+	GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &newElement->vertexBufferView_); // VBVを設定.
+	GameSystem::GetInstance()->GetCommandList()->IASetIndexBuffer(&newElement->indexBufferView_); // IBVを設定.
+	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
+	GameSystem::GetInstance()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	// マテリアル用のCBufferの場所.
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(0, newElement->materialResource_->GetGPUVirtualAddress());
+	// transformationMatrixCBufferの場所.
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(1, newElement->wvpResource_->GetGPUVirtualAddress());
+	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootDescriptorTable(2, newElement->modelData_.textureSrvHandlesGPU);
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
+	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
+	GameSystem::GetInstance()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
+}
+
+void Renderer::DrawSprite(const Transform& transform, const Sprite& sprite) {
+	Transform worldTransform = transform;
+
+	Vector2 size = sprite.GetSize();
+
+	ModelElement* newElement;
+	newElement = new ModelElement();
+	newElement = sprite.GetModelElement();
+
+	CreateSprite(newElement, size.x, size.y);
+
+	worldTransform.translate.x = transform.translate.x - (size.x / 2.0f);
+	worldTransform.translate.y = transform.translate.y - (size.y / 2.0f);
+
+	Matrix4x4 worldMatrix = worldTransform.GetAffineMatrix();
+
+	newElement->wvpData_->World = worldMatrix;
+	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
+
+	newElement->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(newElement->uvTransform_);
+	/*=============================================================
+	三角形のSpriteの描画のコマンド.
+	=============================================================*/
+	// Spriteの描画。変更が必要なものだけ変更する.
+	GameSystem::GetInstance()->SetPipeline(blendMode_);
+
+	GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &newElement->vertexBufferView_); // VBVを設定.
+	GameSystem::GetInstance()->GetCommandList()->IASetIndexBuffer(&newElement->indexBufferView_); // IBVを設定.
+	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
+	GameSystem::GetInstance()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	// マテリアル用のCBufferの場所.
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(0, newElement->materialResource_->GetGPUVirtualAddress());
+	// transformationMatrixCBufferの場所.
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(1, newElement->wvpResource_->GetGPUVirtualAddress());
+	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootDescriptorTable(2, newElement->modelData_.textureSrvHandlesGPU);
+	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
+	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
+	GameSystem::GetInstance()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
+}
+
 
 void Renderer::CreateLine(ModelElement* newElement) {
 	newElement->modelData_.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesGPU;
@@ -472,10 +965,10 @@ void Renderer::CreateLine(ModelElement* newElement) {
 	newElement->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->vertexData));
 }
 
-void Renderer::CreateSphere(ModelElement* newElement){
+void Renderer::CreateSphere(ModelElement* newElement) {
 	const uint32_t kSubdivision_ = 16;
 
-	newElement->blendMode_ = BlendMode::kNormal;
+	newElement->blendMode_ = blendMode_;//BlendMode::kNormal;
 
 	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
 	newElement->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * kSubdivision_ * kSubdivision_ * 6);
@@ -488,7 +981,7 @@ void Renderer::CreateSphere(ModelElement* newElement){
 	newElement->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->materialData_));
 	// 今回は赤を書き込んでみる
 	newElement->materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	newElement->materialData_->lightingType = static_cast<uint32_t>(LightingType::kHalfLambert);
+	newElement->materialData_->lightingType = static_cast<uint32_t>(lightingType_);//static_cast<uint32_t>(LightingType::kHalfLambert);
 	newElement->materialData_->uvTransform = Matrix4x4::Identity();
 
 	// 【TransformationMatrix】
@@ -579,7 +1072,8 @@ void Renderer::CreateSphere(ModelElement* newElement){
 	}
 }
 
-void Renderer::CreateBox(ModelElement* newElement){
+void Renderer::CreateBox(ModelElement* newElement) {
+	newElement->blendMode_ = blendMode_;
 	newElement->uvTransform_.Initialize();
 	newElement->modelData_ = ModelManager::GetInstance()->GetModelInfo("block_template").modelData[0];
 	newElement->modelData_.textureSrvHandlesGPU = newElement->modelData_.textureSrvHandlesGPU;
@@ -594,7 +1088,7 @@ void Renderer::CreateBox(ModelElement* newElement){
 	newElement->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->materialData_));
 	// 今回は赤を書き込んでみる
 	newElement->materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	newElement->materialData_->lightingType = static_cast<uint32_t>(LightingType::kHalfLambert);
+	newElement->materialData_->lightingType = static_cast<uint32_t>(lightingType_);;
 	newElement->materialData_->uvTransform = Matrix4x4::Identity();
 
 	// 【TransformationMatrix】
@@ -622,6 +1116,296 @@ void Renderer::CreateBox(ModelElement* newElement){
 	// 書き込むためのアドレスを取得.
 	newElement->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 	memcpy(vertexData, newElement->modelData_.vertices.data(), sizeof(VertexData) * newElement->modelData_.vertices.size());
+}
+
+void Renderer::CreateNewModel(std::vector<ModelElement*> newElements, const uint32_t modelMax) {
+
+	for (uint32_t i = 0; i < modelMax; i++) {
+		// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
+		if (newElements[i]->modelData_.materialData.textureFilePath == "") {
+			newElements[i]->modelData_.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesGPU;
+		}
+
+		newElements[i]->blendMode_ = blendMode_;
+		newElements[i]->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * newElements[i]->modelData_.vertices.size());
+
+		// 【MaterialResourceを生成する】
+		// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
+		//Microsoft::WRL::ComPtr<ID3D12Resource> materialResource 
+		newElements[i]->materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+		// マテリアルにデータを書き込む.
+		//Material* materialData = nullptr;
+		// 書き込むためのアドレスを取得.
+		newElements[i]->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElements[i]->materialData_));
+		// 今回は赤を書き込んでみる
+		newElements[i]->materialData_->color = newElements[i]->modelData_.materialData.matarial.color;
+		newElements[i]->materialData_->lightingType = static_cast<uint32_t>(lightingType_);;
+		newElements[i]->materialData_->uvTransform = newElements[i]->modelData_.materialData.matarial.uvTransform;
+
+		// 【TransformationMatrix】
+		// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
+		//Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource 
+		newElements[i]->wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+		// データを書き込む.
+		//TransformationMatrix* wvpData = nullptr;
+		// 書き込むためのアドレスを取得.
+		newElements[i]->wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElements[i]->wvpData_));
+		// 単位行列を書き込んでおく.
+		newElements[i]->wvpData_->WVP = Matrix4x4::Identity();
+		newElements[i]->wvpData_->World = Matrix4x4::Identity();
+		newElements[i]->uvTransform_.Initialize();
+		newElements[i]->uvTransform_.scale = newElements[i]->materialData_->uvTransform.GetMatrixToTransform().scale;
+		newElements[i]->uvTransform_.rotate = newElements[i]->materialData_->uvTransform.GetMatrixToTransform().rotate;
+		newElements[i]->uvTransform_.translate = newElements[i]->materialData_->uvTransform.GetMatrixToTransform().translate;
+
+		// 【VertexBufferViewを作成する】
+
+		// 頂点バッファビューを作成する.
+		//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+		// リソースの先頭のアドレスから使う.
+		newElements[i]->vertexBufferView_.BufferLocation = newElements[i]->vertexResource_->GetGPUVirtualAddress();
+		// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
+		//vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 4;
+		newElements[i]->vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * newElements[i]->modelData_.vertices.size());
+		// 1頂点あたりのサイズ.
+		newElements[i]->vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+
+		// 【Resourceにデータを書き込む】
+
+		// 頂点リソースにデータを書き込む.
+		VertexData* vertexData = nullptr;
+		// 書き込むためのアドレスを取得.
+		newElements[i]->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+		memcpy(vertexData, newElements[i]->modelData_.vertices.data(), sizeof(VertexData) * newElements[i]->modelData_.vertices.size());
+	}
+
+
+}
+
+void Renderer::CreateModel(std::vector<ModelElement*> newElements, const uint32_t modelMax) {
+	for (uint32_t i = 0; i < modelMax; i++) {
+		// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
+
+		if (newElements[i]->modelData_.materialData.textureFilePath == "") {
+			newElements[i]->modelData_.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesGPU;
+		}
+
+		newElements[i]->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * newElements[i]->modelData_.vertices.size());
+
+		// 【MaterialResourceを生成する】
+		// 書き込むためのアドレスを取得.
+		newElements[i]->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElements[i]->materialData_));
+		// 今回は赤を書き込んでみる
+		//newElements[i]->materialData_->color;
+		//newElements[i]->materialData_->lightingType = static_cast<uint32_t>(LightingType::kHalfLambert);
+		//newElements[i]->materialData_->uvTransform = newElements[i]->modelData_.materialData.matarial.uvTransform;
+
+		// 【TransformationMatrix】
+		// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
+		newElements[i]->wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+		// データを書き込む.
+		//TransformationMatrix* wvpData = nullptr;
+		// 書き込むためのアドレスを取得.
+		newElements[i]->wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElements[i]->wvpData_));
+		// 単位行列を書き込んでおく.
+		newElements[i]->wvpData_->WVP = Matrix4x4::Identity();
+		newElements[i]->wvpData_->World = Matrix4x4::Identity();
+		//newElements[i]->uvTransform_.Initialize();
+		//newElements[i]->uvTransform_.scale = newElements[i]->materialData_->uvTransform.GetMatrixToTransform().scale;
+		//newElements[i]->uvTransform_.rotate = newElements[i]->materialData_->uvTransform.GetMatrixToTransform().rotate;
+		//newElements[i]->uvTransform_.translate = newElements[i]->materialData_->uvTransform.GetMatrixToTransform().translate;
+
+		// 【VertexBufferViewを作成する】
+
+		// 頂点バッファビューを作成する.
+		//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+		// リソースの先頭のアドレスから使う.
+		newElements[i]->vertexBufferView_.BufferLocation = newElements[i]->vertexResource_->GetGPUVirtualAddress();
+		// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
+		//vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 4;
+		newElements[i]->vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * newElements[i]->modelData_.vertices.size());
+		// 1頂点あたりのサイズ.
+		newElements[i]->vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+
+		// 【Resourceにデータを書き込む】
+
+		// 頂点リソースにデータを書き込む.
+		VertexData* vertexData = nullptr;
+		// 書き込むためのアドレスを取得.
+		newElements[i]->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+		memcpy(vertexData, newElements[i]->modelData_.vertices.data(), sizeof(VertexData) * newElements[i]->modelData_.vertices.size());
+	}
+}
+
+void Renderer::CreateNewSprite(ModelElement* newElement, float width, float height) {
+	newElement->blendMode_ = blendMode_;
+	newElement->uvTransform_.Initialize();
+
+	/*=============================================================
+	Sprite用のResourceとView.
+	=============================================================*/
+	// 【VertexResourceを生成する】
+	// 実際に頂点リソースを作る.
+	newElement->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * 4);
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	newElement->vertexBufferView_.BufferLocation = newElement->vertexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ.
+	newElement->vertexBufferView_.SizeInBytes = sizeof(VertexData) * 4;
+	// 1頂点あたりのサイズ.
+	newElement->vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+	// 【IndexResourceを生成する】
+	// 実際に頂点リソースを作る.
+	newElement->indexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * 6);
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	newElement->indexBufferView_.BufferLocation = newElement->indexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズはインデックス6つ分のサイズ.
+	newElement->indexBufferView_.SizeInBytes = sizeof(uint32_t) * 6;
+	// インデックスはuint32_tとする.
+	newElement->indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+
+
+	// 【MaterialResourceを生成する】
+	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
+	//Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceSprite
+	newElement->materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+	// マテリアルにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	newElement->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->materialData_));
+	// 今回は赤を書き込んでみる
+	newElement->materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	newElement->materialData_->lightingType = static_cast<uint32_t>(LightingType::kAspectNone);
+	newElement->materialData_->uvTransform = Matrix4x4::Identity();
+
+	// 【TransformationMatrix】
+	//Sprite用のTransformationMatrixを作る。Matrix4x4 1つ分のサイズを用意する.
+	newElement->wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+	// データを書き込む.
+	// 書き込むためのアドレスを取得.
+	newElement->wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->wvpData_));
+	// 単位行列を書き込んでおく.
+	newElement->wvpData_->WVP = Matrix4x4::Identity();
+	newElement->wvpData_->World = Matrix4x4::Identity();
+
+	// 【Resourceにデータを書き込む】
+
+	// 頂点リソースにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	newElement->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->vertexData));
+	newElement->vertexData[0].position = { 0.0f,height,0.0f,1.0f }; // 左下.
+	newElement->vertexData[0].texcoord = { 0.0f,1.0f };
+	newElement->vertexData[0].normal = { 0.0f,0.0f,-1.0f };
+	newElement->vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f }; // 左上.
+	newElement->vertexData[1].texcoord = { 0.0f,0.0f };
+	newElement->vertexData[1].normal = { 0.0f,0.0f,-1.0f };
+	newElement->vertexData[2].position = { width,height,0.0f,1.0f }; // 右下.
+	newElement->vertexData[2].texcoord = { 1.0f,1.0f };
+	newElement->vertexData[2].normal = { 0.0f,0.0f,-1.0f };
+	newElement->vertexData[3].position = { width,0.0f,0.0f,1.0f }; // 右上.
+	newElement->vertexData[3].texcoord = { 1.0f,0.0f };
+	newElement->vertexData[3].normal = { 0.0f,0.0f,-1.0f };
+
+	// インデックスリソースにデータを書き込む.
+	uint32_t* indexDataSprite = nullptr;
+	// 書き込むためのアドレスを取得.
+	newElement->indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
+	// 1枚目の三角形.
+	indexDataSprite[0] = 0;
+	indexDataSprite[1] = 1;
+	indexDataSprite[2] = 2;
+	indexDataSprite[3] = 1;
+	indexDataSprite[4] = 3;
+	indexDataSprite[5] = 2;
+}
+
+void Renderer::CreateSprite(ModelElement* newElement, float width, float height) {
+	//newElement->blendMode_ = BlendMode::kNormal;
+	newElement->uvTransform_.Initialize();
+	/*=============================================================
+	Sprite用のResourceとView.
+	=============================================================*/
+	// 【VertexResourceを生成する】
+	// 実際に頂点リソースを作る.
+	//newElement->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * 4);
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	newElement->vertexBufferView_.BufferLocation = newElement->vertexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ.
+	newElement->vertexBufferView_.SizeInBytes = sizeof(VertexData) * 4;
+	// 1頂点あたりのサイズ.
+	newElement->vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+	// 【IndexResourceを生成する】
+	// 実際に頂点リソースを作る.
+	newElement->indexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * 6);
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	newElement->indexBufferView_.BufferLocation = newElement->indexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズはインデックス6つ分のサイズ.
+	newElement->indexBufferView_.SizeInBytes = sizeof(uint32_t) * 6;
+	// インデックスはuint32_tとする.
+	newElement->indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+
+
+	// 【MaterialResourceを生成する】
+	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
+	//Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceSprite
+	//newElement->materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+	// マテリアルにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	newElement->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->materialData_));
+	// 今回は赤を書き込んでみる
+	//newElement->materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	//newElement->materialData_->lightingType = static_cast<uint32_t>(LightingType::kAspectNone);
+	//newElement->materialData_->uvTransform = Matrix4x4::Identity();
+
+	// 【TransformationMatrix】
+	//Sprite用のTransformationMatrixを作る。Matrix4x4 1つ分のサイズを用意する.
+	newElement->wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+	// データを書き込む.
+	// 書き込むためのアドレスを取得.
+	newElement->wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->wvpData_));
+	// 単位行列を書き込んでおく.
+	newElement->wvpData_->WVP = Matrix4x4::Identity();
+	newElement->wvpData_->World = Matrix4x4::Identity();
+
+	// 【Resourceにデータを書き込む】
+
+	// 頂点リソースにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	newElement->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->vertexData));
+	newElement->vertexData[0].position = { 0.0f,height,0.0f,1.0f }; // 左下.
+	newElement->vertexData[0].texcoord = { 0.0f,1.0f };
+	newElement->vertexData[0].normal = { 0.0f,0.0f,-1.0f };
+	newElement->vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f }; // 左上.
+	newElement->vertexData[1].texcoord = { 0.0f,0.0f };
+	newElement->vertexData[1].normal = { 0.0f,0.0f,-1.0f };
+	newElement->vertexData[2].position = { width,height,0.0f,1.0f }; // 右下.
+	newElement->vertexData[2].texcoord = { 1.0f,1.0f };
+	newElement->vertexData[2].normal = { 0.0f,0.0f,-1.0f };
+	newElement->vertexData[3].position = { width,0.0f,0.0f,1.0f }; // 右上.
+	newElement->vertexData[3].texcoord = { 1.0f,0.0f };
+	newElement->vertexData[3].normal = { 0.0f,0.0f,-1.0f };
+
+	// インデックスリソースにデータを書き込む.
+	uint32_t* indexDataSprite = nullptr;
+	// 書き込むためのアドレスを取得.
+	newElement->indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
+	// 1枚目の三角形.
+	indexDataSprite[0] = 0;
+	indexDataSprite[1] = 1;
+	indexDataSprite[2] = 2;
+	indexDataSprite[3] = 1;
+	indexDataSprite[4] = 3;
+	indexDataSprite[5] = 2;
 }
 
 /*
@@ -891,270 +1675,7 @@ void Renderer::ModelBox::Draw(const Transform& transform) {
 
 }
 
-void Renderer::Sprite::Initialize(TextureInfo info) {
-	isVisible_ = true;
 
-	blendMode_ = BlendMode::kNormal;
-	uvTransform_.Initialize();
-
-	textureInfo_ = info;
-	/*=============================================================
-	Sprite用のResourceとView.
-	=============================================================
-	// 【VertexResourceを生成する】
-	// 実際に頂点リソースを作る.
-	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * 4);
-
-	// 頂点バッファビューを作成する.
-	// リソースの先頭のアドレスから使う.
-	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
-	// 使用するリソースのサイズは頂点3つ分のサイズ.
-	vertexBufferView_.SizeInBytes = sizeof(VertexData) * 4;
-	// 1頂点あたりのサイズ.
-	vertexBufferView_.StrideInBytes = sizeof(VertexData);
-
-	// 【IndexResourceを生成する】
-	// 実際に頂点リソースを作る.
-	indexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * 6);
-
-	// 頂点バッファビューを作成する.
-	// リソースの先頭のアドレスから使う.
-	indexBufferView_.BufferLocation = indexResource_->GetGPUVirtualAddress();
-	// 使用するリソースのサイズはインデックス6つ分のサイズ.
-	indexBufferView_.SizeInBytes = sizeof(uint32_t) * 6;
-	// インデックスはuint32_tとする.
-	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
-
-
-	// 【MaterialResourceを生成する】
-	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceSprite
-	materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
-	// マテリアルにデータを書き込む.
-	// 書き込むためのアドレスを取得.
-	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
-	// 今回は赤を書き込んでみる
-	materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	materialData_->lightingType = static_cast<uint32_t>(LightingType::kAspectNone);
-	materialData_->uvTransform = Matrix4x4::Identity();
-
-	// 【TransformationMatrix】
-	//Sprite用のTransformationMatrixを作る。Matrix4x4 1つ分のサイズを用意する.
-	transformationMatrixResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
-	// データを書き込む.
-	// 書き込むためのアドレスを取得.
-	transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_));
-	// 単位行列を書き込んでおく.
-	transformationMatrixData_->WVP = Matrix4x4::Identity();
-	transformationMatrixData_->World = Matrix4x4::Identity();
-
-	// 【Resourceにデータを書き込む】
-
-	// 頂点リソースにデータを書き込む.
-	// 書き込むためのアドレスを取得.
-	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	// 1枚目の三角形.
-	vertexData[0].position = { 0.0f,360.0f,0.0f,1.0f }; // 左下.
-	vertexData[0].texcoord = { 0.0f,1.0f };
-	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f }; // 左上.
-	vertexData[1].texcoord = { 0.0f,0.0f };
-	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[2].position = { 640.0f,360.0f,0.0f,1.0f }; // 右下.
-	vertexData[2].texcoord = { 1.0f,1.0f };
-	vertexData[2].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[3].position = { 640.0f,0.0f,0.0f,1.0f }; // 右上.
-	vertexData[3].texcoord = { 1.0f,0.0f };
-	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
-
-	// インデックスリソースにデータを書き込む.
-	uint32_t* indexDataSprite = nullptr;
-	// 書き込むためのアドレスを取得.
-	indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
-	// 1枚目の三角形.
-	indexDataSprite[0] = 0;
-	indexDataSprite[1] = 1;
-	indexDataSprite[2] = 2;
-	indexDataSprite[3] = 1;
-	indexDataSprite[4] = 3;
-	indexDataSprite[5] = 2;
-
-	size_ = { static_cast<float>(textureInfo_.width),static_cast<float>(textureInfo_.height) };
-	AdaptationSize();
-}
-
-void Renderer::Sprite::Initialize() {
-	isVisible_ = true;
-
-	blendMode_ = BlendMode::kNormal;
-	uvTransform_.Initialize();
-
-	textureInfo_ = TextureManager::GetInstance()->GetTextureInfo("white_template");
-	/*=============================================================
-	Sprite用のResourceとView.
-	=============================================================
-	// 【VertexResourceを生成する】
-	// 実際に頂点リソースを作る.
-	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * 4);
-
-	// 頂点バッファビューを作成する.
-	// リソースの先頭のアドレスから使う.
-	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
-	// 使用するリソースのサイズは頂点3つ分のサイズ.
-	vertexBufferView_.SizeInBytes = sizeof(VertexData) * 4;
-	// 1頂点あたりのサイズ.
-	vertexBufferView_.StrideInBytes = sizeof(VertexData);
-
-	// 【IndexResourceを生成する】
-	// 実際に頂点リソースを作る.
-	indexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * 6);
-
-	// 頂点バッファビューを作成する.
-	// リソースの先頭のアドレスから使う.
-	indexBufferView_.BufferLocation = indexResource_->GetGPUVirtualAddress();
-	// 使用するリソースのサイズはインデックス6つ分のサイズ.
-	indexBufferView_.SizeInBytes = sizeof(uint32_t) * 6;
-	// インデックスはuint32_tとする.
-	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
-
-
-	// 【MaterialResourceを生成する】
-	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceSprite
-	materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
-	// マテリアルにデータを書き込む.
-	// 書き込むためのアドレスを取得.
-	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
-	// 今回は赤を書き込んでみる
-	materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	materialData_->lightingType = static_cast<uint32_t>(LightingType::kAspectNone);
-	materialData_->uvTransform = Matrix4x4::Identity();
-
-	// 【TransformationMatrix】
-	//Sprite用のTransformationMatrixを作る。Matrix4x4 1つ分のサイズを用意する.
-	transformationMatrixResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
-	// データを書き込む.
-	// 書き込むためのアドレスを取得.
-	transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_));
-	// 単位行列を書き込んでおく.
-	transformationMatrixData_->WVP = Matrix4x4::Identity();
-	transformationMatrixData_->World = Matrix4x4::Identity();
-
-	// 【Resourceにデータを書き込む】
-
-	// 頂点リソースにデータを書き込む.
-	// 書き込むためのアドレスを取得.
-	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	// 1枚目の三角形.
-	vertexData[0].position = { 0.0f,360.0f,0.0f,1.0f }; // 左下.
-	vertexData[0].texcoord = { 0.0f,1.0f };
-	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f }; // 左上.
-	vertexData[1].texcoord = { 0.0f,0.0f };
-	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[2].position = { 640.0f,360.0f,0.0f,1.0f }; // 右下.
-	vertexData[2].texcoord = { 1.0f,1.0f };
-	vertexData[2].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[3].position = { 640.0f,0.0f,0.0f,1.0f }; // 右上.
-	vertexData[3].texcoord = { 1.0f,0.0f };
-	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
-
-	// インデックスリソースにデータを書き込む.
-	uint32_t* indexDataSprite = nullptr;
-	// 書き込むためのアドレスを取得.
-	indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
-	// 1枚目の三角形.
-	indexDataSprite[0] = 0;
-	indexDataSprite[1] = 1;
-	indexDataSprite[2] = 2;
-	indexDataSprite[3] = 1;
-	indexDataSprite[4] = 3;
-	indexDataSprite[5] = 2;
-
-	size_ = { static_cast<float>(textureInfo_.width),static_cast<float>(textureInfo_.height) };
-	AdaptationSize();
-}
-
-void Renderer::Sprite::Draw(const Transform& transform) {
-	if (!isVisible_) {
-		return;
-	}
-
-	Transform worldTransform = transform;
-
-	worldTransform.translate.x = transform .translate.x - (size_.x / 2.0f);
-	worldTransform.translate.y = transform .translate.y - (size_.y / 2.0f);
-
-	Matrix4x4 worldMatrix = worldTransform.GetAffineMatrix();
-
-	transformationMatrixData_->World = worldMatrix;
-	transformationMatrixData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
-
-	materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransform_);
-	/*=============================================================
-	三角形のSpriteの描画のコマンド.
-	=============================================================
-	// Spriteの描画。変更が必要なものだけ変更する.
-	GameSystem::GetInstance()->SetPipeline(blendMode_);
-
-	GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_); // VBVを設定.
-	GameSystem::GetInstance()->GetCommandList()->IASetIndexBuffer(&indexBufferView_); // IBVを設定.
-	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
-	GameSystem::GetInstance()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	// マテリアル用のCBufferの場所.
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
-	// transformationMatrixCBufferの場所.
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource_->GetGPUVirtualAddress());
-	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureInfo_.textureSrvHandlesGPU);
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-	GameSystem::GetInstance()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
-
-
-
-}
-
-void Renderer::Sprite::Draw(const Transform2D& transform) {
-	Transform transform3D;
-	transform3D.scale.x = transform.scale.x;
-	transform3D.scale.y = transform.scale.y;
-	transform3D.scale.z = 1.0f;
-	transform3D.rotate.x = transform.rotate;
-	transform3D.rotate.y = 0.0f;
-	transform3D.rotate.z = 0.0f;
-	transform3D.translate.x = transform.translate.x;
-	transform3D.translate.y = transform.translate.y;
-	transform3D.translate.z = 0.0f;
-	;
-	Draw(transform3D);
-}
-
-void Renderer::Sprite::SetSize(Vector2 size) {
-	size_ = size;
-	AdaptationSize();
-}
-
-void Renderer::Sprite::SetSize(WindowSize windowSize) {
-	size_ = { static_cast<float>(windowSize.width),static_cast<float>(windowSize.height) };
-	AdaptationSize();
-}
-
-void Renderer::Sprite::AdaptationSize() {
-	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	vertexData[0].position = { 0.0f,size_.y,0.0f,1.0f }; // 左下.
-	vertexData[0].texcoord = { 0.0f,1.0f };
-	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f }; // 左上.
-	vertexData[1].texcoord = { 0.0f,0.0f };
-	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[2].position = { size_.x,size_.y,0.0f,1.0f }; // 右下.
-	vertexData[2].texcoord = { 1.0f,1.0f };
-	vertexData[2].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[3].position = { size_.x,0.0f,0.0f,1.0f }; // 右上.
-	vertexData[3].texcoord = { 1.0f,0.0f };
-	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
-}
 
 Renderer::Line* Renderer::Line::GetInstance() {
 	static Renderer::Line instance;

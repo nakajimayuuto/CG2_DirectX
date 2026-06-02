@@ -19,8 +19,8 @@ private:
 	Model model_;
 	Transform transform_;
 
-	//Renderer::Sprite sprite_;
-	//Transform transformSprite_;
+	Sprite sprite_;
+	Transform transformSprite_;
 
 	Skydome* skydome_ = nullptr;
 
