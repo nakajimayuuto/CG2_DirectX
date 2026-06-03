@@ -82,9 +82,6 @@
     <Filter Include="Engine\SystemFile\Convert">
       <UniqueIdentifier>{5720a672-7eae-4ac4-9b2f-88aac487d845}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\Renderer\hlsl">
-      <UniqueIdentifier>{64ec877d-11c7-4f7b-86d2-fbd88ee10b95}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Engine\Renderer\Camera">
       <UniqueIdentifier>{9580d45d-9102-407b-82ae-83e1d8780761}</UniqueIdentifier>
     </Filter>
@@ -129,6 +126,9 @@
     </Filter>
     <Filter Include="ソース ファイル\Skydome">
       <UniqueIdentifier>{3c17d3d0-3b88-4e69-adb3-22aedd773e33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="hlsl">
+      <UniqueIdentifier>{6c70db76-b338-4b22-88ad-361c35de6470}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -400,16 +400,25 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Engine\Renderer\Object3d.hlsli">
-      <Filter>Engine\Renderer\hlsl</Filter>
+    <None Include="hlsl\Object3d.hlsli">
+      <Filter>hlsl</Filter>
+    </None>
+    <None Include="hlsl\Particle.hlsli">
+      <Filter>hlsl</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Engine\Renderer\Object3d.PS.hlsl">
-      <Filter>Engine\Renderer\hlsl</Filter>
+    <FxCompile Include="hlsl\Object3d.PS.hlsl">
+      <Filter>hlsl</Filter>
     </FxCompile>
-    <FxCompile Include="Engine\Renderer\Object3d.VS.hlsl">
-      <Filter>Engine\Renderer\hlsl</Filter>
+    <FxCompile Include="hlsl\Object3d.VS.hlsl">
+      <Filter>hlsl</Filter>
+    </FxCompile>
+    <FxCompile Include="hlsl\Particle.VS.hlsl">
+      <Filter>hlsl</Filter>
+    </FxCompile>
+    <FxCompile Include="hlsl\Particle.PS.hlsl">
+      <Filter>hlsl</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

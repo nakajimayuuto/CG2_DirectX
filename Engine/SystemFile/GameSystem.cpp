@@ -343,8 +343,10 @@ void GameSystem::Initialize() {
 	scissorRect.top = 0;
 	scissorRect.bottom = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().height);
 
-	for (uint32_t i = 0; i < static_cast<uint32_t>(BlendMode::kCount); i++) {
-		CreatePipeline(static_cast<BlendMode>(i));
+	for (uint32_t j = 0; j < static_cast<uint32_t>(ShaderType::kCount); j++) {
+		for (uint32_t i = 0; i < static_cast<uint32_t>(BlendMode::kCount); i++) {
+			CreatePipeline(static_cast<BlendMode>(i), static_cast<ShaderType>(j));
+		}
 	}
 
 	SoundManager::GetInstance()->Initialize();
@@ -368,7 +370,7 @@ void GameSystem::Initialize() {
 	RegisterGlobalVariables();
 }
 
-void GameSystem::CreatePipeline(BlendMode blendMode) {
+void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 	/*=============================================================
 	DXCの初期化.
 	=============================================================*/
@@ -550,10 +552,19 @@ void GameSystem::CreatePipeline(BlendMode blendMode) {
 
 	// Shaderをコンパイルする.
 	// 【VertexShader】
-	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob = CompileShader(L"./Engine/Renderer/Object3d.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
-	assert(vertexShaderBlob != nullptr);
+	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob;
 	// 【PixelShader】
-	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = CompileShader(L"./Engine/Renderer/Object3d.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob;
+
+	if (shaderType == ShaderType::kParticle) {
+		vertexShaderBlob = CompileShader(L"./hlsl/Particle.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
+		pixelShaderBlob = CompileShader(L"./hlsl/Particle.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+	} else {
+		vertexShaderBlob = CompileShader(L"./hlsl/Object3d.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
+		pixelShaderBlob = CompileShader(L"./hlsl/Object3d.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+	}
+
+	assert(vertexShaderBlob != nullptr);
 	assert(pixelShaderBlob != nullptr);
 
 	// 【PSO】
@@ -580,11 +591,11 @@ void GameSystem::CreatePipeline(BlendMode blendMode) {
 	graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	// 実際に生成.
-	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&pipeline_[static_cast<uint32_t>(blendMode)].graphicsPipelineState));
+	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&pipeline_[static_cast<uint32_t>(blendMode) + (static_cast<uint32_t>(shaderType) * static_cast<uint32_t>(BlendMode::kCount))].graphicsPipelineState));
 	assert(SUCCEEDED(hr));
 
-	commandList->SetGraphicsRootSignature(pipeline_[static_cast<uint32_t>(blendMode)].rootSignature.Get());
-	commandList->SetPipelineState(pipeline_[static_cast<uint32_t>(blendMode)].graphicsPipelineState.Get()); // PS0を設定.
+	commandList->SetGraphicsRootSignature(pipeline_[static_cast<uint32_t>(blendMode) + (static_cast<uint32_t>(shaderType) * static_cast<uint32_t>(BlendMode::kCount))].rootSignature.Get());
+	commandList->SetPipelineState(pipeline_[static_cast<uint32_t>(blendMode) + (static_cast<uint32_t>(shaderType) * static_cast<uint32_t>(BlendMode::kCount))].graphicsPipelineState.Get()); // PS0を設定.
 
 	dxcCompiler->Release();
 	dxcUtils->Release();
@@ -596,6 +607,14 @@ void GameSystem::SetPipeline(BlendMode blendMode) {
 	// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
 	commandList->SetGraphicsRootSignature(pipeline_[static_cast<uint32_t>(blendMode)].rootSignature.Get());
 	commandList->SetPipelineState(pipeline_[static_cast<uint32_t>(blendMode)].graphicsPipelineState.Get()); // PS0を設定.
+}
+
+void GameSystem::SetParticlePipeline(BlendMode blendMode){
+	commandList->RSSetViewports(1, &viewport); // Viewportを設定.
+	commandList->RSSetScissorRects(1, &scissorRect); // Scissorを設定.
+	// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
+	commandList->SetGraphicsRootSignature(pipeline_[static_cast<uint32_t>(blendMode) + (static_cast<uint32_t>(ShaderType::kParticle) * static_cast<uint32_t>(BlendMode::kCount))].rootSignature.Get());
+	commandList->SetPipelineState(pipeline_[static_cast<uint32_t>(blendMode) + (static_cast<uint32_t>(ShaderType::kParticle) * static_cast<uint32_t>(BlendMode::kCount))].graphicsPipelineState.Get()); // PS0を設定.
 }
 
 bool GameSystem::ProcessMessage() {
@@ -790,7 +809,7 @@ void GameSystem::WindowSizeUpdate() {
 
 	if (windowAspect > targetAspect) {
 		viewportHeight = windowHeight;
-		viewportWidth = viewportHeight * targetAspect *(Environment::GetInstance()->GetWindowSize().width / windowWidth);
+		viewportWidth = viewportHeight * targetAspect * (Environment::GetInstance()->GetWindowSize().width / windowWidth);
 		if (windowWidth > Environment::GetInstance()->GetWindowSize().width) {
 			viewportWidth = Environment::GetInstance()->GetWindowSize().width * (targetAspect / windowAspect);
 			viewportX = (Environment::GetInstance()->GetWindowSize().width - viewportWidth) * 0.5f;
@@ -826,8 +845,8 @@ void GameSystem::WindowSizeUpdate() {
 	scissorRect = {};
 	scissorRect.left = static_cast<LONG>(viewportX);
 	scissorRect.top = static_cast<LONG>(viewportY);
-	scissorRect.right = static_cast<LONG>( viewportX + viewportWidth);
-	scissorRect.bottom = static_cast<LONG>( viewportY + viewportHeight);
+	scissorRect.right = static_cast<LONG>(viewportX + viewportWidth);
+	scissorRect.bottom = static_cast<LONG>(viewportY + viewportHeight);
 }
 
 

@@ -10,7 +10,7 @@
 #include "../SystemFile/GameSystem.h"
 #include <array>
 enum class LightingType {
-	kAspectNone = 0,
+	kNone = 0,
 	kHalfLambert = 1,
 	kLambert = 2,
 };

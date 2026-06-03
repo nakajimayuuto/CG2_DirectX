@@ -368,7 +368,7 @@ void Sprite::Initialize(TextureInfo info) {
 	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
 	// 今回は赤を書き込んでみる
 	materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	materialData_->lightingType = static_cast<uint32_t>(LightingType::kAspectNone);
+	materialData_->lightingType = static_cast<uint32_t>(LightingType::kNone);
 	materialData_->uvTransform = Matrix4x4::Identity();
 
 	// 【TransformationMatrix】
@@ -460,7 +460,7 @@ void Sprite::Initialize() {
 	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
 	// 今回は赤を書き込んでみる
 	materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	materialData_->lightingType = static_cast<uint32_t>(LightingType::kAspectNone);
+	materialData_->lightingType = static_cast<uint32_t>(LightingType::kNone);
 	materialData_->uvTransform = Matrix4x4::Identity();
 
 	// 【TransformationMatrix】
@@ -938,7 +938,7 @@ void Renderer::CreateLine(ModelElement* newElement) {
 	newElement->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->materialData_));
 	// 今回は赤を書き込んでみる
 	newElement->materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	newElement->materialData_->lightingType = static_cast<uint32_t>(LightingType::kAspectNone);
+	newElement->materialData_->lightingType = static_cast<uint32_t>(LightingType::kNone);
 	newElement->materialData_->uvTransform = Matrix4x4::Identity();
 
 	// 【TransformationMatrix】
@@ -1280,7 +1280,7 @@ void Renderer::CreateNewSprite(ModelElement* newElement, float width, float heig
 	newElement->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->materialData_));
 	// 今回は赤を書き込んでみる
 	newElement->materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	newElement->materialData_->lightingType = static_cast<uint32_t>(LightingType::kAspectNone);
+	newElement->materialData_->lightingType = static_cast<uint32_t>(LightingType::kNone);
 	newElement->materialData_->uvTransform = Matrix4x4::Identity();
 
 	// 【TransformationMatrix】

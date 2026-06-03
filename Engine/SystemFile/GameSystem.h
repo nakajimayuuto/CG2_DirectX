@@ -52,7 +52,7 @@ struct D3DResourceLeakChecker {
 };
 
 enum class BlendMode {
-	kAspectNone, // ブレンドモード無し.
+	kNone, // ブレンドモード無し.
 	kNormal, // 通常.
 	kAdd, // 加算.
 	kSubtract, // 減算.
@@ -61,7 +61,17 @@ enum class BlendMode {
 
 	kNormalCullNone, // 通常ブレンド。背面カリング無し.
 	kLine, // 線の描画に使用.
+
+	kParticleNone, // パーティクル用
+	kParticleNormal, // パーティクル用の通常.
+	kParticleCount, 
 	kCount, // ブレンドモードの最大数.
+};
+
+enum class ShaderType {
+	kObject3d, // オブジェクト3D.
+	kParticle, // パーティクル.
+	kCount // 最大数.
 };
 
 class GameSystem {
@@ -124,9 +134,11 @@ public:
 	};
 
 	// シェーダーの設定はここでやる.
-	void CreatePipeline(BlendMode blendMode);
+	void CreatePipeline(BlendMode blendMode,ShaderType shaderType);
 
 	void SetPipeline(BlendMode blendMode);
+
+	void SetParticlePipeline(BlendMode blendMode);
 private:
 
 	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -235,6 +247,6 @@ private:
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
 
-	Pipeline pipeline_[static_cast<uint32_t>(BlendMode::kCount)];
+	Pipeline pipeline_[static_cast<uint32_t>(BlendMode::kCount) * static_cast<uint32_t>(ShaderType::kCount)];
 };
 
