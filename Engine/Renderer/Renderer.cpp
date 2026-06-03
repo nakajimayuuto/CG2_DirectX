@@ -759,8 +759,8 @@ void Renderer::Sprite::Draw(const Transform& transform) {
 
 	Transform worldTransform = transform;
 
-	worldTransform.translate.x = transform .translate.x - (size_.x / 2.0f);
-	worldTransform.translate.y = transform .translate.y - (size_.y / 2.0f);
+	worldTransform.translate.x = transform.translate.x - (size_.x / 2.0f);
+	worldTransform.translate.y = transform.translate.y - (size_.y / 2.0f);
 
 	Matrix4x4 worldMatrix = worldTransform.GetAffineMatrix();
 
@@ -845,7 +845,7 @@ void Renderer::Line::Initialize() {
 		lineDatas_[i]->blendMode_ = BlendMode::kLine;
 
 		// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
-		lineDatas_[i]->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData)* 2);
+		lineDatas_[i]->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * 2);
 
 		// 【MaterialResourceを生成する】
 		// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
@@ -885,20 +885,20 @@ void Renderer::Line::Initialize() {
 	currentDrawLineIndex_ = 0;
 }
 
-void Renderer::Line::Draw(const Vector3& startVector3, const Vector3& endVector3,const Vector4& color) {
+void Renderer::Line::Draw(const Vector3& startVector3, const Vector3& endVector3, const Vector4& color) {
 
 	Vector3 centerVector3;
-	centerVector3.x = (static_cast<Vector3>(startVector3) + endVector3 ).x / 2.0f;
-	centerVector3.y = (static_cast<Vector3>(startVector3) + endVector3 ).y / 2.0f;
-	centerVector3.z = (static_cast<Vector3>(startVector3) + endVector3 ).z / 2.0f;
-	Vector3 diff = (static_cast<Vector3>(startVector3) - endVector3 );
+	centerVector3.x = (static_cast<Vector3>(startVector3) + endVector3).x / 2.0f;
+	centerVector3.y = (static_cast<Vector3>(startVector3) + endVector3).y / 2.0f;
+	centerVector3.z = (static_cast<Vector3>(startVector3) + endVector3).z / 2.0f;
+	Vector3 diff = (static_cast<Vector3>(startVector3) - endVector3);
 
-	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix({1.0f,1.0f,1.0f}, {0.0f,0.0f,0.0f}, centerVector3);
+	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, centerVector3);
 
-	lineDatas_[currentDrawLineIndex_]->vertexData[0].position = { -diff.x / 2.0f,-diff.y / 2.0f ,-diff.z / 2.0f ,1.0f};
-	lineDatas_[currentDrawLineIndex_]->vertexData[0].texcoord = {0.0f,1.0f};
+	lineDatas_[currentDrawLineIndex_]->vertexData[0].position = { -diff.x / 2.0f,-diff.y / 2.0f ,-diff.z / 2.0f ,1.0f };
+	lineDatas_[currentDrawLineIndex_]->vertexData[0].texcoord = { 0.0f,1.0f };
 	lineDatas_[currentDrawLineIndex_]->vertexData[0].normal = { 0.0f,0.0f,0.0f };
-	lineDatas_[currentDrawLineIndex_]->vertexData[1].position = { diff.x / 2.0f,diff.y / 2.0f ,diff.z / 2.0f ,1.0f};
+	lineDatas_[currentDrawLineIndex_]->vertexData[1].position = { diff.x / 2.0f,diff.y / 2.0f ,diff.z / 2.0f ,1.0f };
 	lineDatas_[currentDrawLineIndex_]->vertexData[1].texcoord = { 0.0f,1.0f };
 	lineDatas_[currentDrawLineIndex_]->vertexData[1].normal = { 0.0f,0.0f,0.0f };
 
@@ -976,15 +976,15 @@ void Renderer::ModelTriangle::Initialize(TextureInfo info) {
 	// 書き込むためのアドレスを取得.
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 
-	vertexData[0].position = {-0.5f,-0.5f,0.0f,1.0f};
-	vertexData[0].texcoord = {0.0f,1.0f};
-	vertexData[0].normal = {0.0f,0.0f,1.0f};
+	vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
+	vertexData[0].texcoord = { 0.0f,1.0f };
+	vertexData[0].normal = { 0.0f,0.0f,1.0f };
 
-	vertexData[1].position = {0.0f,0.5f,0.0f,1.0f};
+	vertexData[1].position = { 0.0f,0.5f,0.0f,1.0f };
 	vertexData[1].texcoord = { 0.5f,0.0f };
 	vertexData[1].normal = { 0.0f,0.0f,1.0f };
-	
-	vertexData[2].position = {0.5f,-0.5f,0.0f,1.0f};
+
+	vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
 	vertexData[2].texcoord = { 1.0f,1.0f };
 	vertexData[2].normal = { 0.0f,0.0f,1.0f };
 }
@@ -1003,7 +1003,7 @@ void Renderer::ModelTriangle::SetVertexPosition(const Vector3& topVertex, const 
 	vertexData[1].texcoord = { topTexcoordX,0.0f };
 }
 
-Vector3* Renderer::ModelTriangle::GetVertexPosition(){
+Vector3* Renderer::ModelTriangle::GetVertexPosition() {
 	Vector3 vertexPosition[3] = { 0.0f };
 	vertexPosition[0] = { vertexData[1].position.x,vertexData[1].position.y,vertexData[1].position.z };
 	vertexPosition[1] = { vertexData[0].position.x,vertexData[0].position.y,vertexData[0].position.z };
