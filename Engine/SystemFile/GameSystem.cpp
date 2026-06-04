@@ -371,6 +371,8 @@ void GameSystem::Initialize() {
 }
 
 void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
+	uint32_t pipeLineIndex = static_cast<uint32_t>(blendMode) + (static_cast<uint32_t>(shaderType) * static_cast<uint32_t>(BlendMode::kCount));
+
 	/*=============================================================
 	DXCの初期化.
 	=============================================================*/
@@ -422,6 +424,12 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
+	D3D12_DESCRIPTOR_RANGE descriptorRangeForInstancing[1] = {};
+	descriptorRangeForInstancing[0].BaseShaderRegister = 0; // 0から始まる.
+	descriptorRangeForInstancing[0].NumDescriptors = 1; // 数は1つ.
+	descriptorRangeForInstancing[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う.
+	descriptorRangeForInstancing[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // Offsetの自動計算.
+
 	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 	descriptorRange[0].BaseShaderRegister = 0; // 0から始まる.
 	descriptorRange[0].NumDescriptors = 1; // 数は1つ.
@@ -430,22 +438,49 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 
 	// RootParameter作成。複数設定出来るので配列。
 	D3D12_ROOT_PARAMETER rootParameters[4] = {};
-	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
-	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
-	rootParameters[0].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド.
-	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
-	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VertexShaderで使う.
-	rootParameters[1].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド.
-	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; //DescriptorTableを使う.
-	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
-	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange; // Tableの中身の配列を指定.
-	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange); // Tableで利用する数.
-	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
-	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
-	rootParameters[3].Descriptor.ShaderRegister = 1; // レジスタ番号1を使う.
+	D3D12_ROOT_PARAMETER rootParametersParticle[3] = {};
 
-	descriptionRootSignature.pParameters = rootParameters; // ルートパラメータ配列へのポインタ.
-	descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ.
+	switch (shaderType) {
+	case ShaderType::kParticle:
+		rootParametersParticle[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
+		rootParametersParticle[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		rootParametersParticle[0].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド.
+
+		rootParametersParticle[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // CBVを使う.
+		rootParametersParticle[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VertexShaderで使う.
+		rootParametersParticle[1].DescriptorTable.pDescriptorRanges = descriptorRangeForInstancing; // レジスタ番号0とバインド.
+		rootParametersParticle[1].DescriptorTable.NumDescriptorRanges = _countof(descriptorRangeForInstancing);
+
+		rootParametersParticle[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; //DescriptorTableを使う.
+		rootParametersParticle[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		rootParametersParticle[2].DescriptorTable.pDescriptorRanges = descriptorRange; // Tableの中身の配列を指定.
+		rootParametersParticle[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange); // Tableで利用する数.
+
+		descriptionRootSignature.pParameters = rootParametersParticle; // ルートパラメータ配列へのポインタ.
+		descriptionRootSignature.NumParameters = _countof(rootParametersParticle); // 配列の長さ.
+		break;
+	default:
+		rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
+		rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		rootParameters[0].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド.
+
+		rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
+		rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VertexShaderで使う.
+		rootParameters[1].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド.
+
+		rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; //DescriptorTableを使う.
+		rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange; // Tableの中身の配列を指定.
+		rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange); // Tableで利用する数.
+
+		rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
+		rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		rootParameters[3].Descriptor.ShaderRegister = 1; // レジスタ番号1を使う.
+
+		descriptionRootSignature.pParameters = rootParameters; // ルートパラメータ配列へのポインタ.
+		descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ.
+		break;
+	}
 
 	// Samplerの設定.
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
@@ -469,7 +504,7 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 		assert(false);
 	}
 	// バイナリを元に生成.
-	hr = device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&pipeline_[static_cast<uint32_t>(blendMode)].rootSignature));
+	hr = device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&pipeline_[pipeLineIndex].rootSignature));
 	assert(SUCCEEDED(hr));
 
 	// 【InputLayout】
@@ -568,7 +603,7 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 	assert(pixelShaderBlob != nullptr);
 
 	// 【PSO】
-	graphicsPipelineStateDesc.pRootSignature = pipeline_[static_cast<uint32_t>(blendMode)].rootSignature.Get(); // RootSignature.
+	graphicsPipelineStateDesc.pRootSignature = pipeline_[pipeLineIndex].rootSignature.Get(); // RootSignature.
 	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc; // InputLayout.
 	graphicsPipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(),vertexShaderBlob->GetBufferSize() }; // VertexShader.
 	graphicsPipelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(),pixelShaderBlob->GetBufferSize() }; // PixelShader.
@@ -591,11 +626,11 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 	graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	// 実際に生成.
-	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&pipeline_[static_cast<uint32_t>(blendMode) + (static_cast<uint32_t>(shaderType) * static_cast<uint32_t>(BlendMode::kCount))].graphicsPipelineState));
+	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&pipeline_[pipeLineIndex].graphicsPipelineState));
 	assert(SUCCEEDED(hr));
 
-	commandList->SetGraphicsRootSignature(pipeline_[static_cast<uint32_t>(blendMode) + (static_cast<uint32_t>(shaderType) * static_cast<uint32_t>(BlendMode::kCount))].rootSignature.Get());
-	commandList->SetPipelineState(pipeline_[static_cast<uint32_t>(blendMode) + (static_cast<uint32_t>(shaderType) * static_cast<uint32_t>(BlendMode::kCount))].graphicsPipelineState.Get()); // PS0を設定.
+	commandList->SetGraphicsRootSignature(pipeline_[pipeLineIndex].rootSignature.Get());
+	commandList->SetPipelineState(pipeline_[pipeLineIndex].graphicsPipelineState.Get()); // PS0を設定.
 
 	dxcCompiler->Release();
 	dxcUtils->Release();
@@ -609,7 +644,7 @@ void GameSystem::SetPipeline(BlendMode blendMode) {
 	commandList->SetPipelineState(pipeline_[static_cast<uint32_t>(blendMode)].graphicsPipelineState.Get()); // PS0を設定.
 }
 
-void GameSystem::SetParticlePipeline(BlendMode blendMode){
+void GameSystem::SetParticlePipeline(BlendMode blendMode) {
 	commandList->RSSetViewports(1, &viewport); // Viewportを設定.
 	commandList->RSSetScissorRects(1, &scissorRect); // Scissorを設定.
 	// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
@@ -1177,6 +1212,29 @@ Microsoft::WRL::ComPtr<ID3D12Resource> GameSystem::CreateBufferResource(Microsof
 	// 実際にリソースを作る.
 	Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
 	HRESULT hr = device->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE, &resourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&resource));
+	assert(SUCCEEDED(hr));
+	return resource;
+}
+
+Microsoft::WRL::ComPtr<ID3D12Resource> GameSystem::CreateBufferResource(size_t sizeInBytes){
+	// リソース用のヒープの設定.
+	D3D12_HEAP_PROPERTIES uploadHeapProperties{};
+	uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD; // UploadHeapを使う.
+	// リソースの設定.
+	D3D12_RESOURCE_DESC resourceDesc{};
+	// バッファリソース。テクスチャの場合はまた別の設定をする.
+	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+	resourceDesc.Width = sizeInBytes;
+	// バッファの場合はこれは1にする決まり.
+	resourceDesc.Height = 1;
+	resourceDesc.DepthOrArraySize = 1;
+	resourceDesc.MipLevels = 1;
+	resourceDesc.SampleDesc.Count = 1;
+	// バッファの場合はこれにする決まり.
+	resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+	// 実際にリソースを作る.
+	Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
+	HRESULT hr = GameSystem::GetInstance()->GetDevice()->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE, &resourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&resource));
 	assert(SUCCEEDED(hr));
 	return resource;
 }

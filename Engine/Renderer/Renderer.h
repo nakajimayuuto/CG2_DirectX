@@ -297,6 +297,52 @@ private:
 	uint32_t currentDrawIndex_;
 };
 
+class TestParticle {
+public:
+	void Initialize(const ModelInfo& info);
+
+	void Draw(const Transform& transform) const;
+private:
+	uint32_t modelMax_;
+
+	Material* materialData_;
+
+	TransformationMatrix* wvpData_;
+
+	bool isVisible_;
+
+	ModelData modelData_;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_;
+
+	VertexData* vertexData = nullptr;
+
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
+
+	Transform uvTransform_;
+
+	BlendMode blendMode_;
+
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> instancingResource_;
+
+	TransformationMatrix* instancingData_ = nullptr;
+
+	static inline const uint32_t kNumInstance = 10;
+
+	TextureInfo textures_;
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC instancingSrvDesc{};
+
+	D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU;
+	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU;
+};
+
+
 
 
 class ModelSphere {

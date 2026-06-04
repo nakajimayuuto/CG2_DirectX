@@ -9,5 +9,6 @@ struct ModelData {
 	std::vector<VertexData> vertices;
 	MaterialData materialData;
 	std::string meshName;
+	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandlesCPU;
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandlesGPU;
 };

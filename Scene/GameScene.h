@@ -22,6 +22,8 @@ private:
 	Sprite sprite_;
 	Transform transformSprite_;
 
+	TestParticle particle;
+
 	Skydome* skydome_ = nullptr;
 
 	RECT windowRect;

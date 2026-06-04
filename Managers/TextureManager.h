@@ -27,6 +27,8 @@ public:
 
 	TextureInfo RegisterTexture(const std::string& name, const std::string& filePath);
 
+	TextureInfo RegisterParticleTexture(const std::string& name, const std::string& filePath);
+
 	TextureInfo GetTextureInfo(const std::string& name);
 private:
 	// Textureデータを読む(TextureManager的な奴に入れる).
@@ -40,6 +42,7 @@ private:
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList);
 private:
 	std::map<std::string, TextureInfo> textures_;
+	std::map<std::string, TextureInfo> particleTextures_;
 	uint32_t textureNumber_ = 1;
 };
 

@@ -27,6 +27,7 @@ void ModelManager::RegisterObj(const std::string& name, const std::string& direc
 		TextureManager::GetInstance()->RegisterTexture(name + "_" + data.meshName, data.materialData.textureFilePath);
 
 
+		data.textureSrvHandlesCPU = TextureManager::GetInstance()->GetTextureInfo(name + "_" + data.meshName).textureSrvHandlesCPU;
 		data.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo(name + "_" + data.meshName).textureSrvHandlesGPU;
 	}
 }

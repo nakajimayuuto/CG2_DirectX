@@ -30,6 +30,8 @@ void GameScene::Initialize() {
 	DirectionalLight::GetInstance()->GetDirectionalLightData()->direction = { 0.0f,0.0f,1.0f };
 	GetWindowRect(GameSystem::GetInstance()->GetHWND(), &windowRect);
 
+	particle.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
+
 	//frameSpriteLeft_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
 	//frameSpriteLeft_.SetSize(Environment::GetInstance()->GetWindowSize());
 	//frameSpriteLeft_.SetColor({0.0f,0.0f,0.0f,1.0f});
@@ -117,16 +119,18 @@ void GameScene::Draw() {
 
 	//Renderer::GetInstance()->DrawBox(transform_, TextureManager::GetInstance()->GetTextureInfo("uvChecker"), {1.0f,1.0f,1.0f,1.0f});
 	//Renderer::GetInstance()->DrawModel(transform_,ModelManager::GetInstance()->GetModelInfo("player"), {1.0f,1.0f,1.0f,1.0f});
-	for (uint32_t i = 0; i < 10; i++) {
-		transform_.translate.x = i;
-		transformSprite_.translate.x = (sprite_.GetSize().x / 2.0f) + (i * 10.0f);
-		transformSprite_.translate.y = (sprite_.GetSize().y / 2.0f);
-		Renderer::GetInstance()->DrawModel(transform_, &model_);
-		Renderer::GetInstance()->DrawSprite(transformSprite_, sprite_);
-	}
+	//or (uint32_t i = 0; i < 10; i++) {
+	//	transform_.translate.x = i;
+	//	transformSprite_.translate.x = (sprite_.GetSize().x / 2.0f) + (i * 10.0f);
+	//	transformSprite_.translate.y = (sprite_.GetSize().y / 2.0f);
+	//	Renderer::GetInstance()->DrawModel(transform_, &model_);
+	//	Renderer::GetInstance()->DrawSprite(transformSprite_, sprite_);
+	//
+	//
+	//ransform_.Initialize();
+	//ransformSprite_.Initialize();
 
-	transform_.Initialize();
-	transformSprite_.Initialize();
+	particle.Draw(transform_);
 
 	//sprite_.Draw(transformSprite_);
 
