@@ -299,7 +299,7 @@ private:
 
 class TestParticle {
 public:
-	void Initialize(const ModelInfo& info);
+	void Initialize(const ModelInfo& info, uint32_t numInstanced);
 
 	void Draw(const Transform& transform) const;
 private:
@@ -307,7 +307,7 @@ private:
 
 	Material* materialData_;
 
-	TransformationMatrix* wvpData_;
+	//TransformationMatrix* wvpData_;
 
 	bool isVisible_;
 
@@ -317,7 +317,7 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_;
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_;
+	//Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_;
 
 	VertexData* vertexData = nullptr;
 
@@ -332,7 +332,9 @@ private:
 
 	TransformationMatrix* instancingData_ = nullptr;
 
-	static inline const uint32_t kNumInstance = 10;
+	//static inline const uint32_t kNumInstance = 10;
+
+	uint32_t numInstance_ = 10;
 
 	TextureInfo textures_;
 

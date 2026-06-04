@@ -1886,7 +1886,8 @@ void Renderer::ModelTriangle::Draw(const Transform& transform) {
 }
 */
 
-void TestParticle::Initialize(const ModelInfo& info) {
+void TestParticle::Initialize(const ModelInfo& info,uint32_t numInstanced) {
+	numInstance_ = numInstanced;
 	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
 	modelMax_ = static_cast<uint32_t>(info.modelData.size());
 
@@ -1921,14 +1922,14 @@ void TestParticle::Initialize(const ModelInfo& info) {
 	// 【TransformationMatrix】
 	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
 	//Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource 
-	wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+	//wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
 	// データを書き込む.
 	//TransformationMatrix* wvpData = nullptr;
 	// 書き込むためのアドレスを取得.
-	wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&wvpData_));
+	//wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&wvpData_));
 	// 単位行列を書き込んでおく.
-	wvpData_->WVP = Matrix4x4::Identity();
-	wvpData_->World = Matrix4x4::Identity();
+	//wvpData_->WVP = Matrix4x4::Identity();
+	//wvpData_->World = Matrix4x4::Identity();
 	uvTransform_.Initialize();
 	uvTransform_.scale = materialData_->uvTransform.GetMatrixToTransform().scale;
 	uvTransform_.rotate = materialData_->uvTransform.GetMatrixToTransform().rotate;
@@ -1956,11 +1957,11 @@ void TestParticle::Initialize(const ModelInfo& info) {
 	memcpy(vertexData, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
 
 
-	instancingResource_ = GameSystem::GetInstance()->CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix) * kNumInstance);
+	instancingResource_ = GameSystem::GetInstance()->CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix) * numInstance_);
 
 	instancingResource_->Map(0, nullptr, reinterpret_cast<void**>(&instancingData_));
 
-	for (uint32_t index = 0; index < kNumInstance; index++) {
+	for (uint32_t index = 0; index < numInstance_; index++) {
 		instancingData_[index].WVP = Matrix4x4::Identity();
 		instancingData_[index].World = Matrix4x4::Identity();
 	}
@@ -1970,7 +1971,7 @@ void TestParticle::Initialize(const ModelInfo& info) {
 	instancingSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
 	instancingSrvDesc.Buffer.FirstElement = 0;
 	instancingSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-	instancingSrvDesc.Buffer.NumElements = kNumInstance;
+	instancingSrvDesc.Buffer.NumElements = numInstance_;
 	instancingSrvDesc.Buffer.StructureByteStride = sizeof(TransformationMatrix);
 
 	instancingSrvHandleCPU = GameSystem::GetInstance()->GetCPUDescriptorHandle(GameSystem::GetInstance()->GetSrvDescriptorHeap(),GameSystem::GetInstance()->GetDescriptorSizeSRV(), 50);
@@ -1984,7 +1985,7 @@ void TestParticle::Draw(const Transform& transform) const {
 		return;
 	}
 
-	for (uint32_t index = 0; index < kNumInstance; index++) {
+	for (uint32_t index = 0; index < numInstance_; index++) {
 		Transform instancingTransform = transform;
 		instancingTransform.translate = {index * 0.1f,index * 0.1f, index * 0.1f };
 
@@ -2017,5 +2018,5 @@ void TestParticle::Draw(const Transform& transform) const {
 	// DirectionalLight用のCBufferの場所.
 	//commandList->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-	commandList->DrawInstanced(UINT(modelData_.vertices.size()), kNumInstance, 0, 0);
+	commandList->DrawInstanced(UINT(modelData_.vertices.size()), numInstance_, 0, 0);
 }

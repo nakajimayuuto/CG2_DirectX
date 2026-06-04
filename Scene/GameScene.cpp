@@ -30,7 +30,7 @@ void GameScene::Initialize() {
 	DirectionalLight::GetInstance()->GetDirectionalLightData()->direction = { 0.0f,0.0f,1.0f };
 	GetWindowRect(GameSystem::GetInstance()->GetHWND(), &windowRect);
 
-	particle.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
+	particle.Initialize(ModelManager::GetInstance()->GetModelInfo("player"),10);
 
 	//frameSpriteLeft_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
 	//frameSpriteLeft_.SetSize(Environment::GetInstance()->GetWindowSize());
