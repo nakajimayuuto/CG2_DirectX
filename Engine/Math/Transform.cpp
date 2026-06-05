@@ -40,6 +40,30 @@ Matrix4x4 Transform::GetAffineMatrix()const {
 	return worldMatrix;
 }
 
+Matrix4x4 Transform::GetScaleMatrix() const{
+	Matrix4x4 worldMatrix = Matrix4x4::MakeScaleMatrix(scale);
+	if (parent_) {
+		worldMatrix *= parent_->GetAffineMatrix();
+	}
+	return worldMatrix;
+}
+
+Matrix4x4 Transform::GetRotateMatrix() const{
+	Matrix4x4 worldMatrix = Matrix4x4::MakeRotateXMatrix(rotate.x) * Matrix4x4::MakeRotateYMatrix(rotate.y) *Matrix4x4::MakeRotateZMatrix(rotate.z);
+	if (parent_) {
+		worldMatrix *= parent_->GetAffineMatrix();
+	}
+	return worldMatrix;
+}
+
+Matrix4x4 Transform::GetTranslateMatrix() const{
+	Matrix4x4 worldMatrix = Matrix4x4::MakeTranslateMatrix(translate);
+	if (parent_) {
+		worldMatrix *= parent_->GetAffineMatrix();
+	}
+	return worldMatrix;
+}
+
 Sphere Transform::GetSphereMin()const {
 	Sphere sphere;
 

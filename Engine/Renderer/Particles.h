@@ -7,6 +7,7 @@
 #include "../../externals/DirectXTex/DirectXTex.h"
 #include "../../externals/DirectXTex/d3dx12.h"
 #include "../SystemFile/GameSystem.h"
+#include "../Math/Matrix4x4.h"
 #include <list>
 
 struct ParticleData {
@@ -23,6 +24,14 @@ struct ParticleForGPU {
 	Vector4 color;
 };
 
+enum class BillboardType {
+	kNone,
+	kAllAxis, // 今はこれだけ対応.
+	kOnlyX,
+	kOnlyY,
+	kOnlyZ,
+};
+
 class Particles{
 public:
 	void Initialize(const ModelInfo& info, uint32_t numInstanced);
@@ -33,12 +42,21 @@ public:
 
 	void Update();
 
-	void Draw(const Transform& transform);
+	void Draw();
+
+	void SetBillboardType(BillboardType billboardType);
+
+	BillboardType GetBillboardType() { return billboardType_; };
 private:
 	uint32_t modelMax_;
+	static inline const uint32_t kNumMaxInstance = 10;
 
 	Material* materialData_;
 	bool isVisible_;
+	ParticleData particleData_[kNumMaxInstance];
+
+	Matrix4x4 billboardMatrix_;
+
 
 	ModelData modelData_;
 
@@ -58,7 +76,6 @@ private:
 
 	ParticleForGPU* instancingData_ = nullptr;
 
-	static inline const uint32_t kNumMaxInstance = 10;
 
 	uint32_t numInstance_;
 
@@ -69,6 +86,6 @@ private:
 	D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU;
 	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU;
 
+	BillboardType billboardType_;
 	//std::list<ParticleData> particleData_;
-	ParticleData particleData_[kNumMaxInstance];
 };

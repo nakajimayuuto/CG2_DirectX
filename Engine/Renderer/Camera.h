@@ -58,6 +58,8 @@ public:
 
 	Vector3 GetCameraVector3(Vector3 vector3,Matrix4x4 matrix);
 
+	Matrix4x4 GetMatrix() {return matrix_;};
+
 	Matrix4x4 GetWorldViewProjectionMatrix(Matrix4x4 matrix);
 
 	Matrix4x4 GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix);	

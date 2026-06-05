@@ -28,6 +28,8 @@ private:
 
 	RECT windowRect;
 
+	bool isParticleUpdate_;
+
 	//Renderer::Sprite frameSpriteLeft_;
 	//Renderer::Sprite frameSpriteRight_;
 	//Renderer::Sprite backGroundSprite_;

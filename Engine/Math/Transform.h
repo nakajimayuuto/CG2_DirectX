@@ -20,6 +20,10 @@ public:
 
 	Matrix4x4 GetAffineMatrix()const;
 
+	Matrix4x4 GetScaleMatrix()const;
+	Matrix4x4 GetRotateMatrix()const;
+	Matrix4x4 GetTranslateMatrix()const;
+
 	Sphere GetSphereMin()const;
 
 	Sphere GetSphereMax()const;

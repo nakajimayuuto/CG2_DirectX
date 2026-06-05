@@ -44,6 +44,7 @@ void GameScene::Initialize() {
 	//backGroundSprite_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
 	//backGroundSprite_.SetSize(Environment::GetInstance()->GetWindowSize());
 	//backGroundSprite_.SetColor({ 0.1f,0.25f,0.5f,1.0f });
+	isParticleUpdate_ = false;
 }
 
 void GameScene::Update() {
@@ -63,6 +64,10 @@ void GameScene::Update() {
 
 	}
 
+	if (InputManager::GetInstance()->TriggerKey(DIK_F3)) {
+		Camera::GetInstance()->ChangeCameraMode();
+	}
+
 	if (InputManager::GetInstance()->TriggerKey(DIK_F11)) {
 		if (Environment::GetInstance()->GetWindowMode() == kFullscreen) {
 			Environment::GetInstance()->SetWindowMode(kWindowed);
@@ -73,11 +78,15 @@ void GameScene::Update() {
 
 	Environment* environment = Environment::GetInstance();
 
-	ImGui::Begin("AspectMode");
+	ImGui::Begin("Particles");
 
-	int imInt = static_cast<int>(environment->GetAspectMode());
-	ImGui::SliderInt("mode", &imInt, 0, kAspectCountMax - 1);
-	environment->SetAspectMode(static_cast<AspectMode>(imInt));
+	ImGui::Checkbox("Update",&isParticleUpdate_);
+
+	int billboardType = static_cast<int>(particle.GetBillboardType());
+
+	ImGui::SliderInt("Billboard",&billboardType,0,4);
+
+	particle.SetBillboardType(static_cast<BillboardType>(billboardType));
 
 	ImGui::End();
 
@@ -103,7 +112,9 @@ void GameScene::Update() {
 
 	ImGui::End();
 
-	particle.Update();
+	if (isParticleUpdate_) {
+		particle.Update();
+	}
 
 	Camera::GetInstance()->Update();
 }
@@ -134,7 +145,7 @@ void GameScene::Draw() {
 	//ransform_.Initialize();
 	//ransformSprite_.Initialize();
 
-	particle.Draw(transform_);
+	particle.Draw();
 
 	//sprite_.Draw(transformSprite_);
 

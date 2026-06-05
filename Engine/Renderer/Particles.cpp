@@ -202,12 +202,15 @@ void Particles::Initialize(const TextureInfo& info, uint32_t numInstanced) {
 		particleData_[index] = MakeNewParticle();
 	}
 
+	billboardMatrix_.Identity();
 	blendMode_ = BlendMode::kAdd;
+	billboardType_ = BillboardType::kNone;
 }
 
 ParticleData Particles::MakeNewParticle() {
 	ParticleData newParticleData;
 	newParticleData.transform.Initialize();
+	newParticleData.transform.rotate.x = Radian(70.0f);
 	newParticleData.velocity = Random::GetInstance()->RandomVector3({ -1.0f,-1.0f,-1.0f }, { 1.0f,1.0f,1.0f });
 	newParticleData.color.SetColorWithoutAlpha(Random::GetInstance()->RandomVector3({ 0.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }), 1.0f);
 	newParticleData.currentTime = 0;
@@ -222,21 +225,60 @@ void Particles::Update() {
 		particleData_[index].currentTime += DeltaTime::GetInstance()->GetDeltaTime();
 		particleData_[index].color.w = Easing(1.0f, 0.0f, particleData_[index].currentTime, particleData_[index].lifeTime, EaseType::kConstant);
 	}
+
+	//switch (billboardType_) {
+	//case BillboardType::kAllAxis:
+	//	billboardMatrix_ = Matrix4x4::MakeRotateMatrix(Camera::GetInstance()->GetTransform().rotate);
+	//		break;
+	//case BillboardType::kOnlyX:
+	//	billboardMatrix_ = Matrix4x4::MakeRotateXMatrix(Camera::GetInstance()->GetTransform().rotate.x);
+	//	break;
+	//case BillboardType::kOnlyY:
+	//	billboardMatrix_ = Matrix4x4::MakeRotateYMatrix(Camera::GetInstance()->GetTransform().rotate.y);
+	//	break;
+	//case BillboardType::kOnlyZ:
+	//	billboardMatrix_ = Matrix4x4::MakeRotateZMatrix(Camera::GetInstance()->GetTransform().rotate.z);
+	//	break;
+	//}
+	
 }
 
-void Particles::Draw(const Transform& transform) {
+void Particles::Draw() {
 	if (!isVisible_) {
 		return;
 	}
 
 	numInstance_ = 0;
+	
+	billboardMatrix_ = Camera::GetInstance()->GetMatrix();
+	billboardMatrix_.matrix[3][0] = 0.0f;
+	billboardMatrix_.matrix[3][1] = 0.0f;
+	billboardMatrix_.matrix[3][2] = 0.0f;
 
 	for (uint32_t index = 0; index < kNumMaxInstance; index++) {
 		if (particleData_[index].lifeTime <= particleData_[index].currentTime) {
 			continue;
 		}
 
-		Matrix4x4 worldMatrix = particleData_[index].transform.GetAffineMatrix();
+		Matrix4x4 worldMatrix;
+		Matrix4x4 bill;
+		bill = Matrix4x4::Identity();
+		bill *= Matrix4x4::MakeRotateYMatrix(Radian(180.0f));
+		worldMatrix.Identity();
+
+		switch (billboardType_) {
+		case BillboardType::kAllAxis:
+		case BillboardType::kOnlyX:
+		case BillboardType::kOnlyY:
+		case BillboardType::kOnlyZ:
+			worldMatrix = particleData_[index].transform.GetScaleMatrix() * billboardMatrix_ * particleData_[index].transform.GetTranslateMatrix();
+			//worldMatrix *= bill;
+			break;
+		default:
+			worldMatrix = particleData_[index].transform.GetAffineMatrix();
+			break;
+		}
+
 
 		instancingData_[numInstance_].World = worldMatrix;
 		instancingData_[numInstance_].WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
@@ -269,4 +311,12 @@ void Particles::Draw(const Transform& transform) {
 	//commandList->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
 	commandList->DrawInstanced(UINT(modelData_.vertices.size()), numInstance_, 0, 0);
+}
+
+void Particles::SetBillboardType(BillboardType billboardType) {
+	if (billboardType == billboardType_) {
+		return;
+	}
+
+	billboardType_ = billboardType;
 }
