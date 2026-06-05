@@ -11,6 +11,7 @@ void GameScene::Initialize() {
 	TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resource/uvChecker.png");
 	TextureManager::GetInstance()->RegisterTexture("monsterBall", "Resource/monsterBall.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_triangle", "Resource/effect_triangle.png");
+	TextureManager::GetInstance()->RegisterTexture("effect_circle", "Resource/circle.png");
 
 	// カメラ位置の調整
 	Camera::GetInstance()->SetPosition({ 0.0f,0.0f,-10.0f });
@@ -30,7 +31,7 @@ void GameScene::Initialize() {
 	DirectionalLight::GetInstance()->GetDirectionalLightData()->direction = { 0.0f,0.0f,1.0f };
 	GetWindowRect(GameSystem::GetInstance()->GetHWND(), &windowRect);
 
-	particle.Initialize(ModelManager::GetInstance()->GetModelInfo("plane"),10);
+	particle.Initialize(TextureManager::GetInstance()->GetTextureInfo("effect_circle"),10);
 
 	//frameSpriteLeft_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
 	//frameSpriteLeft_.SetSize(Environment::GetInstance()->GetWindowSize());

@@ -355,6 +355,8 @@ void GameSystem::Initialize() {
 
 	ModelManager::GetInstance()->RegisterObj("block_template", "Resource/block", "block.obj");
 
+	ModelManager::GetInstance()->RegisterObj("effect_plane", "Resource/EffectPlane", "effect_plane.obj");
+
 	TextureManager::GetInstance()->RegisterTexture("white_template", "Resource/white_template.png");
 
 	//Renderer::Line::GetInstance()->Initialize();

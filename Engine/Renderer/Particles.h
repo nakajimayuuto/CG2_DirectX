@@ -27,6 +27,8 @@ class Particles{
 public:
 	void Initialize(const ModelInfo& info, uint32_t numInstanced);
 
+	void Initialize(const TextureInfo& info, uint32_t numInstanced);
+
 	ParticleData MakeNewParticle();
 
 	void Update();

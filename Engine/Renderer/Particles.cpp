@@ -103,10 +103,11 @@ void Particles::Initialize(const ModelInfo& info, uint32_t numInstanced) {
 	blendMode_ = BlendMode::kAdd;
 }
 
-void Particles::Initialize(const TextureInfo& info, uint32_t numInstanced){
+void Particles::Initialize(const TextureInfo& info, uint32_t numInstanced) {
 	numInstanced;
 	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
-	modelMax_ = static_cast<uint32_t>(info.modelData.size());
+	ModelInfo modelInfo = ModelManager::GetInstance()->GetModelInfo("effect_plane");
+	modelMax_ = static_cast<uint32_t>(modelInfo.modelData.size());
 
 	if (modelMax_ > 1) {
 		assert(false, "テスト用のやつなんでメッシュ1以上のやつはやらんといてください");
@@ -114,7 +115,8 @@ void Particles::Initialize(const TextureInfo& info, uint32_t numInstanced){
 
 	isVisible_ = true;
 
-	modelData_ = info.modelData[0];
+	modelData_ = modelInfo.modelData[0];
+	modelData_.textureSrvHandlesGPU = info.textureSrvHandlesGPU;
 
 	if (modelData_.materialData.textureFilePath == "") {
 		modelData_.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesGPU;
@@ -200,17 +202,16 @@ void Particles::Initialize(const TextureInfo& info, uint32_t numInstanced){
 		particleData_[index] = MakeNewParticle();
 	}
 
-	blendMode_ = BlendMode::kNormal;
+	blendMode_ = BlendMode::kAdd;
 }
 
-ParticleData Particles::MakeNewParticle(){
+ParticleData Particles::MakeNewParticle() {
 	ParticleData newParticleData;
 	newParticleData.transform.Initialize();
-	newParticleData.transform.rotate.y = Radian(-180.0f);
 	newParticleData.velocity = Random::GetInstance()->RandomVector3({ -1.0f,-1.0f,-1.0f }, { 1.0f,1.0f,1.0f });
-	newParticleData.color.SetColorWithoutAlpha(Random::GetInstance()->RandomVector3({ 0.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }),1.0f);
+	newParticleData.color.SetColorWithoutAlpha(Random::GetInstance()->RandomVector3({ 0.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }), 1.0f);
 	newParticleData.currentTime = 0;
-	newParticleData.lifeTime = Random::GetInstance()->RandomFloat(1.0f,3.0f);
+	newParticleData.lifeTime = Random::GetInstance()->RandomFloat(1.0f, 3.0f);
 
 	return newParticleData;
 }
@@ -219,11 +220,11 @@ void Particles::Update() {
 	for (uint32_t index = 0; index < kNumMaxInstance; index++) {
 		particleData_[index].transform.translate += particleData_[index].velocity * DeltaTime::GetInstance()->GetDeltaTime();
 		particleData_[index].currentTime += DeltaTime::GetInstance()->GetDeltaTime();
-		particleData_[index].color.w = Easing(1.0f,0.0f,particleData_[index].currentTime,particleData_[index].lifeTime,EaseType::kConstant);
+		particleData_[index].color.w = Easing(1.0f, 0.0f, particleData_[index].currentTime, particleData_[index].lifeTime, EaseType::kConstant);
 	}
 }
 
-void Particles::Draw(const Transform& transform){
+void Particles::Draw(const Transform& transform) {
 	if (!isVisible_) {
 		return;
 	}
