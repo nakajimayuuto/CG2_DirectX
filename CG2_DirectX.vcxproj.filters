@@ -130,6 +130,9 @@
     <Filter Include="hlsl">
       <UniqueIdentifier>{6c70db76-b338-4b22-88ad-361c35de6470}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Renderer\Particle">
+      <UniqueIdentifier>{cb2c7216-95eb-42cd-8898-05b54298f1e3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -257,6 +260,9 @@
     </ClCompile>
     <ClCompile Include="Skydome.cpp">
       <Filter>ソース ファイル\Skydome</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Renderer\Particles.cpp">
+      <Filter>Engine\Renderer\Particle</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -397,6 +403,9 @@
     </ClInclude>
     <ClInclude Include="Skydome.h">
       <Filter>ソース ファイル\Skydome</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Renderer\Particles.h">
+      <Filter>Engine\Renderer\Particle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

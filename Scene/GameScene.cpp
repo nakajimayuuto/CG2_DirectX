@@ -26,11 +26,11 @@ void GameScene::Initialize() {
 	transformSprite_.translate.x = (sprite_.GetSize().x / 2.0f);
 	transformSprite_.translate.y = (sprite_.GetSize().y / 2.0f);
 
-	transform_.rotate.y = Radian(-30.0f);
+	transform_.rotate.y = Radian(-180.0f);
 	DirectionalLight::GetInstance()->GetDirectionalLightData()->direction = { 0.0f,0.0f,1.0f };
 	GetWindowRect(GameSystem::GetInstance()->GetHWND(), &windowRect);
 
-	particle.Initialize(ModelManager::GetInstance()->GetModelInfo("player"),10);
+	particle.Initialize(ModelManager::GetInstance()->GetModelInfo("plane"),10);
 
 	//frameSpriteLeft_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
 	//frameSpriteLeft_.SetSize(Environment::GetInstance()->GetWindowSize());
@@ -47,17 +47,18 @@ void GameScene::Initialize() {
 
 void GameScene::Update() {
 	if (InputManager::GetInstance()->TriggerKey(DIK_R)) {
-		SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, WS_OVERLAPPEDWINDOW);
-
-		SetWindowPos(
-			GameSystem::GetInstance()->GetHWND(),
-			HWND_TOP,
-			windowRect.left,
-			windowRect.top,
-			windowRect.right - windowRect.left,
-			windowRect.bottom - windowRect.top,
-			SWP_FRAMECHANGED | SWP_SHOWWINDOW
-		);
+		//SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, WS_OVERLAPPEDWINDOW);
+		//
+		//SetWindowPos(
+		//	GameSystem::GetInstance()->GetHWND(),
+		//	HWND_TOP,
+		//	windowRect.left,
+		//	windowRect.top,
+		//	windowRect.right - windowRect.left,
+		//	windowRect.bottom - windowRect.top,
+		//	SWP_FRAMECHANGED | SWP_SHOWWINDOW
+		//);
+		SceneManager::GetInstance()->ReloadScene();
 
 	}
 
@@ -100,6 +101,8 @@ void GameScene::Update() {
 	//transformSprite_.rotate.x = Radian(imRotateX);
 
 	ImGui::End();
+
+	particle.Update();
 
 	Camera::GetInstance()->Update();
 }

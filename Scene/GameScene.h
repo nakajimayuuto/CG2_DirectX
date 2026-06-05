@@ -22,7 +22,7 @@ private:
 	Sprite sprite_;
 	Transform transformSprite_;
 
-	TestParticle particle;
+	Particles particle;
 
 	Skydome* skydome_ = nullptr;
 

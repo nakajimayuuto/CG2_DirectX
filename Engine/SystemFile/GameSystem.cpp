@@ -413,7 +413,11 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 	// Depthの機能を有効化する.
 	depthStencilDesc.DepthEnable = true;
 	// 書き込みします.
-	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	if (shaderType == ShaderType::kParticle) {
+		depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+	} else {
+		depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	}
 	// 比較関数はLessEqual。つまり、近ければ描画される.
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
@@ -1216,7 +1220,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> GameSystem::CreateBufferResource(Microsof
 	return resource;
 }
 
-Microsoft::WRL::ComPtr<ID3D12Resource> GameSystem::CreateBufferResource(size_t sizeInBytes){
+Microsoft::WRL::ComPtr<ID3D12Resource> GameSystem::CreateBufferResource(size_t sizeInBytes) {
 	// リソース用のヒープの設定.
 	D3D12_HEAP_PROPERTIES uploadHeapProperties{};
 	uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD; // UploadHeapを使う.
