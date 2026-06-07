@@ -228,6 +228,13 @@ public:
 	/// <param name="color">色</param>
 	void DrawBoxWireFrame(const Transform& transform, const Vector3& size, const Vector4& color);
 
+	/// <summary>
+	/// ワイヤーフレームのボックスの描画.
+	/// </summary>
+	/// <param name="aabb">AABB</param>
+	/// <param name="color">色</param>
+	void DrawBoxWireFrame(const AABB& aabb, const Vector4& color);
+
 
 
 	/// <summary>

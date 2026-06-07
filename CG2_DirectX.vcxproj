@@ -19,6 +19,7 @@
     <ClCompile Include="Engine\Math\Collider.cpp" />
     <ClCompile Include="Engine\Math\Collision.cpp" />
     <ClCompile Include="Engine\Math\Easing.cpp" />
+    <ClCompile Include="Engine\Math\Field.cpp" />
     <ClCompile Include="Engine\Math\Math.cpp" />
     <ClCompile Include="Engine\Math\Matrix4x4.cpp" />
     <ClCompile Include="Engine\Math\Random.cpp" />
@@ -78,6 +79,7 @@
     <ClCompile Include="Managers\CollisionManager.cpp" />
     <ClCompile Include="Managers\InputManager.cpp" />
     <ClCompile Include="Managers\ModelManager.cpp" />
+    <ClCompile Include="Managers\ParticleManager.cpp" />
     <ClCompile Include="Managers\SceneManager.cpp" />
     <ClCompile Include="Managers\SoundManager.cpp" />
     <ClCompile Include="Managers\TextureManager.cpp" />
@@ -91,6 +93,7 @@
     <ClInclude Include="Engine\Math\Collision.h" />
     <ClInclude Include="Engine\Math\CollisionConfig.h" />
     <ClInclude Include="Engine\Math\Easing.h" />
+    <ClInclude Include="Engine\Math\Field.h" />
     <ClInclude Include="Engine\Math\Math.h" />
     <ClInclude Include="Engine\Math\Matrix4x4.h" />
     <ClInclude Include="Engine\Math\Random.h" />
@@ -125,6 +128,7 @@
     <ClInclude Include="Managers\CollisionManager.h" />
     <ClInclude Include="Managers\InputManager.h" />
     <ClInclude Include="Managers\ModelManager.h" />
+    <ClInclude Include="Managers\ParticleManager.h" />
     <ClInclude Include="Managers\SceneManager.h" />
     <ClInclude Include="Managers\SoundManager.h" />
     <ClInclude Include="Managers\TextureManager.h" />

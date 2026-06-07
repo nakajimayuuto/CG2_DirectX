@@ -133,6 +133,12 @@
     <Filter Include="Engine\Renderer\Particle">
       <UniqueIdentifier>{cb2c7216-95eb-42cd-8898-05b54298f1e3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Math\Field">
+      <UniqueIdentifier>{e0fba0d1-5cc0-434f-85c4-d737df69996d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\ParticleManager">
+      <UniqueIdentifier>{a06c30e7-b7f3-4e8e-ac8c-7ec275ad17f5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -263,6 +269,12 @@
     </ClCompile>
     <ClCompile Include="Engine\Renderer\Particles.cpp">
       <Filter>Engine\Renderer\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Math\Field.cpp">
+      <Filter>Engine\Math\Field</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\ParticleManager.cpp">
+      <Filter>Managers\ParticleManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -406,6 +418,12 @@
     </ClInclude>
     <ClInclude Include="Engine\Renderer\Particles.h">
       <Filter>Engine\Renderer\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Math\Field.h">
+      <Filter>Engine\Math\Field</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\ParticleManager.h">
+      <Filter>Managers\ParticleManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

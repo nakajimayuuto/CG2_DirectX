@@ -4,8 +4,7 @@
 #include "../Math/Easing.h"
 #include "Renderer.h"
 
-void Particles::Initialize(const ModelInfo& info, uint32_t numInstanced) {
-	numInstanced;
+void Particles::Initialize(const ModelInfo& info) {
 	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
 	modelMax_ = static_cast<uint32_t>(info.modelData.size());
 
@@ -100,8 +99,7 @@ void Particles::Initialize(const ModelInfo& info, uint32_t numInstanced) {
 	blendMode_ = BlendMode::kAdd;
 }
 
-void Particles::Initialize(const TextureInfo& info, uint32_t numInstanced) {
-	numInstanced;
+void Particles::Initialize(const TextureInfo& info) {
 	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
 	ModelInfo modelInfo = ModelManager::GetInstance()->GetModelInfo("effect_plane");
 	modelMax_ = static_cast<uint32_t>(modelInfo.modelData.size());

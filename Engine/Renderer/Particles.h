@@ -34,9 +34,9 @@ enum class BillboardType {
 
 class Particles{
 public:
-	void Initialize(const ModelInfo& info, uint32_t numInstanced);
+	void Initialize(const ModelInfo& info);
 
-	void Initialize(const TextureInfo& info, uint32_t numInstanced);
+	void Initialize(const TextureInfo& info);
 
 	void MakeNewParticle(const Vector3& position);
 
