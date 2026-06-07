@@ -2,6 +2,7 @@
 #include "../SystemFile/DeltaTime.h"
 #include "../Math/Random.h"
 #include "../Math/Easing.h"
+#include "Renderer.h"
 
 void Particles::Initialize(const ModelInfo& info, uint32_t numInstanced) {
 	numInstanced;
@@ -95,10 +96,6 @@ void Particles::Initialize(const ModelInfo& info, uint32_t numInstanced) {
 	instancingSrvHandleGPU = GameSystem::GetInstance()->GetGPUDescriptorHandle(GameSystem::GetInstance()->GetSrvDescriptorHeap(), GameSystem::GetInstance()->GetDescriptorSizeSRV(), 50);
 
 	GameSystem::GetInstance()->GetDevice()->CreateShaderResourceView(instancingResource_.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
-
-	for (uint32_t index = 0; index < kNumMaxInstance; index++) {
-		particleData_[index] = MakeNewParticle();
-	}
 
 	blendMode_ = BlendMode::kAdd;
 }
@@ -198,32 +195,49 @@ void Particles::Initialize(const TextureInfo& info, uint32_t numInstanced) {
 
 	GameSystem::GetInstance()->GetDevice()->CreateShaderResourceView(instancingResource_.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
 
-	for (uint32_t index = 0; index < kNumMaxInstance; index++) {
-		particleData_[index] = MakeNewParticle();
-	}
+	//for (uint32_t index = 0; index < 10; index++) {
+	//	MakeNewParticle();
+	//}
 
 	billboardMatrix_.Identity();
 	blendMode_ = BlendMode::kAdd;
 	billboardType_ = BillboardType::kNone;
 }
 
-ParticleData Particles::MakeNewParticle() {
+void Particles::MakeNewParticle(const Vector3& position) {
 	ParticleData newParticleData;
 	newParticleData.transform.Initialize();
 	newParticleData.transform.rotate.x = Radian(70.0f);
+	newParticleData.transform.translate = position;
 	newParticleData.velocity = Random::GetInstance()->RandomVector3({ -1.0f,-1.0f,-1.0f }, { 1.0f,1.0f,1.0f });
 	newParticleData.color.SetColorWithoutAlpha(Random::GetInstance()->RandomVector3({ 0.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }), 1.0f);
 	newParticleData.currentTime = 0;
 	newParticleData.lifeTime = Random::GetInstance()->RandomFloat(1.0f, 3.0f);
 
-	return newParticleData;
+	particleData_.push_back(newParticleData);
+}
+
+void Particles::MakeNewParticle(const Transform& transform) {
+	Transform particleTransform = transform;
+	particleTransform.scale = { 1.0f,1.0f,1.0f };
+
+	ParticleData newParticleData;
+	newParticleData.transform.Initialize();
+	newParticleData.transform.rotate.x = Radian(70.0f);
+	newParticleData.transform.translate = particleTransform.GetAffineMatrix().GetMatrixToTranslate();
+	newParticleData.velocity = Random::GetInstance()->RandomVector3({ -1.0f,-1.0f,-1.0f }, { 1.0f,1.0f,1.0f });
+	newParticleData.color.SetColorWithoutAlpha(Random::GetInstance()->RandomVector3({ 0.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }), 1.0f);
+	newParticleData.currentTime = 0;
+	newParticleData.lifeTime = Random::GetInstance()->RandomFloat(1.0f, 3.0f);
+
+	particleData_.push_back(newParticleData);
 }
 
 void Particles::Update() {
-	for (uint32_t index = 0; index < kNumMaxInstance; index++) {
-		particleData_[index].transform.translate += particleData_[index].velocity * DeltaTime::GetInstance()->GetDeltaTime();
-		particleData_[index].currentTime += DeltaTime::GetInstance()->GetDeltaTime();
-		particleData_[index].color.w = Easing(1.0f, 0.0f, particleData_[index].currentTime, particleData_[index].lifeTime, EaseType::kConstant);
+	for (ParticleData& particle : particleData_) {
+		particle.transform.translate += particle.velocity * DeltaTime::GetInstance()->GetDeltaTime();
+		particle.currentTime += DeltaTime::GetInstance()->GetDeltaTime();
+		particle.color.w = Easing(1.0f, 0.0f, particle.currentTime, particle.lifeTime, EaseType::kConstant);
 	}
 
 	//switch (billboardType_) {
@@ -240,7 +254,7 @@ void Particles::Update() {
 	//	billboardMatrix_ = Matrix4x4::MakeRotateZMatrix(Camera::GetInstance()->GetTransform().rotate.z);
 	//	break;
 	//}
-	
+
 }
 
 void Particles::Draw() {
@@ -249,42 +263,48 @@ void Particles::Draw() {
 	}
 
 	numInstance_ = 0;
-	
+
 	billboardMatrix_ = Camera::GetInstance()->GetMatrix();
 	billboardMatrix_.matrix[3][0] = 0.0f;
 	billboardMatrix_.matrix[3][1] = 0.0f;
 	billboardMatrix_.matrix[3][2] = 0.0f;
 
-	for (uint32_t index = 0; index < kNumMaxInstance; index++) {
-		if (particleData_[index].lifeTime <= particleData_[index].currentTime) {
+	for (std::list<ParticleData>::iterator particleIterator = particleData_.begin(); particleIterator != particleData_.end();) {
+		if ((*particleIterator).lifeTime <= (*particleIterator).currentTime) {
+			particleIterator = particleData_.erase(particleIterator);
 			continue;
 		}
 
-		Matrix4x4 worldMatrix;
-		Matrix4x4 bill;
-		bill = Matrix4x4::Identity();
-		bill *= Matrix4x4::MakeRotateYMatrix(Radian(180.0f));
-		worldMatrix.Identity();
+		if (numInstance_ < kNumMaxInstance) {
 
-		switch (billboardType_) {
-		case BillboardType::kAllAxis:
-		case BillboardType::kOnlyX:
-		case BillboardType::kOnlyY:
-		case BillboardType::kOnlyZ:
-			worldMatrix = particleData_[index].transform.GetScaleMatrix() * billboardMatrix_ * particleData_[index].transform.GetTranslateMatrix();
-			//worldMatrix *= bill;
-			break;
-		default:
-			worldMatrix = particleData_[index].transform.GetAffineMatrix();
-			break;
+			Matrix4x4 worldMatrix;
+			Matrix4x4 bill;
+			bill = Matrix4x4::Identity();
+			bill *= Matrix4x4::MakeRotateYMatrix(Radian(180.0f));
+			worldMatrix.Identity();
+
+			switch (billboardType_) {
+			case BillboardType::kAllAxis:
+			case BillboardType::kOnlyX:
+			case BillboardType::kOnlyY:
+			case BillboardType::kOnlyZ:
+				worldMatrix = (*particleIterator).transform.GetScaleMatrix() * billboardMatrix_ * (*particleIterator).transform.GetTranslateMatrix();
+				//worldMatrix *= bill;
+				break;
+			default:
+				worldMatrix = (*particleIterator).transform.GetAffineMatrix();
+				break;
+			}
+
+
+			instancingData_[numInstance_].World = worldMatrix;
+			instancingData_[numInstance_].WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+			instancingData_[numInstance_].color = (*particleIterator).color;
+
+			++numInstance_;
 		}
 
-
-		instancingData_[numInstance_].World = worldMatrix;
-		instancingData_[numInstance_].WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
-		instancingData_[numInstance_].color = particleData_[index].color;
-
-		++numInstance_;
+		++particleIterator;
 	}
 
 	materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransform_);
@@ -319,4 +339,34 @@ void Particles::SetBillboardType(BillboardType billboardType) {
 	}
 
 	billboardType_ = billboardType;
+}
+
+void Emitter::Initialize(const Transform& transform, uint32_t count, float frequency) {
+	transform_ = transform;
+	count_ = count;
+	frequency_ = frequency;
+	frequencyTime_ = 0.0f;
+}
+
+void Emitter::CreateParticle() {
+	for (uint32_t count = 0; count < count_; count++) {
+		particles_->MakeNewParticle(transform_.translate + Random::GetInstance()->RandomVector3(-(transform_.scale / 2.0f), (transform_.scale / 2.0f)));
+	}
+}
+
+void Emitter::Update() {
+	frequencyTime_ += DeltaTime::GetInstance()->GetDeltaTime();
+
+	if (frequency_ <= frequencyTime_) {
+		CreateParticle();
+		frequencyTime_ -= frequency_;
+	}
+}
+
+void Emitter::DebugDraw() {
+#ifdef _DEBUG
+
+	Renderer::GetInstance()->DrawBoxWireFrame(transform_, { 1.0f,1.0f,1.0f }, {1.0f,1.0f,1.0f,1.0f});
+
+#endif // _DEBUG
 }

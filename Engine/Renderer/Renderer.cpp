@@ -754,6 +754,47 @@ void Renderer::DrawBox(const Transform& transform, const TextureInfo& textureInf
 	GameSystem::GetInstance()->GetCommandList()->DrawInstanced(UINT(newElement->modelData_.vertices.size()), 1, 0, 0);
 }
 
+void Renderer::DrawBoxWireFrame(const Transform& transform,const Vector3& size, const Vector4& color){
+	std::vector<Vector3> vertices;
+
+	Transform VertexTransform;
+	VertexTransform.Initialize();
+	VertexTransform.SetParent(&transform);
+
+	VertexTransform.translate = Vector3(-size.x / 2.0f, -size.y / 2.0f, -size.z / 2.0f);
+	vertices.push_back(VertexTransform.GetAffineMatrix().GetMatrixToTranslate());
+	VertexTransform.translate = Vector3(-size.x / 2.0f, size.y / 2.0f, -size.z / 2.0f);
+	vertices.push_back(VertexTransform.GetAffineMatrix().GetMatrixToTranslate());
+	VertexTransform.translate = Vector3(size.x / 2.0f, -size.y / 2.0f, -size.z / 2.0f);
+	vertices.push_back(VertexTransform.GetAffineMatrix().GetMatrixToTranslate());
+	VertexTransform.translate = Vector3(size.x / 2.0f, size.y / 2.0f, -size.z / 2.0f);
+	vertices.push_back(VertexTransform.GetAffineMatrix().GetMatrixToTranslate());
+
+	VertexTransform.translate = Vector3(-size.x / 2.0f, -size.y / 2.0f, size.z / 2.0f);
+	vertices.push_back(VertexTransform.GetAffineMatrix().GetMatrixToTranslate());
+	VertexTransform.translate = Vector3(-size.x / 2.0f, size.y / 2.0f, size.z / 2.0f);
+	vertices.push_back(VertexTransform.GetAffineMatrix().GetMatrixToTranslate());
+	VertexTransform.translate = Vector3(size.x / 2.0f, -size.y / 2.0f, size.z / 2.0f);
+	vertices.push_back(VertexTransform.GetAffineMatrix().GetMatrixToTranslate());
+	VertexTransform.translate = Vector3(size.x / 2.0f, size.y / 2.0f, size.z / 2.0f);
+	vertices.push_back(VertexTransform.GetAffineMatrix().GetMatrixToTranslate());
+
+	DrawLine(vertices[0],vertices[1],color);
+	DrawLine(vertices[0],vertices[2],color);
+	DrawLine(vertices[1],vertices[3],color);
+	DrawLine(vertices[2],vertices[3],color);
+
+	DrawLine(vertices[4],vertices[5],color);
+	DrawLine(vertices[4],vertices[6],color);
+	DrawLine(vertices[5],vertices[7],color);
+	DrawLine(vertices[6],vertices[7],color);
+
+	DrawLine(vertices[0],vertices[4],color);
+	DrawLine(vertices[1],vertices[5],color);
+	DrawLine(vertices[2],vertices[6],color);
+	DrawLine(vertices[3],vertices[7],color);
+}
+
 void Renderer::DrawModel(const Transform& transform, const ModelInfo& modelInfo, const Vector4& color) {
 	uint32_t modelMax_ = static_cast<uint32_t>(modelInfo.modelData.size());
 	std::vector<ModelElement*> newElements;

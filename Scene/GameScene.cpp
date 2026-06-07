@@ -31,7 +31,15 @@ void GameScene::Initialize() {
 	DirectionalLight::GetInstance()->GetDirectionalLightData()->direction = { 0.0f,0.0f,1.0f };
 	GetWindowRect(GameSystem::GetInstance()->GetHWND(), &windowRect);
 
+	emitterTransform_.Initialize();
+
+	emitterCount_ = 3;
+
+	emitterFrequency_ = 0.5f;
+
 	particle.Initialize(TextureManager::GetInstance()->GetTextureInfo("effect_circle"),10);
+	emitter_.Initialize(emitterTransform_, emitterCount_, emitterFrequency_);
+	emitter_.SetParticle(&particle);
 
 	//frameSpriteLeft_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
 	//frameSpriteLeft_.SetSize(Environment::GetInstance()->GetWindowSize());
@@ -90,9 +98,26 @@ void GameScene::Update() {
 
 	ImGui::End();
 
+	ImGui::Begin("Emitter");
+
+	Vector3 imRotate = Degree(emitterTransform_.rotate);
+	ImGui::SliderFloat3("scale",reinterpret_cast<float*>(&emitterTransform_.scale),0.0f,3.0f);
+	ImGui::SliderFloat3("roate",reinterpret_cast<float*>(&imRotate),-360.0f,360.0f);
+	ImGui::SliderFloat3("translate",reinterpret_cast<float*>(&emitterTransform_.translate),-10.0f,10.0f);
+	emitterTransform_.rotate = Radian(imRotate);
+
+	ImGui::SliderInt("count",reinterpret_cast<int*>(&emitterCount_),1,10);
+	ImGui::SliderFloat("frequency", &emitterFrequency_, 0.0f, 2.0f);
+
+	emitter_.SetTransform(emitterTransform_);
+	emitter_.SetCount(emitterCount_);
+	emitter_.SetFrequency(emitterFrequency_);
+
+	ImGui::End();
+
 	ImGui::Begin("ObjectMove");
 
-	Vector3 imRotate = Degree(transform_.rotate);
+	imRotate = Degree(transform_.rotate);
 	ImGui::DragFloat3("ModelScale", reinterpret_cast<float*>(&transform_.scale), 0.1f, 0.0f, 5.0f);
 	ImGui::DragFloat3("ModelRotate", reinterpret_cast<float*>(&imRotate), 0.1f, -20.0f, 20.0f);
 	ImGui::DragFloat3("ModelTranslate", reinterpret_cast<float*>(&transform_.translate), 0.1f, -20.0f, 20.0f);
@@ -113,6 +138,8 @@ void GameScene::Update() {
 	ImGui::End();
 
 	if (isParticleUpdate_) {
+
+		emitter_.Update();
 		particle.Update();
 	}
 
@@ -146,6 +173,8 @@ void GameScene::Draw() {
 	//ransformSprite_.Initialize();
 
 	particle.Draw();
+
+	emitter_.DebugDraw();
 
 	//sprite_.Draw(transformSprite_);
 

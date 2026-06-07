@@ -24,6 +24,14 @@ private:
 
 	Particles particle;
 
+	Emitter emitter_;
+
+	Transform emitterTransform_;
+
+	uint32_t emitterCount_;
+
+	float emitterFrequency_;
+
 	Skydome* skydome_ = nullptr;
 
 	RECT windowRect;

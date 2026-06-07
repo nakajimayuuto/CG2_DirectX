@@ -38,7 +38,9 @@ public:
 
 	void Initialize(const TextureInfo& info, uint32_t numInstanced);
 
-	ParticleData MakeNewParticle();
+	void MakeNewParticle(const Vector3& position);
+
+	void MakeNewParticle(const Transform& transform);
 
 	void Update();
 
@@ -49,11 +51,11 @@ public:
 	BillboardType GetBillboardType() { return billboardType_; };
 private:
 	uint32_t modelMax_;
-	static inline const uint32_t kNumMaxInstance = 10;
+	static inline const uint32_t kNumMaxInstance = 100;
 
 	Material* materialData_;
 	bool isVisible_;
-	ParticleData particleData_[kNumMaxInstance];
+	std::list<ParticleData> particleData_;
 
 	Matrix4x4 billboardMatrix_;
 
@@ -88,4 +90,31 @@ private:
 
 	BillboardType billboardType_;
 	//std::list<ParticleData> particleData_;
+};
+
+
+class Emitter {
+public:
+	void Initialize(const Transform& transform,uint32_t count,float frequency);
+
+	void SetParticle(Particles* particles) { particles_ = particles; };
+
+	void SetTransform(const Transform& transform) { transform_ = transform; };
+
+	void SetCount(uint32_t count) { count_ = count; };
+
+	void SetFrequency(float frequency) { frequency_ = frequency; };
+
+	void CreateParticle();
+
+	void Update();
+
+	void DebugDraw();
+private:
+	Particles* particles_;
+
+	Transform transform_;
+	uint32_t count_;
+	float frequency_;
+	float frequencyTime_;
 };
