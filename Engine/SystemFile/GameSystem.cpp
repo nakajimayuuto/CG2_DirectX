@@ -667,8 +667,9 @@ void GameSystem::SetParticlePipeline(BlendMode blendMode) {
 
 void GameSystem::DrawCommand(
 	BlendMode blendMode,
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView,
-	D3D12_INDEX_BUFFER_VIEW indexBufferView,
+	D3D12_VERTEX_BUFFER_VIEW* vertexBufferView,
+	D3D12_INDEX_BUFFER_VIEW* indexBufferView,
+	D3D_PRIMITIVE_TOPOLOGY topology,
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource,
 	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource,
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU,
@@ -676,10 +677,12 @@ void GameSystem::DrawCommand(
 ){
 	SetPipeline(blendMode);
 
-	commandList->IASetVertexBuffers(0, 1, &vertexBufferView); // VBVを設定.
-	commandList->IASetIndexBuffer(&indexBufferView); // IBVを設定.
+	commandList->IASetVertexBuffers(0, 1, vertexBufferView); // VBVを設定.
+	if (indexBufferView != nullptr) {
+		commandList->IASetIndexBuffer(indexBufferView); // IBVを設定.
+	}
 	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
-	commandList ->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	commandList ->IASetPrimitiveTopology(topology);
 	// マテリアル用のCBufferの場所.
 	commandList ->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	// transformationMatrixCBufferの場所.
@@ -688,12 +691,17 @@ void GameSystem::DrawCommand(
 	commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 	commandList->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-	commandList->DrawIndexedInstanced(indexInstancedNum, 1, 0, 0, 0);
+	if (indexBufferView == nullptr) {
+		commandList->DrawInstanced(indexInstancedNum, 1, 0, 0);
+	} else {
+		commandList->DrawIndexedInstanced(indexInstancedNum, 1, 0, 0, 0);
+	}
 }
 
+/*
 void GameSystem::DrawCommand(
 	BlendMode blendMode, 
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView, 
+	D3D12_VERTEX_BUFFER_VIEW *vertexBufferView, 
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource, 
 	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource, 
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU, 
@@ -701,7 +709,7 @@ void GameSystem::DrawCommand(
 ) {
 	SetPipeline(blendMode);
 
-	commandList->IASetVertexBuffers(0, 1, &vertexBufferView); // VBVを設定.
+	commandList->IASetVertexBuffers(0, 1, vertexBufferView); // VBVを設定.
 	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// マテリアル用のCBufferの場所.
@@ -714,6 +722,31 @@ void GameSystem::DrawCommand(
 	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
 	commandList->DrawInstanced(indexInstancedNum, 1, 0, 0);
 }
+
+void GameSystem::DrawCommand(ModelElement* element){
+	if (element->indexResource_ = nullptr) {
+		DrawCommand(
+			element->blendMode_,
+			&element->vertexBufferView_,
+			element->materialResource_,
+			element->wvpResource_,
+			element->modelData_.textureSrvHandlesGPU,
+			element->modelData_.vertices.size()
+		);
+	} else {
+		DrawCommand(
+			element->blendMode_,
+			&element->vertexBufferView_,
+			&element->indexBufferView_,
+			element->materialResource_,
+			element->wvpResource_,
+			element->modelData_.textureSrvHandlesGPU,
+			element->modelData_.vertices.size()
+		);
+	}
+
+}
+*/
 
 bool GameSystem::ProcessMessage() {
 	if (Environment::GetInstance()->GetIsGameFinished()) {

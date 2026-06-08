@@ -6,6 +6,7 @@ void GameScene::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("skydome", "Resource/skydome", "skydome.obj");
 	ModelManager::GetInstance()->RegisterObj("player", "Resource/player", "player.obj");
 	ModelManager::GetInstance()->RegisterObj("plane", "Resource", "plane.obj");
+	ModelManager::GetInstance()->RegisterObj("multiMaterial", "Resource", "multiMaterial.obj");
 
 	// 使用するテクスチャの読み込み.
 	TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resource/uvChecker.png");
@@ -19,7 +20,7 @@ void GameScene::Initialize() {
 	skydome_->Initialize();
 
 
-	//model_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
+	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
 	transform_.Initialize();
 
 	sprite_.Initialize(TextureManager::GetInstance()->GetTextureInfo("uvChecker"));
@@ -171,8 +172,15 @@ void GameScene::Draw() {
 		//skydome_->Draw();
 
 	//model_.Draw(transform_);
-	Renderer::GetInstance()->DrawSphere(transform_, "monsterBall", color_);
+	//Renderer::GetInstance()->DrawSphere(transform_, "monsterBall", color_);
+	//Renderer::GetInstance()->DrawBox(transform_, "monsterBall", color_);
+	//Renderer::GetInstance()->DrawModel(transform_,ModelManager::GetInstance()->GetModelInfo("multiMaterial"), {1.0f,1.0f,1.0f,1.0f});
 	//Renderer::GetInstance()->DrawSphere(transform_, TextureManager::GetInstance()->GetTextureInfo("uvChecker"), {1.0f,1.0f,1.0f,1.0f});
+	model_.Draw(transform_);
+
+	Renderer::GetInstance()->DrawLine({ 0.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }, {1.0f,1.0f,1.0f,1.0f});
+	Renderer::GetInstance()->DrawLine({ 1.0f,1.0f,1.0f }, { 1.0f,-1.0f,1.0f }, {1.0f,1.0f,1.0f,1.0f});
+	Renderer::GetInstance()->DrawLine({ 1.0f,-1.0f,1.0f }, { 0.0f,-1.0f,0.0f }, {1.0f,1.0f,1.0f,1.0f});
 
 	//Renderer::GetInstance()->DrawBox(transform_, TextureManager::GetInstance()->GetTextureInfo("uvChecker"), {1.0f,1.0f,1.0f,1.0f});
 	//Renderer::GetInstance()->DrawModel(transform_,ModelManager::GetInstance()->GetModelInfo("player"), {1.0f,1.0f,1.0f,1.0f});

@@ -41,6 +41,8 @@ struct ModelElement {
 	Transform uvTransform_;
 
 	BlendMode blendMode_;
+
+	uint32_t indexInstanceNum_;
 };
 
 class Model {
