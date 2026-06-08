@@ -206,6 +206,13 @@ public:
 	void DrawSphere(const Transform& transform, const std::string& name, const Vector4& color) { DrawSphere(transform,TextureManager::GetInstance()->GetTextureInfo(name), color); };
 
 	/// <summary>
+	/// ワイヤーフレームの球の描画.(まだ使えないよ！)
+	/// </summary>
+	/// <param name="transform">トランスフォーム</param>
+	/// <param name="color">色</param>
+	void DrawSphereWireFrame(const Transform& transform, const Vector4& color);
+
+	/// <summary>
 	/// ボックスの描画.
 	/// </summary>
 	/// <param name="transform">トランスフォーム</param>

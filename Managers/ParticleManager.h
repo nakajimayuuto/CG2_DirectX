@@ -32,9 +32,13 @@ public:
 
 	void SetEmitterFrequency(const std::string& name, float frequency);
 
+	void SetEmitterShape(const std::string& name, EmitterShape shape);
+
 	void SetFieldArea(const std::string& name, const AABB& area);
 
 	void SetFieldAcceleration(const std::string& name, const Vector3& acceleration);
+
+	void SetFieldIsActive(const std::string& name, bool isActive);
 
 	Particles* GetParticles(const std::string& name);
 private:

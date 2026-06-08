@@ -4,6 +4,7 @@
 void Field::Initialize(const Vector3 acceleration, const AABB& area){
 	acceleration_ = acceleration;
 	area_ = area;
+	isActive_ = true;
 }
 
 void Field::DebugDraw()const{

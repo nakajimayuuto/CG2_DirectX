@@ -721,6 +721,40 @@ void Renderer::DrawSphere(const Transform& transform, const TextureInfo& texture
 	GameSystem::GetInstance()->GetCommandList()->DrawIndexedInstanced(kSubdivision_ * kSubdivision_ * 6, 1, 0, 0, 0);
 }
 
+void Renderer::DrawSphereWireFrame(const Transform& transform, const Vector4& color){
+	if (true) {
+		return;
+	}
+
+	const uint32_t kSubdivision = 4;
+	const float kLonEvery = std::numbers::pi_v<float> *2.0f / kSubdivision;
+	const float kLatEvery = std::numbers::pi_v<float> / kSubdivision;
+
+
+	for (uint32_t latIndex = 0; latIndex < kSubdivision; latIndex++) {
+		float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;
+
+		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; lonIndex++) {
+			float lon = lonIndex * kLonEvery;
+
+			Vector3 a = { cos(lat) * cos(lon),sin(lat),cos(lat) * sin(lon) };
+			Vector3 b = { cos(lat + std::numbers::pi_v<float> / kSubdivision) * cos(lon),sin(lat + std::numbers::pi_v<float> / kSubdivision),cos(lat + std::numbers::pi_v<float> / kSubdivision) * sin(lon) };
+			Vector3 c = { cos(lat) * cos(lon + std::numbers::pi_v<float> *2.0f / kSubdivision),sin(lat),cos(lat) * sin(lon + std::numbers::pi_v<float> *2.0f / kSubdivision) };
+
+			Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+			Vector3 startPosition = worldMatrix.MatrixTransform(a);
+			Vector3 endPosition = worldMatrix.MatrixTransform(b);
+
+			DrawLine(startPosition, endPosition, color);
+
+			startPosition = worldMatrix.MatrixTransform(a);
+			endPosition = worldMatrix.MatrixTransform(c);
+
+			DrawLine(startPosition, endPosition, color);
+		}
+	}
+}
+
 void Renderer::DrawBox(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color) {
 	ModelElement* newElement;
 	newElement = new ModelElement();

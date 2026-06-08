@@ -49,6 +49,7 @@ void GameScene::Initialize() {
 
 	ParticleManager::GetInstance()->CreateNewParticles("testParticle", TextureManager::GetInstance()->GetTextureInfo("effect_circle"));
 	ParticleManager::GetInstance()->CreateNewEmitter("testEmitter","testParticle", emitterTransform_, emitterCount_, emitterFrequency_);
+	ParticleManager::GetInstance()->SetEmitterShape("testEmitter",EmitterShape::kBox);
 	ParticleManager::GetInstance()->CreateNewField("testField",fieldAABB_,fieldAcceleration_);
 	ParticleManager::GetInstance()->SetBillboardType(static_cast<BillboardType>(billboardType_));
 	//particle.Initialize(TextureManager::GetInstance()->GetTextureInfo("effect_circle"),10);
@@ -183,11 +184,6 @@ void GameScene::Draw() {
 		//skydome_->Draw();
 
 		//model_.Draw(transform_);
-
-	Renderer::GetInstance()->DrawLine({ 0.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }, { 1.0f,1.0f,1.0f,1.0f });
-
-	Renderer::GetInstance()->DrawLine({ 1.0f,1.0f,1.0f }, { 1.0f,-1.0f,1.0f }, { 1.0f,1.0f,1.0f,1.0f });
-
 	//Renderer::GetInstance()->DrawSphere(transform_, TextureManager::GetInstance()->GetTextureInfo("uvChecker"), {1.0f,1.0f,1.0f,1.0f});
 
 	//Renderer::GetInstance()->DrawBox(transform_, TextureManager::GetInstance()->GetTextureInfo("uvChecker"), {1.0f,1.0f,1.0f,1.0f});

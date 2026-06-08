@@ -95,6 +95,10 @@ private:
 	//std::list<ParticleData> particleData_;
 };
 
+enum class EmitterShape {
+	kBox,
+	kSphere,
+};
 
 class Emitter {
 public:
@@ -113,7 +117,11 @@ public:
 	void Update();
 
 	void DebugDraw();
+
+	void SetShape(EmitterShape shape) { shape_ = shape; };
 private:
+	EmitterShape shape_;
+
 	Particles* particles_;
 
 	Transform transform_;

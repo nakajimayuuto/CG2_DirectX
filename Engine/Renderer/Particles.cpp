@@ -352,6 +352,7 @@ void Particles::SetBillboardType(BillboardType billboardType) {
 }
 
 void Emitter::Initialize(const Transform& transform, uint32_t count, float frequency) {
+	shape_ = EmitterShape::kBox;
 	transform_ = transform;
 	count_ = count;
 	frequency_ = frequency;
@@ -360,14 +361,19 @@ void Emitter::Initialize(const Transform& transform, uint32_t count, float frequ
 
 void Emitter::CreateParticle() {
 	for (uint32_t count = 0; count < count_; count++) {
-		particles_->MakeNewParticle(transform_.translate + Random::GetInstance()->RandomVector3(-(transform_.scale / 2.0f), (transform_.scale / 2.0f)));
+		switch (shape_) {
+		case EmitterShape::kBox:
+			particles_->MakeNewParticle(transform_.translate + Random::GetInstance()->RandomVector3(-(transform_.scale / 2.0f), (transform_.scale / 2.0f)));
+			break;
+		case EmitterShape::kSphere:
+			particles_->MakeNewParticle(transform_.translate + Random::GetInstance()->RandomCircleVector3(transform_.scale / 2.0f));
+			break;
+		}
 	}
 }
 
 void Emitter::Update() {
 	frequencyTime_ += DeltaTime::GetInstance()->GetDeltaTime();
-
-	GameSystem::Log(std::format("frequencyTime_ : {}\n",frequencyTime_));
 
 	if (frequency_ <= frequencyTime_) {
 		CreateParticle();
@@ -378,7 +384,14 @@ void Emitter::Update() {
 void Emitter::DebugDraw() {
 #ifdef _DEBUG
 
-	Renderer::GetInstance()->DrawBoxWireFrame(transform_, { 1.0f,1.0f,1.0f }, {1.0f,1.0f,1.0f,1.0f});
+	switch (shape_) {
+	case EmitterShape::kBox:
+		Renderer::GetInstance()->DrawBoxWireFrame(transform_, { 1.0f,1.0f,1.0f }, { 1.0f,1.0f,1.0f,1.0f });
+		break;
+	case EmitterShape::kSphere:
+		Renderer::GetInstance()->DrawSphereWireFrame(transform_, { 1.0f,1.0f,1.0f,1.0f });
+		break;
+	}
 
 #endif // _DEBUG
 }
