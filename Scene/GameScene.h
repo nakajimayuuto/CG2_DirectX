@@ -16,6 +16,8 @@ public:
 	void Draw() override;
 private:
 private:
+	Vector4 color_;
+
 	Model model_;
 	Transform transform_;
 

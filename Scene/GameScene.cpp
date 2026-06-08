@@ -19,7 +19,7 @@ void GameScene::Initialize() {
 	skydome_->Initialize();
 
 
-	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
+	//model_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
 	transform_.Initialize();
 
 	sprite_.Initialize(TextureManager::GetInstance()->GetTextureInfo("uvChecker"));
@@ -27,7 +27,7 @@ void GameScene::Initialize() {
 	transformSprite_.translate.x = (sprite_.GetSize().x / 2.0f);
 	transformSprite_.translate.y = (sprite_.GetSize().y / 2.0f);
 
-	transform_.rotate.y = Radian(-180.0f);
+	transform_.rotate.y = Radian(-70.0f);
 	DirectionalLight::GetInstance()->GetDirectionalLightData()->direction = { 0.0f,0.0f,1.0f };
 	GetWindowRect(GameSystem::GetInstance()->GetHWND(), &windowRect);
 
@@ -45,29 +45,15 @@ void GameScene::Initialize() {
 
 	useField_ = false;
 
-	ParticleManager::GetInstance()->Initialize();
-
-	ParticleManager::GetInstance()->CreateNewParticles("testParticle", TextureManager::GetInstance()->GetTextureInfo("effect_circle"));
-	ParticleManager::GetInstance()->CreateNewEmitter("testEmitter","testParticle", emitterTransform_, emitterCount_, emitterFrequency_);
-	ParticleManager::GetInstance()->SetEmitterShape("testEmitter",EmitterShape::kBox);
-	ParticleManager::GetInstance()->CreateNewField("testField",fieldAABB_,fieldAcceleration_);
-	ParticleManager::GetInstance()->SetBillboardType(static_cast<BillboardType>(billboardType_));
-	//particle.Initialize(TextureManager::GetInstance()->GetTextureInfo("effect_circle"),10);
-
-	//emitter_.Initialize(emitterTransform_, emitterCount_, emitterFrequency_);
-	//emitter_.SetParticle(&particle);
-
-	//frameSpriteLeft_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
-	//frameSpriteLeft_.SetSize(Environment::GetInstance()->GetWindowSize());
-	//frameSpriteLeft_.SetColor({0.0f,0.0f,0.0f,1.0f});
+	//ParticleManager::GetInstance()->Initialize();
 	//
-	//frameSpriteRight_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
-	//frameSpriteRight_.SetSize(Environment::GetInstance()->GetWindowSize());
-	//frameSpriteRight_.SetColor({0.0f,0.0f,0.0f,1.0f});
-	//
-	//backGroundSprite_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
-	//backGroundSprite_.SetSize(Environment::GetInstance()->GetWindowSize());
-	//backGroundSprite_.SetColor({ 0.1f,0.25f,0.5f,1.0f });
+	//ParticleManager::GetInstance()->CreateNewParticles("testParticle", TextureManager::GetInstance()->GetTextureInfo("effect_circle"));
+	//ParticleManager::GetInstance()->CreateNewEmitter("testEmitter","testParticle", emitterTransform_, emitterCount_, emitterFrequency_);
+	//ParticleManager::GetInstance()->SetEmitterShape("testEmitter",EmitterShape::kBox);
+	//ParticleManager::GetInstance()->CreateNewField("testField",fieldAABB_,fieldAcceleration_);
+	//ParticleManager::GetInstance()->SetBillboardType(static_cast<BillboardType>(billboardType_));
+
+	color_ = { 1.0f,1.0f,1.0f,1.0f };
 	isParticleUpdate_ = false;
 }
 
@@ -102,6 +88,7 @@ void GameScene::Update() {
 
 	Environment* environment = Environment::GetInstance();
 
+	/*
 	ImGui::Begin("Particles");
 
 	ImGui::Text(std::format("DeltaTime : {}",DeltaTime::GetInstance()->GetDeltaTime()).c_str());
@@ -142,22 +129,22 @@ void GameScene::Update() {
 	ParticleManager::GetInstance()->SetFieldAcceleration("testField",fieldAcceleration_);
 	ParticleManager::GetInstance()->SetFieldArea("testField", fieldAABB_);
 
-	ImGui::End();
+	ImGui::End();*/
 
 
 
 	ImGui::Begin("ObjectMove");
 
-	imRotate = Degree(transform_.rotate);
+	Vector3 imRotate = Degree(transform_.rotate);
 	ImGui::DragFloat3("ModelScale", reinterpret_cast<float*>(&transform_.scale), 0.1f, 0.0f, 5.0f);
-	ImGui::DragFloat3("ModelRotate", reinterpret_cast<float*>(&imRotate), 0.1f, -20.0f, 20.0f);
+	ImGui::DragFloat3("ModelRotate", reinterpret_cast<float*>(&imRotate), 0.1f, -360.0f, 360.0f);
 	ImGui::DragFloat3("ModelTranslate", reinterpret_cast<float*>(&transform_.translate), 0.1f, -20.0f, 20.0f);
-	Vector4 imColor = model_.GetColor();
-	ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&imColor));
-	model_.SetColor(imColor);
-	imColor = sprite_.GetColor();
-	ImGui::ColorEdit4("ColorSprite", reinterpret_cast<float*>(&imColor));
-	sprite_.SetColor(imColor);
+	//Vector4 imColor = model_.GetColor();
+	ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&color_));
+	//model_.SetColor(imColor);
+	//imColor = sprite_.GetColor();
+	//ImGui::ColorEdit4("ColorSprite", reinterpret_cast<float*>(&imColor));
+	//sprite_.SetColor(imColor);
 	transform_.rotate = Radian(imRotate);
 
 	//float imRotateX = Degree(transformSprite_.rotate.x);
@@ -183,7 +170,8 @@ void GameScene::Draw() {
 
 		//skydome_->Draw();
 
-		//model_.Draw(transform_);
+	//model_.Draw(transform_);
+	Renderer::GetInstance()->DrawSphere(transform_, "monsterBall", color_);
 	//Renderer::GetInstance()->DrawSphere(transform_, TextureManager::GetInstance()->GetTextureInfo("uvChecker"), {1.0f,1.0f,1.0f,1.0f});
 
 	//Renderer::GetInstance()->DrawBox(transform_, TextureManager::GetInstance()->GetTextureInfo("uvChecker"), {1.0f,1.0f,1.0f,1.0f});
@@ -203,7 +191,7 @@ void GameScene::Draw() {
 	//
 	//emitter_.DebugDraw();
 
-	ParticleManager::GetInstance()->Draw();
+	//ParticleManager::GetInstance()->Draw();
 
 	//sprite_.Draw(transformSprite_);
 

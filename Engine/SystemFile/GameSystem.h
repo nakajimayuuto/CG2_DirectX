@@ -139,6 +139,23 @@ public:
 	void SetPipeline(BlendMode blendMode);
 
 	void SetParticlePipeline(BlendMode blendMode);
+
+	void DrawCommand(
+		BlendMode blendMode,
+		D3D12_VERTEX_BUFFER_VIEW vertexBufferView,
+		D3D12_INDEX_BUFFER_VIEW indexBufferView,
+		Microsoft::WRL::ComPtr<ID3D12Resource> materialResource,
+		Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource,
+		D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU,
+		uint32_t indexInstancedNum);
+
+	void DrawCommand(
+		BlendMode blendMode,
+		D3D12_VERTEX_BUFFER_VIEW vertexBufferView,
+		Microsoft::WRL::ComPtr<ID3D12Resource> materialResource,
+		Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource,
+		D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU,
+		uint32_t indexInstancedNum);
 private:
 
 	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
