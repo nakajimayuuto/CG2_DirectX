@@ -16,6 +16,8 @@ public:
 
 	static bool SegmentToTriangle(const Segment& segment, const Triangle& triangle);
 
+	static bool AABBToPoint(const AABB& aabb, const Vector3& point);
+
 	static bool AABBToAABB(const AABB& aabb1,const AABB& aabb2);
 
 	static bool AABBToSphere(const AABB& aabb, const Sphere sphere);

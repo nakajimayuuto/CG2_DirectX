@@ -37,9 +37,24 @@ void GameScene::Initialize() {
 
 	emitterFrequency_ = 0.5f;
 
-	particle.Initialize(TextureManager::GetInstance()->GetTextureInfo("effect_circle"),10);
-	emitter_.Initialize(emitterTransform_, emitterCount_, emitterFrequency_);
-	emitter_.SetParticle(&particle);
+	fieldAABB_.min = { -1.0f,-1.0f,-1.0f };
+	fieldAABB_.max = { 1.0f,1.0f,1.0f };
+	fieldAcceleration_ = { 15.0f,0.0f,0.0f };
+
+	billboardType_ = 3;
+
+	useField_ = false;
+
+	ParticleManager::GetInstance()->Initialize();
+
+	ParticleManager::GetInstance()->CreateNewParticles("testParticle", TextureManager::GetInstance()->GetTextureInfo("effect_circle"));
+	ParticleManager::GetInstance()->CreateNewEmitter("testEmitter","testParticle", emitterTransform_, emitterCount_, emitterFrequency_);
+	ParticleManager::GetInstance()->CreateNewField("testField",fieldAABB_,fieldAcceleration_);
+	ParticleManager::GetInstance()->SetBillboardType(static_cast<BillboardType>(billboardType_));
+	//particle.Initialize(TextureManager::GetInstance()->GetTextureInfo("effect_circle"),10);
+
+	//emitter_.Initialize(emitterTransform_, emitterCount_, emitterFrequency_);
+	//emitter_.SetParticle(&particle);
 
 	//frameSpriteLeft_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
 	//frameSpriteLeft_.SetSize(Environment::GetInstance()->GetWindowSize());
@@ -88,13 +103,13 @@ void GameScene::Update() {
 
 	ImGui::Begin("Particles");
 
+	ImGui::Text(std::format("DeltaTime : {}",DeltaTime::GetInstance()->GetDeltaTime()).c_str());
+
 	ImGui::Checkbox("Update",&isParticleUpdate_);
 
-	int billboardType = static_cast<int>(particle.GetBillboardType());
+	ImGui::SliderInt("Billboard",&billboardType_,0,4);
 
-	ImGui::SliderInt("Billboard",&billboardType,0,4);
-
-	particle.SetBillboardType(static_cast<BillboardType>(billboardType));
+	ParticleManager::GetInstance()->SetBillboardType(static_cast<BillboardType>(billboardType_));
 
 	ImGui::End();
 
@@ -109,11 +124,26 @@ void GameScene::Update() {
 	ImGui::SliderInt("count",reinterpret_cast<int*>(&emitterCount_),1,10);
 	ImGui::SliderFloat("frequency", &emitterFrequency_, 0.0f, 2.0f);
 
-	emitter_.SetTransform(emitterTransform_);
-	emitter_.SetCount(emitterCount_);
-	emitter_.SetFrequency(emitterFrequency_);
+	ParticleManager::GetInstance()->SetEmitterTransform("testEmitter", emitterTransform_);
+	ParticleManager::GetInstance()->SetEmitterCount("testEmitter", emitterCount_);
+	ParticleManager::GetInstance()->SetEmitterFrequency("testEmitter", emitterFrequency_);
 
 	ImGui::End();
+
+	ImGui::Begin("Field");
+
+	ImGui::SliderFloat3("min",reinterpret_cast<float*>(&fieldAABB_.min), -10.0f, 10.0f);
+	ImGui::SliderFloat3("max",reinterpret_cast<float*>(&fieldAABB_.max), -10.0f, 10.0f);
+	ImGui::SliderFloat3("acceleration",reinterpret_cast<float*>(&fieldAcceleration_),-30.0f,30.0f);
+
+
+
+	ParticleManager::GetInstance()->SetFieldAcceleration("testField",fieldAcceleration_);
+	ParticleManager::GetInstance()->SetFieldArea("testField", fieldAABB_);
+
+	ImGui::End();
+
+
 
 	ImGui::Begin("ObjectMove");
 
@@ -139,8 +169,9 @@ void GameScene::Update() {
 
 	if (isParticleUpdate_) {
 
-		emitter_.Update();
-		particle.Update();
+		ParticleManager::GetInstance()->Update();
+		//emitter_.Update();
+		//particle.Update();
 	}
 
 	Camera::GetInstance()->Update();
@@ -172,9 +203,11 @@ void GameScene::Draw() {
 	//ransform_.Initialize();
 	//ransformSprite_.Initialize();
 
-	particle.Draw();
+	//particle.Draw();
+	//
+	//emitter_.DebugDraw();
 
-	emitter_.DebugDraw();
+	ParticleManager::GetInstance()->Draw();
 
 	//sprite_.Draw(transformSprite_);
 

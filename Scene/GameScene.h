@@ -22,15 +22,23 @@ private:
 	Sprite sprite_;
 	Transform transformSprite_;
 
-	Particles particle;
+	//Particles particle;
 
-	Emitter emitter_;
+	//Emitter emitter_;
 
 	Transform emitterTransform_;
 
 	uint32_t emitterCount_;
 
 	float emitterFrequency_;
+
+	AABB fieldAABB_;
+
+	Vector3 fieldAcceleration_;
+
+	bool useField_;
+
+	int billboardType_;
 
 	Skydome* skydome_ = nullptr;
 

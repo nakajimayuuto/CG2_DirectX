@@ -19,7 +19,8 @@
 #include "./Engine/Renderer/Renderer.h"
 #include "./Engine/Renderer/Camera.h"
 
-#include "./Managers/CollisionManager.h"	
+#include "./Managers/CollisionManager.h"
+#include "./Managers/ParticleManager.h"
 #include "./Managers/ModelManager.h"
 #include "./Managers/SceneManager.h"
 #include "./Managers/SoundManager.h"

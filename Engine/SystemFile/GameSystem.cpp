@@ -9,6 +9,7 @@
 #include "../../Managers/InputManager.h"
 #include "../../Managers/TextureManager.h"
 #include "../../Managers/ModelManager.h"
+#include "../../Managers/ParticleManager.h"
 #include "../../Environment.h"
 #include "../Math/Random.h"
 #include "GlobalVariables.h"
@@ -368,6 +369,8 @@ void GameSystem::Initialize() {
 	DeltaTime::GetInstance()->Initialize();
 
 	Environment::GetInstance()->Initialize();
+
+	ParticleManager::GetInstance()->Initialize();
 
 	RegisterGlobalVariables();
 }

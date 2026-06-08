@@ -255,6 +255,14 @@ void Particles::Update() {
 
 }
 
+void Particles::CheckCollision(const Field& field) {
+	for (std::list<ParticleData>::iterator particleIterator = particleData_.begin(); particleIterator != particleData_.end();++particleIterator) {
+		if (Collision::AABBToPoint(field.GetArea(), (*particleIterator).transform.translate)) {
+			(*particleIterator).velocity += field.GetAcceleration() * DeltaTime::GetInstance()->GetDeltaTime();
+		}
+	}
+}
+
 void Particles::Draw() {
 	if (!isVisible_) {
 		return;
@@ -303,6 +311,10 @@ void Particles::Draw() {
 		}
 
 		++particleIterator;
+	}
+
+	if (numInstance_ <= 0) {
+		return;
 	}
 
 	materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransform_);
@@ -354,6 +366,8 @@ void Emitter::CreateParticle() {
 
 void Emitter::Update() {
 	frequencyTime_ += DeltaTime::GetInstance()->GetDeltaTime();
+
+	GameSystem::Log(std::format("frequencyTime_ : {}\n",frequencyTime_));
 
 	if (frequency_ <= frequencyTime_) {
 		CreateParticle();

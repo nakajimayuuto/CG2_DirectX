@@ -8,6 +8,7 @@
 #include "../../externals/DirectXTex/d3dx12.h"
 #include "../SystemFile/GameSystem.h"
 #include "../Math/Matrix4x4.h"
+#include "../Math/Field.h"
 #include <list>
 
 struct ParticleData {
@@ -49,6 +50,8 @@ public:
 	void SetBillboardType(BillboardType billboardType);
 
 	BillboardType GetBillboardType() { return billboardType_; };
+
+	void CheckCollision(const Field& field);
 private:
 	uint32_t modelMax_;
 	static inline const uint32_t kNumMaxInstance = 100;
