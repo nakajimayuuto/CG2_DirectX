@@ -686,6 +686,7 @@ void Renderer::DrawLine(const Vector3& startVector3, const Vector3& endVector3, 
 
 	newElement->wvpData_->World = worldMatrix;
 	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+	newElement->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
 
 	newElement->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(newElement->uvTransform_);
 	newElement->materialData_->color = color;
@@ -718,6 +719,7 @@ void Renderer::DrawSphere(const Transform& transform, const TextureInfo& texture
 
 	newElement->wvpData_->World = worldMatrix;
 	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+	newElement->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
 	/*=============================================================
 	三角形の描画のコマンド.
 	=============================================================*/
@@ -777,6 +779,7 @@ void Renderer::DrawBox(const Transform& transform, const TextureInfo& textureInf
 
 	newElement->wvpData_->World = worldMatrix;
 	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+	newElement->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
 
 	newElement->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(newElement->uvTransform_);
 
@@ -881,6 +884,7 @@ void Renderer::DrawModel(const Transform& transform, const ModelInfo& modelInfo,
 
 		newElements[i]->wvpData_->World = worldMatrix;
 		newElements[i]->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+		newElements[i]->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
 
 		newElements[i]->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(newElements[i]->uvTransform_);
 
@@ -915,6 +919,7 @@ void Renderer::DrawModel(const Transform& transform, const Model* model) {
 
 		newElements[i]->wvpData_->World = worldMatrix;
 		newElements[i]->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+		newElements[i]->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
 
 		newElements[i]->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(newElements[i]->uvTransform_);
 
@@ -957,6 +962,7 @@ void Renderer::DrawSprite(const Transform& transform, const TextureInfo& texture
 
 	newElement->wvpData_->World = worldMatrix;
 	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
+	newElement->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
 
 	newElement->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(newElement->uvTransform_);
 	/*=============================================================
@@ -992,6 +998,7 @@ void Renderer::DrawSprite(const Transform& transform, const Sprite& sprite) {
 
 	newElement->wvpData_->World = worldMatrix;
 	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
+	newElement->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
 
 	newElement->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(newElement->uvTransform_);
 	/*=============================================================
