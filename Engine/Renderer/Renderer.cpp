@@ -633,7 +633,7 @@ void Renderer::Initialize() {
 
 	lightingType_ = LightingType::kHalfLambert;
 
-	reflectionType_ = ReflectionType::kPhong;
+	reflectionType_ = ReflectionType::kBlinnPhong;
 }
 
 void Renderer::ClearDrawIndex() {

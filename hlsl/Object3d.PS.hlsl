@@ -38,8 +38,7 @@ PixelShaderOutput main(VertexShaderOutput input){
     
     float32_t3 reflectLight = reflect(gDirectionalLight.direction, normalize(input.normal));
     
-    float RdotE = dot(reflectLight,toEye);
-    float specularPow = pow(saturate(RdotE),gMaterial.shininess);
+    float specularPow;
     
     if (textureColor.a <= 0.5f){
         discard;
@@ -62,12 +61,20 @@ PixelShaderOutput main(VertexShaderOutput input){
     
     float32_t3 specular = {0.0f,0.0f,0.0f};
     
-    if (gMaterial.reflectionType == 1){
+    if (gMaterial.reflectionType == 1) {
     // Phong Reflection
+        float RdotE = dot(reflectLight, toEye);
+        specularPow = pow(saturate(RdotE), gMaterial.shininess);
         specular = gDirectionalLight.color.rgb * gDirectionalLight.intensity * specularPow * float32_t3(1.0f,1.0f,1.0f);  
+    }else if (gMaterial.reflectionType == 2){
+    // Blinn Phong Reflection
+        float32_t3 halfVector = normalize(-gDirectionalLight.direction + toEye);
+        float NDotH = dot(normalize(input.normal),halfVector);
+        specularPow = pow(saturate(NDotH), gMaterial.shininess);
+        specular = gDirectionalLight.color.rgb * gDirectionalLight.intensity * specularPow * float32_t3(1.0f, 1.0f, 1.0f);
     }
     
-    output.color.rgb = diffuse + specular;
+        output.color.rgb = diffuse + specular;
     
     
     output.color.a = gMaterial.color.a * textureColor.a;
