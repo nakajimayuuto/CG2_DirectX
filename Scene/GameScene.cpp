@@ -140,20 +140,24 @@ void GameScene::Update() {
 	ImGui::DragFloat3("ModelScale", reinterpret_cast<float*>(&transform_.scale), 0.1f, 0.0f, 5.0f);
 	ImGui::DragFloat3("ModelRotate", reinterpret_cast<float*>(&imRotate), 0.1f, -360.0f, 360.0f);
 	ImGui::DragFloat3("ModelTranslate", reinterpret_cast<float*>(&transform_.translate), 0.1f, -20.0f, 20.0f);
-	//Vector4 imColor = model_.GetColor();
 	ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&color_));
-	//model_.SetColor(imColor);
-	//imColor = sprite_.GetColor();
-	//ImGui::ColorEdit4("ColorSprite", reinterpret_cast<float*>(&imColor));
-	//sprite_.SetColor(imColor);
 	transform_.rotate = Radian(imRotate);
 
-	//float imRotateX = Degree(transformSprite_.rotate.x);
-	//ImGui::DragFloat2("SpriteScale",reinterpret_cast<float*>(&transformSprite_.scale),0.1f,0.0f,10.0f);
-	//ImGui::DragFloat3("SpriteRotate",reinterpret_cast<float*>(&imRotateX),0.1f,-20.0f,20.0f);
-	//ImGui::DragFloat2("SpriteTranslate",reinterpret_cast<float*>(&transformSprite_.translate),10.0f,0.0f,1280.0f);
-	//transformSprite_.rotate.x = Radian(imRotateX);
+	ImGui::End();
 
+	ImGui::Begin("DirectionalLight");
+	Vector3 imDirection = DirectionalLight::GetInstance()->GetDirectionalLightData()->direction;
+	ImGui::DragFloat3("LightDirection", reinterpret_cast<float*>(&imDirection), 0.1f, -1.0f, 1.0f);
+	DirectionalLight::GetInstance()->GetDirectionalLightData()->direction = imDirection.Normalize();
+	ImGui::End();
+
+	ImGui::Begin("Camera");
+	Vector3 imPosition = Camera::GetInstance()->GetPosition();
+	imRotate = Degree(Camera::GetInstance()->GetTransform().rotate);
+	ImGui::DragFloat3("CameraRotate", reinterpret_cast<float*>(&imRotate), 0.1f, -360.0f, 360.0f);
+	ImGui::DragFloat3("CameraPosition", reinterpret_cast<float*>(&imPosition), 0.1f, -5.0f, 5.0f);
+	Camera::GetInstance()->SetPosition(imPosition);
+	Camera::GetInstance()->SetRotate(Radian(imRotate));
 	ImGui::End();
 
 	if (isParticleUpdate_) {
@@ -176,11 +180,12 @@ void GameScene::Draw() {
 	//Renderer::GetInstance()->DrawBox(transform_, "monsterBall", color_);
 	//Renderer::GetInstance()->DrawModel(transform_,ModelManager::GetInstance()->GetModelInfo("multiMaterial"), {1.0f,1.0f,1.0f,1.0f});
 	//Renderer::GetInstance()->DrawSphere(transform_, TextureManager::GetInstance()->GetTextureInfo("uvChecker"), {1.0f,1.0f,1.0f,1.0f});
-	model_.Draw(transform_);
+	//model_.Draw(transform_);
+	Renderer::GetInstance()->DrawSphere(transform_, "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
 
-	Renderer::GetInstance()->DrawLine({ 0.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }, {1.0f,1.0f,1.0f,1.0f});
-	Renderer::GetInstance()->DrawLine({ 1.0f,1.0f,1.0f }, { 1.0f,-1.0f,1.0f }, {1.0f,1.0f,1.0f,1.0f});
-	Renderer::GetInstance()->DrawLine({ 1.0f,-1.0f,1.0f }, { 0.0f,-1.0f,0.0f }, {1.0f,1.0f,1.0f,1.0f});
+	Renderer::GetInstance()->DrawLine({ 0.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }, { 1.0f,1.0f,1.0f,1.0f });
+	Renderer::GetInstance()->DrawLine({ 1.0f,1.0f,1.0f }, { 1.0f,-1.0f,1.0f }, { 1.0f,1.0f,1.0f,1.0f });
+	Renderer::GetInstance()->DrawLine({ 1.0f,-1.0f,1.0f }, { 0.0f,-1.0f,0.0f }, { 1.0f,1.0f,1.0f,1.0f });
 
 	//Renderer::GetInstance()->DrawBox(transform_, TextureManager::GetInstance()->GetTextureInfo("uvChecker"), {1.0f,1.0f,1.0f,1.0f});
 	//Renderer::GetInstance()->DrawModel(transform_,ModelManager::GetInstance()->GetModelInfo("player"), {1.0f,1.0f,1.0f,1.0f});

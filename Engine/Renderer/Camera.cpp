@@ -58,6 +58,15 @@ void Camera::Initialize() {
 	debugMatRot_ = Matrix4x4::MakeAffineMatrix(debugScale_, rotate_, debugTranslate_);
 }
 
+void Camera::CreateResource() {
+	cameraResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(CameraForGPU));
+	// データを書き込む.
+	// 書き込むためのアドレスを取得.
+	cameraResource_->Map(0, nullptr, reinterpret_cast<void**>(&cameraData_));
+	// 単位行列を書き込んでおく.
+	cameraData_->worldPosition = { 0.0f,0.0f,0.0f };
+}
+
 void Camera::Update() {
 	if (useDebugCamera_) {
 		DebugUpdate();
@@ -65,6 +74,8 @@ void Camera::Update() {
 		//matrix_ = Matrix4x4::MakeAffineMatrix(debugScale_, debugRotate_, debugTranslate_);
 		return;
 	}
+
+	cameraData_->worldPosition = translate_;
 
 	matrix_ = Matrix4x4::MakeAffineMatrix(scale_, rotate_, translate_);
 }

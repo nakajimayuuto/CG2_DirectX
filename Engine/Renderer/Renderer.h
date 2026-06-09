@@ -15,6 +15,12 @@ enum class LightingType {
 	kLambert = 2,
 };
 
+enum class ReflectionType {
+	kNone = 0,
+	kPhong = 1,
+	kBlinnPhong = 2,
+};
+
 struct ModelElement {
 	uint32_t modelMax_;
 
@@ -181,6 +187,8 @@ public:
 
 	void SetLightingType(LightingType lightingType);
 
+	void SetReflectionType(ReflectionType reflectionType);
+
 	void ClearDrawIndex();
 
 	/// <summary>
@@ -314,6 +322,8 @@ private:
 	BlendMode blendMode_;
 
 	LightingType lightingType_;
+
+	ReflectionType reflectionType_;
 
 	uint32_t currentDrawIndex_;
 };

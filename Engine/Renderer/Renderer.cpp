@@ -61,6 +61,8 @@ void Model::Initialize(const ModelInfo& info) {
 		materialData_[i]->color = modelData_[i].materialData.matarial.color;
 		materialData_[i]->lightingType = static_cast<uint32_t>(LightingType::kHalfLambert);
 		materialData_[i]->uvTransform = modelData_[i].materialData.matarial.uvTransform;
+		materialData_[i]->reflectionType = static_cast<uint32_t>(ReflectionType::kPhong);
+		materialData_[i]->shininess = 40.0f;
 
 		// 【TransformationMatrix】
 		// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
@@ -630,6 +632,8 @@ void Renderer::Initialize() {
 	blendMode_ = BlendMode::kNormal;
 
 	lightingType_ = LightingType::kHalfLambert;
+
+	reflectionType_ = ReflectionType::kPhong;
 }
 
 void Renderer::ClearDrawIndex() {
@@ -651,6 +655,14 @@ void Renderer::SetLightingType(LightingType lightingType) {
 	}
 
 	lightingType_ = lightingType;
+}
+
+void Renderer::SetReflectionType(ReflectionType reflectionType){
+	if (reflectionType == reflectionType_) {
+		return;
+	}
+
+	reflectionType_ = reflectionType;
 }
 
 void Renderer::DrawLine(const Vector3& startVector3, const Vector3& endVector3, const Vector4& color) {
@@ -1057,6 +1069,8 @@ void Renderer::CreateSphere(ModelElement* newElement) {
 	// 今回は赤を書き込んでみる
 	newElement->materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	newElement->materialData_->lightingType = static_cast<uint32_t>(lightingType_);//static_cast<uint32_t>(LightingType::kHalfLambert);
+	newElement->materialData_->reflectionType = static_cast<uint32_t>(reflectionType_);
+	newElement->materialData_->shininess = 40.0f;
 	newElement->materialData_->uvTransform = Matrix4x4::Identity();
 
 	// 【TransformationMatrix】
@@ -1165,6 +1179,8 @@ void Renderer::CreateBox(ModelElement* newElement) {
 	newElement->materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	newElement->materialData_->lightingType = static_cast<uint32_t>(lightingType_);;
 	newElement->materialData_->uvTransform = Matrix4x4::Identity();
+	newElement->materialData_->reflectionType = static_cast<uint32_t>(reflectionType_);
+	newElement->materialData_->shininess = 40.0f;
 
 	// 【TransformationMatrix】
 	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
@@ -1216,6 +1232,8 @@ void Renderer::CreateNewModel(std::vector<ModelElement*> newElements, const uint
 		newElements[i]->materialData_->color = newElements[i]->modelData_.materialData.matarial.color;
 		newElements[i]->materialData_->lightingType = static_cast<uint32_t>(lightingType_);;
 		newElements[i]->materialData_->uvTransform = newElements[i]->modelData_.materialData.matarial.uvTransform;
+		newElements[i]->materialData_->reflectionType = static_cast<uint32_t>(reflectionType_);
+		newElements[i]->materialData_->shininess = 40.0f;
 
 		// 【TransformationMatrix】
 		// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
@@ -1357,6 +1375,8 @@ void Renderer::CreateNewSprite(ModelElement* newElement, float width, float heig
 	newElement->materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	newElement->materialData_->lightingType = static_cast<uint32_t>(LightingType::kNone);
 	newElement->materialData_->uvTransform = Matrix4x4::Identity();
+	newElement->materialData_->reflectionType = static_cast<uint32_t>(ReflectionType::kNone);
+	newElement->materialData_->shininess = 0.0f;
 
 	// 【TransformationMatrix】
 	//Sprite用のTransformationMatrixを作る。Matrix4x4 1つ分のサイズを用意する.

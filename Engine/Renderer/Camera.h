@@ -2,36 +2,15 @@
 #include "../Math/Matrix4x4.h"
 #include "../Math/Transform.h"
 
+#include <Windows.h>
+#include <d3d12.h>
+#include <wrl.h>
+
+struct CameraForGPU {
+	Vector3 worldPosition;	
+};
+
 class Camera {
-	Vector3 scale_;
-	Vector3 rotate_;
-	Vector3 translate_;
-	Matrix4x4 matrix_;
-
-	float windowWidth_;
-	float windowHeight_;
-
-	Vertex4 orthographicVertex_;
-	Vector3 viewportLeftTop_;
-	float viewportWidth_;
-	float viewportHeight_;
-
-	float fovY_;
-	float nearClip_;
-	float farClip_;
-	float minDepth_;
-	float maxDepth_;
-
-
-	Vector3 debugScale_;
-	//Vector3 debugRotate_;
-	Vector3 debugTranslate_;
-
-	Matrix4x4 debugMatRot_;
-
-	bool useDebugCamera_;
-
-	Vector3 aspectScale_;
 public:
 
 	static Camera* GetInstance();
@@ -41,8 +20,6 @@ public:
 	void Initialize();
 
 	void Update();
-
-	void DebugUpdate();
 
 	void SetPosition(Vector3 vector3) { translate_ = vector3; }
 
@@ -80,5 +57,46 @@ public:
 
 	void RegisterGlobalVariables();
 	void ApplyGlobalVariables();
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> GetCameraForGPUResource() { return cameraResource_; };
+
+	void CreateResource();
+private:
+	void DebugUpdate();
+
+private:
+	Vector3 scale_;
+	Vector3 rotate_;
+	Vector3 translate_;
+	Matrix4x4 matrix_;
+
+	float windowWidth_;
+	float windowHeight_;
+
+	Vertex4 orthographicVertex_;
+	Vector3 viewportLeftTop_;
+	float viewportWidth_;
+	float viewportHeight_;
+
+	float fovY_;
+	float nearClip_;
+	float farClip_;
+	float minDepth_;
+	float maxDepth_;
+
+
+	Vector3 debugScale_;
+	//Vector3 debugRotate_;
+	Vector3 debugTranslate_;
+
+	Matrix4x4 debugMatRot_;
+
+	bool useDebugCamera_;
+
+	Vector3 aspectScale_;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource_ = nullptr;
+
+	CameraForGPU* cameraData_ = nullptr;
 };
 
