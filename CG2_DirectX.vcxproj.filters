@@ -148,6 +148,9 @@
     <Filter Include="Engine\Renderer\Light\SpotLight">
       <UniqueIdentifier>{d218a73c-58d0-4fce-915e-7c0803ec2717}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Managers\LightManager">
+      <UniqueIdentifier>{fec221c6-34a5-4b71-bc71-5781863f3d7f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -290,6 +293,9 @@
     </ClCompile>
     <ClCompile Include="Engine\Renderer\SpotLight.cpp">
       <Filter>Engine\Renderer\Light\SpotLight</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\LightManager.cpp">
+      <Filter>Managers\LightManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -445,6 +451,9 @@
     </ClInclude>
     <ClInclude Include="Engine\Renderer\SpotLight.h">
       <Filter>Engine\Renderer\Light\SpotLight</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\LightManager.h">
+      <Filter>Managers\LightManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
