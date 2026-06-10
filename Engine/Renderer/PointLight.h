@@ -10,6 +10,9 @@ struct PointLightData {
 	Vector4 color; // ライトの色.
 	Vector3 position; // ライトの向き.
 	float intensity; // ライトの輝度.
+	float radius; // ライトの届く最大距離.
+	float decay; // 減衰率.
+	float padding[2];
 };
 
 class PointLight {
@@ -20,7 +23,7 @@ public:
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> GetPointLightResource() { return pointLightResource; };
 
-	PointLightData* GetDirectionalLightData() { return pointLightData; };
+	PointLightData* GetPointLightData() { return pointLightData; };
 
 	void RegisterGlobalVariables();
 	void ApplyGlobalVariables();

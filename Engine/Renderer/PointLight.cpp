@@ -7,7 +7,7 @@ PointLight* PointLight::GetInstance() {
 }
 
 void PointLight::Initialize() {
-	pointLightResource = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(DirectionalLightData));
+	pointLightResource = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(PointLightData));
 	// データを書き込む.
 	// 書き込むためのアドレスを取得.
 	pointLightResource->Map(0, nullptr, reinterpret_cast<void**>(&pointLightData));
@@ -15,4 +15,6 @@ void PointLight::Initialize() {
 	pointLightData->color = { 1.0f,1.0f,1.0f,1.0f };
 	pointLightData->position = { 0.0f,2.0f,0.0f };
 	pointLightData->intensity = 1.0f;
+	pointLightData->radius = 3.0f;
+	pointLightData->decay = 1.0f;
 };

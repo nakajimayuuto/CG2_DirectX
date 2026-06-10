@@ -18,6 +18,8 @@ struct PointLight{
     float32_t4 color;
     float32_t3 position;
     float intensity;
+    float radius;
+    float decay;
 };
 
 struct Camera{
@@ -92,6 +94,22 @@ float lightIntensity
     return specular;
 }
 
+float32_t3 GetOutputRGB(
+float32_t3 worldPosition,
+float32_t3 normal,
+float32_t3 textureColorRGB,
+float32_t3 lightColorRGB,
+float32_t3 lightDirection,
+float lightIntensity
+){
+    float32_t3 outputColorRGB = { 0.0f,0.0f,0.0f};
+    
+    outputColorRGB = outputColorRGB + GetDiffuse(normal,textureColorRGB,lightColorRGB,lightDirection,lightIntensity);
+    outputColorRGB = outputColorRGB + GetSpecular(worldPosition,normal, textureColorRGB, lightColorRGB, lightDirection, lightIntensity);
+
+    return outputColorRGB;
+}
+
 PixelShaderOutput main(VertexShaderOutput input){
     PixelShaderOutput output;
     
@@ -102,29 +120,18 @@ PixelShaderOutput main(VertexShaderOutput input){
         discard;
     }
     
-    //float32_t3 diffuse = gMaterial.color.rgb * textureColor.rgb;
-    //
-    //if (gMaterial.lightingType == 1){
-    //// Half Lambert
-    //    float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
-    //    float cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
-    //
-    //    diffuse = gMaterial.color.rgb * textureColor.rgb * (gDirectionalLight.color.rgb * cos * gDirectionalLight.intensity);
-    //}else if (gMaterial.lightingType == 2){
-    //// Lambert Model
-    //    float cos = saturate(dot(normalize(input.normal), -gDirectionalLight.direction));
-    //
-    //    diffuse = gMaterial.color.rgb * textureColor.rgb * (gDirectionalLight.color.rgb * cos * gDirectionalLight.intensity);
-    //}
-    
     if (gMaterial.lightingType == 0){
         output.color.rgb = gMaterial.color.rgb * textureColor.rgb;
     }else{
         output.color.rgb = float32_t3(0.0f, 0.0f, 0.0f);
     }
     
-    output.color.rgb = output.color.rgb + GetDiffuse(input.normal,textureColor.rgb,gDirectionalLight.color.rgb,gDirectionalLight.direction,gDirectionalLight.intensity);
-    output.color.rgb = output.color.rgb + GetSpecular(input.worldPosition, input.normal, textureColor.rgb, gDirectionalLight.color.rgb, gDirectionalLight.direction, gDirectionalLight.intensity);
+    float32_t3 pointLightDirection = normalize(input.worldPosition - gPointLight.position);
+    float32_t3 distance = length(gPointLight.position - input.worldPosition);
+    float32_t3 factor = pow(saturate(-distance / gPointLight.radius + 1.0f),gPointLight.decay);
+    
+    output.color.rgb = output.color.rgb + GetOutputRGB(input.worldPosition, input.normal, textureColor.rgb, gDirectionalLight.color.rgb, gDirectionalLight.direction, gDirectionalLight.intensity);
+    output.color.rgb = output.color.rgb + GetOutputRGB(input.worldPosition, input.normal, textureColor.rgb, gPointLight.color.rgb, pointLightDirection, gPointLight.intensity) * factor;
     
     
     output.color.a = gMaterial.color.a * textureColor.a;

@@ -15,6 +15,7 @@
 #include "./Engine/Math/Math.h"
 
 #include "./Engine/Renderer/DirectionalLight.h"
+#include "./Engine/Renderer/PointLight.h"
 #include "./Engine/Renderer/Particles.h"
 #include "./Engine/Renderer/Renderer.h"
 #include "./Engine/Renderer/Camera.h"

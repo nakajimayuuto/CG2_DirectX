@@ -148,7 +148,13 @@ void GameScene::Update() {
 	ImGui::Begin("DirectionalLight");
 	Vector3 imDirection = DirectionalLight::GetInstance()->GetDirectionalLightData()->direction;
 	ImGui::DragFloat3("LightDirection", reinterpret_cast<float*>(&imDirection), 0.1f, -1.0f, 1.0f);
+	ImGui::DragFloat("LightIntensity", &DirectionalLight::GetInstance()->GetDirectionalLightData()->intensity, 0.1f, 0.0f, 1.0f);
 	DirectionalLight::GetInstance()->GetDirectionalLightData()->direction = imDirection.Normalize();
+	ImGui::End();
+
+	ImGui::Begin("PointLight");
+	ImGui::DragFloat3("LightPosition", reinterpret_cast<float*>(&PointLight::GetInstance()->GetPointLightData()->position), 0.1f, -10.0f, 10.0f);
+	ImGui::DragFloat("LightIntensity", &PointLight::GetInstance()->GetPointLightData()->intensity, 0.1f, 0.0f, 1.0f);
 	ImGui::End();
 
 	ImGui::Begin("Camera");
