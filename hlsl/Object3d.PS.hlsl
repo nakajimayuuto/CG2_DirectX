@@ -36,34 +36,61 @@ struct PixelShaderOutput{
     float32_t4 color : SV_TARGET0;
 };
 
-//float GetDiffuse(
-//float32_t3 normal,
-//float32_t3 textureColorRGB,
-//float32_t3 lightColorRGB,
-//float32_t3 lightDirection,
-//float lightIntensity
-//){
-//    float32_t3 diffuse = gMaterial.color.rgb * textureColorRGB;
-//    
-//    if (gMaterial.lightingType == 1){
-//    // Half Lambert
-//        float NdotL = dot(normalize(normal), -lightDirection);
-//        float cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
-//    
-//        diffuse = gMaterial.color.rgb * textureColorRGB * (lightColorRGB * cos * lightIntensity);
-//    }else if (gMaterial.lightingType == 2){
-//    // Lambert Model
-//        float cos = saturate(dot(normalize(normal), -lightDirection));
-//    
-//        diffuse = gMaterial.color.rgb * textureColorRGB * (lightColorRGB * cos * lightIntensity);
-//    }
-//    
-//    return diffuse;
-//}
+float32_t3 GetDiffuse(
+float32_t3 normal,
+float32_t3 textureColorRGB,
+float32_t3 lightColorRGB,
+float32_t3 lightDirection,
+float lightIntensity
+){
+    float32_t3 diffuse = {0.0f,0.0f,0.0f};
+    
+    if (gMaterial.lightingType == 1){
+    // Half Lambert
+        float NdotL = dot(normalize(normal), -lightDirection);
+        float cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
+    
+        diffuse = gMaterial.color.rgb * textureColorRGB * (lightColorRGB * cos * lightIntensity);
+    }else if (gMaterial.lightingType == 2){
+    // Lambert Model
+        float cos = saturate(dot(normalize(normal), -lightDirection));
+    
+        diffuse = gMaterial.color.rgb * textureColorRGB * (lightColorRGB * cos * lightIntensity);
+    }
+    
+    return diffuse;
+}
 
-//float GetSpecular(){
-//    
-//}
+float32_t3 GetSpecular(
+float32_t3 worldPosition,
+float32_t3 normal,
+float32_t3 textureColorRGB,
+float32_t3 lightColorRGB,
+float32_t3 lightDirection,
+float lightIntensity
+){
+    float32_t3 specular = { 0.0f, 0.0f, 0.0f };
+    
+    float32_t3 toEye = normalize(gCamera.worldPosition - worldPosition);
+    float32_t3 reflectLight = reflect(lightDirection, normalize(normal));
+    
+    float specularPow;
+    
+    if (gMaterial.reflectionType == 1) {
+    // Phong Reflection
+        float RdotE = dot(reflectLight, toEye);
+        specularPow = pow(saturate(RdotE), gMaterial.shininess);
+        specular = lightColorRGB * lightIntensity * specularPow * float32_t3(1.0f, 1.0f, 1.0f);
+    }else if (gMaterial.reflectionType == 2) {
+    // Blinn Phong Reflection
+        float32_t3 halfVector = normalize(-lightDirection + toEye);
+        float NDotH = dot(normalize(normal), halfVector);
+        specularPow = pow(saturate(NDotH), gMaterial.shininess);
+        specular = lightColorRGB * lightIntensity * specularPow * float32_t3(1.0f, 1.0f, 1.0f);
+    }
+    
+    return specular;
+}
 
 PixelShaderOutput main(VertexShaderOutput input){
     PixelShaderOutput output;
@@ -71,47 +98,35 @@ PixelShaderOutput main(VertexShaderOutput input){
     float4 transformedUV = mul(float32_t4(input.texcoord,0.0f,1.0f),gMaterial.uvTransform);
     float32_t4 textureColor = gTexture.Sample(gSampler,transformedUV.xy);
     
-    float32_t3 toEye = normalize(gCamera.worldPosition - input.worldPosition);
-    
-    float32_t3 reflectLight = reflect(gDirectionalLight.direction, normalize(input.normal));
-    
-    float specularPow;
-    
     if (textureColor.a <= 0.5f){
         discard;
     }
     
-    float32_t3 diffuse = gMaterial.color.rgb * textureColor.rgb;
+    //float32_t3 diffuse = gMaterial.color.rgb * textureColor.rgb;
+    //
+    //if (gMaterial.lightingType == 1){
+    //// Half Lambert
+    //    float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
+    //    float cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
+    //
+    //    diffuse = gMaterial.color.rgb * textureColor.rgb * (gDirectionalLight.color.rgb * cos * gDirectionalLight.intensity);
+    //}else if (gMaterial.lightingType == 2){
+    //// Lambert Model
+    //    float cos = saturate(dot(normalize(input.normal), -gDirectionalLight.direction));
+    //
+    //    diffuse = gMaterial.color.rgb * textureColor.rgb * (gDirectionalLight.color.rgb * cos * gDirectionalLight.intensity);
+    //}
     
-    if (gMaterial.lightingType == 1){
-    // Half Lambert
-        float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
-        float cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
-    
-        diffuse = gMaterial.color.rgb * textureColor.rgb * (gDirectionalLight.color.rgb * cos * gDirectionalLight.intensity);
-    }else if (gMaterial.lightingType == 2){
-    // Lambert Model
-        float cos = saturate(dot(normalize(input.normal), -gDirectionalLight.direction));
-    
-        diffuse = gMaterial.color.rgb * textureColor.rgb * (gDirectionalLight.color.rgb * cos * gDirectionalLight.intensity);
+    if (gMaterial.lightingType == 0){
+        output.color.rgb = gMaterial.color.rgb * textureColor.rgb;
+    }else{
+        output.color.rgb = float32_t3(0.0f, 0.0f, 0.0f);
     }
     
-    float32_t3 specular = {0.0f,0.0f,0.0f};
+    output.color.rgb = output.color.rgb + GetDiffuse(input.normal,textureColor.rgb,gDirectionalLight.color.rgb,gDirectionalLight.direction,gDirectionalLight.intensity);
+    output.color.rgb = output.color.rgb + GetSpecular(input.worldPosition, input.normal, textureColor.rgb, gDirectionalLight.color.rgb, gDirectionalLight.direction, gDirectionalLight.intensity);
     
-    if (gMaterial.reflectionType == 1) {
-    // Phong Reflection
-        float RdotE = dot(reflectLight, toEye);
-        specularPow = pow(saturate(RdotE), gMaterial.shininess);
-        specular = gDirectionalLight.color.rgb * gDirectionalLight.intensity * specularPow * float32_t3(1.0f,1.0f,1.0f);  
-    }else if (gMaterial.reflectionType == 2){
-    // Blinn Phong Reflection
-        float32_t3 halfVector = normalize(-gDirectionalLight.direction + toEye);
-        float NDotH = dot(normalize(input.normal),halfVector);
-        specularPow = pow(saturate(NDotH), gMaterial.shininess);
-        specular = gDirectionalLight.color.rgb * gDirectionalLight.intensity * specularPow * float32_t3(1.0f, 1.0f, 1.0f);
-    }
     
-    output.color.rgb = diffuse + specular;
     output.color.a = gMaterial.color.a * textureColor.a;
     
     
