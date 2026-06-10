@@ -145,6 +145,9 @@
     <Filter Include="Engine\Renderer\Light\PointLight">
       <UniqueIdentifier>{3e441222-b7cb-48f9-8104-cdb93ac20833}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Renderer\Light\SpotLight">
+      <UniqueIdentifier>{d218a73c-58d0-4fce-915e-7c0803ec2717}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -284,6 +287,9 @@
     </ClCompile>
     <ClCompile Include="Engine\Renderer\PointLight.cpp">
       <Filter>Engine\Renderer\Light\PointLight</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Renderer\SpotLight.cpp">
+      <Filter>Engine\Renderer\Light\SpotLight</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -436,6 +442,9 @@
     </ClInclude>
     <ClInclude Include="Engine\Renderer\PointLight.h">
       <Filter>Engine\Renderer\Light\PointLight</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Renderer\SpotLight.h">
+      <Filter>Engine\Renderer\Light\SpotLight</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

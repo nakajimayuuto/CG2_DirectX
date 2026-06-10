@@ -157,6 +157,11 @@ void GameScene::Update() {
 	ImGui::DragFloat("LightIntensity", &PointLight::GetInstance()->GetPointLightData()->intensity, 0.1f, 0.0f, 1.0f);
 	ImGui::End();
 
+	ImGui::Begin("SpotLight");
+	ImGui::DragFloat3("LightPosition", reinterpret_cast<float*>(&SpotLight::GetInstance()->GetSpotLightData()->position), 0.1f, -10.0f, 10.0f);
+	ImGui::DragFloat("LightIntensity", &SpotLight::GetInstance()->GetSpotLightData()->intensity, 0.1f, 0.0f, 1.0f);
+	ImGui::End();
+
 	ImGui::Begin("Camera");
 	Vector3 imPosition = Camera::GetInstance()->GetPosition();
 	imRotate = Degree(Camera::GetInstance()->GetTransform().rotate);

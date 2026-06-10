@@ -35,6 +35,7 @@
     <ClCompile Include="Engine\Renderer\Particles.cpp" />
     <ClCompile Include="Engine\Renderer\PointLight.cpp" />
     <ClCompile Include="Engine\Renderer\Renderer.cpp" />
+    <ClCompile Include="Engine\Renderer\SpotLight.cpp" />
     <ClCompile Include="Engine\SystemFile\Convert.cpp" />
     <ClCompile Include="Engine\SystemFile\Debug.cpp" />
     <ClCompile Include="Engine\SystemFile\DeltaTime.cpp" />
@@ -112,6 +113,7 @@
     <ClInclude Include="Engine\Renderer\Particles.h" />
     <ClInclude Include="Engine\Renderer\PointLight.h" />
     <ClInclude Include="Engine\Renderer\Renderer.h" />
+    <ClInclude Include="Engine\Renderer\SpotLight.h" />
     <ClInclude Include="Engine\SystemFile\Convert.h" />
     <ClInclude Include="Engine\SystemFile\Debug.h" />
     <ClInclude Include="Engine\SystemFile\DeltaTime.h" />

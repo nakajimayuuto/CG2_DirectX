@@ -22,6 +22,17 @@ struct PointLight{
     float decay;
 };
 
+struct SpotLight{
+    float32_t4 color;
+    float32_t3 position;
+    float intensity;
+    float32_t3 direction;
+    float distance;
+    float decay;
+    float cosAngle;
+    float cosFalloffStart;
+};
+
 struct Camera{
     float32_t3 worldPosition;
 };
@@ -30,6 +41,7 @@ ConstantBuffer<Material> gMaterial : register(b0);
 ConstantBuffer<DirectionalLight> gDirectionalLight : register(b1);
 ConstantBuffer<Camera> gCamera : register(b2);
 ConstantBuffer<PointLight> gPointLight : register(b3);
+ConstantBuffer<SpotLight> gSpotLight : register(b4);
 
 Texture2D<float32_t4> gTexture : register(t0);
 SamplerState gSampler : register(s0);
@@ -126,12 +138,25 @@ PixelShaderOutput main(VertexShaderOutput input){
         output.color.rgb = float32_t3(0.0f, 0.0f, 0.0f);
     }
     
+    // DirectionalLight
+    output.color.rgb = output.color.rgb + GetOutputRGB(input.worldPosition, input.normal, textureColor.rgb, gDirectionalLight.color.rgb, gDirectionalLight.direction, gDirectionalLight.intensity);
+   
+    // PointLight
     float32_t3 pointLightDirection = normalize(input.worldPosition - gPointLight.position);
     float32_t3 distance = length(gPointLight.position - input.worldPosition);
     float32_t3 factor = pow(saturate(-distance / gPointLight.radius + 1.0f),gPointLight.decay);
     
-    output.color.rgb = output.color.rgb + GetOutputRGB(input.worldPosition, input.normal, textureColor.rgb, gDirectionalLight.color.rgb, gDirectionalLight.direction, gDirectionalLight.intensity);
     output.color.rgb = output.color.rgb + GetOutputRGB(input.worldPosition, input.normal, textureColor.rgb, gPointLight.color.rgb, pointLightDirection, gPointLight.intensity) * factor;
+    
+    // SpotLight
+    float32_t3 spotLightDirectionOnSurface = normalize(input.worldPosition - gSpotLight.position);
+    float32_t cosAngle = dot(spotLightDirectionOnSurface,gSpotLight.direction);
+    float32_t falloffFactor = saturate((cosAngle - gSpotLight.cosAngle) / (gSpotLight.cosFalloffStart - gSpotLight.cosAngle));
+    factor = 1.0f / (distance * distance); //pow(saturate(-gSpotLight.distance /1.0f), gSpotLight.decay);
+    
+    output.color.rgb = output.color.rgb + 
+    (GetOutputRGB(input.worldPosition, input.normal, textureColor.rgb, gSpotLight.color.rgb, spotLightDirectionOnSurface, gSpotLight.intensity) *
+    factor * falloffFactor);
     
     
     output.color.a = gMaterial.color.a * textureColor.a;

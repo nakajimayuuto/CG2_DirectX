@@ -19,6 +19,7 @@
 #include "../Renderer/Renderer.h"
 #include "../Renderer/Camera.h"
 #include "../Renderer/PointLight.h"
+#include "../Renderer/SpotLight.h"
 #include "DeltaTime.h"
 
 GameSystem* GameSystem::GetInstance() {
@@ -314,6 +315,8 @@ void GameSystem::Initialize() {
 
 	PointLight::GetInstance()->Initialize();
 
+	SpotLight::GetInstance()->Initialize();
+
 	/*=============================================================
 	ImGuiの初期化.
 	=============================================================*/
@@ -452,7 +455,7 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // Offsetの自動計算.
 
 	// RootParameter作成。複数設定出来るので配列。
-	D3D12_ROOT_PARAMETER rootParameters[6] = {};
+	D3D12_ROOT_PARAMETER rootParameters[7] = {};
 	D3D12_ROOT_PARAMETER rootParametersParticle[3] = {};
 
 	switch (shaderType) {
@@ -502,6 +505,11 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 		rootParameters[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
 		rootParameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
 		rootParameters[5].Descriptor.ShaderRegister = 3; // レジスタ番号3を使う.
+
+		// SpotLightData.
+		rootParameters[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
+		rootParameters[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		rootParameters[6].Descriptor.ShaderRegister = 4; // レジスタ番号4を使う.
 
 		descriptionRootSignature.pParameters = rootParameters; // ルートパラメータ配列へのポインタ.
 		descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ.
@@ -705,6 +713,7 @@ void GameSystem::DrawCommand(
 	commandList->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootConstantBufferView(4, Camera::GetInstance()->GetCameraForGPUResource()->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootConstantBufferView(5, PointLight::GetInstance()->GetPointLightResource()->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(6, SpotLight::GetInstance()->GetSpotLightResource()->GetGPUVirtualAddress());
 	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
 	if (indexBufferView == nullptr) {
 		commandList->DrawInstanced(indexInstancedNum, 1, 0, 0);
