@@ -14,6 +14,12 @@ struct DirectionalLight{
     float intensity;
 };
 
+struct PointLight{
+    float32_t4 color;
+    float32_t3 position;
+    float intensity;
+};
+
 struct Camera{
     float32_t3 worldPosition;
 };
@@ -21,12 +27,43 @@ struct Camera{
 ConstantBuffer<Material> gMaterial : register(b0);
 ConstantBuffer<DirectionalLight> gDirectionalLight : register(b1);
 ConstantBuffer<Camera> gCamera : register(b2);
+ConstantBuffer<PointLight> gPointLight : register(b3);
+
 Texture2D<float32_t4> gTexture : register(t0);
 SamplerState gSampler : register(s0);
 
 struct PixelShaderOutput{
     float32_t4 color : SV_TARGET0;
 };
+
+//float GetDiffuse(
+//float32_t3 normal,
+//float32_t3 textureColorRGB,
+//float32_t3 lightColorRGB,
+//float32_t3 lightDirection,
+//float lightIntensity
+//){
+//    float32_t3 diffuse = gMaterial.color.rgb * textureColorRGB;
+//    
+//    if (gMaterial.lightingType == 1){
+//    // Half Lambert
+//        float NdotL = dot(normalize(normal), -lightDirection);
+//        float cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
+//    
+//        diffuse = gMaterial.color.rgb * textureColorRGB * (lightColorRGB * cos * lightIntensity);
+//    }else if (gMaterial.lightingType == 2){
+//    // Lambert Model
+//        float cos = saturate(dot(normalize(normal), -lightDirection));
+//    
+//        diffuse = gMaterial.color.rgb * textureColorRGB * (lightColorRGB * cos * lightIntensity);
+//    }
+//    
+//    return diffuse;
+//}
+
+//float GetSpecular(){
+//    
+//}
 
 PixelShaderOutput main(VertexShaderOutput input){
     PixelShaderOutput output;
@@ -74,9 +111,7 @@ PixelShaderOutput main(VertexShaderOutput input){
         specular = gDirectionalLight.color.rgb * gDirectionalLight.intensity * specularPow * float32_t3(1.0f, 1.0f, 1.0f);
     }
     
-        output.color.rgb = diffuse + specular;
-    
-    
+    output.color.rgb = diffuse + specular;
     output.color.a = gMaterial.color.a * textureColor.a;
     
     

@@ -33,6 +33,7 @@
     <ClCompile Include="Engine\Renderer\Camera.cpp" />
     <ClCompile Include="Engine\Renderer\DirectionalLight.cpp" />
     <ClCompile Include="Engine\Renderer\Particles.cpp" />
+    <ClCompile Include="Engine\Renderer\PointLight.cpp" />
     <ClCompile Include="Engine\Renderer\Renderer.cpp" />
     <ClCompile Include="Engine\SystemFile\Convert.cpp" />
     <ClCompile Include="Engine\SystemFile\Debug.cpp" />
@@ -109,6 +110,7 @@
     <ClInclude Include="Engine\Renderer\Material.h" />
     <ClInclude Include="Engine\Renderer\ModelData.h" />
     <ClInclude Include="Engine\Renderer\Particles.h" />
+    <ClInclude Include="Engine\Renderer\PointLight.h" />
     <ClInclude Include="Engine\Renderer\Renderer.h" />
     <ClInclude Include="Engine\SystemFile\Convert.h" />
     <ClInclude Include="Engine\SystemFile\Debug.h" />
