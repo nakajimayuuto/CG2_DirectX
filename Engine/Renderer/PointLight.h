@@ -23,6 +23,8 @@ public:
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> GetPointLightResource() { return pointLightResource; };
 
+	D3D12_GPU_DESCRIPTOR_HANDLE GetSrvHandleGPU() { return pointLightSrvHandleGPU; };
+
 	PointLightData* GetPointLightData() { return pointLightData; };
 
 	void RegisterGlobalVariables();
@@ -31,5 +33,10 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> pointLightResource = nullptr;
 
 	PointLightData* pointLightData = nullptr;
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC pointLightSrvDesc{};
+
+	D3D12_CPU_DESCRIPTOR_HANDLE pointLightSrvHandleCPU;
+	D3D12_GPU_DESCRIPTOR_HANDLE pointLightSrvHandleGPU;
 };
 

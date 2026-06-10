@@ -26,6 +26,8 @@ public:
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> GetSpotLightResource() { return spotLightResource; };
 
+	D3D12_GPU_DESCRIPTOR_HANDLE GetSrvHandleGPU() { return spotLightSrvHandleGPU; };
+
 	SpotLightData* GetSpotLightData() { return spotLightData; };
 
 	void RegisterGlobalVariables();
@@ -34,5 +36,10 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> spotLightResource = nullptr;
 
 	SpotLightData* spotLightData = nullptr;
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC spotLightSrvDesc{};
+
+	D3D12_CPU_DESCRIPTOR_HANDLE spotLightSrvHandleCPU;
+	D3D12_GPU_DESCRIPTOR_HANDLE spotLightSrvHandleGPU;
 };
 

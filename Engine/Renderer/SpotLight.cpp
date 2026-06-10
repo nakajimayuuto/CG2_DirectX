@@ -21,4 +21,19 @@ void SpotLight::Initialize() {
 	spotLightData->decay = 2.0f;
 	spotLightData->cosAngle = std::cos(Radian(60.0f));
 	spotLightData->cosFalloffStart = std::cos(Radian(30.0f));
+
+	spotLightSrvDesc.Format = DXGI_FORMAT_UNKNOWN;
+	spotLightSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	spotLightSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+	spotLightSrvDesc.Buffer.FirstElement = 0;
+	spotLightSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+	spotLightSrvDesc.Buffer.NumElements = 1;
+	spotLightSrvDesc.Buffer.StructureByteStride = sizeof(SpotLightData);
+
+	spotLightSrvHandleCPU = GameSystem::GetInstance()->GetCPUDescriptorHandle(GameSystem::GetInstance()->GetSrvDescriptorHeap(), GameSystem::GetInstance()->GetDescriptorSizeSRV(), GameSystem::GetInstance()->GetSrvDescriptorHeapNum());
+	spotLightSrvHandleGPU = GameSystem::GetInstance()->GetGPUDescriptorHandle(GameSystem::GetInstance()->GetSrvDescriptorHeap(), GameSystem::GetInstance()->GetDescriptorSizeSRV(), GameSystem::GetInstance()->GetSrvDescriptorHeapNum());
+
+	GameSystem::GetInstance()->GetDevice()->CreateShaderResourceView(spotLightResource.Get(), &spotLightSrvDesc, spotLightSrvHandleCPU);
+
+	GameSystem::GetInstance()->SrvDescriptorHeapNumIncrement();
 };

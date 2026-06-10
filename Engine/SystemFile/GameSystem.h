@@ -64,7 +64,7 @@ enum class BlendMode {
 
 	kParticleNone, // パーティクル用
 	kParticleNormal, // パーティクル用の通常.
-	kParticleCount, 
+	kParticleCount,
 	kCount, // ブレンドモードの最大数.
 };
 
@@ -77,11 +77,9 @@ enum class ShaderType {
 struct ModelElement;
 
 class GameSystem {
-
-	// GameSystemで使うやつ.
 public:
 	static GameSystem* GetInstance();
-	
+
 	static LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception);
 
 	void Initialize();
@@ -112,7 +110,7 @@ public:
 	uint64_t GetFenceValue() { return fenceValue; };
 
 	void FenceValueIncrement() { fenceValue++; };
-	
+
 	HANDLE GetFenceEvent() { return fenceEvent; };
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetSrvDescriptorHeap() { return srvDescriptorHeap; };
@@ -136,7 +134,7 @@ public:
 	};
 
 	// シェーダーの設定はここでやる.
-	void CreatePipeline(BlendMode blendMode,ShaderType shaderType);
+	void CreatePipeline(BlendMode blendMode, ShaderType shaderType);
 
 	void SetPipeline(BlendMode blendMode);
 
@@ -144,31 +142,13 @@ public:
 
 	void DrawCommand(
 		BlendMode blendMode,
-		D3D12_VERTEX_BUFFER_VIEW *vertexBufferView,
-		D3D12_INDEX_BUFFER_VIEW *indexBufferView,
+		D3D12_VERTEX_BUFFER_VIEW* vertexBufferView,
+		D3D12_INDEX_BUFFER_VIEW* indexBufferView,
 		D3D_PRIMITIVE_TOPOLOGY topology,
 		Microsoft::WRL::ComPtr<ID3D12Resource> materialResource,
 		Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource,
 		D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU,
 		uint32_t indexInstancedNum);
-
-	//void DrawCommand(
-	//	BlendMode blendMode,
-	//	D3D12_VERTEX_BUFFER_VIEW *vertexBufferView,
-	//	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource,
-	//	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource,
-	//	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU,
-	//	uint32_t indexInstancedNum);
-	//
-	//void DrawCommand(ModelElement* element);
-private:
-
-	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-
-	std::ofstream CreateLogFile();
-
-	void WindowSizeUpdate();
-
 public:
 	// ログを表示する.
 	static void Log(const std::string& message);
@@ -194,7 +174,9 @@ public:
 	static Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(
 		Microsoft::WRL::ComPtr<ID3D12Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDiscriptors, bool shaderVisible);
 
+	void SrvDescriptorHeapNumIncrement();
 
+	uint32_t GetSrvDescriptorHeapNum()const { return srvDescriptorHeapNum_; };
 
 	// Textureデータを読む(TextureManager的な奴に入れる).
 	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
@@ -209,9 +191,17 @@ public:
 	static Microsoft::WRL::ComPtr<ID3D12Resource> CreateDepthStencilTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, int32_t width, int32_t height);
 
 	static D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index);
+	//static D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle();
 
 	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index);
+	//static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle();
 
+private:
+	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+
+	std::ofstream CreateLogFile();
+
+	void WindowSizeUpdate();
 private:
 	/*=============================================================
 	ResourceLeakChecker
@@ -241,6 +231,10 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap = nullptr;
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvDescriptorHeap = nullptr;
+
+	uint32_t srvDescriptorHeapNum_;
+
+	static inline const uint32_t kSrvDescriptorHeapNumMax = 128;
 
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
 

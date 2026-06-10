@@ -59,13 +59,13 @@ TextureInfo TextureManager::RegisterTexture(const std::string& name, const std::
 	srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
 
 	// SRVを生成するDescriptorHeapを決める.
-	textures_[name].textureSrvHandlesCPU = GameSystem::GetCPUDescriptorHandle(GameSystem::GetInstance()->GetSrvDescriptorHeap(), GameSystem::GetInstance()->GetDescriptorSizeSRV(), textureNumber_);
-	textures_[name].textureSrvHandlesGPU = GameSystem::GetGPUDescriptorHandle(GameSystem::GetInstance()->GetSrvDescriptorHeap(), GameSystem::GetInstance()->GetDescriptorSizeSRV(), textureNumber_);
-	textures_[name].number = textureNumber_;
-	textureNumber_++;
+	textures_[name].textureSrvHandlesCPU = GameSystem::GetCPUDescriptorHandle(GameSystem::GetInstance()->GetSrvDescriptorHeap(), GameSystem::GetInstance()->GetDescriptorSizeSRV(), GameSystem::GetInstance()->GetSrvDescriptorHeapNum());
+	textures_[name].textureSrvHandlesGPU = GameSystem::GetGPUDescriptorHandle(GameSystem::GetInstance()->GetSrvDescriptorHeap(), GameSystem::GetInstance()->GetDescriptorSizeSRV(), GameSystem::GetInstance()->GetSrvDescriptorHeapNum());
+	textures_[name].number = GameSystem::GetInstance()->GetSrvDescriptorHeapNum();
 
 	// SRVの生成.
 	GameSystem::GetInstance()->GetDevice()->CreateShaderResourceView(textures_[name].textureResource.Get(), &srvDesc, textures_[name].textureSrvHandlesCPU);
+	GameSystem::GetInstance()->SrvDescriptorHeapNumIncrement();
 
 	return textures_[name];
 }

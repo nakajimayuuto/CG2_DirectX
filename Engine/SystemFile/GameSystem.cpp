@@ -265,8 +265,9 @@ void GameSystem::Initialize() {
 	rtvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
 	const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
+	srvDescriptorHeapNum_ = 1;
 	// SRV用のヒープでディスクリプタの数は128。SRVはShader内で触るものなので、ShaderVisibleはtrue.
-	srvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
+	srvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, kSrvDescriptorHeapNumMax, true);
 	descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	// SwapChainからResourceを引っ張ってくる.
@@ -454,6 +455,18 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う.
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // Offsetの自動計算.
 
+	D3D12_DESCRIPTOR_RANGE pointLightDescriptorRange[1] = {};
+	pointLightDescriptorRange[0].BaseShaderRegister = 1; // 1から始まる.
+	pointLightDescriptorRange[0].NumDescriptors = 1; // 数は1つ.
+	pointLightDescriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う.
+	pointLightDescriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // Offsetの自動計算.
+
+	D3D12_DESCRIPTOR_RANGE spotLightDescriptorRange[1] = {};
+	spotLightDescriptorRange[0].BaseShaderRegister = 2; // 2から始まる.
+	spotLightDescriptorRange[0].NumDescriptors = 1; // 数は1つ.
+	spotLightDescriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う.
+	spotLightDescriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // Offsetの自動計算.
+
 	// RootParameter作成。複数設定出来るので配列。
 	D3D12_ROOT_PARAMETER rootParameters[7] = {};
 	D3D12_ROOT_PARAMETER rootParametersParticle[3] = {};
@@ -502,14 +515,16 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 		rootParameters[4].Descriptor.ShaderRegister = 2; // レジスタ番号2を使う.
 
 		// PointLightData.
-		rootParameters[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
+		rootParameters[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; //DescriptorTableを使う.
 		rootParameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
-		rootParameters[5].Descriptor.ShaderRegister = 3; // レジスタ番号3を使う.
+		rootParameters[5].DescriptorTable.pDescriptorRanges = pointLightDescriptorRange; // Tableの中身の配列を指定.
+		rootParameters[5].DescriptorTable.NumDescriptorRanges = _countof(pointLightDescriptorRange); // Tableで利用する数.
 
 		// SpotLightData.
-		rootParameters[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
+		rootParameters[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; //DescriptorTableを使う.
 		rootParameters[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
-		rootParameters[6].Descriptor.ShaderRegister = 4; // レジスタ番号4を使う.
+		rootParameters[6].DescriptorTable.pDescriptorRanges = spotLightDescriptorRange; // Tableの中身の配列を指定.
+		rootParameters[6].DescriptorTable.NumDescriptorRanges = _countof(spotLightDescriptorRange); // Tableで利用する数.
 
 		descriptionRootSignature.pParameters = rootParameters; // ルートパラメータ配列へのポインタ.
 		descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ.
@@ -695,7 +710,7 @@ void GameSystem::DrawCommand(
 	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource,
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU,
 	uint32_t indexInstancedNum
-){
+) {
 	SetPipeline(blendMode);
 
 	commandList->IASetVertexBuffers(0, 1, vertexBufferView); // VBVを設定.
@@ -703,39 +718,7 @@ void GameSystem::DrawCommand(
 		commandList->IASetIndexBuffer(indexBufferView); // IBVを設定.
 	}
 	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
-	commandList ->IASetPrimitiveTopology(topology);
-	// マテリアル用のCBufferの場所.
-	commandList ->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-	// transformationMatrixCBufferの場所.
-	commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
-	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
-	commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-	commandList->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootConstantBufferView(4, Camera::GetInstance()->GetCameraForGPUResource()->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootConstantBufferView(5, PointLight::GetInstance()->GetPointLightResource()->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootConstantBufferView(6, SpotLight::GetInstance()->GetSpotLightResource()->GetGPUVirtualAddress());
-	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-	if (indexBufferView == nullptr) {
-		commandList->DrawInstanced(indexInstancedNum, 1, 0, 0);
-	} else {
-		commandList->DrawIndexedInstanced(indexInstancedNum, 1, 0, 0, 0);
-	}
-}
-
-/*
-void GameSystem::DrawCommand(
-	BlendMode blendMode, 
-	D3D12_VERTEX_BUFFER_VIEW *vertexBufferView, 
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource, 
-	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource, 
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU, 
-	uint32_t indexInstancedNum
-) {
-	SetPipeline(blendMode);
-
-	commandList->IASetVertexBuffers(0, 1, vertexBufferView); // VBVを設定.
-	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
-	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	commandList->IASetPrimitiveTopology(topology);
 	// マテリアル用のCBufferの場所.
 	commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	// transformationMatrixCBufferの場所.
@@ -743,34 +726,18 @@ void GameSystem::DrawCommand(
 	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
 	commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 	commandList->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(4, Camera::GetInstance()->GetCameraForGPUResource()->GetGPUVirtualAddress());
+	//commandList->SetGraphicsRootConstantBufferView(5, PointLight::GetInstance()->GetPointLightResource()->GetGPUVirtualAddress());
+	//commandList->SetGraphicsRootConstantBufferView(6, SpotLight::GetInstance()->GetSpotLightResource()->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootDescriptorTable(5, PointLight::GetInstance()->GetSrvHandleGPU());
+	commandList->SetGraphicsRootDescriptorTable(6, SpotLight::GetInstance()->GetSrvHandleGPU());
 	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-	commandList->DrawInstanced(indexInstancedNum, 1, 0, 0);
-}
-
-void GameSystem::DrawCommand(ModelElement* element){
-	if (element->indexResource_ = nullptr) {
-		DrawCommand(
-			element->blendMode_,
-			&element->vertexBufferView_,
-			element->materialResource_,
-			element->wvpResource_,
-			element->modelData_.textureSrvHandlesGPU,
-			element->modelData_.vertices.size()
-		);
+	if (indexBufferView == nullptr) {
+		commandList->DrawInstanced(indexInstancedNum, 1, 0, 0);
 	} else {
-		DrawCommand(
-			element->blendMode_,
-			&element->vertexBufferView_,
-			&element->indexBufferView_,
-			element->materialResource_,
-			element->wvpResource_,
-			element->modelData_.textureSrvHandlesGPU,
-			element->modelData_.vertices.size()
-		);
+		commandList->DrawIndexedInstanced(indexInstancedNum, 1, 0, 0, 0);
 	}
-
 }
-*/
 
 bool GameSystem::ProcessMessage() {
 	if (Environment::GetInstance()->GetIsGameFinished()) {
@@ -1372,6 +1339,14 @@ Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GameSystem::CreateDescriptorHeap(Mi
 	return descriptorHeap;
 }
 
+void GameSystem::SrvDescriptorHeapNumIncrement(){
+	if (srvDescriptorHeapNum_ >= kSrvDescriptorHeapNumMax) {
+		assert(false,"現在使えるsrvDescriptorHeapのサイズ(128)を使い切りました");
+		return;
+	}
+	srvDescriptorHeapNum_++;
+}
+
 DirectX::ScratchImage GameSystem::LoadTexture(const std::string& filePath) {
 	// テクスチャファイルを読んでプログラムを扱えるようにする.
 	DirectX::ScratchImage image{};
@@ -1481,8 +1456,20 @@ D3D12_CPU_DESCRIPTOR_HANDLE GameSystem::GetCPUDescriptorHandle(Microsoft::WRL::C
 	return handleCPU;
 }
 
+//D3D12_CPU_DESCRIPTOR_HANDLE GameSystem::GetCPUDescriptorHandle(){
+//	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+//	handleCPU.ptr += (descriptorSizeSRV * srvDescriptorHeapNum_);
+//	return handleCPU;
+//}
+
 D3D12_GPU_DESCRIPTOR_HANDLE GameSystem::GetGPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index) {
 	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
 	handleGPU.ptr += (descriptorSize * index);
 	return handleGPU;
 }
+
+//D3D12_GPU_DESCRIPTOR_HANDLE GameSystem::GetGPUDescriptorHandle(){
+//	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+//	handleGPU.ptr += (descriptorSizeSRV * srvDescriptorHeapNum_);
+//	return handleGPU;
+//}
