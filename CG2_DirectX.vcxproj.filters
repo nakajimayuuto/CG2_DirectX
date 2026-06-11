@@ -157,6 +157,9 @@
     <Filter Include="ソース ファイル\Ground">
       <UniqueIdentifier>{b52ee5ee-5eac-4b95-959b-5d6437fc92b1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\FollowedCamera">
+      <UniqueIdentifier>{09a49022-7b0f-4017-a74e-81b7fe060f7c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -308,6 +311,9 @@
     </ClCompile>
     <ClCompile Include="Ground.cpp">
       <Filter>ソース ファイル\Ground</Filter>
+    </ClCompile>
+    <ClCompile Include="FollowCamera.cpp">
+      <Filter>ソース ファイル\FollowedCamera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -472,6 +478,9 @@
     </ClInclude>
     <ClInclude Include="Ground.h">
       <Filter>ソース ファイル\Ground</Filter>
+    </ClInclude>
+    <ClInclude Include="FollowCamera.h">
+      <Filter>ソース ファイル\FollowedCamera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

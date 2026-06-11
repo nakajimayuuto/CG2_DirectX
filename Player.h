@@ -11,6 +11,8 @@ public:
 
 	void Draw();
 private:
+	static inline float kSpeed = 0.3f;
+
 	Transform transform_;
 	
 	Model model_;
