@@ -1,4 +1,11 @@
 #include "DeltaTime.h"
+#include "ImGui.h"
+#include <format>
+
+DeltaTime* DeltaTime::GetInstance() {
+	static DeltaTime instance;
+	return &instance;
+}
 
 void DeltaTime::Initialize() {
 	frameTime = clock();
@@ -6,8 +13,21 @@ void DeltaTime::Initialize() {
 }
 
 void DeltaTime::Update() {
+
 	preFrameTime = frameTime;
 	frameTime = clock();
 
 	deltaTime = static_cast<float>(frameTime - preFrameTime) * 0.001f;
+	DebugUpdate();
+}
+
+void DeltaTime::DebugUpdate(){
+#ifdef _DEBUG
+	ImGui::Begin("DeltaTime");
+	ImGui::Text(std::format("FPS : {} / 60",60.0f / (deltaTime * 60.0f)).c_str());
+
+
+	ImGui::End();
+#endif // _DEBUG
+
 }

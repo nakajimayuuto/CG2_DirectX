@@ -1,7 +1,10 @@
+#define NOMINMAX
 #include "Camera.h"
 #include "../../Managers/InputManager.h"
 #include "../Math/Math.h"
 #include "../SystemFile/GlobalVariables.h"
+#include "../../Environment.h"
+#include "../SystemFile/GameSystem.h"
 
 Camera* Camera::GetInstance() {
 	static Camera instance;
@@ -29,7 +32,9 @@ void Camera::Initialize(float windowWidth, float windowHeight) {
 	debugScale_ = { 1.0f,1.0f,1.0f };
 	debugTranslate_ = { 0.0f,0.0f,-10.0f };
 
-	debugMatRot_ = Matrix4x4::MakeAffineMatrix(debugScale_,rotate_,debugTranslate_);
+	aspectScale_ = { 1.0f,1.0f,1.0f };
+
+	debugMatRot_ = Matrix4x4::MakeAffineMatrix(debugScale_, rotate_, debugTranslate_);
 }
 
 void Camera::Initialize() {
@@ -50,7 +55,16 @@ void Camera::Initialize() {
 	debugScale_ = { 1.0f,1.0f,1.0f };
 	debugTranslate_ = { 0.0f,0.0f,-10.0f };
 
-	debugMatRot_ = Matrix4x4::MakeAffineMatrix(debugScale_,rotate_,debugTranslate_);
+	debugMatRot_ = Matrix4x4::MakeAffineMatrix(debugScale_, rotate_, debugTranslate_);
+}
+
+void Camera::CreateResource() {
+	cameraResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(CameraForGPU));
+	// データを書き込む.
+	// 書き込むためのアドレスを取得.
+	cameraResource_->Map(0, nullptr, reinterpret_cast<void**>(&cameraData_));
+	// 単位行列を書き込んでおく.
+	cameraData_->worldPosition = { 0.0f,0.0f,0.0f };
 }
 
 void Camera::Update() {
@@ -61,10 +75,12 @@ void Camera::Update() {
 		return;
 	}
 
+	cameraData_->worldPosition = translate_;
+
 	matrix_ = Matrix4x4::MakeAffineMatrix(scale_, rotate_, translate_);
 }
 
-void Camera::DebugUpdate(){
+void Camera::DebugUpdate() {
 	Vector3 debugRotate = { 0.0f,0.0f,0.0f };
 	bool useMoving = false;
 
@@ -73,16 +89,16 @@ void Camera::DebugUpdate(){
 	}
 
 	if (useMoving) {
-		if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
+		if (InputManager::GetInstance()->PressKey(DIK_D)) {
 			debugTranslate_.x += 0.05f;
 		}
-		if (InputManager::GetInstance()->PressKey(DIK_LEFT)) {
+		if (InputManager::GetInstance()->PressKey(DIK_A)) {
 			debugTranslate_.x -= 0.05f;
 		}
-		if (InputManager::GetInstance()->PressKey(DIK_UP)) {
+		if (InputManager::GetInstance()->PressKey(DIK_W)) {
 			debugTranslate_.z += 0.05f;
 		}
-		if (InputManager::GetInstance()->PressKey(DIK_DOWN)) {
+		if (InputManager::GetInstance()->PressKey(DIK_S)) {
 			debugTranslate_.z -= 0.05f;
 		}
 		if (InputManager::GetInstance()->PressKey(DIK_SPACE)) {
@@ -91,21 +107,21 @@ void Camera::DebugUpdate(){
 		if (InputManager::GetInstance()->PressKey(DIK_LCONTROL)) {
 			debugTranslate_.y -= 0.05f;
 		}
-	}else {
-		if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
+	} else {
+		if (InputManager::GetInstance()->PressKey(DIK_D)) {
 			debugRotate.x += Radian(1.0f);
 		}
-		if (InputManager::GetInstance()->PressKey(DIK_LEFT)) {
+		if (InputManager::GetInstance()->PressKey(DIK_A)) {
 			debugRotate.x -= Radian(1.0f);
 		}
-		if (InputManager::GetInstance()->PressKey(DIK_UP)) {
+		if (InputManager::GetInstance()->PressKey(DIK_W)) {
 			debugRotate.y -= Radian(1.0f);
 		}
-		if (InputManager::GetInstance()->PressKey(DIK_DOWN)) {
+		if (InputManager::GetInstance()->PressKey(DIK_S)) {
 			debugRotate.y += Radian(1.0f);
 		}
 	}
-	
+
 
 	Matrix4x4 matRotDelta = Matrix4x4::Identity();
 	matRotDelta *= Matrix4x4::MakeRotateYMatrix(debugRotate.x);
@@ -113,9 +129,9 @@ void Camera::DebugUpdate(){
 
 	debugMatRot_ = matRotDelta * debugMatRot_;
 
-	matrix_ = Matrix4x4::MakeScaleMatrix(debugScale_);
+	//matrix_ = Matrix4x4::MakeScaleMatrix(debugScale_);
+	matrix_ = debugMatRot_;
 	matrix_ *= Matrix4x4::MakeTranslateMatrix(debugTranslate_);
-	matrix_ *= debugMatRot_;
 }
 
 Vector3 Camera::GetCameraVector3(Vector3 vector3, Matrix4x4 matrix) {
@@ -130,21 +146,29 @@ Vector3 Camera::GetCameraVector3(Vector3 vector3, Matrix4x4 matrix) {
 	return result;
 }
 
-Matrix4x4 Camera::GetWorldViewProjectionMatrix(Matrix4x4 matrix){
+Matrix4x4 Camera::GetWorldViewProjectionMatrix(Matrix4x4 matrix) {
 	Matrix4x4 viewMatrix = matrix_.Inverse();
 	Matrix4x4 projectionMatrix = Matrix4x4::MakePerspectiveFovMatrix(fovY_, windowWidth_ / windowHeight_, nearClip_, farClip_);
 	Matrix4x4 worldViewProjectionMatrix = matrix * viewMatrix * projectionMatrix;
 	return worldViewProjectionMatrix;
 }
 
-Matrix4x4 Camera::GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix){
-	Matrix4x4 viewMatrix = matrix_.Identity();
-	Matrix4x4 projectionMatrix = Matrix4x4::MakeOrthographicMatrix({ {0.0f,0.0f},{0.0f,0.0f},{0.0f,0.0f},{windowWidth_,windowHeight_} }, 0.0f, 100.0f);
-	Matrix4x4 worldViewProjectionMatrix = matrix * viewMatrix * projectionMatrix;
+Matrix4x4 Camera::GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix) {
+	Matrix4x4 viewMatrix;
+	Matrix4x4 projectionMatrix;
+	Matrix4x4 worldViewProjectionMatrix;
+	viewMatrix = matrix_.Identity();
+	projectionMatrix = Matrix4x4::MakeOrthographicMatrix({ viewportLeftTop_,{0.0f,0.0f},{0.0f,0.0f},{windowWidth_,windowHeight_} }, 0.0f, 100.0f);
+	worldViewProjectionMatrix = matrix * viewMatrix * projectionMatrix;
+
 	return worldViewProjectionMatrix;
 }
 
-void Camera::ChangeCameraMode(){
+Matrix4x4 Camera::GetVPVMatrix(Matrix4x4 matrix) {
+	return GetWorldViewProjectionMatrix(matrix) * Matrix4x4::MakeViewportMatrix(viewportLeftTop_, windowWidth_, windowHeight_, minDepth_, maxDepth_);
+}
+
+void Camera::ChangeCameraMode() {
 	if (useDebugCamera_) {
 		useDebugCamera_ = false;
 	} else {

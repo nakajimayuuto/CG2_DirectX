@@ -13,8 +13,26 @@ void GameScene::Initialize() {
 }
 
 void GameScene::Update() {
+	if (InputManager::GetInstance()->TriggerKey(DIK_R)) {
+		//SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, WS_OVERLAPPEDWINDOW);
+		//
+		//SetWindowPos(
+		//	GameSystem::GetInstance()->GetHWND(),
+		//	HWND_TOP,
+		//	windowRect.left,
+		//	windowRect.top,
+		//	windowRect.right - windowRect.left,
+		//	windowRect.bottom - windowRect.top,
+		//	SWP_FRAMECHANGED | SWP_SHOWWINDOW
+		//);
+		SceneManager::GetInstance()->ReloadScene();
 
 	player_->Update();
+
+	if (isParticleUpdate_) {
+
+		ParticleManager::GetInstance()->Update();
+	}
 
 	Camera::GetInstance()->Update();
 }

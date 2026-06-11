@@ -16,12 +16,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Math\Beats.cpp" />
+    <ClCompile Include="Engine\Math\Collider.cpp" />
     <ClCompile Include="Engine\Math\Collision.cpp" />
     <ClCompile Include="Engine\Math\Easing.cpp" />
+    <ClCompile Include="Engine\Math\Field.cpp" />
     <ClCompile Include="Engine\Math\Math.cpp" />
     <ClCompile Include="Engine\Math\Matrix4x4.cpp" />
     <ClCompile Include="Engine\Math\Random.cpp" />
     <ClCompile Include="Engine\Math\Shape.cpp" />
+    <ClCompile Include="Engine\Math\TimedCall.cpp" />
     <ClCompile Include="Engine\Math\Transform.cpp" />
     <ClCompile Include="Engine\Math\Vector2.cpp" />
     <ClCompile Include="Engine\Math\Vector3.cpp" />
@@ -29,7 +32,10 @@
     <ClCompile Include="Engine\Math\Vertex.cpp" />
     <ClCompile Include="Engine\Renderer\Camera.cpp" />
     <ClCompile Include="Engine\Renderer\DirectionalLight.cpp" />
+    <ClCompile Include="Engine\Renderer\Particles.cpp" />
+    <ClCompile Include="Engine\Renderer\PointLight.cpp" />
     <ClCompile Include="Engine\Renderer\Renderer.cpp" />
+    <ClCompile Include="Engine\Renderer\SpotLight.cpp" />
     <ClCompile Include="Engine\SystemFile\Convert.cpp" />
     <ClCompile Include="Engine\SystemFile\Debug.cpp" />
     <ClCompile Include="Engine\SystemFile\DeltaTime.cpp" />
@@ -72,23 +78,31 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Managers\CollisionManager.cpp" />
     <ClCompile Include="Managers\InputManager.cpp" />
+    <ClCompile Include="Managers\LightManager.cpp" />
     <ClCompile Include="Managers\ModelManager.cpp" />
+    <ClCompile Include="Managers\ParticleManager.cpp" />
     <ClCompile Include="Managers\SceneManager.cpp" />
     <ClCompile Include="Managers\SoundManager.cpp" />
     <ClCompile Include="Managers\TextureManager.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Scene\GameScene.cpp" />
     <ClCompile Include="Scene\TitleScene.cpp" />
+    <ClCompile Include="Skydome.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Math\Beats.h" />
+    <ClInclude Include="Engine\Math\Collider.h" />
     <ClInclude Include="Engine\Math\Collision.h" />
+    <ClInclude Include="Engine\Math\CollisionConfig.h" />
     <ClInclude Include="Engine\Math\Easing.h" />
+    <ClInclude Include="Engine\Math\Field.h" />
     <ClInclude Include="Engine\Math\Math.h" />
     <ClInclude Include="Engine\Math\Matrix4x4.h" />
     <ClInclude Include="Engine\Math\Random.h" />
     <ClInclude Include="Engine\Math\Shape.h" />
+    <ClInclude Include="Engine\Math\TimedCall.h" />
     <ClInclude Include="Engine\Math\Transform.h" />
     <ClInclude Include="Engine\Math\Vector2.h" />
     <ClInclude Include="Engine\Math\Vector3.h" />
@@ -98,7 +112,10 @@
     <ClInclude Include="Engine\Renderer\DirectionalLight.h" />
     <ClInclude Include="Engine\Renderer\Material.h" />
     <ClInclude Include="Engine\Renderer\ModelData.h" />
+    <ClInclude Include="Engine\Renderer\Particles.h" />
+    <ClInclude Include="Engine\Renderer\PointLight.h" />
     <ClInclude Include="Engine\Renderer\Renderer.h" />
+    <ClInclude Include="Engine\Renderer\SpotLight.h" />
     <ClInclude Include="Engine\SystemFile\Convert.h" />
     <ClInclude Include="Engine\SystemFile\Debug.h" />
     <ClInclude Include="Engine\SystemFile\DeltaTime.h" />
@@ -114,8 +131,11 @@
     <ClInclude Include="externals\imgui\imstb_rectpack.h" />
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
+    <ClInclude Include="Managers\CollisionManager.h" />
     <ClInclude Include="Managers\InputManager.h" />
+    <ClInclude Include="Managers\LightManager.h" />
     <ClInclude Include="Managers\ModelManager.h" />
+    <ClInclude Include="Managers\ParticleManager.h" />
     <ClInclude Include="Managers\SceneManager.h" />
     <ClInclude Include="Managers\SoundManager.h" />
     <ClInclude Include="Managers\TextureManager.h" />
@@ -124,6 +144,7 @@
     <ClInclude Include="Scene\GameScene.h" />
     <ClInclude Include="Scene\IScene.h" />
     <ClInclude Include="Scene\TitleScene.h" />
+    <ClInclude Include="Skydome.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
@@ -131,14 +152,23 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Engine\Renderer\Object3d.hlsli" />
+    <None Include="hlsl\Object3d.hlsli" />
+    <None Include="hlsl\Particle.hlsli" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Engine\Renderer\Object3d.PS.hlsl">
+    <FxCompile Include="hlsl\Object3d.PS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="Engine\Renderer\Object3d.VS.hlsl">
+    <FxCompile Include="hlsl\Object3d.VS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="hlsl\Particle.PS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="hlsl\Particle.VS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

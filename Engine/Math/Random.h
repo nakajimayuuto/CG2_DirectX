@@ -12,6 +12,8 @@ public:
 	
 	Vector3 RandomVector3(Vector3 min, Vector3 max);
 
+	Vector3 RandomCircleVector3(Vector3 radius);
+
 	bool Probability(float percent);
 private:
 	std::mt19937_64 engine;

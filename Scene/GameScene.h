@@ -1,6 +1,8 @@
 #pragma once
 #include "../Satlib.h"
 #include "IScene.h"
+#include <list>
+#include "../Skydome.h"
 
 #include "../Player.h"
 
@@ -16,3 +18,7 @@ private:
 	Player* player_ = nullptr;
 };
 
+	//Renderer::Sprite frameSpriteLeft_;
+	//Renderer::Sprite frameSpriteRight_;
+	//Renderer::Sprite backGroundSprite_;
+};

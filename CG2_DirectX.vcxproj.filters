@@ -82,14 +82,8 @@
     <Filter Include="Engine\SystemFile\Convert">
       <UniqueIdentifier>{5720a672-7eae-4ac4-9b2f-88aac487d845}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\Renderer\hlsl">
-      <UniqueIdentifier>{64ec877d-11c7-4f7b-86d2-fbd88ee10b95}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Engine\Renderer\Camera">
       <UniqueIdentifier>{9580d45d-9102-407b-82ae-83e1d8780761}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Engine\Renderer\DirectionalLight">
-      <UniqueIdentifier>{6edd4377-3868-4a94-a6a6-8568a1bb10e9}</UniqueIdentifier>
     </Filter>
     <Filter Include="Engine\Math\Random">
       <UniqueIdentifier>{927df35e-b544-4329-91ac-b7b3e12297d0}</UniqueIdentifier>
@@ -118,8 +112,44 @@
     <Filter Include="Scene\TitleScene">
       <UniqueIdentifier>{b5ab3c07-8cbf-405a-b63f-1a53b445a335}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Player">
-      <UniqueIdentifier>{af194e25-50ef-4ec6-a7b0-e21ba46f58d6}</UniqueIdentifier>
+    <Filter Include="Engine\Math\TimedCall">
+      <UniqueIdentifier>{75576351-e183-47e7-863c-652a1c589cbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Math\Collider">
+      <UniqueIdentifier>{be77444e-ee0c-475a-bc70-caa48e1842f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\CollisionManager">
+      <UniqueIdentifier>{75e4a3fa-ae68-4f4e-b8c3-7ab462d16ebc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Skydome">
+      <UniqueIdentifier>{3c17d3d0-3b88-4e69-adb3-22aedd773e33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="hlsl">
+      <UniqueIdentifier>{6c70db76-b338-4b22-88ad-361c35de6470}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Renderer\Particle">
+      <UniqueIdentifier>{cb2c7216-95eb-42cd-8898-05b54298f1e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Math\Field">
+      <UniqueIdentifier>{e0fba0d1-5cc0-434f-85c4-d737df69996d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\ParticleManager">
+      <UniqueIdentifier>{a06c30e7-b7f3-4e8e-ac8c-7ec275ad17f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Renderer\Light">
+      <UniqueIdentifier>{a4f75728-b1bb-468f-8448-d17a630b8adb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Renderer\Light\DirectionalLight">
+      <UniqueIdentifier>{6edd4377-3868-4a94-a6a6-8568a1bb10e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Renderer\Light\PointLight">
+      <UniqueIdentifier>{3e441222-b7cb-48f9-8104-cdb93ac20833}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Renderer\Light\SpotLight">
+      <UniqueIdentifier>{d218a73c-58d0-4fce-915e-7c0803ec2717}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\LightManager">
+      <UniqueIdentifier>{fec221c6-34a5-4b71-bc71-5781863f3d7f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -178,7 +208,7 @@
       <Filter>Engine\Renderer\Camera</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Renderer\DirectionalLight.cpp">
-      <Filter>Engine\Renderer\DirectionalLight</Filter>
+      <Filter>Engine\Renderer\Light\DirectionalLight</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Renderer\Renderer.cpp">
       <Filter>Engine\Renderer</Filter>
@@ -237,8 +267,35 @@
     <ClCompile Include="Scene\TitleScene.cpp">
       <Filter>Scene\TitleScene</Filter>
     </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>ソース ファイル\Player</Filter>
+    <ClCompile Include="Engine\Math\TimedCall.cpp">
+      <Filter>Engine\Math\TimedCall</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Math\Collider.cpp">
+      <Filter>Engine\Math\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\CollisionManager.cpp">
+      <Filter>Managers\CollisionManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Skydome.cpp">
+      <Filter>ソース ファイル\Skydome</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Renderer\Particles.cpp">
+      <Filter>Engine\Renderer\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Math\Field.cpp">
+      <Filter>Engine\Math\Field</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\ParticleManager.cpp">
+      <Filter>Managers\ParticleManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Renderer\PointLight.cpp">
+      <Filter>Engine\Renderer\Light\PointLight</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Renderer\SpotLight.cpp">
+      <Filter>Engine\Renderer\Light\SpotLight</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\LightManager.cpp">
+      <Filter>Managers\LightManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -291,7 +348,7 @@
       <Filter>Engine\Renderer\Camera</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Renderer\DirectionalLight.h">
-      <Filter>Engine\Renderer\DirectionalLight</Filter>
+      <Filter>Engine\Renderer\Light\DirectionalLight</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Renderer\Material.h">
       <Filter>Engine\Renderer\Material</Filter>
@@ -365,21 +422,60 @@
     <ClInclude Include="Scene\TitleScene.h">
       <Filter>Scene\TitleScene</Filter>
     </ClInclude>
-    <ClInclude Include="Player.h">
-      <Filter>ソース ファイル\Player</Filter>
+    <ClInclude Include="Engine\Math\TimedCall.h">
+      <Filter>Engine\Math\TimedCall</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Math\Collider.h">
+      <Filter>Engine\Math\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Math\CollisionConfig.h">
+      <Filter>Engine\Math\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\CollisionManager.h">
+      <Filter>Managers\CollisionManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Skydome.h">
+      <Filter>ソース ファイル\Skydome</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Renderer\Particles.h">
+      <Filter>Engine\Renderer\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Math\Field.h">
+      <Filter>Engine\Math\Field</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\ParticleManager.h">
+      <Filter>Managers\ParticleManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Renderer\PointLight.h">
+      <Filter>Engine\Renderer\Light\PointLight</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Renderer\SpotLight.h">
+      <Filter>Engine\Renderer\Light\SpotLight</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\LightManager.h">
+      <Filter>Managers\LightManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Engine\Renderer\Object3d.hlsli">
-      <Filter>Engine\Renderer\hlsl</Filter>
+    <None Include="hlsl\Object3d.hlsli">
+      <Filter>hlsl</Filter>
+    </None>
+    <None Include="hlsl\Particle.hlsli">
+      <Filter>hlsl</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Engine\Renderer\Object3d.PS.hlsl">
-      <Filter>Engine\Renderer\hlsl</Filter>
+    <FxCompile Include="hlsl\Object3d.PS.hlsl">
+      <Filter>hlsl</Filter>
     </FxCompile>
-    <FxCompile Include="Engine\Renderer\Object3d.VS.hlsl">
-      <Filter>Engine\Renderer\hlsl</Filter>
+    <FxCompile Include="hlsl\Object3d.VS.hlsl">
+      <Filter>hlsl</Filter>
+    </FxCompile>
+    <FxCompile Include="hlsl\Particle.VS.hlsl">
+      <Filter>hlsl</Filter>
+    </FxCompile>
+    <FxCompile Include="hlsl\Particle.PS.hlsl">
+      <Filter>hlsl</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

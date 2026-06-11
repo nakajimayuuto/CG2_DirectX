@@ -8,13 +8,20 @@
 #include "../../Managers/SoundManager.h"
 #include "../../Managers/InputManager.h"
 #include "../../Managers/TextureManager.h"
+#include "../../Managers/LightManager.h"
 #include "../../Managers/ModelManager.h"
+#include "../../Managers/ParticleManager.h"
 #include "../../Environment.h"
 #include "../Math/Random.h"
 #include "GlobalVariables.h"
 #include <strsafe.h>
 #include <filesystem>
 #include <chrono>
+#include "../Renderer/Renderer.h"
+#include "../Renderer/Camera.h"
+#include "../Renderer/PointLight.h"
+#include "../Renderer/SpotLight.h"
+#include "DeltaTime.h"
 
 GameSystem* GameSystem::GetInstance() {
 	static GameSystem gameSystem;
@@ -259,8 +266,9 @@ void GameSystem::Initialize() {
 	rtvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
 	const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
+	srvDescriptorHeapNum_ = 1;
 	// SRV用のヒープでディスクリプタの数は128。SRVはShader内で触るものなので、ShaderVisibleはtrue.
-	srvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
+	srvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, kSrvDescriptorHeapNumMax, true);
 	descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	// SwapChainからResourceを引っ張ってくる.
@@ -305,7 +313,13 @@ void GameSystem::Initialize() {
 	DirectionalLightの初期化.
 	=============================================================*/
 
-	DirectionalLight::GetInstance()->Initialize();
+	LightManager::GetInstance()->Initialize();
+
+	//DirectionalLight::GetInstance()->Initialize();
+	//
+	//PointLight::GetInstance()->Initialize();
+	//
+	//SpotLight::GetInstance()->Initialize();
 
 	/*=============================================================
 	ImGuiの初期化.
@@ -325,9 +339,29 @@ void GameSystem::Initialize() {
 	io.Fonts->Build();
 #endif // USE_IMGUI
 
-	for (uint32_t i = 0; i < static_cast<uint32_t>(BlendMode::kCount); i++) {
-		CreatePipeline(static_cast<BlendMode>(i));
+	// 【ビューポート】
+	// クライアント領域のサイズと一緒にして画面全体に表示.
+	viewport.Width = static_cast<FLOAT>(Environment::GetInstance()->GetWindowSize().width);
+	viewport.Height = static_cast<FLOAT>(Environment::GetInstance()->GetWindowSize().height);
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+
+	// 【シザー矩形】
+	// 基本的にビューポートと同じ矩形が構成されるようにする.
+	scissorRect.left = 0;
+	scissorRect.right = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().width);
+	scissorRect.top = 0;
+	scissorRect.bottom = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().height);
+
+	for (uint32_t j = 0; j < static_cast<uint32_t>(ShaderType::kCount); j++) {
+		for (uint32_t i = 0; i < static_cast<uint32_t>(BlendMode::kCount); i++) {
+			CreatePipeline(static_cast<BlendMode>(i), static_cast<ShaderType>(j));
+		}
 	}
+
+	Camera::GetInstance()->CreateResource();
 
 	SoundManager::GetInstance()->Initialize();
 
@@ -335,14 +369,28 @@ void GameSystem::Initialize() {
 
 	ModelManager::GetInstance()->RegisterObj("block_template", "Resource/block", "block.obj");
 
+	ModelManager::GetInstance()->RegisterObj("effect_plane", "Resource/EffectPlane", "effect_plane.obj");
+
 	TextureManager::GetInstance()->RegisterTexture("white_template", "Resource/white_template.png");
 
+	//Renderer::Line::GetInstance()->Initialize();
+
+	Renderer::GetInstance()->Initialize();
+
 	GlobalVariables::GetInstance()->LoadFiles();
+
+	DeltaTime::GetInstance()->Initialize();
+
+	Environment::GetInstance()->Initialize();
+
+	ParticleManager::GetInstance()->Initialize();
 
 	RegisterGlobalVariables();
 }
 
-void GameSystem::CreatePipeline(BlendMode blendMode) {
+void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
+	uint32_t pipeLineIndex = static_cast<uint32_t>(blendMode) + (static_cast<uint32_t>(shaderType) * static_cast<uint32_t>(BlendMode::kCount));
+
 	/*=============================================================
 	DXCの初期化.
 	=============================================================*/
@@ -362,22 +410,6 @@ void GameSystem::CreatePipeline(BlendMode blendMode) {
 	//
 	// もともとPSOがあった場所(03_01にて変更).
 	//
-
-	// 【ビューポート】
-	// クライアント領域のサイズと一緒にして画面全体に表示.
-	viewport.Width = static_cast<FLOAT>(Environment::GetInstance()->GetWindowSize().width);
-	viewport.Height = static_cast<FLOAT>(Environment::GetInstance()->GetWindowSize().height);
-	viewport.TopLeftX = 0;
-	viewport.TopLeftY = 0;
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-
-	// 【シザー矩形】
-	// 基本的にビューポートと同じ矩形が構成されるようにする.
-	scissorRect.left = 0;
-	scissorRect.right = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().width);
-	scissorRect.top = 0;
-	scissorRect.bottom = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().height);
 
 	/*=============================================================
 	DepthStencilTextureをつくる
@@ -399,7 +431,11 @@ void GameSystem::CreatePipeline(BlendMode blendMode) {
 	// Depthの機能を有効化する.
 	depthStencilDesc.DepthEnable = true;
 	// 書き込みします.
-	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	if (shaderType == ShaderType::kParticle) {
+		depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+	} else {
+		depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	}
 	// 比較関数はLessEqual。つまり、近ければ描画される.
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
@@ -410,30 +446,97 @@ void GameSystem::CreatePipeline(BlendMode blendMode) {
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
+	D3D12_DESCRIPTOR_RANGE descriptorRangeForInstancing[1] = {};
+	descriptorRangeForInstancing[0].BaseShaderRegister = 0; // 0から始まる.
+	descriptorRangeForInstancing[0].NumDescriptors = 1; // 数は1つ.
+	descriptorRangeForInstancing[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う.
+	descriptorRangeForInstancing[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // Offsetの自動計算.
+
 	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 	descriptorRange[0].BaseShaderRegister = 0; // 0から始まる.
 	descriptorRange[0].NumDescriptors = 1; // 数は1つ.
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う.
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // Offsetの自動計算.
 
-	// RootParameter作成。複数設定出来るので配列。
-	D3D12_ROOT_PARAMETER rootParameters[4] = {};
-	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
-	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
-	rootParameters[0].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド.
-	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
-	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VertexShaderで使う.
-	rootParameters[1].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド.
-	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; //DescriptorTableを使う.
-	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
-	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange; // Tableの中身の配列を指定.
-	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange); // Tableで利用する数.
-	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
-	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
-	rootParameters[3].Descriptor.ShaderRegister = 1; // レジスタ番号1を使う.
+	D3D12_DESCRIPTOR_RANGE pointLightDescriptorRange[1] = {};
+	pointLightDescriptorRange[0].BaseShaderRegister = 1; // 1から始まる.
+	pointLightDescriptorRange[0].NumDescriptors = 1; // 数は1つ.
+	pointLightDescriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う.
+	pointLightDescriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // Offsetの自動計算.
 
-	descriptionRootSignature.pParameters = rootParameters; // ルートパラメータ配列へのポインタ.
-	descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ.
+	D3D12_DESCRIPTOR_RANGE spotLightDescriptorRange[1] = {};
+	spotLightDescriptorRange[0].BaseShaderRegister = 2; // 2から始まる.
+	spotLightDescriptorRange[0].NumDescriptors = 1; // 数は1つ.
+	spotLightDescriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う.
+	spotLightDescriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // Offsetの自動計算.
+
+	// RootParameter作成。複数設定出来るので配列。
+	D3D12_ROOT_PARAMETER rootParameters[8] = {};
+	D3D12_ROOT_PARAMETER rootParametersParticle[3] = {};
+
+	switch (shaderType) {
+	case ShaderType::kParticle:
+		rootParametersParticle[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
+		rootParametersParticle[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		rootParametersParticle[0].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド.
+
+		rootParametersParticle[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // CBVを使う.
+		rootParametersParticle[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VertexShaderで使う.
+		rootParametersParticle[1].DescriptorTable.pDescriptorRanges = descriptorRangeForInstancing; // レジスタ番号0とバインド.
+		rootParametersParticle[1].DescriptorTable.NumDescriptorRanges = _countof(descriptorRangeForInstancing);
+
+		rootParametersParticle[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; //DescriptorTableを使う.
+		rootParametersParticle[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		rootParametersParticle[2].DescriptorTable.pDescriptorRanges = descriptorRange; // Tableの中身の配列を指定.
+		rootParametersParticle[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange); // Tableで利用する数.
+
+		descriptionRootSignature.pParameters = rootParametersParticle; // ルートパラメータ配列へのポインタ.
+		descriptionRootSignature.NumParameters = _countof(rootParametersParticle); // 配列の長さ.
+		break;
+	default:
+		rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
+		rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		rootParameters[0].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド.
+
+		rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
+		rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VertexShaderで使う.
+		rootParameters[1].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド.
+
+		rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; //DescriptorTableを使う.
+		rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange; // Tableの中身の配列を指定.
+		rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange); // Tableで利用する数.
+
+		// DirectionalLightData.
+		rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
+		rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		rootParameters[3].Descriptor.ShaderRegister = 1; // レジスタ番号1を使う.
+
+		// CameraData.
+		rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
+		rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		rootParameters[4].Descriptor.ShaderRegister = 2; // レジスタ番号2を使う.
+
+		// PointLightData.
+		rootParameters[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; //DescriptorTableを使う.
+		rootParameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		rootParameters[5].DescriptorTable.pDescriptorRanges = pointLightDescriptorRange; // Tableの中身の配列を指定.
+		rootParameters[5].DescriptorTable.NumDescriptorRanges = _countof(pointLightDescriptorRange); // Tableで利用する数.
+
+		// SpotLightData.
+		rootParameters[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; //DescriptorTableを使う.
+		rootParameters[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		rootParameters[6].DescriptorTable.pDescriptorRanges = spotLightDescriptorRange; // Tableの中身の配列を指定.
+		rootParameters[6].DescriptorTable.NumDescriptorRanges = _countof(spotLightDescriptorRange); // Tableで利用する数.
+		// LightNumData.
+		rootParameters[7].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
+		rootParameters[7].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		rootParameters[7].Descriptor.ShaderRegister = 3; // レジスタ番号2を使う.
+
+		descriptionRootSignature.pParameters = rootParameters; // ルートパラメータ配列へのポインタ.
+		descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ.
+		break;
+	}
 
 	// Samplerの設定.
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
@@ -457,7 +560,7 @@ void GameSystem::CreatePipeline(BlendMode blendMode) {
 		assert(false);
 	}
 	// バイナリを元に生成.
-	hr = device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&pipeline_[static_cast<uint32_t>(blendMode)].rootSignature));
+	hr = device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&pipeline_[pipeLineIndex].rootSignature));
 	assert(SUCCEEDED(hr));
 
 	// 【InputLayout】
@@ -493,6 +596,7 @@ void GameSystem::CreatePipeline(BlendMode blendMode) {
 	switch (blendMode) {
 	case BlendMode::kNormal:
 	case BlendMode::kNormalCullNone:
+	case BlendMode::kLine:
 		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
 		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
 		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
@@ -539,14 +643,23 @@ void GameSystem::CreatePipeline(BlendMode blendMode) {
 
 	// Shaderをコンパイルする.
 	// 【VertexShader】
-	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob = CompileShader(L"./Engine/Renderer/Object3d.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
-	assert(vertexShaderBlob != nullptr);
+	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob;
 	// 【PixelShader】
-	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = CompileShader(L"./Engine/Renderer/Object3d.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob;
+
+	if (shaderType == ShaderType::kParticle) {
+		vertexShaderBlob = CompileShader(L"./hlsl/Particle.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
+		pixelShaderBlob = CompileShader(L"./hlsl/Particle.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+	} else {
+		vertexShaderBlob = CompileShader(L"./hlsl/Object3d.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
+		pixelShaderBlob = CompileShader(L"./hlsl/Object3d.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+	}
+
+	assert(vertexShaderBlob != nullptr);
 	assert(pixelShaderBlob != nullptr);
 
 	// 【PSO】
-	graphicsPipelineStateDesc.pRootSignature = pipeline_[static_cast<uint32_t>(blendMode)].rootSignature.Get(); // RootSignature.
+	graphicsPipelineStateDesc.pRootSignature = pipeline_[pipeLineIndex].rootSignature.Get(); // RootSignature.
 	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc; // InputLayout.
 	graphicsPipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(),vertexShaderBlob->GetBufferSize() }; // VertexShader.
 	graphicsPipelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(),pixelShaderBlob->GetBufferSize() }; // PixelShader.
@@ -556,7 +669,11 @@ void GameSystem::CreatePipeline(BlendMode blendMode) {
 	graphicsPipelineStateDesc.NumRenderTargets = 1;
 	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	// 利用するとトポロジ(形状)のタイプ。三角形.
-	graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	if (blendMode == BlendMode::kLine) {
+		graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+	} else {
+		graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	}
 	// どのように画面に色を打ち込むかの設定 (気にしなくていい)
 	graphicsPipelineStateDesc.SampleDesc.Count = 1;
 	graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
@@ -565,11 +682,11 @@ void GameSystem::CreatePipeline(BlendMode blendMode) {
 	graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	// 実際に生成.
-	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&pipeline_[static_cast<uint32_t>(blendMode)].graphicsPipelineState));
+	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&pipeline_[pipeLineIndex].graphicsPipelineState));
 	assert(SUCCEEDED(hr));
 
-	commandList->SetGraphicsRootSignature(pipeline_[static_cast<uint32_t>(blendMode)].rootSignature.Get());
-	commandList->SetPipelineState(pipeline_[static_cast<uint32_t>(blendMode)].graphicsPipelineState.Get()); // PS0を設定.
+	commandList->SetGraphicsRootSignature(pipeline_[pipeLineIndex].rootSignature.Get());
+	commandList->SetPipelineState(pipeline_[pipeLineIndex].graphicsPipelineState.Get()); // PS0を設定.
 
 	dxcCompiler->Release();
 	dxcUtils->Release();
@@ -581,6 +698,54 @@ void GameSystem::SetPipeline(BlendMode blendMode) {
 	// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
 	commandList->SetGraphicsRootSignature(pipeline_[static_cast<uint32_t>(blendMode)].rootSignature.Get());
 	commandList->SetPipelineState(pipeline_[static_cast<uint32_t>(blendMode)].graphicsPipelineState.Get()); // PS0を設定.
+}
+
+void GameSystem::SetParticlePipeline(BlendMode blendMode) {
+	commandList->RSSetViewports(1, &viewport); // Viewportを設定.
+	commandList->RSSetScissorRects(1, &scissorRect); // Scissorを設定.
+	// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
+	commandList->SetGraphicsRootSignature(pipeline_[static_cast<uint32_t>(blendMode) + (static_cast<uint32_t>(ShaderType::kParticle) * static_cast<uint32_t>(BlendMode::kCount))].rootSignature.Get());
+	commandList->SetPipelineState(pipeline_[static_cast<uint32_t>(blendMode) + (static_cast<uint32_t>(ShaderType::kParticle) * static_cast<uint32_t>(BlendMode::kCount))].graphicsPipelineState.Get()); // PS0を設定.
+}
+
+void GameSystem::DrawCommand(
+	BlendMode blendMode,
+	D3D12_VERTEX_BUFFER_VIEW* vertexBufferView,
+	D3D12_INDEX_BUFFER_VIEW* indexBufferView,
+	D3D_PRIMITIVE_TOPOLOGY topology,
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource,
+	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource,
+	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU,
+	uint32_t indexInstancedNum
+) {
+	SetPipeline(blendMode);
+
+	commandList->IASetVertexBuffers(0, 1, vertexBufferView); // VBVを設定.
+	if (indexBufferView != nullptr) {
+		commandList->IASetIndexBuffer(indexBufferView); // IBVを設定.
+	}
+	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
+	commandList->IASetPrimitiveTopology(topology);
+	// マテリアル用のCBufferの場所.
+	commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+	// transformationMatrixCBufferの場所.
+	commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
+	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
+	commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+	commandList->SetGraphicsRootConstantBufferView(3, LightManager::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(4, Camera::GetInstance()->GetCameraForGPUResource()->GetGPUVirtualAddress());
+	//commandList->SetGraphicsRootConstantBufferView(5, PointLight::GetInstance()->GetPointLightResource()->GetGPUVirtualAddress());
+	//commandList->SetGraphicsRootConstantBufferView(6, SpotLight::GetInstance()->GetSpotLightResource()->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootDescriptorTable(5, LightManager::GetInstance()->GetPointLightSrvHandleGPU());
+	commandList->SetGraphicsRootDescriptorTable(6, LightManager::GetInstance()->GetSpotLightSrvHandleGPU());
+	commandList->SetGraphicsRootConstantBufferView(7, LightManager::GetInstance()->GetLightNumResource()->GetGPUVirtualAddress());
+
+	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
+	if (indexBufferView == nullptr) {
+		commandList->DrawInstanced(indexInstancedNum, 1, 0, 0);
+	} else {
+		commandList->DrawIndexedInstanced(indexInstancedNum, 1, 0, 0, 0);
+	}
 }
 
 bool GameSystem::ProcessMessage() {
@@ -602,6 +767,9 @@ bool GameSystem::BeginFrame() {
 
 	InputManager::GetInstance()->Update();
 
+	//Renderer::Line::GetInstance()->ClearDrawIndex();
+	Renderer::GetInstance()->ClearDrawIndex();
+
 #ifdef USE_IMGUI
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -614,10 +782,16 @@ bool GameSystem::BeginFrame() {
 
 	ApplyGlobalVariables();
 
+	DeltaTime::GetInstance()->Update();
+
 	return true;
 }
 
 void GameSystem::DrawSetup() {
+	WindowSizeUpdate();
+
+	LightManager::GetInstance()->Update();
+
 #ifdef USE_IMGUI
 	// ImGuiの内部コマンドを生成する.
 	ImGui::Render();
@@ -649,7 +823,8 @@ void GameSystem::DrawSetup() {
 	// 描画先のRTVとDSVを設定する.
 	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
 	// 指定した色で画面全体をクリアする.
-	float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };// 青っぽい色。RGBAの順.
+	//float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };// 青っぽい色。RGBAの順.
+	float clearColor[] = { 0.0f,0.0f,0.0f,1.0f };// 青っぽい色。RGBAの順.
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 
 
@@ -742,35 +917,282 @@ void GameSystem::Finalize() {
 	CoUninitialize();
 }
 
+void GameSystem::WindowSizeUpdate() {
+	if (
+		Environment::GetInstance()->GetAspectMode() == kAspectNone ||
+		Environment::GetInstance()->GetAspectMode() == kAspectWindowFixed ||
+		Environment::GetInstance()->GetAspectMode() == kAspectNoChange
+		) {
+		return;
+	}
+
+	RECT clientRect{};
+	GetClientRect(GameSystem::GetInstance()->GetHWND(), &clientRect);
+	float windowWidth = static_cast<float>(clientRect.right - clientRect.left);
+	float windowHeight = static_cast<float>(clientRect.bottom - clientRect.top);
+
+	float targetAspect = Environment::GetInstance()->GetAspect();
+
+	float windowAspect = windowWidth / windowHeight;
+
+	float viewportWidth;
+	float viewportHeight;
+	float viewportX = 0.0f;
+	float viewportY = 0.0f;
+
+	if (windowAspect > targetAspect) {
+		viewportHeight = windowHeight;
+		viewportWidth = viewportHeight * targetAspect * (Environment::GetInstance()->GetWindowSize().width / windowWidth);
+		if (windowWidth > Environment::GetInstance()->GetWindowSize().width) {
+			viewportWidth = Environment::GetInstance()->GetWindowSize().width * (targetAspect / windowAspect);
+			viewportX = (Environment::GetInstance()->GetWindowSize().width - viewportWidth) * 0.5f;
+		} else {
+			viewportX = (windowWidth - (viewportHeight * targetAspect)) * 0.5f * (Environment::GetInstance()->GetWindowSize().width / windowWidth);
+		}
+
+		viewportHeight = Environment::GetInstance()->GetWindowSize().height;
+	} else {
+		viewportWidth = windowWidth;
+		viewportHeight = viewportWidth / targetAspect * (Environment::GetInstance()->GetWindowSize().height / windowHeight);
+		if (windowHeight > Environment::GetInstance()->GetWindowSize().height) {
+			viewportHeight = Environment::GetInstance()->GetWindowSize().height / (targetAspect / windowAspect);
+			viewportY = (Environment::GetInstance()->GetWindowSize().height - viewportHeight) * 0.5f;
+		} else {
+			viewportY = (windowHeight - (viewportWidth / targetAspect)) * 0.5f * (Environment::GetInstance()->GetWindowSize().height / windowHeight);
+		}
+
+
+		viewportWidth = Environment::GetInstance()->GetWindowSize().width;
+	}
+
+	// こっちがカメラの位置みたいなやつ.
+	viewport = {};
+	viewport.TopLeftX = viewportX;
+	viewport.TopLeftY = viewportY;
+	viewport.Width = viewportWidth;
+	viewport.Height = viewportHeight;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+
+	// こっちがカメラ描画する範囲みたいなやつ.
+	scissorRect = {};
+	scissorRect.left = static_cast<LONG>(viewportX);
+	scissorRect.top = static_cast<LONG>(viewportY);
+	scissorRect.right = static_cast<LONG>(viewportX + viewportWidth);
+	scissorRect.bottom = static_cast<LONG>(viewportY + viewportHeight);
+}
+
+
 void GameSystem::RegisterGlobalVariables() {
 	Camera::GetInstance()->RegisterGlobalVariables();
-	DirectionalLight::GetInstance()->RegisterGlobalVariables();
+	//DirectionalLight::GetInstance()->RegisterGlobalVariables();
 };
 
 void GameSystem::ApplyGlobalVariables() {
 	Camera::GetInstance()->ApplyGlobalVariables();
-	DirectionalLight::GetInstance()->ApplyGlobalVariables();
+	//DirectionalLight::GetInstance()->ApplyGlobalVariables();
 };
 
 LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-#ifdef USE_IMGUI
+	float aspect = Environment::GetInstance()->GetAspect();
+
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
 		return true;
 	}
-#endif // USE_IMGUI
 
-	// メッセージに応じてゲーム固有の処理を行う.
+	RECT* rect;
+	int width;
+	int height;
+	int newHeight;
+	int newWidth;
+
+	DWORD style;
+	DWORD exStyle;
+	RECT borderRect;
+	int borderWidth;
+	int borderHeight;
+
 	switch (msg) {
-		//ウィンドウが破棄された.
+	case WM_SIZING:
+		if (
+			Environment::GetInstance()->GetAspectMode() == kAspectWindowFixed ||
+			Environment::GetInstance()->GetAspectMode() == kAspectWindowAndFrameFixed
+			) {
+
+			if (
+				Environment::GetInstance()->GetAspectMode() == kAspectWindowAndFrameFixed &&
+				Environment::GetInstance()->GetWindowMode() == kFullscreen
+				) {
+				break;
+			}
+
+			rect = reinterpret_cast<RECT*>(lparam);
+			width = rect->right - rect->left;
+			height = rect->bottom - rect->top;
+
+			style = static_cast<DWORD>(GetWindowLongPtr(hwnd, GWL_STYLE));
+			exStyle = static_cast<DWORD>(GetWindowLongPtr(hwnd, GWL_EXSTYLE));
+
+			borderRect = { 0,0,0,0 };
+
+			AdjustWindowRectEx(
+				&borderRect,
+				style,
+				FALSE,
+				exStyle);
+
+			borderWidth = borderRect.right - borderRect.left;
+
+			borderHeight = borderRect.bottom - borderRect.top;
+
+			Log(std::format("Rect l:{},r:{},t:{},b:{}\n", rect->left, rect->right, rect->top, rect->bottom));
+			Log(std::format("Rect w:{},h:{}\n", width, height));
+
+			width -= borderWidth;
+			height -= borderHeight;
+
+			switch (wparam) {
+			case WMSZ_LEFT:
+			case WMSZ_RIGHT:
+				// 左右をドラッグ → 高さを補正
+				newHeight = static_cast<int>(width / aspect);
+				rect->bottom = rect->top + newHeight + borderHeight;
+				break;
+			case WMSZ_TOP:
+			case WMSZ_BOTTOM:
+				// 上下をドラッグ → 幅を補正
+				newWidth = static_cast<int>(height * aspect);
+				rect->right = rect->left + newWidth + borderWidth;
+				break;
+			case WMSZ_TOPLEFT:
+			case WMSZ_TOPRIGHT:
+			case WMSZ_BOTTOMLEFT:
+			case WMSZ_BOTTOMRIGHT:
+				// 四隅ドラッグ
+				newHeight = static_cast<int>(width / aspect);
+				rect->bottom = rect->top + newHeight + borderHeight;
+				break;
+			}
+			width += borderWidth;
+			height += borderHeight;
+		}
+
+		return TRUE;
 	case WM_DESTROY:
-		// OSに対して、アプリの終了を伝える.
 		PostQuitMessage(0);
 		return 0;
 	}
 
-	// 標準のメッセージ処理を行う.
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
+
+/*
+LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
+		return true;
+	}
+
+	float aspect = Environment::GetInstance()->GetAspect();
+	switch (msg)
+	{
+	case WM_SIZING:
+	{
+		RECT* rect = reinterpret_cast<RECT*>(lparam);
+
+		DWORD style =
+			static_cast<DWORD>(
+				GetWindowLongPtr(hwnd, GWL_STYLE));
+
+		DWORD exStyle =
+			static_cast<DWORD>(
+				GetWindowLongPtr(hwnd, GWL_EXSTYLE));
+
+		RECT borderRect = { 0,0,0,0 };
+
+		AdjustWindowRectEx(
+			&borderRect,
+			style,
+			FALSE,
+			exStyle);
+
+		int borderWidth =
+			borderRect.right - borderRect.left;
+
+		int borderHeight =
+			borderRect.bottom - borderRect.top;
+
+		int width = rect->right - rect->left;
+		int height = rect->bottom - rect->top;
+		//--------------------------------------
+		// クライアントサイズへ変換
+		//--------------------------------------
+		int clientWidth = width - borderWidth;
+
+		int clientHeight = height - borderHeight;
+
+
+		rect->bottom = clientHeight;
+		rect->right = clientWidth;
+		int newWidth;
+		int newHeight;
+
+		int currentPosX = rect->left;
+		int currentPosY = rect->top;
+
+		Log(std::format("Rect l:{},r:{},t:{},b:{}\n", rect->left, rect->right, rect->top, rect->bottom));
+		Log(std::format("Rect w:{},h:{}\n", width,height));
+
+		switch (wparam) {
+		case WMSZ_LEFT:
+		case WMSZ_RIGHT:
+			// 左右をドラッグ → 高さを補正
+			newHeight = static_cast<int>(clientWidth / aspect);
+			rect->bottom = newHeight;
+			currentPosX = rect->left;
+			break;
+		case WMSZ_TOP:
+		case WMSZ_BOTTOM:
+			// 上下をドラッグ → 幅を補正
+			newWidth = static_cast<int>(clientHeight * aspect);
+			rect->right = newWidth;
+			currentPosY = rect->top;
+			break;
+		case WMSZ_TOPLEFT:
+		case WMSZ_TOPRIGHT:
+		case WMSZ_BOTTOMLEFT:
+		case WMSZ_BOTTOMRIGHT:
+			// 四隅ドラッグ
+			newHeight = static_cast<int>(clientWidth / aspect);
+			rect->bottom = newHeight;
+			currentPosX = rect->left;
+			break;
+		}
+
+		rect->left = 0;
+		rect->top = 0;
+
+		AdjustWindowRectEx(
+			rect,
+			style,
+			FALSE,
+			exStyle);
+
+		rect->left = currentPosX;
+		rect->top = currentPosY;
+		rect->right = rect->right + currentPosX + borderWidth;
+		rect->bottom = rect->bottom + currentPosY + borderHeight;
+
+		return TRUE;
+	}
+
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		return 0;
+	}
+
+	return DefWindowProc(hwnd, msg, wparam, lparam);
+}
+*/
 
 std::ofstream GameSystem::CreateLogFile() {
 	// ログのディレクトリを用意.
@@ -793,6 +1215,10 @@ std::ofstream GameSystem::CreateLogFile() {
 }
 
 void GameSystem::Log(const std::string& message) {
+	OutputDebugStringA(message.c_str());
+}
+
+void GameSystem::ExportLog(const std::string& message) {
 	GameSystem::GetInstance()->GetLogStream() << message << std::endl;
 	OutputDebugStringA(message.c_str());
 }
@@ -888,6 +1314,29 @@ Microsoft::WRL::ComPtr<ID3D12Resource> GameSystem::CreateBufferResource(Microsof
 	return resource;
 }
 
+Microsoft::WRL::ComPtr<ID3D12Resource> GameSystem::CreateBufferResource(size_t sizeInBytes) {
+	// リソース用のヒープの設定.
+	D3D12_HEAP_PROPERTIES uploadHeapProperties{};
+	uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD; // UploadHeapを使う.
+	// リソースの設定.
+	D3D12_RESOURCE_DESC resourceDesc{};
+	// バッファリソース。テクスチャの場合はまた別の設定をする.
+	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+	resourceDesc.Width = sizeInBytes;
+	// バッファの場合はこれは1にする決まり.
+	resourceDesc.Height = 1;
+	resourceDesc.DepthOrArraySize = 1;
+	resourceDesc.MipLevels = 1;
+	resourceDesc.SampleDesc.Count = 1;
+	// バッファの場合はこれにする決まり.
+	resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+	// 実際にリソースを作る.
+	Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
+	HRESULT hr = GameSystem::GetInstance()->GetDevice()->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE, &resourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&resource));
+	assert(SUCCEEDED(hr));
+	return resource;
+}
+
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GameSystem::CreateDescriptorHeap(Microsoft::WRL::ComPtr<ID3D12Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDiscriptors, bool shaderVisible) {
 	// ディスクリプタヒープの生成.
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap = nullptr;
@@ -899,6 +1348,14 @@ Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GameSystem::CreateDescriptorHeap(Mi
 	// ディスクリプタヒープが作れなかったので起動できない.
 	assert(SUCCEEDED(hr));
 	return descriptorHeap;
+}
+
+void GameSystem::SrvDescriptorHeapNumIncrement(){
+	if (srvDescriptorHeapNum_ >= kSrvDescriptorHeapNumMax) {
+		assert(false,"現在使えるsrvDescriptorHeapのサイズ(128)を使い切りました");
+		return;
+	}
+	srvDescriptorHeapNum_++;
 }
 
 DirectX::ScratchImage GameSystem::LoadTexture(const std::string& filePath) {
@@ -1010,8 +1467,20 @@ D3D12_CPU_DESCRIPTOR_HANDLE GameSystem::GetCPUDescriptorHandle(Microsoft::WRL::C
 	return handleCPU;
 }
 
+//D3D12_CPU_DESCRIPTOR_HANDLE GameSystem::GetCPUDescriptorHandle(){
+//	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+//	handleCPU.ptr += (descriptorSizeSRV * srvDescriptorHeapNum_);
+//	return handleCPU;
+//}
+
 D3D12_GPU_DESCRIPTOR_HANDLE GameSystem::GetGPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index) {
 	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
 	handleGPU.ptr += (descriptorSize * index);
 	return handleGPU;
 }
+
+//D3D12_GPU_DESCRIPTOR_HANDLE GameSystem::GetGPUDescriptorHandle(){
+//	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+//	handleGPU.ptr += (descriptorSizeSRV * srvDescriptorHeapNum_);
+//	return handleGPU;
+//}

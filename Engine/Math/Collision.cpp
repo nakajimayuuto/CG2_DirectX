@@ -96,6 +96,13 @@ bool Collision::SegmentToTriangle(const Segment& segment, const Triangle& triang
 	return true;
 }
 
+bool Collision::AABBToPoint(const AABB& aabb, const Vector3& point){
+	return (
+		aabb.min.x <= point.x && aabb.max.x >= point.x &&
+		aabb.min.y <= point.y && aabb.max.y >= point.y &&
+		aabb.min.z <= point.z && aabb.max.z >= point.z);
+}
+
 bool Collision::AABBToAABB(const AABB& aabb1, const AABB& aabb2) {
 	return (
 		aabb1.min.x <= aabb2.max.x && aabb1.max.x >= aabb2.min.x &&

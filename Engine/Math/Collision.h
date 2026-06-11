@@ -1,5 +1,6 @@
-﻿#pragma once
+#pragma once
 #include "Shape.h"
+#include "Matrix4x4.h"
 
 class Collision{
 public:
@@ -14,6 +15,8 @@ public:
 	static bool SegmentToPlane(const Segment& segment, const Plane& plane);
 
 	static bool SegmentToTriangle(const Segment& segment, const Triangle& triangle);
+
+	static bool AABBToPoint(const AABB& aabb, const Vector3& point);
 
 	static bool AABBToAABB(const AABB& aabb1,const AABB& aabb2);
 
