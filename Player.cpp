@@ -2,6 +2,8 @@
 
 void Player::Initialize() {
 	transform_.Initialize();
+
+	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
 }
 
 void Player::Update() {
@@ -9,5 +11,5 @@ void Player::Update() {
 }
 
 void Player::Draw() {
-	Renderer::GetInstance()->DrawBox(transform_, "uvChecker", {1.0f,1.0f,1.0f,1.0f});
+	Renderer::GetInstance()->DrawModel(transform_,&model_);
 }

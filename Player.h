@@ -12,5 +12,7 @@ public:
 	void Draw();
 private:
 	Transform transform_;
+	
+	Model model_;
 };
 

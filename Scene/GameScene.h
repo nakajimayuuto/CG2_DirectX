@@ -3,6 +3,7 @@
 #include "IScene.h"
 #include <list>
 #include "../Skydome.h"
+#include "../Ground.h"
 
 #include "../Player.h"
 
@@ -17,4 +18,5 @@ public:
 private:
 	std::unique_ptr<Player> player_;
 	std::unique_ptr<Skydome> skydome_;
+	std::unique_ptr<Ground> ground_;
 };

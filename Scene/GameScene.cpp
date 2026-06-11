@@ -7,6 +7,8 @@ GameScene::~GameScene(){
 void GameScene::Initialize() {
 	TextureManager::GetInstance()->RegisterTexture("uvChecker","Resource/uvChecker.png");
 	ModelManager::GetInstance()->RegisterObj("skydome","Resource/skydome","skydome.obj");
+	ModelManager::GetInstance()->RegisterObj("ground","Resource/Ground","ground.obj");
+	ModelManager::GetInstance()->RegisterObj("player","Resource/player_hovering_mode","player.obj");
 
 	Camera::GetInstance()->SetPosition({0.0f,2.0f,-30.0f});
 
@@ -15,6 +17,9 @@ void GameScene::Initialize() {
 
 	skydome_ = std::make_unique<Skydome>();
 	skydome_->Initialize();
+
+	ground_ = std::make_unique<Ground>();
+	ground_->Initialize();
 }
 
 void GameScene::Update() {
@@ -33,5 +38,6 @@ void GameScene::Update() {
 
 void GameScene::Draw() {
 	skydome_->Draw();
+	ground_->Draw();
 	player_->Draw();
 }
