@@ -15,6 +15,8 @@ void Transform::Initialize() {
 	translate.x = 0.0f;
 	translate.y = 0.0f;
 	translate.z = 0.0f;
+
+	parent_ = nullptr;
 }
 
 

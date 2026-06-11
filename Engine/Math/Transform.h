@@ -7,10 +7,10 @@ class Matrix4x4;
 
 class Transform{
 public:
-	enum class StanderdSize {
-		kMax,
-		kMin,
-	};
+	//enum class StanderdSize {
+	//	kMax,
+	//	kMin,
+	//};
 
 	//Transform(Vector3 newScale, Vector3 newRotate, Vector3 newTranslate) { scale = newScale; rotate = newRotate; translate = newTranslate; };
 

@@ -10,6 +10,8 @@ public:
 	void Update();
 
 	void Draw();
+
+	Transform* GetTransform() { return &transform_; };
 private:
 	static inline float kSpeed = 0.3f;
 

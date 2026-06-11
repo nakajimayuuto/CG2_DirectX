@@ -20,6 +20,10 @@ void GameScene::Initialize() {
 
 	ground_ = std::make_unique<Ground>();
 	ground_->Initialize();
+
+	followCamera_ = std::make_unique<FollowCamera>();
+	followCamera_->Initialize();
+	followCamera_->SetTarget(player_->GetTransform());
 }
 
 void GameScene::Update() {
@@ -32,6 +36,8 @@ void GameScene::Update() {
 	}
 
 	player_->Update();
+
+	followCamera_->Update();
 
 	Camera::GetInstance()->Update();
 }

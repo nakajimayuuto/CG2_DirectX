@@ -2,7 +2,7 @@
 
 void Player::Initialize() {
 	transform_.Initialize();
-
+	transform_.translate.y = 1.0f;
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
 }
 
@@ -32,6 +32,10 @@ void Player::Update() {
 
 		move = move.Normalize() * kSpeed;
 	}
+
+	Matrix4x4 cameraRotateMatrix = Matrix4x4::MakeRotateMatrix(Camera::GetInstance()->GetTransform().rotate);
+
+	move = cameraRotateMatrix.TransformNomal(move);
 
 	transform_.translate += move;
 
