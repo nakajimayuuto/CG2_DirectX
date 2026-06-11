@@ -52,7 +52,7 @@ private:
 
 	void SetWindowed();
 private:
-	const LPCWSTR kWindowTitle_ = L"SaturnCGEngine";
+	const LPCWSTR kWindowTitle_ = L"AL3_03_3Dレールアクション";
 
 	const WindowSize kWindowSize_ = { 1280,720 };//{1280,720};
 

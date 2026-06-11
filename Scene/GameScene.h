@@ -1,12 +1,12 @@
 #pragma once
-//#include "../Engine/Renderer/Renderer.h"
-//#include "../Managers/ModelManager.h"
 #include "../Satlib.h"
 #include "IScene.h"
 #include <list>
 #include "../Skydome.h"
 
-class GameScene : public IScene {
+#include "../Player.h"
+
+class GameScene : public IScene{
 public:
 	~GameScene();
 	void Initialize() override;
@@ -15,38 +15,8 @@ public:
 
 	void Draw() override;
 private:
-private:
-	Vector4 color_;
-
-	Model model_;
-	Transform transform_;
-
-	Sprite sprite_;
-	Transform transformSprite_;
-
-	//Particles particle;
-
-	//Emitter emitter_;
-
-	Transform emitterTransform_;
-
-	uint32_t emitterCount_;
-
-	float emitterFrequency_;
-
-	AABB fieldAABB_;
-
-	Vector3 fieldAcceleration_;
-
-	bool useField_;
-
-	int billboardType_;
-
-	Skydome* skydome_ = nullptr;
-
-	RECT windowRect;
-
-	bool isParticleUpdate_;
+	Player* player_ = nullptr;
+};
 
 	//Renderer::Sprite frameSpriteLeft_;
 	//Renderer::Sprite frameSpriteRight_;
