@@ -29,7 +29,7 @@ void GameScene::Initialize() {
 	transformSprite_.translate.y = (sprite_.GetSize().y / 2.0f);
 
 	transform_.rotate.y = Radian(-70.0f);
-	DirectionalLight::GetInstance()->GetDirectionalLightData()->direction = { 0.0f,0.0f,1.0f };
+	LightManager::GetInstance()->GetDirectionalLightData()->direction = { 0.0f,0.0f,1.0f };
 	GetWindowRect(GameSystem::GetInstance()->GetHWND(), &windowRect);
 
 	emitterTransform_.Initialize();
@@ -53,6 +53,10 @@ void GameScene::Initialize() {
 	//ParticleManager::GetInstance()->SetEmitterShape("testEmitter",EmitterShape::kBox);
 	//ParticleManager::GetInstance()->CreateNewField("testField",fieldAABB_,fieldAcceleration_);
 	//ParticleManager::GetInstance()->SetBillboardType(static_cast<BillboardType>(billboardType_));
+
+	LightManager::GetInstance()->CreatePointLight("testPoint");
+	LightManager::GetInstance()->CreatePointLight("testPoint2");
+	LightManager::GetInstance()->CreateSpotLight("testSpot");
 
 	color_ = { 1.0f,1.0f,1.0f,1.0f };
 	isParticleUpdate_ = false;
@@ -146,20 +150,25 @@ void GameScene::Update() {
 	ImGui::End();
 
 	ImGui::Begin("DirectionalLight");
-	Vector3 imDirection = DirectionalLight::GetInstance()->GetDirectionalLightData()->direction;
+	Vector3 imDirection = LightManager::GetInstance()->GetDirectionalLightData()->direction;
 	ImGui::DragFloat3("LightDirection", reinterpret_cast<float*>(&imDirection), 0.1f, -1.0f, 1.0f);
-	ImGui::DragFloat("LightIntensity", &DirectionalLight::GetInstance()->GetDirectionalLightData()->intensity, 0.1f, 0.0f, 1.0f);
-	DirectionalLight::GetInstance()->GetDirectionalLightData()->direction = imDirection.Normalize();
+	ImGui::DragFloat("LightIntensity", &LightManager::GetInstance()->GetDirectionalLightData()->intensity, 0.1f, 0.0f, 1.0f);
+	LightManager::GetInstance()->GetDirectionalLightData()->direction = imDirection.Normalize();
 	ImGui::End();
 
 	ImGui::Begin("PointLight");
-	ImGui::DragFloat3("LightPosition", reinterpret_cast<float*>(&PointLight::GetInstance()->GetPointLightData()->position), 0.1f, -10.0f, 10.0f);
-	ImGui::DragFloat("LightIntensity", &PointLight::GetInstance()->GetPointLightData()->intensity, 0.1f, 0.0f, 1.0f);
+	ImGui::DragFloat3("LightPosition", reinterpret_cast<float*>(&LightManager::GetInstance()->GetLightData("testPoint")->position), 0.1f, -10.0f, 10.0f);
+	ImGui::DragFloat("LightIntensity", &LightManager::GetInstance()->GetLightData("testPoint")->intensity, 0.1f, 0.0f, 1.0f);
+	ImGui::End();
+
+	ImGui::Begin("PointLight2");
+	ImGui::DragFloat3("LightPosition", reinterpret_cast<float*>(&LightManager::GetInstance()->GetLightData("testPoint2")->position), 0.1f, -10.0f, 10.0f);
+	ImGui::DragFloat("LightIntensity", &LightManager::GetInstance()->GetLightData("testPoint2")->intensity, 0.1f, 0.0f, 1.0f);
 	ImGui::End();
 
 	ImGui::Begin("SpotLight");
-	ImGui::DragFloat3("LightPosition", reinterpret_cast<float*>(&SpotLight::GetInstance()->GetSpotLightData()->position), 0.1f, -10.0f, 10.0f);
-	ImGui::DragFloat("LightIntensity", &SpotLight::GetInstance()->GetSpotLightData()->intensity, 0.1f, 0.0f, 1.0f);
+	ImGui::DragFloat3("LightPosition", reinterpret_cast<float*>(&LightManager::GetInstance()->GetLightData("testSpot")->position), 0.1f, -10.0f, 10.0f);
+	ImGui::DragFloat("LightIntensity", &LightManager::GetInstance()->GetLightData("testSpot")->intensity, 0.1f, 0.0f, 1.0f);
 	ImGui::End();
 
 	ImGui::Begin("Camera");

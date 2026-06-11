@@ -543,21 +543,32 @@ void Sprite::Draw(const Transform& transform) {
 	三角形のSpriteの描画のコマンド.
 	=============================================================*/
 	// Spriteの描画。変更が必要なものだけ変更する.
-	GameSystem::GetInstance()->SetPipeline(blendMode_);
-
-	GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_); // VBVを設定.
-	GameSystem::GetInstance()->GetCommandList()->IASetIndexBuffer(&indexBufferView_); // IBVを設定.
-	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
-	GameSystem::GetInstance()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	// マテリアル用のCBufferの場所.
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
-	// transformationMatrixCBufferの場所.
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource_->GetGPUVirtualAddress());
-	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureInfo_.textureSrvHandlesGPU);
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-	GameSystem::GetInstance()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
+	GameSystem::GetInstance()->DrawCommand(
+		blendMode_,
+		&vertexBufferView_,
+		nullptr,
+		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+		materialResource_,
+		transformationMatrixResource_,
+		textureInfo_.textureSrvHandlesGPU,
+		6
+	);
+	
+	//GameSystem::GetInstance()->SetPipeline(blendMode_);
+	//
+	//GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_); // VBVを設定.
+	//GameSystem::GetInstance()->GetCommandList()->IASetIndexBuffer(&indexBufferView_); // IBVを設定.
+	//// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
+	//GameSystem::GetInstance()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	//// マテリアル用のCBufferの場所.
+	//GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
+	//// transformationMatrixCBufferの場所.
+	//GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource_->GetGPUVirtualAddress());
+	//// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
+	//GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureInfo_.textureSrvHandlesGPU);
+	//GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
+	//// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
+	//GameSystem::GetInstance()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 
 

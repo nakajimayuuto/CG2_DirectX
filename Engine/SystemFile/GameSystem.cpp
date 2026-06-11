@@ -8,6 +8,7 @@
 #include "../../Managers/SoundManager.h"
 #include "../../Managers/InputManager.h"
 #include "../../Managers/TextureManager.h"
+#include "../../Managers/LightManager.h"
 #include "../../Managers/ModelManager.h"
 #include "../../Managers/ParticleManager.h"
 #include "../../Environment.h"
@@ -312,11 +313,13 @@ void GameSystem::Initialize() {
 	DirectionalLightの初期化.
 	=============================================================*/
 
-	DirectionalLight::GetInstance()->Initialize();
+	LightManager::GetInstance()->Initialize();
 
-	PointLight::GetInstance()->Initialize();
-
-	SpotLight::GetInstance()->Initialize();
+	//DirectionalLight::GetInstance()->Initialize();
+	//
+	//PointLight::GetInstance()->Initialize();
+	//
+	//SpotLight::GetInstance()->Initialize();
 
 	/*=============================================================
 	ImGuiの初期化.
@@ -468,7 +471,7 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 	spotLightDescriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // Offsetの自動計算.
 
 	// RootParameter作成。複数設定出来るので配列。
-	D3D12_ROOT_PARAMETER rootParameters[7] = {};
+	D3D12_ROOT_PARAMETER rootParameters[8] = {};
 	D3D12_ROOT_PARAMETER rootParametersParticle[3] = {};
 
 	switch (shaderType) {
@@ -525,6 +528,10 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 		rootParameters[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
 		rootParameters[6].DescriptorTable.pDescriptorRanges = spotLightDescriptorRange; // Tableの中身の配列を指定.
 		rootParameters[6].DescriptorTable.NumDescriptorRanges = _countof(spotLightDescriptorRange); // Tableで利用する数.
+		// LightNumData.
+		rootParameters[7].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
+		rootParameters[7].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		rootParameters[7].Descriptor.ShaderRegister = 3; // レジスタ番号2を使う.
 
 		descriptionRootSignature.pParameters = rootParameters; // ルートパラメータ配列へのポインタ.
 		descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ.
@@ -725,12 +732,14 @@ void GameSystem::DrawCommand(
 	commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
 	commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-	commandList->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(3, LightManager::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootConstantBufferView(4, Camera::GetInstance()->GetCameraForGPUResource()->GetGPUVirtualAddress());
 	//commandList->SetGraphicsRootConstantBufferView(5, PointLight::GetInstance()->GetPointLightResource()->GetGPUVirtualAddress());
 	//commandList->SetGraphicsRootConstantBufferView(6, SpotLight::GetInstance()->GetSpotLightResource()->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootDescriptorTable(5, PointLight::GetInstance()->GetSrvHandleGPU());
-	commandList->SetGraphicsRootDescriptorTable(6, SpotLight::GetInstance()->GetSrvHandleGPU());
+	commandList->SetGraphicsRootDescriptorTable(5, LightManager::GetInstance()->GetPointLightSrvHandleGPU());
+	commandList->SetGraphicsRootDescriptorTable(6, LightManager::GetInstance()->GetSpotLightSrvHandleGPU());
+	commandList->SetGraphicsRootConstantBufferView(7, LightManager::GetInstance()->GetLightNumResource()->GetGPUVirtualAddress());
+
 	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
 	if (indexBufferView == nullptr) {
 		commandList->DrawInstanced(indexInstancedNum, 1, 0, 0);
@@ -780,6 +789,8 @@ bool GameSystem::BeginFrame() {
 
 void GameSystem::DrawSetup() {
 	WindowSizeUpdate();
+
+	LightManager::GetInstance()->Update();
 
 #ifdef USE_IMGUI
 	// ImGuiの内部コマンドを生成する.
@@ -974,12 +985,12 @@ void GameSystem::WindowSizeUpdate() {
 
 void GameSystem::RegisterGlobalVariables() {
 	Camera::GetInstance()->RegisterGlobalVariables();
-	DirectionalLight::GetInstance()->RegisterGlobalVariables();
+	//DirectionalLight::GetInstance()->RegisterGlobalVariables();
 };
 
 void GameSystem::ApplyGlobalVariables() {
 	Camera::GetInstance()->ApplyGlobalVariables();
-	DirectionalLight::GetInstance()->ApplyGlobalVariables();
+	//DirectionalLight::GetInstance()->ApplyGlobalVariables();
 };
 
 LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {

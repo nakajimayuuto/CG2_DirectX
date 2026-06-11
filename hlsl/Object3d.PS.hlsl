@@ -37,13 +37,20 @@ struct Camera{
     float32_t3 worldPosition;
 };
 
+struct LightNumData{
+    int32_t pointLightNum;
+    int32_t spotLightNum;
+};
+
 ConstantBuffer<Material> gMaterial : register(b0);
 ConstantBuffer<DirectionalLight> gDirectionalLight : register(b1);
 ConstantBuffer<Camera> gCamera : register(b2);
+ConstantBuffer<LightNumData> gLightNum : register(b3);
+
+Texture2D<float32_t4> gTexture : register(t0);
 StructuredBuffer<PointLight> gPointLight : register(t1);
 StructuredBuffer<SpotLight> gSpotLight : register(t2);
 
-Texture2D<float32_t4> gTexture : register(t0);
 SamplerState gSampler : register(s0);
 
 struct PixelShaderOutput{
@@ -144,7 +151,7 @@ PixelShaderOutput main(VertexShaderOutput input){
     float32_t3 factor;
     
     // PointLight
-    for (uint32_t i = 0; i < 1; i++)
+    for (uint32_t i = 0; i < gLightNum.pointLightNum; i++)
     {
         float32_t3 pointLightDirection = normalize(input.worldPosition - gPointLight[i].position);
         float32_t3 distance = length(gPointLight[i].position - input.worldPosition);
@@ -154,7 +161,7 @@ PixelShaderOutput main(VertexShaderOutput input){
     }
         
     // SpotLight
-    for (uint32_t j = 0; j < 1; j++)
+    for (uint32_t j = 0; j < gLightNum.spotLightNum; j++)
     {
         float32_t3 spotLightDirectionOnSurface = normalize(input.worldPosition - gSpotLight[j].position);
         float32_t cosAngle = dot(spotLightDirectionOnSurface, gSpotLight[j].direction);

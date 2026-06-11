@@ -2,13 +2,13 @@
 #include "../SystemFile/GameSystem.h"
 #include "../Math/Math.h"
 
-SpotLight* SpotLight::GetInstance() {
-	static SpotLight instance;
-	return &instance;
-}
+//SpotLight* SpotLight::GetInstance() {
+//	static SpotLight instance;
+//	return &instance;
+//}
 
 void SpotLight::Initialize() {
-	spotLightResource = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(SpotLightData));
+	spotLightResource = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(SpotLightData) * kLightMax);
 	// データを書き込む.
 	// 書き込むためのアドレスを取得.
 	spotLightResource->Map(0, nullptr, reinterpret_cast<void**>(&spotLightData));
@@ -27,7 +27,7 @@ void SpotLight::Initialize() {
 	spotLightSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
 	spotLightSrvDesc.Buffer.FirstElement = 0;
 	spotLightSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-	spotLightSrvDesc.Buffer.NumElements = 1;
+	spotLightSrvDesc.Buffer.NumElements = kLightMax;
 	spotLightSrvDesc.Buffer.StructureByteStride = sizeof(SpotLightData);
 
 	spotLightSrvHandleCPU = GameSystem::GetInstance()->GetCPUDescriptorHandle(GameSystem::GetInstance()->GetSrvDescriptorHeap(), GameSystem::GetInstance()->GetDescriptorSizeSRV(), GameSystem::GetInstance()->GetSrvDescriptorHeapNum());

@@ -14,7 +14,7 @@ struct DirectionalLightData {
 
 class DirectionalLight {
 public:
-	static DirectionalLight* GetInstance();
+	//static DirectionalLight* GetInstance();
 
 	void Initialize();
 

@@ -15,12 +15,12 @@ struct SpotLightData {
 	float decay; // 減衰率.
 	float cosAngle; // ライトの余弦.
 	float cosFalloffStart; // falloff(ライトの光が減衰し始める角度)の余弦.
-	float padding[2];
+	float padding[0];
 };
 
 class SpotLight {
 public:
-	static SpotLight* GetInstance();
+	//static SpotLight* GetInstance();
 
 	void Initialize();
 
@@ -30,9 +30,15 @@ public:
 
 	SpotLightData* GetSpotLightData() { return spotLightData; };
 
+	void SetSpotLightData(uint32_t index, const SpotLightData& data) { spotLightData[index] = data; };
+
+	uint32_t GetLightMax()const { return kLightMax; };
+
 	void RegisterGlobalVariables();
 	void ApplyGlobalVariables();
 private:
+	static inline const uint32_t kLightMax = 64;
+
 	Microsoft::WRL::ComPtr<ID3D12Resource> spotLightResource = nullptr;
 
 	SpotLightData* spotLightData = nullptr;

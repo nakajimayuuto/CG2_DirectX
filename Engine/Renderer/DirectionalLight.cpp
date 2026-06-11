@@ -2,10 +2,10 @@
 #include "../SystemFile/GameSystem.h"
 #include "../SystemFile/GlobalVariables.h"
 
-DirectionalLight* DirectionalLight::GetInstance() {
-	static DirectionalLight instance;
-	return &instance;
-};
+//DirectionalLight* DirectionalLight::GetInstance() {
+//	static DirectionalLight instance;
+//	return &instance;
+//};
 
 void DirectionalLight::Initialize() {
 	directionalLightResource = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(DirectionalLightData));

@@ -12,12 +12,12 @@ struct PointLightData {
 	float intensity; // ライトの輝度.
 	float radius; // ライトの届く最大距離.
 	float decay; // 減衰率.
-	float padding[2];
+	float padding[0];
 };
 
 class PointLight {
 public:
-	static PointLight* GetInstance();
+	//static PointLight* GetInstance();
 
 	void Initialize();
 
@@ -27,9 +27,14 @@ public:
 
 	PointLightData* GetPointLightData() { return pointLightData; };
 
+	void SetPointLightData(uint32_t index, const PointLightData& data) { pointLightData[index] = data; };
+
+	uint32_t GetLightMax()const { return kLightMax; };
+
 	void RegisterGlobalVariables();
 	void ApplyGlobalVariables();
 private:
+	static inline const uint32_t kLightMax = 64;
 	Microsoft::WRL::ComPtr<ID3D12Resource> pointLightResource = nullptr;
 
 	PointLightData* pointLightData = nullptr;
