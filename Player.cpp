@@ -2,7 +2,6 @@
 
 void Player::Initialize() {
 	transform_.Initialize();
-	model_.Initialize(TextureManager::GetInstance()->GetTextureInfo("uvChecker"));
 }
 
 void Player::Update() {
@@ -10,5 +9,5 @@ void Player::Update() {
 }
 
 void Player::Draw() {
-	model_.Draw(transform_);
+	Renderer::GetInstance()->DrawBox(transform_, "uvChecker", {1.0f,1.0f,1.0f,1.0f});
 }

@@ -30,3 +30,5 @@
 #include "./Managers/InputManager.h"	
 
 #include "./Environment.h"
+
+#include <memory>

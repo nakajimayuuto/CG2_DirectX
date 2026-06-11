@@ -2,41 +2,36 @@
 #include "../Satlib.h"
 
 GameScene::~GameScene(){
-	delete player_;
 }
 
 void GameScene::Initialize() {
 	TextureManager::GetInstance()->RegisterTexture("uvChecker","Resource/uvChecker.png");
+	ModelManager::GetInstance()->RegisterObj("skydome","Resource/skydome","skydome.obj");
 
-	player_ = new Player();
+	
+
+	player_ = std::make_unique<Player>();
 	player_->Initialize();
+
+	skydome_ = std::make_unique<Skydome>();
+	skydome_->Initialize();
 }
 
 void GameScene::Update() {
 	if (InputManager::GetInstance()->TriggerKey(DIK_R)) {
-		//SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, WS_OVERLAPPEDWINDOW);
-		//
-		//SetWindowPos(
-		//	GameSystem::GetInstance()->GetHWND(),
-		//	HWND_TOP,
-		//	windowRect.left,
-		//	windowRect.top,
-		//	windowRect.right - windowRect.left,
-		//	windowRect.bottom - windowRect.top,
-		//	SWP_FRAMECHANGED | SWP_SHOWWINDOW
-		//);
 		SceneManager::GetInstance()->ReloadScene();
+	}
+
+	if (InputManager::GetInstance()->TriggerKey(DIK_F3)) {
+		Camera::GetInstance()->ChangeCameraMode();
+	}
 
 	player_->Update();
-
-	if (isParticleUpdate_) {
-
-		ParticleManager::GetInstance()->Update();
-	}
 
 	Camera::GetInstance()->Update();
 }
 
 void GameScene::Draw() {
+	skydome_->Draw();
 	player_->Draw();
 }

@@ -151,6 +151,9 @@
     <Filter Include="Managers\LightManager">
       <UniqueIdentifier>{fec221c6-34a5-4b71-bc71-5781863f3d7f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Player">
+      <UniqueIdentifier>{37ad8884-6e01-4c76-a20f-a98864940bff}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -296,6 +299,9 @@
     </ClCompile>
     <ClCompile Include="Managers\LightManager.cpp">
       <Filter>Managers\LightManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>ソース ファイル\Player</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -454,6 +460,9 @@
     </ClInclude>
     <ClInclude Include="Managers\LightManager.h">
       <Filter>Managers\LightManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>ソース ファイル\Player</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

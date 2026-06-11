@@ -12,7 +12,5 @@ public:
 	void Draw();
 private:
 	Transform transform_;
-
-	Renderer::ModelBox model_;
 };
 

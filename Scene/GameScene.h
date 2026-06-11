@@ -15,10 +15,6 @@ public:
 
 	void Draw() override;
 private:
-	Player* player_ = nullptr;
-};
-
-	//Renderer::Sprite frameSpriteLeft_;
-	//Renderer::Sprite frameSpriteRight_;
-	//Renderer::Sprite backGroundSprite_;
+	std::unique_ptr<Player> player_;
+	std::unique_ptr<Skydome> skydome_;
 };
