@@ -82,6 +82,22 @@ Vector3 Lerp(Vector3 before, Vector3 after, float time) {
 	return result;
 }
 
+float LerpShortAngle(float before, float after, float time){
+	//float beforeAngle = std::fmod(before,360.0f);
+	float diff = after - before;
+	diff = std::fmod(diff,Radian(360.0f));
+
+	if (diff > Radian(180.0f)) {
+		diff = diff - Radian(360.0f);
+	} else if (diff < -Radian(180.0f)) {
+		diff = diff + Radian(360.0f);
+	}
+
+
+
+	return before + (diff * time);
+}
+
 Vector3 Slerp(Vector3 before, Vector3 after, float time){
 	Vector3 result = before;
 	

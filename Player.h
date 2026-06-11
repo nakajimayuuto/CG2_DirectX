@@ -13,7 +13,13 @@ public:
 
 	Transform* GetTransform() { return &transform_; };
 private:
+	bool isMoving_;
+
 	static inline float kSpeed = 0.3f;
+
+	static inline float kCompletionRate = 0.25f;
+
+	float targetRotateY;
 
 	Transform transform_;
 	

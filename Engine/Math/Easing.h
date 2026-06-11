@@ -17,6 +17,8 @@ float Lerp(float before, float after, float time);
 
 Vector3 Lerp(Vector3 before, Vector3 after, float time);
 
+float LerpShortAngle(float before, float after,float time);
+
 //float Slerp(float before, float after, float time);
 
 Vector3 Slerp(Vector3 before, Vector3 after, float time);
