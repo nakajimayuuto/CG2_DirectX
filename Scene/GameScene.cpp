@@ -8,7 +8,7 @@ void GameScene::Initialize() {
 	TextureManager::GetInstance()->RegisterTexture("uvChecker","Resource/uvChecker.png");
 	ModelManager::GetInstance()->RegisterObj("skydome","Resource/skydome","skydome.obj");
 
-	
+	Camera::GetInstance()->SetPosition({0.0f,2.0f,-30.0f});
 
 	player_ = std::make_unique<Player>();
 	player_->Initialize();

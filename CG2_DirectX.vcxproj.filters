@@ -154,6 +154,9 @@
     <Filter Include="ソース ファイル\Player">
       <UniqueIdentifier>{37ad8884-6e01-4c76-a20f-a98864940bff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Ground">
+      <UniqueIdentifier>{b52ee5ee-5eac-4b95-959b-5d6437fc92b1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -302,6 +305,9 @@
     </ClCompile>
     <ClCompile Include="Player.cpp">
       <Filter>ソース ファイル\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Ground.cpp">
+      <Filter>ソース ファイル\Ground</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -463,6 +469,9 @@
     </ClInclude>
     <ClInclude Include="Player.h">
       <Filter>ソース ファイル\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Ground.h">
+      <Filter>ソース ファイル\Ground</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
