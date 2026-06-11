@@ -93,51 +93,6 @@ void GameScene::Update() {
 
 	Environment* environment = Environment::GetInstance();
 
-	/*
-	ImGui::Begin("Particles");
-
-	ImGui::Text(std::format("DeltaTime : {}",DeltaTime::GetInstance()->GetDeltaTime()).c_str());
-
-	ImGui::Checkbox("Update",&isParticleUpdate_);
-
-	ImGui::SliderInt("Billboard",&billboardType_,0,4);
-
-	ParticleManager::GetInstance()->SetBillboardType(static_cast<BillboardType>(billboardType_));
-
-	ImGui::End();
-
-	ImGui::Begin("Emitter");
-
-	Vector3 imRotate = Degree(emitterTransform_.rotate);
-	ImGui::SliderFloat3("scale",reinterpret_cast<float*>(&emitterTransform_.scale),0.0f,3.0f);
-	ImGui::SliderFloat3("roate",reinterpret_cast<float*>(&imRotate),-360.0f,360.0f);
-	ImGui::SliderFloat3("translate",reinterpret_cast<float*>(&emitterTransform_.translate),-10.0f,10.0f);
-	emitterTransform_.rotate = Radian(imRotate);
-
-	ImGui::SliderInt("count",reinterpret_cast<int*>(&emitterCount_),1,10);
-	ImGui::SliderFloat("frequency", &emitterFrequency_, 0.0f, 2.0f);
-
-	ParticleManager::GetInstance()->SetEmitterTransform("testEmitter", emitterTransform_);
-	ParticleManager::GetInstance()->SetEmitterCount("testEmitter", emitterCount_);
-	ParticleManager::GetInstance()->SetEmitterFrequency("testEmitter", emitterFrequency_);
-
-	ImGui::End();
-
-	ImGui::Begin("Field");
-
-	ImGui::SliderFloat3("min",reinterpret_cast<float*>(&fieldAABB_.min), -10.0f, 10.0f);
-	ImGui::SliderFloat3("max",reinterpret_cast<float*>(&fieldAABB_.max), -10.0f, 10.0f);
-	ImGui::SliderFloat3("acceleration",reinterpret_cast<float*>(&fieldAcceleration_),-30.0f,30.0f);
-
-
-
-	ParticleManager::GetInstance()->SetFieldAcceleration("testField",fieldAcceleration_);
-	ParticleManager::GetInstance()->SetFieldArea("testField", fieldAABB_);
-
-	ImGui::End();*/
-
-
-
 	ImGui::Begin("ObjectMove");
 
 	Vector3 imRotate = Degree(transform_.rotate);
@@ -183,51 +138,17 @@ void GameScene::Update() {
 	if (isParticleUpdate_) {
 
 		ParticleManager::GetInstance()->Update();
-		//emitter_.Update();
-		//particle.Update();
 	}
 
 	Camera::GetInstance()->Update();
 }
 
 void GameScene::Draw() {
-	//	backGroundSprite_.Draw(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f ,0.0f,0.0f}, { backGroundSprite_.GetSize().x / 2.0f,backGroundSprite_.GetSize().y / 2.0f ,100.0f}));
+	//backGroundSprite_.Draw(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f ,0.0f,0.0f}, { backGroundSprite_.GetSize().x / 2.0f,backGroundSprite_.GetSize().y / 2.0f ,100.0f}));
 
-		//skydome_->Draw();
-
-	//model_.Draw(transform_);
-	//Renderer::GetInstance()->DrawSphere(transform_, "monsterBall", color_);
-	//Renderer::GetInstance()->DrawBox(transform_, "monsterBall", color_);
-	//Renderer::GetInstance()->DrawModel(transform_,ModelManager::GetInstance()->GetModelInfo("multiMaterial"), {1.0f,1.0f,1.0f,1.0f});
-	//Renderer::GetInstance()->DrawSphere(transform_, TextureManager::GetInstance()->GetTextureInfo("uvChecker"), {1.0f,1.0f,1.0f,1.0f});
-	//model_.Draw(transform_);
 	Renderer::GetInstance()->DrawSphere(transform_, "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
 
 	Renderer::GetInstance()->DrawLine({ 0.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }, { 1.0f,1.0f,1.0f,1.0f });
 	Renderer::GetInstance()->DrawLine({ 1.0f,1.0f,1.0f }, { 1.0f,-1.0f,1.0f }, { 1.0f,1.0f,1.0f,1.0f });
 	Renderer::GetInstance()->DrawLine({ 1.0f,-1.0f,1.0f }, { 0.0f,-1.0f,0.0f }, { 1.0f,1.0f,1.0f,1.0f });
-
-	//Renderer::GetInstance()->DrawBox(transform_, TextureManager::GetInstance()->GetTextureInfo("uvChecker"), {1.0f,1.0f,1.0f,1.0f});
-	//Renderer::GetInstance()->DrawModel(transform_,ModelManager::GetInstance()->GetModelInfo("player"), {1.0f,1.0f,1.0f,1.0f});
-	//or (uint32_t i = 0; i < 10; i++) {
-	//	transform_.translate.x = i;
-	//	transformSprite_.translate.x = (sprite_.GetSize().x / 2.0f) + (i * 10.0f);
-	//	transformSprite_.translate.y = (sprite_.GetSize().y / 2.0f);
-	//	Renderer::GetInstance()->DrawModel(transform_, &model_);
-	//	Renderer::GetInstance()->DrawSprite(transformSprite_, sprite_);
-	//
-	//
-	//ransform_.Initialize();
-	//ransformSprite_.Initialize();
-
-	//particle.Draw();
-	//
-	//emitter_.DebugDraw();
-
-	//ParticleManager::GetInstance()->Draw();
-
-	//sprite_.Draw(transformSprite_);
-
-	//frameSpriteLeft_.Draw({ {1.0f,1.0f},0.0f, {-frameSpriteLeft_.GetSize().x / 2.0f,frameSpriteLeft_.GetSize().y / 2.0f} });
-	//frameSpriteRight_.Draw({ {1.0f,1.0f},0.0f, {Environment::GetInstance()->GetWindowSize().width + (frameSpriteRight_.GetSize().x / 2.0f),frameSpriteRight_.GetSize().y / 2.0f } });
 }
