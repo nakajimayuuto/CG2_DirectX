@@ -196,12 +196,24 @@ public:
 	
 	void SetIsCursorFixed(bool isCursorFixed) { isCursorFixed_ = isCursorFixed; }
 
-	void SetIsCursorVisible(bool isCursorVisible) { isCursorVisible_ = isCursorVisible; ShowCursor(isCursorVisible_);}
+	void SetIsDebugCursorMovingAllow(bool isDebugCursorMovingAllow) { isDebugCursorMovingAllow_ = isDebugCursorMovingAllow; }
+
+	bool GetIsCursorVisible() { return isCursorVisible_; }
+
+	void SetIsCursorVisible(bool isCursorVisible) {
+		if (isDebugCursorMovingAllow_) {
+			ShowCursor(true);
+			return;
+		}
+		
+		isCursorVisible_ = isCursorVisible; ShowCursor(isCursorVisible_);}
 	
 	float GetWheel() const {return static_cast<float>(mouseState_.lZ);}
 private:
 	bool isCursorFixed_;
 	bool isCursorVisible_;
+
+	bool isDebugCursorMovingAllow_;
 	IDirectInputDevice8* mouse_ = nullptr;
 
 	DIMOUSESTATE2 mouseState_ = {};
@@ -273,6 +285,7 @@ public:
 private:
 	void OperationModeCheck();
 private:
+	bool isDebugCursorMovingAllow_ = false;
 	IDirectInput8* directInput_ = nullptr;
 	InputKeyBoard keyBoard_;
 	InputMouse mouse_;

@@ -61,6 +61,8 @@ void InputMouse::Initialize(IDirectInput8* directInput) {
 	isCursorFixed_ = false;
 	isCursorVisible_ = true;
 
+	isDebugCursorMovingAllow_ = false;
+
 	ShowCursor(isCursorVisible_);
 }
 
@@ -96,13 +98,18 @@ void InputMouse::Update() {
 	mousePosition_ = { static_cast<float>(pos.x),static_cast<float>(pos.y) };
 
 
-
-	if (isCursorFixed_) {
-		SetCursorPosition({ Environment::GetInstance()->GetWindowSize().width / 2.0f, Environment::GetInstance()->GetWindowSize().height / 2.0f });
+	if (!isDebugCursorMovingAllow_) {
+		if (isCursorFixed_) {
+			SetCursorPosition({ Environment::GetInstance()->GetWindowSize().width / 2.0f, Environment::GetInstance()->GetWindowSize().height / 2.0f });
+		}
 	}
 }
 
 void InputMouse::SetCursorPosition(Vector2 position) {
+	if (isDebugCursorMovingAllow_) {
+		return;
+	}
+
 	POINT pos;
 	pos.x = static_cast<int>(position.x);
 	pos.y = static_cast<int>(position.y);
@@ -512,12 +519,26 @@ void InputManager::Initialize() {// DirectInputの初期化.
 	keyBoard_.Initialize(directInput_);
 	mouse_.Initialize(directInput_);
 	gamePad_.Initialize();
+
+	isDebugCursorMovingAllow_ = false;
 }
 
 
 void InputManager::Update() {
 	keyBoard_.Update();
 	mouse_.Update();
+
+#ifdef _DEBUG
+	if (keyBoard_.TriggerKey(DIK_F1) && keyBoard_.PressKey(DIK_LSHIFT)) {
+		if (isDebugCursorMovingAllow_) {
+			isDebugCursorMovingAllow_ = false;
+			mouse_.SetIsCursorVisible(mouse_.GetIsCursorVisible());
+		} else {
+			isDebugCursorMovingAllow_ = true;
+		}
+	}
+	mouse_.SetIsDebugCursorMovingAllow(isDebugCursorMovingAllow_);
+#endif // _DEBUG
 
 	gamePad_.Update();
 }

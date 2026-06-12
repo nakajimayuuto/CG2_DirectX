@@ -96,3 +96,17 @@ void Player::Draw() {
 	Renderer::GetInstance()->DrawModel(transformLArm_,&modelLArm_);
 	Renderer::GetInstance()->DrawModel(transformRArm_,&modelRArm_);
 }
+
+void Player::RegisterGlobalVariables() {
+
+	const char* groupName = "Player";
+
+	GlobalVariables::GetInstance()->AddValue(groupName, "Head Translate",transformHead_.translate);
+	GlobalVariables::GetInstance()->AddValue(groupName, "ArmL Translate",transformLArm_.translate);
+	GlobalVariables::GetInstance()->AddValue(groupName, "ArmR Translate",transformRArm_.translate);
+}
+
+void Player::ApplyGlobalVariables() {
+	const char* groupName = "Player";
+
+}

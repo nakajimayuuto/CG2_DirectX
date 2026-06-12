@@ -12,6 +12,9 @@ public:
 	void Draw();
 
 	Transform* GetTransform() { return &transform_; };
+
+	static void RegisterGlobalVariables();
+	static void ApplyGlobalVariables();
 private:
 	void InitializeFloatingGimmick();
 
@@ -33,9 +36,9 @@ private:
 
 	Transform transform_;
 	Transform transformBody_;
-	Transform transformHead_;
-	Transform transformRArm_;
-	Transform transformLArm_;
+	static inline Transform transformHead_;
+	static inline Transform transformRArm_;
+	static inline Transform transformLArm_;
 	
 	Model model_;
 	Model modelHead_;
