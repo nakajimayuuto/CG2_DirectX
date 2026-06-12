@@ -1,9 +1,10 @@
 #pragma once
 #include "Satlib.h"
+#include "BaseCharacter.h"
 /// <summary>
 /// 自キャラ
 /// </summary>
-class Player{
+class Player : public BaseCharacter{
 public:
 	void Initialize();
 
@@ -33,15 +34,9 @@ private:
 
 	float targetRotateY;
 
-	Transform transform_;
 	Transform transformBody_;
 	static inline Transform transformHead_;
 	static inline Transform transformRArm_;
 	static inline Transform transformLArm_;
-	
-	Model model_;
-	Model modelHead_;
-	Model modelLArm_;
-	Model modelRArm_;
 };
 

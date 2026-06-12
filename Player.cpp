@@ -4,21 +4,21 @@ void Player::Initialize() {
 	transform_.Initialize();
 	transform_.translate.y = 1.5f;
 	targetRotateY = 0.0f;
-	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
+	models_["body"].Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
 
 	transformBody_.Initialize();
 	transformBody_.SetParent(&transform_);
 
-	modelHead_.Initialize("player_head");
+	models_["head"].Initialize("player_head");
 	transformHead_.Initialize();
 	transformHead_.SetParent(&transformBody_);
 
-	modelLArm_.Initialize("player_left_arm");
+	models_["LArm"].Initialize("player_left_arm");
 	transformLArm_.Initialize();
 	transformLArm_.SetParent(&transformBody_);
 	transformLArm_.translate.x = -0.5f;
 
-	modelRArm_.Initialize("player_right_arm");
+	models_["RArm"].Initialize("player_right_arm");
 	transformRArm_.Initialize();
 	transformRArm_.SetParent(&transformBody_);
 	transformRArm_.translate.x = 0.5f;
@@ -92,10 +92,10 @@ void Player::UpdateFloatingGimmick(){
 }
 
 void Player::Draw() {
-	Renderer::GetInstance()->DrawModel(transformBody_,&model_);
-	Renderer::GetInstance()->DrawModel(transformHead_,&modelHead_);
-	Renderer::GetInstance()->DrawModel(transformLArm_,&modelLArm_);
-	Renderer::GetInstance()->DrawModel(transformRArm_,&modelRArm_);
+	Renderer::GetInstance()->DrawModel(transformBody_,&models_["body"]);
+	Renderer::GetInstance()->DrawModel(transformHead_,&models_["head"]);
+	Renderer::GetInstance()->DrawModel(transformLArm_,&models_["LArm"]);
+	Renderer::GetInstance()->DrawModel(transformRArm_,&models_["RArm"]);
 }
 
 void Player::RegisterGlobalVariables() {
