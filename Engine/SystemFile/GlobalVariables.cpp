@@ -28,25 +28,25 @@ void GlobalVariables::Update() {
 
 		if (!ImGui::BeginMenu(groupName.c_str())) continue;
 
-		for (std::map<std::string,Item>::iterator itItem = group.begin();
+		for (std::map<std::string,ItemData>::iterator itItem = group.begin();
 			itItem != group.end(); itItem++) {
 			// 項目名を取得.
 			const std::string& itemName = itItem->first;
 			// 項目の参照を取得.
-			Item& item = itItem->second;
+			ItemData& item = itItem->second;
 
-			if (std::holds_alternative<int32_t>(item)) {
-				int32_t* ptr = std::get_if<int32_t>(&item);
-				ImGui::SliderInt(itemName.c_str(),ptr,0,100);
-			} else if (std::holds_alternative<float>(item)) {
-				float* ptr = std::get_if<float>(&item);
-				ImGui::SliderFloat(itemName.c_str(), ptr, -10.0f, 10.0f);
-			} else if (std::holds_alternative<Vector3>(item)) {
-				Vector3* ptr = std::get_if<Vector3>(&item);
-				ImGui::SliderFloat3(itemName.c_str(), reinterpret_cast<float*>(ptr), 0, 100);
-			}else if (std::holds_alternative<Vector4>(item)) {
-				Vector4* ptr = std::get_if<Vector4>(&item);
-				ImGui::SliderFloat4(itemName.c_str(), reinterpret_cast<float*>(ptr), 0, 100);
+			if (std::holds_alternative<int32_t>(item.item)) {
+				int32_t* ptr = std::get_if<int32_t>(&item.item);
+				ImGui::DragInt(itemName.c_str(),ptr,item.dragSpeed,item.min,item.max);
+			} else if (std::holds_alternative<float>(item.item)) {
+				float* ptr = std::get_if<float>(&item.item);
+				ImGui::DragFloat(itemName.c_str(), ptr, item.dragSpeed, item.min, item.max);
+			} else if (std::holds_alternative<Vector3>(item.item)) {
+				Vector3* ptr = std::get_if<Vector3>(&item.item);
+				ImGui::DragFloat3(itemName.c_str(), reinterpret_cast<float*>(ptr), item.dragSpeed, item.min, item.max);
+			}else if (std::holds_alternative<Vector4>(item.item)) {
+				Vector4* ptr = std::get_if<Vector4>(&item.item);
+				ImGui::DragFloat4(itemName.c_str(), reinterpret_cast<float*>(ptr), item.dragSpeed, item.min, item.max);
 			}
 		}
 
@@ -71,88 +71,100 @@ void GlobalVariables::CreateGroup(const std::string& groupName) {
 	datas_[groupName];
 }
 
-void GlobalVariables::SetValue(const std::string& groupName, const std::string& key, int32_t value) {
+void GlobalVariables::SetValue(const std::string& groupName, const std::string& key, int32_t value, float dragSpeed, float min, float max) {
 	Group& group = datas_[groupName];
 
-	Item newItem{};
-	newItem = value;
+	ItemData newItem{};
+	newItem.item = value;
+	newItem.dragSpeed = dragSpeed;
+	newItem.max = max;
+	newItem.min = min;
 	group[key] = newItem;
 }
 
-void GlobalVariables::SetValue(const std::string& groupName, const std::string& key, float value) {
+void GlobalVariables::SetValue(const std::string& groupName, const std::string& key, float value, float dragSpeed, float min, float max) {
 	Group& group = datas_[groupName];
 
-	Item newItem{};
-	newItem = value;
+	ItemData newItem{};
+	newItem.item = value;
+	newItem.dragSpeed = dragSpeed;
+	newItem.max = max;
+	newItem.min = min;
 	group[key] = newItem;
 }
 
-void GlobalVariables::SetValue(const std::string& groupName, const std::string& key, const Vector3& value) {
+void GlobalVariables::SetValue(const std::string& groupName, const std::string& key, const Vector3& value, float dragSpeed, float min, float max) {
 	Group& group = datas_[groupName];
 
-	Item newItem{};
-	newItem = value;
+	ItemData newItem{};
+	newItem.item = value;
+	newItem.dragSpeed = dragSpeed;
+	newItem.max = max;
+	newItem.min = min;
 	group[key] = newItem;
 }
 
-void GlobalVariables::SetValue(const std::string& groupName, const std::string& key, const Vector4& value){
+void GlobalVariables::SetValue(const std::string& groupName, const std::string& key, const Vector4& value, float dragSpeed, float min, float max){
 	Group& group = datas_[groupName];
 
-	Item newItem{};
-	newItem = value;
+	ItemData newItem{};
+	newItem.item = value;
+	newItem.dragSpeed = dragSpeed;
+	newItem.max = max;
+	newItem.min = min;
 	group[key] = newItem;
 }
 
-void GlobalVariables::AddValue(const std::string& groupName, const std::string& key, int32_t value){
+void GlobalVariables::AddValue(const std::string& groupName, const std::string& key, int32_t value, float dragSpeed, float min, float max){
 	Group& group = datas_[groupName];
 
-	std::map<std::string, Item>::iterator itItem = group.find(key);
+	std::map<std::string, ItemData>::iterator itItem = group.find(key);
 
 	// 未登録チェック.
 	if (itItem != group.end()) {
 		return;
 	}
 
-	SetValue(groupName,key,value);
+	SetValue(groupName,key,value,dragSpeed,min,max);
 }
 
-void GlobalVariables::AddValue(const std::string& groupName, const std::string& key, float value){
+void GlobalVariables::AddValue(const std::string& groupName, const std::string& key, float value, float dragSpeed, float min, float max){
 	Group& group = datas_[groupName];
 
-	std::map<std::string, Item>::iterator itItem = group.find(key);
+	std::map<std::string, ItemData>::iterator itItem = group.find(key);
 
 	// 未登録チェック.
 	if (itItem != group.end()) {
 		return;
 	}
 
-	SetValue(groupName, key, value);
+	SetValue(groupName, key, value, dragSpeed, min, max);
 }
 
-void GlobalVariables::AddValue(const std::string& groupName, const std::string& key, const Vector3& value){
+void GlobalVariables::AddValue(const std::string& groupName, const std::string& key, const Vector3& value, float dragSpeed, float min, float max){
 	Group& group = datas_[groupName];
 
-	std::map<std::string, Item>::iterator itItem = group.find(key);
+	std::map<std::string, ItemData>::iterator itItem = group.find(key);
 
 	// 未登録チェック.
 	if (itItem != group.end()) {
 		return;
 	}
 
-	SetValue(groupName, key, value);
+	SetValue(groupName, key, value, dragSpeed, min, max);
 }
 
-void GlobalVariables::AddValue(const std::string& groupName, const std::string& key, const Vector4& value){
+void GlobalVariables::AddValue(const std::string& groupName, const std::string& key, const Vector4& value, float dragSpeed, float min, float max){
 	Group& group = datas_[groupName];
 
-	std::map<std::string, Item>::iterator itItem = group.find(key);
+	std::map<std::string, ItemData>::iterator itItem = group.find(key);
 
 	// 未登録チェック.
 	if (itItem != group.end()) {
 		return;
 	}
 
-	SetValue(groupName, key, value);
+	SetValue(groupName, key, value,dragSpeed,max,min);
 }
 
 int32_t GlobalVariables::GetIntValue(const std::string& groupName, const std::string& key){
@@ -164,12 +176,12 @@ int32_t GlobalVariables::GetIntValue(const std::string& groupName, const std::st
 
 	Group& group = datas_.at(groupName);
 
-	std::map<std::string, Item>::iterator itItem = group.find(key);
+	std::map<std::string, ItemData>::iterator itItem = group.find(key);
 
 	// 未登録チェック.
 	assert(itItem != group.end());
 	
-	Item& item = itItem->second;
+	Item& item = itItem->second.item;
 
 	return std::get<int32_t>(item);
 }
@@ -183,12 +195,12 @@ float GlobalVariables::GetFloatValue(const std::string& groupName, const std::st
 
 	Group& group = datas_.at(groupName);
 
-	std::map<std::string, Item>::iterator itItem = group.find(key);
+	std::map<std::string, ItemData>::iterator itItem = group.find(key);
 
 	// 未登録チェック.
 	assert(itItem != group.end());
 
-	Item& item = itItem->second;
+	Item& item = itItem->second.item;
 
 	return std::get<float>(item);
 }
@@ -202,12 +214,12 @@ Vector3 GlobalVariables::GetVector3Value(const std::string& groupName, const std
 
 	Group& group = datas_.at(groupName);
 
-	std::map<std::string, Item>::iterator itItem = group.find(key);
+	std::map<std::string, ItemData>::iterator itItem = group.find(key);
 
 	// 未登録チェック.
 	assert(itItem != group.end());
 
-	Item& item = itItem->second;
+	Item& item = itItem->second.item;
 
 	return std::get<Vector3>(item);
 }
@@ -221,12 +233,12 @@ Vector4 GlobalVariables::GetVector4Value(const std::string& groupName, const std
 
 	Group& group = datas_.at(groupName);
 
-	std::map<std::string, Item>::iterator itItem = group.find(key);
+	std::map<std::string, ItemData>::iterator itItem = group.find(key);
 
 	// 未登録チェック.
 	assert(itItem != group.end());
 
-	Item& item = itItem->second;
+	Item& item = itItem->second.item;
 
 	return std::get<Vector4>(item);
 }
@@ -243,22 +255,22 @@ void GlobalVariables::SaveFile(const std::string& groupName){
 
 	root[groupName] = json::object();
 
-	for (std::map<std::string, Item>::iterator itItem = itGroup->second.begin();
+	for (std::map<std::string, ItemData>::iterator itItem = itGroup->second.begin();
 		itItem != itGroup->second.end();itItem++) {
 
 		// 項目名を取得.
 		const std::string& itemName = itItem->first;
 		// 項目の参照を取得.
-		Item& item = itItem->second;
+		ItemData& item = itItem->second;
 
-		if (std::holds_alternative<int32_t>(item)) {
-			root[groupName][itemName] = std::get<int32_t>(item);
-		} else if (std::holds_alternative<float>(item)) {
+		if (std::holds_alternative<int32_t>(item.item)) {
+			root[groupName][itemName] = json::array({std::get<int32_t>(item.item),item.dragSpeed,item.min,item.max});
+		} else if (std::holds_alternative<float>(item.item)) {
 			root[groupName][itemName] = std::get<float>(item);
-		} else if (std::holds_alternative<Vector3>(item)) {
+		} else if (std::holds_alternative<Vector3>(item.item)) {
 			Vector3 value = std::get<Vector3>(item);
 			root[groupName][itemName] = json::array({value.x,value.y,value.z});
-		} else if (std::holds_alternative<Vector4>(item)) {
+		} else if (std::holds_alternative<Vector4>(item.item)) {
 			Vector4 value = std::get<Vector4>(item);
 			root[groupName][itemName] = json::array({ value.x,value.y,value.z,value.w });
 		}
@@ -349,9 +361,12 @@ void GlobalVariables::LoadFile(const std::string& groupName){
 		// アイテム名を取得.
 		const std::string& itemName = itItem.key();
 
-		if (itItem->is_number_integer()) {
-			int32_t value = itItem->get<int32_t>();
-			SetValue(groupName,itemName,value);
+		if (itItem->is_array() && itItem->size() == 4) {
+			int32_t value = itItem->at(0);
+			float dragSpeed = itItem->at(1);
+			float min = itItem->at(2);
+			float max = itItem->at(3);
+			SetValue(groupName,itemName,value,dragSpeed,min,max);
 		}else if(itItem->is_number_float()) {
 			float value = itItem->get<float>();
 			SetValue(groupName, itemName, value);
@@ -359,7 +374,7 @@ void GlobalVariables::LoadFile(const std::string& groupName){
 			Vector3 value = {itItem->at(0),itItem->at(1) ,itItem->at(2) };
 			SetValue(groupName, itemName, value);
 		} else if (itItem->is_array() && itItem->size() == 4) {
-			Vector4 value = {itItem->at(0),itItem->at(1) ,itItem->at(2),itItem->at(3) };
+			Vector4 value = {itItem->at(0)->at(0),itItem->at(1) ,itItem->at(2),itItem->at(3)};
 			SetValue(groupName, itemName, value);
 		}
 

@@ -19,15 +19,15 @@ public:
 
 
 	void CreateGroup(const std::string& groupName);
-	void SetValue(const std::string& groupName, const std::string& key,int32_t value);
-	void SetValue(const std::string& groupName, const std::string& key,float value);
-	void SetValue(const std::string& groupName, const std::string& key,const Vector3& value);
-	void SetValue(const std::string& groupName, const std::string& key,const Vector4& value);
+	void SetValue(const std::string& groupName, const std::string& key,int32_t value,float dragSpeed,float min, float max);
+	void SetValue(const std::string& groupName, const std::string& key,float value, float dragSpeed, float min, float max);
+	void SetValue(const std::string& groupName, const std::string& key,const Vector3& value, float dragSpeed,float min, float max);
+	void SetValue(const std::string& groupName, const std::string& key,const Vector4& value, float dragSpeed,float min, float max);
 
-	void AddValue(const std::string& groupName, const std::string& key,int32_t value);
-	void AddValue(const std::string& groupName, const std::string& key,float value);
-	void AddValue(const std::string& groupName, const std::string& key,const Vector3& value);
-	void AddValue(const std::string& groupName, const std::string& key,const Vector4& value);
+	void AddValue(const std::string& groupName, const std::string& key,int32_t value, float dragSpeed, float min, float max);
+	void AddValue(const std::string& groupName, const std::string& key,float value, float dragSpeed, float min, float max);
+	void AddValue(const std::string& groupName, const std::string& key,const Vector3& value, float dragSpeed,float min, float max);
+	void AddValue(const std::string& groupName, const std::string& key,const Vector4& value, float dragSpeed,float min, float max);
 
 	int32_t GetIntValue(const std::string& groupName, const std::string& key);
 	float GetFloatValue(const std::string& groupName, const std::string& key);
@@ -50,15 +50,23 @@ public:
 	/// </summary>
 	/// <param name="groupName">グループ</param>
 	void LoadFile(const std::string& groupName);
+	using Item = std::variant<int32_t, float, Vector3, Vector4>;
+
+	struct ItemData {
+		Item item;
+		float dragSpeed;
+		float min;
+		float max;
+	};
 private:
 	GlobalVariables() = default;
 	~GlobalVariables() = default;
 private:
 	const std::string kDirectoryPath = "Resource/GlobalVariables/";
 
-	using Item = std::variant<int32_t, float, Vector3,Vector4>;
+	
 
-	using Group = std::map<std::string, Item>;
+	using Group = std::map<std::string, ItemData>;
 
 	std::map<std::string, Group> datas_;
 };
