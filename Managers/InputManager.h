@@ -194,8 +194,14 @@ public:
 
 	void SetCursorPosition(Vector2 position);
 	
+	void SetIsCursorFixed(bool isCursorFixed) { isCursorFixed_ = isCursorFixed; }
+
+	void SetIsCursorVisible(bool isCursorVisible) { isCursorVisible_ = isCursorVisible; ShowCursor(isCursorVisible_);}
+	
 	float GetWheel() const {return static_cast<float>(mouseState_.lZ);}
 private:
+	bool isCursorFixed_;
+	bool isCursorVisible_;
 	IDirectInputDevice8* mouse_ = nullptr;
 
 	DIMOUSESTATE2 mouseState_ = {};
@@ -260,6 +266,10 @@ public:
 	InputMouse GetMouse() { return mouse_; }
 
 	bool IsGamePadConnect() const { return gamePad_.IsConnected(); };
+
+	void SetIsCursorFixed(bool isCursorFixed) {mouse_.SetIsCursorFixed(isCursorFixed); }
+
+	void SetIsCursorVisible(bool isCursorVisible) { mouse_.SetIsCursorVisible(isCursorVisible); }
 private:
 	void OperationModeCheck();
 private:

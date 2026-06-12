@@ -57,6 +57,11 @@ void InputMouse::Initialize(IDirectInput8* directInput) {
 	preMouseScreenPosition_ = { 0.0f,0.0f };
 	ZeroMemory(&mouseState_, sizeof(DIMOUSESTATE2));
 	ZeroMemory(&preMouseState_, sizeof(DIMOUSESTATE2));
+
+	isCursorFixed_ = false;
+	isCursorVisible_ = true;
+
+	ShowCursor(isCursorVisible_);
 }
 
 void InputMouse::Update() {
@@ -78,15 +83,6 @@ void InputMouse::Update() {
 	if ((mouseState_.rgbButtons[0] & 0x80) != 0) {
 		result;
 	}
-	//ImGui::Begin("mouse");
-	//
-	//for (uint32_t i = 0; i < 8; i ++) {
-	//	ImGui::PushID(i);
-	//	ImGui::Text("rgbButtom %d %d", i, mouseState_.rgbButtons[i]);
-	//	ImGui::PopID();
-	//}
-	//
-	//ImGui::End();
 
 	preMousePosition_ = mousePosition_;
 	preMouseScreenPosition_ = mouseScreenPosition_;
@@ -98,6 +94,12 @@ void InputMouse::Update() {
 
 	ScreenToClient(GameSystem::GetInstance()->GetHWND(), &pos);
 	mousePosition_ = { static_cast<float>(pos.x),static_cast<float>(pos.y) };
+
+
+
+	if (isCursorFixed_) {
+		SetCursorPosition({ Environment::GetInstance()->GetWindowSize().width / 2.0f, Environment::GetInstance()->GetWindowSize().height / 2.0f });
+	}
 }
 
 void InputMouse::SetCursorPosition(Vector2 position) {
@@ -516,6 +518,7 @@ void InputManager::Initialize() {// DirectInputの初期化.
 void InputManager::Update() {
 	keyBoard_.Update();
 	mouse_.Update();
+
 	gamePad_.Update();
 }
 

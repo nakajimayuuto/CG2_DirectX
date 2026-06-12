@@ -40,7 +40,7 @@ void Player::Update() {
 		move = move.Normalize() * kSpeed;
 	}
 
-	if (move.x != 0.0f && move.z != 0.0f) {
+	if (move.x != 0.0f || move.z != 0.0f) {
 		isMoving_ = true;
 	}
 
