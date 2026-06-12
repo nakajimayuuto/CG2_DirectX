@@ -156,6 +156,7 @@ void Player::BehaviorAttackUpdate(){
 	case Player::kStay:
 		break;
 	}
+
 }
 
 void Player::UpdateFloatingGimmick(){
