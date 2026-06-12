@@ -6,11 +6,11 @@
 /// </summary>
 class Player : public BaseCharacter{
 public:
-	void Initialize();
+	void Initialize() override;
 
-	void Update();
+	void Update()override;
 
-	void Draw();
+	void Draw()override;
 
 	Transform* GetTransform() { return &transform_; };
 

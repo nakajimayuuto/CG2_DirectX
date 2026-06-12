@@ -163,6 +163,9 @@
     <Filter Include="ソース ファイル\BaseCharacter">
       <UniqueIdentifier>{4dc6e54b-ebdc-435a-8203-d88a8c0990ea}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Enemy">
+      <UniqueIdentifier>{0fb61ff8-d723-4ce2-8e90-ea558a44f06d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -320,6 +323,9 @@
     </ClCompile>
     <ClCompile Include="BaseCharacter.cpp">
       <Filter>ソース ファイル\BaseCharacter</Filter>
+    </ClCompile>
+    <ClCompile Include="Enemy.cpp">
+      <Filter>ソース ファイル\Enemy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -490,6 +496,9 @@
     </ClInclude>
     <ClInclude Include="BaseCharacter.h">
       <Filter>ソース ファイル\BaseCharacter</Filter>
+    </ClInclude>
+    <ClInclude Include="Enemy.h">
+      <Filter>ソース ファイル\Enemy</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -12,6 +12,7 @@ void GameScene::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("player_right_arm","Resource/player_hovering_mode/right_arm","right_arm.obj");
 	ModelManager::GetInstance()->RegisterObj("player_left_arm","Resource/player_hovering_mode/left_arm","left_arm.obj");
 	ModelManager::GetInstance()->RegisterObj("player_head","Resource/player_hovering_mode/head","head.obj");
+	ModelManager::GetInstance()->RegisterObj("enemy","Resource/enemy","enemy.obj");
 
 	Camera::GetInstance()->SetPosition({0.0f,2.0f,-30.0f});
 
@@ -23,6 +24,9 @@ void GameScene::Initialize() {
 
 	ground_ = std::make_unique<Ground>();
 	ground_->Initialize();
+
+	enemy_ = std::make_unique<Enemy>();
+	enemy_->Initialize();
 
 	followCamera_ = std::make_unique<FollowCamera>();
 	followCamera_->Initialize();
@@ -42,6 +46,8 @@ void GameScene::Update() {
 		Camera::GetInstance()->ChangeCameraMode();
 	}
 
+	enemy_->Update();
+
 	player_->Update();
 
 	followCamera_->Update();
@@ -53,4 +59,5 @@ void GameScene::Draw() {
 	skydome_->Draw();
 	ground_->Draw();
 	player_->Draw();
+	enemy_->Draw();
 }
