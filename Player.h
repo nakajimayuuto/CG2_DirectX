@@ -1,11 +1,17 @@
 #pragma once
 #include "Satlib.h"
 #include "BaseCharacter.h"
+
 /// <summary>
 /// 自キャラ
 /// </summary>
 class Player : public BaseCharacter{
 public:
+	enum class Behavior {
+		kRoot,
+		kAttack
+	};
+
 	void Initialize() override;
 
 	void Update()override;
@@ -17,10 +23,25 @@ public:
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();
 private:
+	void BehaviorRootInitialize();
+	void BehaviorRootUpdate();
+
+	void BehaviorAttackInitialize();
+	void BehaviorAttackUpdate();
+
+
+
+
 	void InitializeFloatingGimmick();
 
 	void UpdateFloatingGimmick();
 private:
+	enum AttackPhase {
+		kCharge,
+		kStamp,
+		kStay
+	};
+
 	static inline float kSpeed = 0.3f;
 	static inline float kCompletionRate = 0.25f;
 
@@ -30,6 +51,22 @@ private:
 
 	float floatingParameter = 0.0f;
 
+	Behavior behavior_ = Behavior::kRoot;
+
+	std::optional<Behavior> behaviorRequest_ = std::nullopt;
+
+	static inline float kChargeAnimationMaxTime = 0.3f;
+	static inline float kStampAnimationMaxTime = 0.5f;
+	static inline float kStayAnimationMaxTime = 1.0f;
+
+	static inline float kStartHammerRotateX = 0.0f;
+	static inline float kStampHammerRotateX = Radian(90.0f);
+
+	AttackPhase attackPhase_;
+
+	float hammerAnimationTimer_ = 0.0f;
+
+
 	bool isMoving_;
 
 	float targetRotateY;
@@ -38,5 +75,6 @@ private:
 	static inline Transform transformHead_;
 	static inline Transform transformRArm_;
 	static inline Transform transformLArm_;
+	static inline Transform transformHammer_;
 };
 
