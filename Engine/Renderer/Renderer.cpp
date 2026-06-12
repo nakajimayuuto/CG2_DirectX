@@ -103,6 +103,10 @@ void Model::Initialize(const ModelInfo& info) {
 	}
 }
 
+void Model::Initialize(const std::string& name){
+	Initialize(ModelManager::GetInstance()->GetModelInfo(name));
+}
+
 void Model::Draw(const Transform& transform) const {
 	for (uint32_t i = 0; i < modelMax_; i++) {
 		if (!isVisible_[i]) {

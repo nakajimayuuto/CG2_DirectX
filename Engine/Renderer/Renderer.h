@@ -55,6 +55,7 @@ class Model {
 public:
 	~Model();
 	void Initialize(const ModelInfo& info);
+	void Initialize(const std::string& name);
 
 	void Draw(const Transform& transform) const;
 

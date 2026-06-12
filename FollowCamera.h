@@ -8,7 +8,7 @@ public:
 
 	void SetTarget(const Transform* target) { target_ = target; };
 private:
-	static inline Vector3 kOffset = { 0.0f,2.0f,-10.0f };
+	static inline Vector3 kOffset = { 0.0f,2.0f,-20.0f };
 
 	static inline float kRotateSpeed = Radian(1.0f);
 

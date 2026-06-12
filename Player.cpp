@@ -2,13 +2,35 @@
 
 void Player::Initialize() {
 	transform_.Initialize();
-	transform_.translate.y = 1.0f;
+	transform_.translate.y = 1.5f;
 	targetRotateY = 0.0f;
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
 
+	transformBody_.Initialize();
+	transformBody_.SetParent(&transform_);
+
+	modelHead_.Initialize("player_head");
+	transformHead_.Initialize();
+	transformHead_.SetParent(&transformBody_);
+
+	modelLArm_.Initialize("player_left_arm");
+	transformLArm_.Initialize();
+	transformLArm_.SetParent(&transformBody_);
+	transformLArm_.translate.x = -0.5f;
+
+	modelRArm_.Initialize("player_right_arm");
+	transformRArm_.Initialize();
+	transformRArm_.SetParent(&transformBody_);
+	transformRArm_.translate.x = 0.5f;
 	//transform_.rotate.y = std::atan2(velocity.x, velocity.z);
 	//Vector3 velocityXZ = { velocity.x,0.0f,velocity.z };
 	//transform_.rotate.x = std::atan2(-velocity.y, velocityXZ.Length());
+
+	InitializeFloatingGimmick();
+}
+
+void Player::InitializeFloatingGimmick() {
+	floatingParameter = 0.0f;
 }
 
 void Player::Update() {
@@ -57,8 +79,20 @@ void Player::Update() {
 
 	transform_.translate += move;
 
+	UpdateFloatingGimmick();
+}
+
+void Player::UpdateFloatingGimmick(){
+	floatingParameter += kFloatingAnimationStep;
+
+	floatingParameter = std::fmod(floatingParameter,2.0f * std::numbers::pi_v<float>);
+
+	transformBody_.translate.y = std::sin(floatingParameter) * kFloatingAmplitude;
 }
 
 void Player::Draw() {
-	Renderer::GetInstance()->DrawModel(transform_,&model_);
+	Renderer::GetInstance()->DrawModel(transformBody_,&model_);
+	Renderer::GetInstance()->DrawModel(transformHead_,&modelHead_);
+	Renderer::GetInstance()->DrawModel(transformLArm_,&modelLArm_);
+	Renderer::GetInstance()->DrawModel(transformRArm_,&modelRArm_);
 }
