@@ -23,8 +23,7 @@ private:
 	static inline float kSpeed = 0.3f;
 	static inline float kCompletionRate = 0.25f;
 
-	static inline uint16_t kFloatingAnimationPeriod_ = 120;
-	static inline float kFloatingAnimationStep = 2.0f * std::numbers::pi_v<float> / kFloatingAnimationPeriod_;
+	static inline uint16_t kFloatingAnimationPeriod = 120;
 
 	static inline float kFloatingAmplitude = 0.3f;
 

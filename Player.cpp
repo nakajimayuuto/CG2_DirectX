@@ -83,6 +83,7 @@ void Player::Update() {
 }
 
 void Player::UpdateFloatingGimmick(){
+	float kFloatingAnimationStep = 2.0f * std::numbers::pi_v<float> / kFloatingAnimationPeriod;
 	floatingParameter += kFloatingAnimationStep;
 
 	floatingParameter = std::fmod(floatingParameter,2.0f * std::numbers::pi_v<float>);
@@ -101,12 +102,18 @@ void Player::RegisterGlobalVariables() {
 
 	const char* groupName = "Player";
 
-	GlobalVariables::GetInstance()->AddValue(groupName, "Head Translate",transformHead_.translate);
-	GlobalVariables::GetInstance()->AddValue(groupName, "ArmL Translate",transformLArm_.translate);
-	GlobalVariables::GetInstance()->AddValue(groupName, "ArmR Translate",transformRArm_.translate);
+	GlobalVariables::GetInstance()->AddValue(groupName,"Head Translate",transformHead_.translate);
+	GlobalVariables::GetInstance()->AddValue(groupName,"ArmL Translate",transformLArm_.translate);
+	GlobalVariables::GetInstance()->AddValue(groupName,"ArmR Translate",transformRArm_.translate);
+	GlobalVariables::GetInstance()->AddValue(groupName,"FloatingAnimationPeriod",kFloatingAnimationPeriod);
+	GlobalVariables::GetInstance()->AddValue(groupName,"FloatingAmplitude", kFloatingAmplitude);
 }
 
 void Player::ApplyGlobalVariables() {
 	const char* groupName = "Player";
-
+	transformHead_.translate = GlobalVariables::GetInstance()->GetVector3Value(groupName, "Head Translate");
+	transformLArm_.translate = GlobalVariables::GetInstance()->GetVector3Value(groupName, "ArmL Translate");
+	transformRArm_.translate = GlobalVariables::GetInstance()->GetVector3Value(groupName, "ArmR Translate");
+	kFloatingAnimationPeriod = GlobalVariables::GetInstance()->GetIntValue(groupName, "FloatingAnimationPeriod");
+	kFloatingAmplitude = GlobalVariables::GetInstance()->GetFloatValue(groupName, "FloatingAmplitude");
 }

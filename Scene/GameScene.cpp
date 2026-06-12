@@ -27,9 +27,13 @@ void GameScene::Initialize() {
 	followCamera_ = std::make_unique<FollowCamera>();
 	followCamera_->Initialize();
 	followCamera_->SetTarget(player_->GetTransform());
+
+	Player::RegisterGlobalVariables();
 }
 
 void GameScene::Update() {
+	Player::ApplyGlobalVariables();
+
 	if (InputManager::GetInstance()->TriggerKey(DIK_R)) {
 		SceneManager::GetInstance()->ReloadScene();
 	}
