@@ -158,6 +158,12 @@ void Player::BehaviorAttackUpdate(){
 	}
 }
 
+void Player::BehaviorDashInitialize(){
+}
+
+void Player::BehaviorDashUpdate(){
+}
+
 void Player::UpdateFloatingGimmick(){
 	float kFloatingAnimationStep = 2.0f * std::numbers::pi_v<float> / kFloatingAnimationPeriod;
 	floatingParameter += kFloatingAnimationStep;

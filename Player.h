@@ -9,7 +9,8 @@ class Player : public BaseCharacter{
 public:
 	enum class Behavior {
 		kRoot,
-		kAttack
+		kAttack,
+		kDash
 	};
 
 	void Initialize() override;
@@ -29,7 +30,9 @@ private:
 	void BehaviorAttackInitialize();
 	void BehaviorAttackUpdate();
 
+	void BehaviorDashInitialize();
 
+	void BehaviorDashUpdate();
 
 
 	void InitializeFloatingGimmick();
