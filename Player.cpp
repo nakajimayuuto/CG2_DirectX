@@ -42,10 +42,10 @@ void Player::InitializeFloatingGimmick() {
 }
 
 void Player::Update() {
-	if(behaviorRequest_){
+	if (behaviorRequest_) {
 		behavior_ = behaviorRequest_.value();
 
-		switch (behavior_){
+		switch (behavior_) {
 		case Player::Behavior::kRoot:
 			BehaviorRootInitialize();
 			break;
@@ -62,7 +62,7 @@ void Player::Update() {
 		behaviorRequest_ = std::nullopt;
 	}
 
-	switch (behavior_){
+	switch (behavior_) {
 	case Player::Behavior::kRoot:
 		BehaviorRootUpdate();
 		break;
@@ -77,7 +77,7 @@ void Player::Update() {
 	}
 }
 
-void Player::BehaviorRootInitialize(){
+void Player::BehaviorRootInitialize() {
 	floatingParameter = 0.0f;
 
 	InitializeFloatingGimmick();
@@ -150,7 +150,7 @@ void Player::BehaviorRootUpdate() {
 }
 
 
-void Player::BehaviorAttackInitialize(){
+void Player::BehaviorAttackInitialize() {
 	hammerAnimationTimer_ = 0.0f;
 
 	transformHammer_.rotate.x = 0.0f;
@@ -158,30 +158,22 @@ void Player::BehaviorAttackInitialize(){
 	attackPhase_ = kCharge;
 }
 
-void Player::BehaviorAttackUpdate(){
+void Player::BehaviorAttackUpdate() {
 	hammerAnimationTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
 
-	switch (attackPhase_){
-	case Player::kCharge:
-		transformHammer_.rotate.x = Easing(kStartHammerRotateX,kStampHammerRotateX,hammerAnimationTimer_, kChargeAnimationMaxTime, EaseType::kEaseInBack);
+	transformHammer_.rotate.x = Easing(kStartHammerRotateX, kStampHammerRotateX, hammerAnimationTimer_, kStampAnimationMaxTime, EaseType::kEaseInBack);
 
-		if(hammerAnimationTimer_ > kChargeAnimationMaxTime){
-			behaviorRequest_ = Behavior::kRoot;
-		}
-		break;
-	case Player::kStamp:
-		break;
-	case Player::kStay:
-		break;
+	if (hammerAnimationTimer_ > kStampAnimationMaxTime) {
+		behaviorRequest_ = Behavior::kRoot;
 	}
 }
 
-void Player::BehaviorDashInitialize(){
+void Player::BehaviorDashInitialize() {
 	workDash_.dashParameter_ = 0.0f;
 	transform_.rotate.y = targetRotateY;
 }
 
-void Player::BehaviorDashUpdate(){
+void Player::BehaviorDashUpdate() {
 	workDash_.dashParameter_ += DeltaTime::GetInstance()->GetDeltaTime();
 
 	Vector3 move = { 0.0f,0.0f,1.0f };
@@ -197,20 +189,20 @@ void Player::BehaviorDashUpdate(){
 	}
 }
 
-void Player::UpdateFloatingGimmick(){
+void Player::UpdateFloatingGimmick() {
 	float kFloatingAnimationStep = 2.0f * std::numbers::pi_v<float> / kFloatingAnimationPeriod;
 	floatingParameter += kFloatingAnimationStep;
 
-	floatingParameter = std::fmod(floatingParameter,2.0f * std::numbers::pi_v<float>);
+	floatingParameter = std::fmod(floatingParameter, 2.0f * std::numbers::pi_v<float>);
 
 	transformBody_.translate.y = std::sin(floatingParameter) * kFloatingAmplitude;
 }
 
 void Player::Draw() {
-	Renderer::GetInstance()->DrawModel(transformBody_,&models_["body"]);
-	Renderer::GetInstance()->DrawModel(transformHead_,&models_["head"]);
-	Renderer::GetInstance()->DrawModel(transformLArm_,&models_["LArm"]);
-	Renderer::GetInstance()->DrawModel(transformRArm_,&models_["RArm"]);
+	Renderer::GetInstance()->DrawModel(transformBody_, &models_["body"]);
+	Renderer::GetInstance()->DrawModel(transformHead_, &models_["head"]);
+	Renderer::GetInstance()->DrawModel(transformLArm_, &models_["LArm"]);
+	Renderer::GetInstance()->DrawModel(transformRArm_, &models_["RArm"]);
 
 	if (behavior_ == Behavior::kAttack) {
 		Renderer::GetInstance()->DrawModel(transformHammer_, &models_["hammer_of_justice"]);
@@ -221,11 +213,11 @@ void Player::RegisterGlobalVariables() {
 
 	const char* groupName = "Player";
 
-	GlobalVariables::GetInstance()->AddValue(groupName,"Head Translate",transformHead_.translate);
-	GlobalVariables::GetInstance()->AddValue(groupName,"ArmL Translate",transformLArm_.translate);
-	GlobalVariables::GetInstance()->AddValue(groupName,"ArmR Translate",transformRArm_.translate);
-	GlobalVariables::GetInstance()->AddValue(groupName,"FloatingAnimationPeriod",kFloatingAnimationPeriod);
-	GlobalVariables::GetInstance()->AddValue(groupName,"FloatingAmplitude", kFloatingAmplitude);
+	GlobalVariables::GetInstance()->AddValue(groupName, "Head Translate", transformHead_.translate);
+	GlobalVariables::GetInstance()->AddValue(groupName, "ArmL Translate", transformLArm_.translate);
+	GlobalVariables::GetInstance()->AddValue(groupName, "ArmR Translate", transformRArm_.translate);
+	GlobalVariables::GetInstance()->AddValue(groupName, "FloatingAnimationPeriod", kFloatingAnimationPeriod);
+	GlobalVariables::GetInstance()->AddValue(groupName, "FloatingAmplitude", kFloatingAmplitude);
 }
 
 void Player::ApplyGlobalVariables() {

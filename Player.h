@@ -62,9 +62,7 @@ private:
 
 	std::optional<Behavior> behaviorRequest_ = std::nullopt;
 
-	static inline float kChargeAnimationMaxTime = 0.3f;
 	static inline float kStampAnimationMaxTime = 0.5f;
-	static inline float kStayAnimationMaxTime = 1.0f;
 
 	static inline float kStartHammerRotateX = 0.0f;
 	static inline float kStampHammerRotateX = Radian(90.0f);
