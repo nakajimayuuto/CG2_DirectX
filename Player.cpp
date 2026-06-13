@@ -52,6 +52,9 @@ void Player::Update() {
 		case Player::Behavior::kAttack:
 			BehaviorAttackInitialize();
 			break;
+		case Player::Behavior::kDash:
+			BehaviorDashInitialize();
+			break;
 		default:
 			break;
 		}
@@ -65,6 +68,9 @@ void Player::Update() {
 		break;
 	case Player::Behavior::kAttack:
 		BehaviorAttackUpdate();
+		break;
+	case Player::Behavior::kDash:
+		BehaviorDashUpdate();
 		break;
 	default:
 		break;
@@ -86,6 +92,14 @@ void Player::BehaviorRootUpdate() {
 		move = { input->GetLeftStickDirection().x,0.0f,input->GetLeftStickDirection().y };
 
 		move = move.Normalize() * kSpeed;
+
+		if (input->TriggerPadButton(PadButtons::INPUT_L1)) {
+			behaviorRequest_ = Behavior::kAttack;
+		}
+
+		if (input->TriggerPadButton(PadButtons::INPUT_R1)) {
+			behaviorRequest_ = Behavior::kDash;
+		}
 	} else {
 		if (input->PressKey(DIK_W)) {
 			move.z += 1.0f;
@@ -103,11 +117,15 @@ void Player::BehaviorRootUpdate() {
 			move.x += 1.0f;
 		}
 
-		move = move.Normalize() * kSpeed;
-	}
+		if (input->TriggerKey(DIK_SPACE)) {
+			behaviorRequest_ = Behavior::kAttack;
+		}
 
-	if (input->TriggerKey(DIK_SPACE)) {
-		behaviorRequest_ = Behavior::kAttack;
+		if (input->TriggerKey(DIK_LSHIFT)) {
+			behaviorRequest_ = Behavior::kDash;
+		}
+
+		move = move.Normalize() * kSpeed;
 	}
 
 	if (move.x != 0.0f || move.z != 0.0f) {
@@ -159,9 +177,24 @@ void Player::BehaviorAttackUpdate(){
 }
 
 void Player::BehaviorDashInitialize(){
+	workDash_.dashParameter_ = 0.0f;
+	transform_.rotate.y = targetRotateY;
 }
 
 void Player::BehaviorDashUpdate(){
+	workDash_.dashParameter_ += DeltaTime::GetInstance()->GetDeltaTime();
+
+	Vector3 move = { 0.0f,0.0f,1.0f };
+
+	Matrix4x4 rotateMatrix = Matrix4x4::MakeRotateMatrix(transform_.rotate);
+
+	move = rotateMatrix.TransformNomal(move);
+
+	transform_.translate += move;
+
+	if (workDash_.dashParameter_ >= kBehaviorDashTime) {
+		behaviorRequest_ = Behavior::kRoot;
+	}
 }
 
 void Player::UpdateFloatingGimmick(){

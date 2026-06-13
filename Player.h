@@ -10,7 +10,7 @@ public:
 	enum class Behavior {
 		kRoot,
 		kAttack,
-		kDash
+		kDash,
 	};
 
 	void Initialize() override;
@@ -45,6 +45,10 @@ private:
 		kStay
 	};
 
+	struct WorkDash {
+		float dashParameter_ = 0.0f;
+	};
+
 	static inline float kSpeed = 0.3f;
 	static inline float kCompletionRate = 0.25f;
 
@@ -69,6 +73,9 @@ private:
 
 	float hammerAnimationTimer_ = 0.0f;
 
+	static inline float kBehaviorDashTime = 0.5f;
+
+	WorkDash workDash_;
 
 	bool isMoving_;
 
