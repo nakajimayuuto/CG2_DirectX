@@ -11,6 +11,7 @@ public:
 		kRoot,
 		kAttack,
 		kDash,
+		kJump,
 	};
 
 	void Initialize() override;
@@ -31,8 +32,10 @@ private:
 	void BehaviorAttackUpdate();
 
 	void BehaviorDashInitialize();
-
 	void BehaviorDashUpdate();
+
+	void BehaviorJumpInitialize();
+	void BehaviorJumpUpdate();
 
 
 	void InitializeFloatingGimmick();
@@ -42,7 +45,7 @@ private:
 	enum AttackPhase {
 		kCharge,
 		kStamp,
-		kStay
+		kStay,
 	};
 
 	struct WorkDash {
@@ -75,6 +78,13 @@ private:
 
 	WorkDash workDash_;
 
+	static inline float kJumpFirstSpeed_ = 1.0f;
+
+	Vector3 velocity_;
+	static inline float kGravityAcceleration = 0.05f;
+
+
+
 	bool isMoving_;
 
 	float targetRotateY;
@@ -84,5 +94,7 @@ private:
 	static inline Transform transformRArm_;
 	static inline Transform transformLArm_;
 	static inline Transform transformHammer_;
+
+	static inline float kBodyBlankY = 1.2f;
 };
 

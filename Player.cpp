@@ -2,11 +2,11 @@
 
 void Player::Initialize() {
 	transform_.Initialize();
-	transform_.translate.y = 1.2f;
 	targetRotateY = 0.0f;
 	models_["body"].Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
 
 	transformBody_.Initialize();
+	transformBody_.translate.y = kBodyBlankY;
 	transformBody_.SetParent(&transform_);
 
 	models_["head"].Initialize("player_head");
@@ -55,6 +55,9 @@ void Player::Update() {
 		case Player::Behavior::kDash:
 			BehaviorDashInitialize();
 			break;
+		case Player::Behavior::kJump:
+			BehaviorJumpInitialize();
+			break;
 		default:
 			break;
 		}
@@ -72,6 +75,9 @@ void Player::Update() {
 	case Player::Behavior::kDash:
 		BehaviorDashUpdate();
 		break;
+	case Player::Behavior::kJump:
+		BehaviorJumpUpdate();
+		break;
 	default:
 		break;
 	}
@@ -86,12 +92,12 @@ void Player::BehaviorRootInitialize() {
 void Player::BehaviorRootUpdate() {
 	isMoving_ = false;
 
-	Vector3 move = { 0.0f,0.0f,0.0f };
+	velocity_ = { 0.0f,0.0f,0.0f };
 	InputManager* input = InputManager::GetInstance();
 	if (input->IsGamePadConnect()) {
-		move = { input->GetLeftStickDirection().x,0.0f,input->GetLeftStickDirection().y };
+		velocity_ = { input->GetLeftStickDirection().x,0.0f,input->GetLeftStickDirection().y };
 
-		move = move.Normalize() * kSpeed;
+		velocity_ = velocity_.Normalize() * kSpeed;
 
 		if (input->TriggerPadButton(PadButtons::INPUT_L1)) {
 			behaviorRequest_ = Behavior::kAttack;
@@ -100,50 +106,58 @@ void Player::BehaviorRootUpdate() {
 		if (input->TriggerPadButton(PadButtons::INPUT_R1)) {
 			behaviorRequest_ = Behavior::kDash;
 		}
+
+		if (input->TriggerPadButton(PadButtons::INPUT_A) || input->TriggerPadButton(PadButtons::INPUT_B)) {
+			behaviorRequest_ = Behavior::kJump;
+		}
 	} else {
 		if (input->PressKey(DIK_W)) {
-			move.z += 1.0f;
+			velocity_.z += 1.0f;
 		}
 
 		if (input->PressKey(DIK_S)) {
-			move.z -= 1.0f;
+			velocity_.z -= 1.0f;
 		}
 
 		if (input->PressKey(DIK_A)) {
-			move.x -= 1.0f;
+			velocity_.x -= 1.0f;
 		}
 
 		if (input->PressKey(DIK_D)) {
-			move.x += 1.0f;
+			velocity_.x += 1.0f;
 		}
 
-		if (input->TriggerKey(DIK_SPACE)) {
+		if (input->TriggerMouse(MouseButtons::MOUSE_LEFT)) {
 			behaviorRequest_ = Behavior::kAttack;
 		}
 
-		if (input->TriggerKey(DIK_LSHIFT)) {
+		if (input->TriggerMouse(MouseButtons::MOUSE_RIGHT)) {
 			behaviorRequest_ = Behavior::kDash;
 		}
 
-		move = move.Normalize() * kSpeed;
+		if (input->TriggerKey(DIK_SPACE)) {
+			behaviorRequest_ = Behavior::kJump;
+		}
+
+		velocity_ = velocity_.Normalize() * kSpeed;
 	}
 
-	if (move.x != 0.0f || move.z != 0.0f) {
+	if (velocity_.x != 0.0f || velocity_.z != 0.0f) {
 		isMoving_ = true;
 	}
 
 	Matrix4x4 cameraRotateMatrix = Matrix4x4::MakeRotateMatrix(Camera::GetInstance()->GetTransform().rotate);
 
-	move = cameraRotateMatrix.TransformNomal(move);
+	velocity_ = cameraRotateMatrix.TransformNomal(velocity_);
 
 	if (isMoving_) {
-		targetRotateY = std::atan2(move.x, move.z);
+		targetRotateY = std::atan2(velocity_.x, velocity_.z);
 	}
 
 	transform_.rotate.y = LerpShortAngle(transform_.rotate.y, targetRotateY, kCompletionRate);
 	//transform_.rotate.y = std::atan2(move.x, move.z);
 
-	transform_.translate += move;
+	transform_.translate += velocity_;
 
 	UpdateFloatingGimmick();
 
@@ -189,13 +203,33 @@ void Player::BehaviorDashUpdate() {
 	}
 }
 
+void Player::BehaviorJumpInitialize(){
+	transformBody_.translate.y = kBodyBlankY;
+	velocity_.y = kJumpFirstSpeed_;
+
+
+}
+
+void Player::BehaviorJumpUpdate(){
+	transform_.translate += velocity_;
+
+	Vector3 accelerationVector = {0.0f,-kGravityAcceleration,0.0f};
+
+	velocity_ += accelerationVector;
+
+	if (transform_.translate.y <= 0.0f) {
+		transform_.translate.y = 0.0f;
+		behaviorRequest_ = Behavior::kRoot;
+	}
+}
+
 void Player::UpdateFloatingGimmick() {
 	float kFloatingAnimationStep = 2.0f * std::numbers::pi_v<float> / kFloatingAnimationPeriod;
 	floatingParameter += kFloatingAnimationStep;
 
 	floatingParameter = std::fmod(floatingParameter, 2.0f * std::numbers::pi_v<float>);
 
-	transformBody_.translate.y = std::sin(floatingParameter) * kFloatingAmplitude;
+	transformBody_.translate.y = (std::sin(floatingParameter) * kFloatingAmplitude) + kBodyBlankY;
 }
 
 void Player::Draw() {
