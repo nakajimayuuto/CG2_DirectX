@@ -14,6 +14,22 @@ public:
 		kJump,
 	};
 
+	struct ConstAttack {
+		float anticipationTime;
+
+		float chargeTime;
+
+		float swingTime;
+
+		float recoveryTime;
+
+		float anticipationSpeed;
+
+		float chargeSpeed;
+
+		float swingSpeed;
+	};
+
 	void Initialize() override;
 
 	void Update()override;
@@ -71,6 +87,10 @@ private:
 	static inline float kStampHammerRotateX = Radian(90.0f);
 
 	AttackPhase attackPhase_;
+
+	static inline const uint32_t kComboNum = 3;
+
+	static inline std::array<Player::ConstAttack, Player::kComboNum> kConstAttacks_;
 
 	float hammerAnimationTimer_ = 0.0f;
 

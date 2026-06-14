@@ -32,6 +32,8 @@ void Player::Initialize() {
 
 	behavior_ = Behavior::kRoot;
 
+	kConstAttacks_[0] = {0.0f,0.0f,0.4f,0.0f,0.0f,0.0f,0.15f};
+
 	InitializeFloatingGimmick();
 
 	BehaviorAttackInitialize();
@@ -252,6 +254,16 @@ void Player::RegisterGlobalVariables() {
 	GlobalVariables::GetInstance()->AddValue(groupName, "ArmR Translate", transformRArm_.translate);
 	GlobalVariables::GetInstance()->AddValue(groupName, "FloatingAnimationPeriod", kFloatingAnimationPeriod);
 	GlobalVariables::GetInstance()->AddValue(groupName, "FloatingAmplitude", kFloatingAmplitude);
+
+	for (uint32_t i = 0; i < kComboNum; i++) {
+		GlobalVariables::GetInstance()->AddValue(groupName, std::format("anticipationTime Combo{}",i), kConstAttacks_[i].anticipationTime);
+		GlobalVariables::GetInstance()->AddValue(groupName, std::format("anticipationSpeed Combo{}", i), kConstAttacks_[i].anticipationSpeed);
+		GlobalVariables::GetInstance()->AddValue(groupName, std::format("chargeTime Combo{}", i), kConstAttacks_[i].chargeTime);
+		GlobalVariables::GetInstance()->AddValue(groupName, std::format("chargeSpeed Combo{}", i), kConstAttacks_[i].chargeSpeed);
+		GlobalVariables::GetInstance()->AddValue(groupName, std::format("swingTime Combo{}", i), kConstAttacks_[i].swingTime);
+		GlobalVariables::GetInstance()->AddValue(groupName, std::format("swingSpeed Combo{}", i), kConstAttacks_[i].swingSpeed);
+		GlobalVariables::GetInstance()->AddValue(groupName, std::format("recoveryTime Combo{}", i),kConstAttacks_[i].recoveryTime);
+	}
 }
 
 void Player::ApplyGlobalVariables() {
@@ -261,4 +273,14 @@ void Player::ApplyGlobalVariables() {
 	transformRArm_.translate = GlobalVariables::GetInstance()->GetVector3Value(groupName, "ArmR Translate");
 	kFloatingAnimationPeriod = GlobalVariables::GetInstance()->GetIntValue(groupName, "FloatingAnimationPeriod");
 	kFloatingAmplitude = GlobalVariables::GetInstance()->GetFloatValue(groupName, "FloatingAmplitude");
+
+	for (uint32_t i = 0; i < kComboNum; i++) {
+		kConstAttacks_[i].anticipationTime = GlobalVariables::GetInstance()->GetFloatValue(groupName, std::format("anticipationTime Combo{}", i));
+		kConstAttacks_[i].anticipationSpeed = GlobalVariables::GetInstance()->GetFloatValue(groupName, std::format("anticipationSpeed Combo{}", i));
+		kConstAttacks_[i].chargeTime = GlobalVariables::GetInstance()->GetFloatValue(groupName, std::format("chargeTime Combo{}", i));
+		kConstAttacks_[i].chargeSpeed = GlobalVariables::GetInstance()->GetFloatValue(groupName, std::format("chargeSpeed Combo{}", i));
+		kConstAttacks_[i].swingTime = GlobalVariables::GetInstance()->GetFloatValue(groupName, std::format("swingTime Combo{}", i));
+		kConstAttacks_[i].swingSpeed = GlobalVariables::GetInstance()->GetFloatValue(groupName, std::format("swingSpeed Combo{}", i));
+		kConstAttacks_[i].recoveryTime = GlobalVariables::GetInstance()->GetFloatValue(groupName, std::format("recoveryTime Combo{}", i));
+	}
 }
