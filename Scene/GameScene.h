@@ -25,6 +25,7 @@ private:
 	Skydome* skydome_ = nullptr;
 
 	RECT windowRect;
+	RECT windowFirstRect;
 
 	Renderer::Sprite frameSpriteLeft_;
 	Renderer::Sprite frameSpriteRight_;

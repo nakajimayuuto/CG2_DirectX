@@ -155,7 +155,7 @@ Matrix4x4 Camera::GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix) {
 	projectionMatrix =Matrix4x4::MakeOrthographicMatrix({viewportLeftTop_,{0.0f,0.0f},{0.0f,0.0f},{windowWidth_,windowHeight_}},0.0f,100.0f);
 
 	// 旧式の式(ガハハwww).
-	if (false) {
+	if (true) {
 		worldViewProjectionMatrix = matrix * viewMatrix * projectionMatrix;
 
 		return worldViewProjectionMatrix;

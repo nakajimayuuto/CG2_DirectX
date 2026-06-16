@@ -29,6 +29,7 @@ void GameScene::Initialize() {
 	transform_.rotate.y = Radian(-30.0f);
 	DirectionalLight::GetInstance()->GetDirectionalLightData()->direction = { 0.0f,0.0f,1.0f };
 	GetWindowRect(GameSystem::GetInstance()->GetHWND(), &windowRect);
+	windowFirstRect = windowRect;
 
 	frameSpriteLeft_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
 	frameSpriteLeft_.SetSize(Environment::GetInstance()->GetWindowSize());
@@ -44,7 +45,22 @@ void GameScene::Initialize() {
 }
 
 void GameScene::Update() {
-	if (InputManager::GetInstance()->TriggerKey(DIK_R)) {
+	if (InputManager::GetInstance()->TriggerKey(DIK_R) && InputManager::GetInstance()->PressKey(DIK_LSHIFT)) {
+		SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, WS_OVERLAPPEDWINDOW);
+
+		SetWindowPos(
+			GameSystem::GetInstance()->GetHWND(),
+			HWND_TOP,
+			windowFirstRect.left,
+			windowFirstRect.top,
+			windowFirstRect.right - windowFirstRect.left,
+			windowFirstRect.bottom - windowFirstRect.top,
+			SWP_FRAMECHANGED | SWP_SHOWWINDOW
+		);
+
+	}
+
+	if (InputManager::GetInstance()->TriggerKey(DIK_R) && !InputManager::GetInstance()->PressKey(DIK_LSHIFT)) {
 		SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, WS_OVERLAPPEDWINDOW);
 
 		SetWindowPos(
@@ -57,6 +73,10 @@ void GameScene::Update() {
 			SWP_FRAMECHANGED | SWP_SHOWWINDOW
 		);
 
+	}
+
+	if (InputManager::GetInstance()->TriggerKey(DIK_S)) {
+		GetWindowRect(GameSystem::GetInstance()->GetHWND(), &windowRect);
 	}
 
 	if (InputManager::GetInstance()->TriggerKey(DIK_F11)) {
@@ -72,7 +92,7 @@ void GameScene::Update() {
 	ImGui::Begin("AspectMode");
 
 	int imInt = static_cast<int>(environment->GetAspectMode());
-	ImGui::SliderInt("mode",&imInt,0,kAspectCountMax - 1);
+	ImGui::SliderInt("mode",&imInt,0,kAspectCountMax - 2);
 	environment->SetAspectMode(static_cast<AspectMode>(imInt));
 
 	ImGui::End();
@@ -87,7 +107,7 @@ void GameScene::Update() {
 
 	float imRotateX = Degree(transformSprite_.rotate.x);
 	ImGui::DragFloat2("SpriteScale",reinterpret_cast<float*>(&transformSprite_.scale),0.1f,0.0f,10.0f);
-	ImGui::DragFloat3("SpriteRotate",reinterpret_cast<float*>(&imRotateX),0.1f,-20.0f,20.0f);
+	ImGui::DragFloat("SpriteRotate",&imRotateX,0.1f,-20.0f,20.0f);
 	ImGui::DragFloat2("SpriteTranslate",reinterpret_cast<float*>(&transformSprite_.translate),10.0f,0.0f,1280.0f);
 	transformSprite_.rotate.x = Radian(imRotateX);
 
@@ -103,7 +123,7 @@ void GameScene::Draw() {
 
 	model_.Draw(transform_);
 
-	//sprite_.Draw(transformSprite_);
+	sprite_.Draw(transformSprite_);
 
 	frameSpriteLeft_.Draw({ {1.0f,1.0f},0.0f, {-frameSpriteLeft_.GetSize().x / 2.0f,frameSpriteLeft_.GetSize().y / 2.0f} });
 	frameSpriteRight_.Draw({ {1.0f,1.0f},0.0f, {Environment::GetInstance()->GetWindowSize().width + (frameSpriteRight_.GetSize().x / 2.0f),frameSpriteRight_.GetSize().y / 2.0f } });
