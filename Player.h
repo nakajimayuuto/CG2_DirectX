@@ -68,6 +68,13 @@ private:
 		float dashParameter_ = 0.0f;
 	};
 
+	struct AttackWork {
+		float attackParameter = 0.0f;
+		uint32_t comboIndex = 0;
+		uint32_t inComboPhase = 0;
+		bool comboNext = false;
+	};
+
 	static inline float kSpeed = 0.3f;
 	static inline float kCompletionRate = 0.25f;
 
@@ -89,6 +96,8 @@ private:
 	AttackPhase attackPhase_;
 
 	static inline const uint32_t kComboNum = 3;
+
+	AttackWork workAttack_;
 
 	static inline std::array<Player::ConstAttack, Player::kComboNum> kConstAttacks_;
 

@@ -33,6 +33,8 @@ void Player::Initialize() {
 	behavior_ = Behavior::kRoot;
 
 	kConstAttacks_[0] = {0.0f,0.0f,0.4f,0.0f,0.0f,0.0f,0.15f};
+	kConstAttacks_[1] = {0.3f,0.2,0.3f,0.0f,0.2f,0.0f,0.0f};
+	kConstAttacks_[2] = {0.3f,0.2f,0.3f,0.5f,0.2f,0.0f,0.0f};
 
 	InitializeFloatingGimmick();
 
@@ -175,13 +177,16 @@ void Player::BehaviorAttackInitialize() {
 }
 
 void Player::BehaviorAttackUpdate() {
-	hammerAnimationTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
+	// ここに処理を追加
 
-	transformHammer_.rotate.x = Easing(kStartHammerRotateX, kStampHammerRotateX, hammerAnimationTimer_, kStampAnimationMaxTime, EaseType::kEaseInBack);
 
-	if (hammerAnimationTimer_ > kStampAnimationMaxTime) {
-		behaviorRequest_ = Behavior::kRoot;
-	}
+	//hammerAnimationTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
+	//
+	//transformHammer_.rotate.x = Easing(kStartHammerRotateX, kStampHammerRotateX, hammerAnimationTimer_, kStampAnimationMaxTime, EaseType::kEaseInBack);
+	//
+	//if (hammerAnimationTimer_ > kStampAnimationMaxTime) {
+	//	behaviorRequest_ = Behavior::kRoot;
+	//}
 }
 
 void Player::BehaviorDashInitialize() {
