@@ -808,7 +808,7 @@ void GameSystem::WindowSizeUpdate() {
 
 	if (windowAspect > targetAspect) {
 		viewportHeight = windowHeight;
-		viewportWidth = viewportHeight * targetAspect *(Environment::GetInstance()->GetWindowSize().width / windowWidth);
+		viewportWidth = viewportHeight * targetAspect * (Environment::GetInstance()->GetWindowSize().width / windowWidth);
 		if (windowWidth > Environment::GetInstance()->GetWindowSize().width) {
 			viewportWidth = Environment::GetInstance()->GetWindowSize().width * (targetAspect / windowAspect);
 			viewportX = (Environment::GetInstance()->GetWindowSize().width - viewportWidth) * 0.5f;
@@ -911,13 +911,13 @@ void GameSystem::ApplyGlobalVariables() {
 //		switch (wparam){
 //		case WMSZ_LEFT:
 //		case WMSZ_RIGHT:
-//			// 左右をドラッグ → 高さを補正
+//			// 左右に合わせて上下を変化.
 //			newHeight = static_cast<int>(width / aspect);
 //			rect->bottom = rect->top + newHeight;
 //			break;
 //		case WMSZ_TOP:
 //		case WMSZ_BOTTOM:
-//			// 上下をドラッグ → 幅を補正
+//			// 上下に合わせて左右を変化.
 //			newWidth = static_cast<int>(height * aspect);
 //			rect->right = rect->left + newWidth;
 //			break;
@@ -925,7 +925,7 @@ void GameSystem::ApplyGlobalVariables() {
 //		case WMSZ_TOPRIGHT:
 //		case WMSZ_BOTTOMLEFT:
 //		case WMSZ_BOTTOMRIGHT:
-//			// 四隅ドラッグ
+//			// 四隅の処理(左右合わせの変化と同じ).
 //			newHeight = static_cast<int>(width / aspect);
 //			rect->bottom = rect->top + newHeight;
 //			break;
@@ -952,8 +952,6 @@ LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPAR
 	int newHeight;
 	int newWidth;
 
-	DWORD style;
-	DWORD exStyle;
 	RECT borderRect;
 	int borderWidth;
 	int borderHeight;
@@ -965,23 +963,17 @@ LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPAR
 			width = rect->right - rect->left;
 			height = rect->bottom - rect->top;
 
-			style = static_cast<DWORD>(GetWindowLongPtr(hwnd, GWL_STYLE));
-			exStyle = static_cast<DWORD>(GetWindowLongPtr(hwnd, GWL_EXSTYLE));
-
 			borderRect = { 0,0,0,0 };
 
 			AdjustWindowRectEx(
 				&borderRect,
-				style,
+				static_cast<DWORD>(GetWindowLongPtr(hwnd, GWL_STYLE)),
 				FALSE,
-				exStyle);
+				static_cast<DWORD>(GetWindowLongPtr(hwnd, GWL_EXSTYLE))
+			);
 
 			borderWidth = borderRect.right - borderRect.left;
-
 			borderHeight = borderRect.bottom - borderRect.top;
-
-			Log(std::format("Rect l:{},r:{},t:{},b:{}\n", rect->left, rect->right, rect->top, rect->bottom));
-			Log(std::format("Rect w:{},h:{}\n", width, height));
 
 			width -= borderWidth;
 			height -= borderHeight;
@@ -989,13 +981,13 @@ LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPAR
 			switch (wparam) {
 			case WMSZ_LEFT:
 			case WMSZ_RIGHT:
-				// 左右をドラッグ → 高さを補正
+				// 左右に合わせて上下を変化.
 				newHeight = static_cast<int>(width / aspect);
 				rect->bottom = rect->top + newHeight + borderHeight;
 				break;
 			case WMSZ_TOP:
 			case WMSZ_BOTTOM:
-				// 上下をドラッグ → 幅を補正
+				// 上下に合わせて左右を変化.
 				newWidth = static_cast<int>(height * aspect);
 				rect->right = rect->left + newWidth + borderWidth;
 				break;
@@ -1003,15 +995,16 @@ LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPAR
 			case WMSZ_TOPRIGHT:
 			case WMSZ_BOTTOMLEFT:
 			case WMSZ_BOTTOMRIGHT:
-				// 四隅ドラッグ
+				// 四隅の処理(左右合わせの変化と同じ).
 				newHeight = static_cast<int>(width / aspect);
 				rect->bottom = rect->top + newHeight + borderHeight;
 				break;
 			}
-			width += borderWidth;
-			height += borderHeight;
 		}
 
+		if (Environment::GetInstance()->GetAspectMode() == kAspectFrameFixed) {
+			return DefWindowProc(hwnd, msg, wparam, lparam);
+		}
 		return TRUE;
 	case WM_DESTROY:
 		PostQuitMessage(0);
