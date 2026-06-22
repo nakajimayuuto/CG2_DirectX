@@ -43,7 +43,9 @@ public:
 
 	void SetAspectMode(AspectMode aspectMode);
 
-	AspectMode GetAspectMode() { return aspectMode_; };
+	AspectMode GetAspectMode() {
+		return aspectMode_; 
+	};
 
 	float GetAspect() { return aspect_; }
 private:

@@ -771,23 +771,26 @@ void GameSystem::WindowSizeUpdate() {
 		return;
 	}
 
-	//RECT clientRect{};
-	//GetClientRect(GameSystem::GetInstance()->GetHWND(), &clientRect);
-	//
-	////Camera::GetInstance()->
-	//
-	//float windowWidth = static_cast<float>(clientRect.right - clientRect.left);
-	//float windowHeight = static_cast<float>(clientRect.bottom - clientRect.top);
-	//float windowAspect = windowWidth / windowHeight;
-	//float targetAspect = Environment::GetInstance()->GetAspect();
-	//Vector3 aspectScale;
-	////Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
-	//aspectScale.x = windowWidth / Environment::GetInstance()->GetWindowSize().width;
-	//aspectScale.y = windowHeight / Environment::GetInstance()->GetWindowSize().height;
-	//aspectScale.z = 1.0f;
-	//
-	//Camera::GetInstance()->SetAspectScale(aspectScale);
-	//Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
+	if (Environment::GetInstance()->GetAspectMode() == kAspectChangeEverytime) {
+		RECT clientRect{};
+		GetClientRect(GameSystem::GetInstance()->GetHWND(), &clientRect);
+		
+		//Camera::GetInstance()->
+		
+		float windowWidth = static_cast<float>(clientRect.right - clientRect.left);
+		float windowHeight = static_cast<float>(clientRect.bottom - clientRect.top);
+		float windowAspect = windowWidth / windowHeight;
+		float targetAspect = Environment::GetInstance()->GetAspect();
+		Vector3 aspectScale;
+		//Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
+		aspectScale.x = windowWidth / Environment::GetInstance()->GetWindowSize().width;
+		aspectScale.y = windowHeight / Environment::GetInstance()->GetWindowSize().height;
+		aspectScale.z = 1.0f;
+		
+		Camera::GetInstance()->SetAspectScale(aspectScale);
+		Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
+		return;
+	}
 
 	RECT clientRect{};
 	GetClientRect(GameSystem::GetInstance()->GetHWND(), &clientRect);
