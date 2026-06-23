@@ -42,6 +42,8 @@ void GameScene::Initialize() {
 	backGroundSprite_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
 	backGroundSprite_.SetSize(Environment::GetInstance()->GetWindowSize());
 	backGroundSprite_.SetColor({ 0.1f,0.25f,0.5f,1.0f });
+
+	sprite_.SetIsVisible(false);
 }
 
 void GameScene::Update() {
@@ -99,17 +101,23 @@ void GameScene::Update() {
 
 	ImGui::Begin("ObjectMove");
 
+	bool imBool = model_.GetIsVisible();
+	ImGui::Checkbox("ModelVisible", &imBool);
 	Vector3 imRotate = Degree(transform_.rotate);
-	ImGui::DragFloat3("ModelScale",reinterpret_cast<float*>(&transform_.scale),0.1f,0.0f,5.0f);
-	ImGui::DragFloat3("ModelRotate",reinterpret_cast<float*>(&imRotate),0.1f,-20.0f,20.0f);
-	ImGui::DragFloat3("ModelTranslate",reinterpret_cast<float*>(&transform_.translate),0.1f,-20.0f,20.0f);
+	ImGui::DragFloat3("ModelScale", reinterpret_cast<float*>(&transform_.scale), 0.1f, 0.0f, 5.0f);
+	ImGui::DragFloat3("ModelRotate", reinterpret_cast<float*>(&imRotate), 0.1f, -20.0f, 20.0f);
+	ImGui::DragFloat3("ModelTranslate", reinterpret_cast<float*>(&transform_.translate), 0.1f, -20.0f, 20.0f);
 	transform_.rotate = Radian(imRotate);
+	model_.SetIsVisible(imBool);
 
+	imBool = sprite_.GetIsVisible();
 	float imRotateX = Degree(transformSprite_.rotate.x);
-	ImGui::DragFloat2("SpriteScale",reinterpret_cast<float*>(&transformSprite_.scale),0.1f,0.0f,10.0f);
-	ImGui::DragFloat("SpriteRotate",&imRotateX,0.1f,-20.0f,20.0f);
-	ImGui::DragFloat2("SpriteTranslate",reinterpret_cast<float*>(&transformSprite_.translate),10.0f,0.0f,1280.0f);
+	ImGui::Checkbox("SpriteVisible", &imBool);
+	ImGui::DragFloat2("SpriteScale", reinterpret_cast<float*>(&transformSprite_.scale), 0.1f, 0.0f, 10.0f);
+	ImGui::DragFloat3("SpriteRotate", reinterpret_cast<float*>(&imRotateX), 0.1f, -20.0f, 20.0f);
+	ImGui::DragFloat2("SpriteTranslate", reinterpret_cast<float*>(&transformSprite_.translate), 10.0f, 0.0f, 1280.0f);
 	transformSprite_.rotate.x = Radian(imRotateX);
+	sprite_.SetIsVisible(imBool);
 
 	ImGui::End();
 
@@ -125,6 +133,6 @@ void GameScene::Draw() {
 
 	sprite_.Draw(transformSprite_);
 
-	frameSpriteLeft_.Draw({ {1.0f,1.0f},0.0f, {-frameSpriteLeft_.GetSize().x / 2.0f,frameSpriteLeft_.GetSize().y / 2.0f} });
-	frameSpriteRight_.Draw({ {1.0f,1.0f},0.0f, {Environment::GetInstance()->GetWindowSize().width + (frameSpriteRight_.GetSize().x / 2.0f),frameSpriteRight_.GetSize().y / 2.0f } });
+	//frameSpriteLeft_.Draw({ {1.0f,1.0f},0.0f, {-frameSpriteLeft_.GetSize().x / 2.0f,frameSpriteLeft_.GetSize().y / 2.0f} });
+	//frameSpriteRight_.Draw({ {1.0f,1.0f},0.0f, {Environment::GetInstance()->GetWindowSize().width + (frameSpriteRight_.GetSize().x / 2.0f),frameSpriteRight_.GetSize().y / 2.0f } });
 }
