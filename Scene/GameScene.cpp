@@ -92,7 +92,7 @@ void GameScene::Update() {
 	ImGui::Begin("AspectMode");
 
 	int imInt = static_cast<int>(environment->GetAspectMode());
-	ImGui::SliderInt("mode",&imInt,0,kAspectCountMax - 2);
+	ImGui::SliderInt("mode",&imInt,0,kAspectCountMax - 1);
 	environment->SetAspectMode(static_cast<AspectMode>(imInt));
 
 	ImGui::End();

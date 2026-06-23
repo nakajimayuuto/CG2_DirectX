@@ -139,11 +139,14 @@ Matrix4x4 Camera::GetWorldViewProjectionMatrix(Matrix4x4 matrix) {
 	Matrix4x4 viewMatrix = matrix_.Inverse();
 	Matrix4x4 projectionMatrix = Matrix4x4::MakePerspectiveFovMatrix(fovY_, windowWidth_ / windowHeight_, nearClip_, farClip_);
 	Matrix4x4 worldViewProjectionMatrix = matrix * viewMatrix * projectionMatrix;
-	//if (windowWidth_ / windowHeight_ > Environment::GetInstance()->GetAspect()) {
-	//	return worldViewProjectionMatrix;
-	//}
+	if (Environment::GetInstance()->GetAspectMode() == kAspectChangeEverytime) {
+		if (windowWidth_ / windowHeight_ > Environment::GetInstance()->GetAspect()) {
+			return worldViewProjectionMatrix;
+		}
 
-	//return worldViewProjectionMatrix * Matrix4x4::MakeScaleMatrix({ aspectScale_.x / aspectScale_.y,aspectScale_.x / aspectScale_.y,aspectScale_.x / aspectScale_.y });
+		return worldViewProjectionMatrix * Matrix4x4::MakeScaleMatrix({ aspectScale_.x / aspectScale_.y,aspectScale_.x / aspectScale_.y,aspectScale_.x / aspectScale_.y });
+	}
+
 	return worldViewProjectionMatrix;
 }
 
@@ -152,10 +155,10 @@ Matrix4x4 Camera::GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix) {
 	Matrix4x4 projectionMatrix;
 	Matrix4x4 worldViewProjectionMatrix;
 	viewMatrix = matrix_.Identity();
-	projectionMatrix =Matrix4x4::MakeOrthographicMatrix({viewportLeftTop_,{0.0f,0.0f},{0.0f,0.0f},{windowWidth_,windowHeight_}},0.0f,100.0f);
+	projectionMatrix = Matrix4x4::MakeOrthographicMatrix({ viewportLeftTop_,{0.0f,0.0f},{0.0f,0.0f},{windowWidth_,windowHeight_} }, 0.0f, 100.0f);
 
 	// 旧式の式(ガハハwww).
-	if (true) {
+	if (Environment::GetInstance()->GetAspectMode() != kAspectChangeEverytime) {
 		worldViewProjectionMatrix = matrix * viewMatrix * projectionMatrix;
 
 		return worldViewProjectionMatrix;
