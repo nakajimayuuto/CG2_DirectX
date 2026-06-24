@@ -125,7 +125,7 @@ void GameScene::Update() {
 }
 
 void GameScene::Draw() {
-	backGroundSprite_.Draw(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f ,0.0f,0.0f}, { backGroundSprite_.GetSize().x / 2.0f,backGroundSprite_.GetSize().y / 2.0f ,100.0f}));
+	backGroundSprite_.Draw(Transform::GetInitialValue({ 100.0f,100.0f,100.0f }, { 0.0f ,0.0f,0.0f}, { -backGroundSprite_.GetSize().x / 2.0f * 50.0f,-backGroundSprite_.GetSize().y / 2.0f * 50.0f ,100.0f}));
 
 	//skydome_->Draw();
 
