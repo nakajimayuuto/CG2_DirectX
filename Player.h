@@ -15,19 +15,19 @@ public:
 	};
 
 	struct ConstAttack {
-		float anticipationTime;
+		float anticipationTime; // 振りかぶり時間.
 
-		float chargeTime;
+		float chargeTime; // ため時間.
 
-		float swingTime;
+		float swingTime; // 攻撃時間.
 
-		float recoveryTime;
+		float recoveryTime; // 硬直時間.
 
-		float anticipationSpeed;
+		float anticipationSpeed; // 振りかぶり移動速度.
 
-		float chargeSpeed;
+		float chargeSpeed; // ため移動速度.
 
-		float swingSpeed;
+		float swingSpeed; // 攻撃移動速度.
 	};
 
 	void Initialize() override;
@@ -41,6 +41,8 @@ public:
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();
 private:
+	float GetSumComboTime(uint32_t index);
+
 	void BehaviorRootInitialize();
 	void BehaviorRootUpdate();
 

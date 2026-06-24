@@ -31,8 +31,14 @@ void Player::Initialize() {
 	//transform_.rotate.x = std::atan2(-velocity.y, velocityXZ.Length());
 
 	behavior_ = Behavior::kRoot;
-
-	kConstAttacks_[0] = {0.0f,0.0f,0.4f,0.0f,0.0f,0.0f,0.15f};
+	// 01.振りかぶり時間.
+	// 02.ため時間.
+	// 03.攻撃時間.
+	// 04.硬直時間.
+	// 05.振りかぶり移動速度.
+	// 06.ため移動速度.
+	// 07.攻撃移動速度.
+	kConstAttacks_[0] = {0.0f,0.0f,kStampAnimationMaxTime,0.0f,0.0f,0.0f,0.15f};
 	kConstAttacks_[1] = {0.3f,0.2,0.3f,0.0f,0.2f,0.0f,0.0f};
 	kConstAttacks_[2] = {0.3f,0.2f,0.3f,0.5f,0.2f,0.0f,0.0f};
 
@@ -169,7 +175,10 @@ void Player::BehaviorRootUpdate() {
 
 
 void Player::BehaviorAttackInitialize() {
-	hammerAnimationTimer_ = 0.0f;
+	workAttack_.comboNext = false;
+	workAttack_.attackParameter = 0.0f;
+	workAttack_.comboIndex = 0;
+	//workAttack_.inComboPhase
 
 	transformHammer_.rotate.x = 0.0f;
 
@@ -179,6 +188,32 @@ void Player::BehaviorAttackInitialize() {
 void Player::BehaviorAttackUpdate() {
 	// ここに処理を追加
 
+	if (workAttack_.comboIndex < kComboNum) {
+		if (InputManager::GetInstance()->TriggerPadButton(PadButtons::INPUT_L1) || InputManager::GetInstance()->TriggerMouse(MouseButtons::MOUSE_LEFT)) {
+			workAttack_.comboNext = true;
+		}
+	}
+	workAttack_.attackParameter += DeltaTime::GetInstance()->GetDeltaTime();
+
+	if (workAttack_.attackParameter >= GetSumComboTime(workAttack_.comboIndex)) {
+		if (workAttack_.comboNext) {
+			workAttack_.comboNext = false;
+			workAttack_.attackParameter = 0.0f;
+			workAttack_.comboIndex++;
+		} else {
+			behaviorRequest_ = Behavior::kRoot;
+		}
+	}
+
+	switch (workAttack_.comboIndex){
+	case 0:
+		transformHammer_.rotate.x = Easing(kStartHammerRotateX, kStampHammerRotateX, workAttack_.attackParameter, kConstAttacks_[workAttack_.comboIndex].swingTime, EaseType::kEaseInBack);
+		break;
+	case 1:
+		break;
+	case 2:
+		break;
+	}
 
 	//hammerAnimationTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
 	//
@@ -288,4 +323,8 @@ void Player::ApplyGlobalVariables() {
 		kConstAttacks_[i].swingSpeed = GlobalVariables::GetInstance()->GetFloatValue(groupName, std::format("swingSpeed Combo{}", i));
 		kConstAttacks_[i].recoveryTime = GlobalVariables::GetInstance()->GetFloatValue(groupName, std::format("recoveryTime Combo{}", i));
 	}
+}
+
+float Player::GetSumComboTime(uint32_t index){
+	return kConstAttacks_[index].anticipationTime + kConstAttacks_[index].chargeTime + kConstAttacks_[index].recoveryTime + kConstAttacks_[index].swingTime;
 }
