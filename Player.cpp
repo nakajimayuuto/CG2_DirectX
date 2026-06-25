@@ -180,29 +180,37 @@ void Player::BehaviorAttackInitialize() {
 	workAttack_.comboIndex = 0;
 	//workAttack_.inComboPhase
 
-	transformHammer_.rotate.x = 0.0f;
+	transformHammer_.rotate = { 0.0f,0.0f,0.0f };
+	beforeHammerRotate_ = transformHammer_.rotate;
+	workAttack_.inComboPhase = 0;
 
 	attackPhase_ = kCharge;
 }
 
 void Player::BehaviorAttackUpdate() {
 	// ここに処理を追加
+	workAttack_.attackParameter += DeltaTime::GetInstance()->GetDeltaTime();
+
+	if (workAttack_.attackParameter > GetSumComboTime(workAttack_.comboIndex)) {
+		if (workAttack_.comboNext) {
+			beforeHammerRotate_ = transformHammer_.rotate;
+			workAttack_.comboNext = false;
+			workAttack_.attackParameter = 0.0f;
+			workAttack_.inComboPhase = 0;
+			workAttack_.comboIndex++;
+		} else {
+			transformBody_.rotate = { 0.0f,0.0f,0.0f };
+			behaviorRequest_ = Behavior::kRoot;
+		}
+	}
 
 	if (workAttack_.comboIndex < kComboNum) {
 		if (InputManager::GetInstance()->TriggerPadButton(PadButtons::INPUT_L1) || InputManager::GetInstance()->TriggerMouse(MouseButtons::MOUSE_LEFT)) {
 			workAttack_.comboNext = true;
 		}
-	}
-	workAttack_.attackParameter += DeltaTime::GetInstance()->GetDeltaTime();
-
-	if (workAttack_.attackParameter >= GetSumComboTime(workAttack_.comboIndex)) {
-		if (workAttack_.comboNext) {
-			workAttack_.comboNext = false;
-			workAttack_.attackParameter = 0.0f;
-			workAttack_.comboIndex++;
-		} else {
-			behaviorRequest_ = Behavior::kRoot;
-		}
+	} else {
+		transformBody_.rotate = { 0.0f,0.0f,0.0f };
+		behaviorRequest_ = Behavior::kRoot;
 	}
 
 	switch (workAttack_.comboIndex){
@@ -210,8 +218,34 @@ void Player::BehaviorAttackUpdate() {
 		transformHammer_.rotate.x = Easing(kStartHammerRotateX, kStampHammerRotateX, workAttack_.attackParameter, kConstAttacks_[workAttack_.comboIndex].swingTime, EaseType::kEaseInBack);
 		break;
 	case 1:
+		switch (workAttack_.inComboPhase){
+		case 0:
+			transformHammer_.rotate = Easing(beforeHammerRotate_, kRollingStartHammerRotate,workAttack_.attackParameter, kConstAttacks_[workAttack_.comboIndex].chargeTime,EaseType::kEaseIn);
+			
+			if (workAttack_.attackParameter > kConstAttacks_[workAttack_.comboIndex].chargeTime) {
+				beforeHammerRotate_ = transformHammer_.rotate;
+				workAttack_.inComboPhase++;
+			}
+			break;
+		case 1:
+			transformHammer_.rotate = Easing(beforeHammerRotate_, kRollingSwingHammerRotate, workAttack_.attackParameter- kConstAttacks_[workAttack_.comboIndex].chargeTime, kConstAttacks_[workAttack_.comboIndex].swingTime, EaseType::kEaseIn);
+			break;
+		}
 		break;
 	case 2:
+		switch (workAttack_.inComboPhase) {
+		case 0:
+			transformHammer_.rotate = Easing(beforeHammerRotate_, {0.0f,0.0f,0.0f}, workAttack_.attackParameter, kConstAttacks_[workAttack_.comboIndex].chargeTime, EaseType::kEaseIn);
+
+			if (workAttack_.attackParameter > kConstAttacks_[workAttack_.comboIndex].chargeTime) {
+				beforeHammerRotate_ = transformBody_.rotate;
+				workAttack_.inComboPhase++;
+			}
+			break;
+		case 1:
+			transformBody_.rotate = Easing(beforeHammerRotate_, kExtraSwingHammerRotate, workAttack_.attackParameter - kConstAttacks_[workAttack_.comboIndex].chargeTime, kConstAttacks_[workAttack_.comboIndex].swingTime, EaseType::kEaseIn);
+			break;
+		}
 		break;
 	}
 

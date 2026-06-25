@@ -90,10 +90,20 @@ private:
 
 	std::optional<Behavior> behaviorRequest_ = std::nullopt;
 
+	Vector3 beforeHammerRotate_ = {0.0f,0.0f,0.0f};
+
 	static inline float kStampAnimationMaxTime = 0.5f;
 
 	static inline float kStartHammerRotateX = 0.0f;
 	static inline float kStampHammerRotateX = Radian(90.0f);
+
+	static inline Vector3 kRollingStartHammerRotate = { Radian(60.0f),0.0f,Radian(90.0f) };
+	static inline float kRollingStartAnimationMaxTime = 0.25f;
+
+	static inline Vector3 kRollingSwingHammerRotate = { Radian(480.0f),0.0f,Radian(90.0f) };
+	static inline float kRollingSwingAnimationMaxTime = 0.25f;
+
+	static inline Vector3 kExtraSwingHammerRotate = {Radian(1200.0f),0.0f,0.0f};
 
 	AttackPhase attackPhase_;
 
