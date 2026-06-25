@@ -38,9 +38,9 @@ void Player::Initialize() {
 	// 05.振りかぶり移動速度.
 	// 06.ため移動速度.
 	// 07.攻撃移動速度.
-	kConstAttacks_[0] = {0.0f,0.0f,kStampAnimationMaxTime,0.0f,0.0f,0.0f,0.15f};
-	kConstAttacks_[1] = {0.3f,0.2,0.3f,0.0f,0.2f,0.0f,0.0f};
-	kConstAttacks_[2] = {0.3f,0.2f,0.3f,0.5f,0.2f,0.0f,0.0f};
+	kConstAttacks_[0] = { 0.0f,0.0f,kStampAnimationMaxTime,0.0f,0.0f,0.0f,0.15f };
+	kConstAttacks_[1] = { 0.3f,0.2,0.3f,0.0f,0.2f,0.0f,0.0f };
+	kConstAttacks_[2] = { 0.3f,0.2f,0.3f,0.5f,0.2f,0.0f,0.0f };
 
 	InitializeFloatingGimmick();
 
@@ -213,29 +213,29 @@ void Player::BehaviorAttackUpdate() {
 		behaviorRequest_ = Behavior::kRoot;
 	}
 
-	switch (workAttack_.comboIndex){
+	switch (workAttack_.comboIndex) {
 	case 0:
 		transformHammer_.rotate.x = Easing(kStartHammerRotateX, kStampHammerRotateX, workAttack_.attackParameter, kConstAttacks_[workAttack_.comboIndex].swingTime, EaseType::kEaseInBack);
 		break;
 	case 1:
-		switch (workAttack_.inComboPhase){
+		switch (workAttack_.inComboPhase) {
 		case 0:
-			transformHammer_.rotate = Easing(beforeHammerRotate_, kRollingStartHammerRotate,workAttack_.attackParameter, kConstAttacks_[workAttack_.comboIndex].chargeTime,EaseType::kEaseIn);
-			
+			transformHammer_.rotate = Easing(beforeHammerRotate_, kRollingStartHammerRotate, workAttack_.attackParameter, kConstAttacks_[workAttack_.comboIndex].chargeTime, EaseType::kEaseIn);
+
 			if (workAttack_.attackParameter > kConstAttacks_[workAttack_.comboIndex].chargeTime) {
 				beforeHammerRotate_ = transformHammer_.rotate;
 				workAttack_.inComboPhase++;
 			}
 			break;
 		case 1:
-			transformHammer_.rotate = Easing(beforeHammerRotate_, kRollingSwingHammerRotate, workAttack_.attackParameter- kConstAttacks_[workAttack_.comboIndex].chargeTime, kConstAttacks_[workAttack_.comboIndex].swingTime, EaseType::kEaseIn);
+			transformHammer_.rotate = Easing(beforeHammerRotate_, kRollingSwingHammerRotate, workAttack_.attackParameter - kConstAttacks_[workAttack_.comboIndex].chargeTime, kConstAttacks_[workAttack_.comboIndex].swingTime, EaseType::kEaseIn);
 			break;
 		}
 		break;
 	case 2:
 		switch (workAttack_.inComboPhase) {
 		case 0:
-			transformHammer_.rotate = Easing(beforeHammerRotate_, {0.0f,0.0f,0.0f}, workAttack_.attackParameter, kConstAttacks_[workAttack_.comboIndex].chargeTime, EaseType::kEaseIn);
+			transformHammer_.rotate = Easing(beforeHammerRotate_, { 0.0f,0.0f,0.0f }, workAttack_.attackParameter, kConstAttacks_[workAttack_.comboIndex].chargeTime, EaseType::kEaseIn);
 
 			if (workAttack_.attackParameter > kConstAttacks_[workAttack_.comboIndex].chargeTime) {
 				beforeHammerRotate_ = transformBody_.rotate;
@@ -279,17 +279,17 @@ void Player::BehaviorDashUpdate() {
 	}
 }
 
-void Player::BehaviorJumpInitialize(){
+void Player::BehaviorJumpInitialize() {
 	transformBody_.translate.y = kBodyBlankY;
 	velocity_.y = kJumpFirstSpeed_;
 
 
 }
 
-void Player::BehaviorJumpUpdate(){
+void Player::BehaviorJumpUpdate() {
 	transform_.translate += velocity_;
 
-	Vector3 accelerationVector = {0.0f,-kGravityAcceleration,0.0f};
+	Vector3 accelerationVector = { 0.0f,-kGravityAcceleration,0.0f };
 
 	velocity_ += accelerationVector;
 
@@ -314,8 +314,16 @@ void Player::Draw() {
 	Renderer::GetInstance()->DrawModel(transformLArm_, &models_["LArm"]);
 	Renderer::GetInstance()->DrawModel(transformRArm_, &models_["RArm"]);
 
+	//models_["RArm"].GetColor();
+
+	Renderer::GetInstance()->DrawShadow(transformBody_, &models_["body"], { 0.0f,0.0f,0.0f,1.0f });
+	Renderer::GetInstance()->DrawShadow(transformHead_, &models_["head"], { 0.0f,0.0f,0.0f,1.0f });
+	Renderer::GetInstance()->DrawShadow(transformLArm_, &models_["LArm"], { 0.0f,0.0f,0.0f,1.0f });
+	Renderer::GetInstance()->DrawShadow(transformRArm_, &models_["RArm"], { 0.0f,0.0f,0.0f,1.0f });
+
 	if (behavior_ == Behavior::kAttack) {
 		Renderer::GetInstance()->DrawModel(transformHammer_, &models_["hammer_of_justice"]);
+		Renderer::GetInstance()->DrawShadow(transformHammer_, &models_["hammer_of_justice"], { 0.0f,0.0f,0.0f,1.0f });
 	}
 }
 
@@ -330,13 +338,13 @@ void Player::RegisterGlobalVariables() {
 	GlobalVariables::GetInstance()->AddValue(groupName, "FloatingAmplitude", kFloatingAmplitude);
 
 	for (uint32_t i = 0; i < kComboNum; i++) {
-		GlobalVariables::GetInstance()->AddValue(groupName, std::format("anticipationTime Combo{}",i), kConstAttacks_[i].anticipationTime);
+		GlobalVariables::GetInstance()->AddValue(groupName, std::format("anticipationTime Combo{}", i), kConstAttacks_[i].anticipationTime);
 		GlobalVariables::GetInstance()->AddValue(groupName, std::format("anticipationSpeed Combo{}", i), kConstAttacks_[i].anticipationSpeed);
 		GlobalVariables::GetInstance()->AddValue(groupName, std::format("chargeTime Combo{}", i), kConstAttacks_[i].chargeTime);
 		GlobalVariables::GetInstance()->AddValue(groupName, std::format("chargeSpeed Combo{}", i), kConstAttacks_[i].chargeSpeed);
 		GlobalVariables::GetInstance()->AddValue(groupName, std::format("swingTime Combo{}", i), kConstAttacks_[i].swingTime);
 		GlobalVariables::GetInstance()->AddValue(groupName, std::format("swingSpeed Combo{}", i), kConstAttacks_[i].swingSpeed);
-		GlobalVariables::GetInstance()->AddValue(groupName, std::format("recoveryTime Combo{}", i),kConstAttacks_[i].recoveryTime);
+		GlobalVariables::GetInstance()->AddValue(groupName, std::format("recoveryTime Combo{}", i), kConstAttacks_[i].recoveryTime);
 	}
 }
 
@@ -359,6 +367,6 @@ void Player::ApplyGlobalVariables() {
 	}
 }
 
-float Player::GetSumComboTime(uint32_t index){
+float Player::GetSumComboTime(uint32_t index) {
 	return kConstAttacks_[index].anticipationTime + kConstAttacks_[index].chargeTime + kConstAttacks_[index].recoveryTime + kConstAttacks_[index].swingTime;
 }

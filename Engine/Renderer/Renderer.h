@@ -300,6 +300,9 @@ public:
 	/// <param name="transform">トランスフォーム</param>
 	/// <param name="sprite">スプライト</param>
 	void DrawSprite(const Transform& transform,const Sprite& sprite);
+
+	void DrawShadow(const Transform& transform, const Model* model);
+	void DrawShadow(const Transform& transform, const Model* model,const Vector4& color);
 private:
 
 	void CreateLine(ModelElement* newElement);
