@@ -26,8 +26,19 @@ void GameScene::Initialize() {
 	ground_ = std::make_unique<Ground>();
 	ground_->Initialize();
 
-	enemy_ = std::make_unique<Enemy>();
-	enemy_->Initialize();
+	std::shared_ptr<Enemy> newEnemy = std::make_shared<Enemy>();
+	newEnemy->Initialize();
+	enemies_.push_back(newEnemy);
+
+	newEnemy = std::make_shared<Enemy>();
+	newEnemy->Initialize();
+	newEnemy->SetPosition({0.0f,0.0f,3.0f});
+	enemies_.push_back(newEnemy);
+
+	newEnemy = std::make_shared<Enemy>();
+	newEnemy->Initialize();
+	newEnemy->SetPosition({0.0f,0.0f,-3.0f});
+	enemies_.push_back(newEnemy);
 
 	followCamera_ = std::make_unique<FollowCamera>();
 	followCamera_->Initialize();
@@ -49,7 +60,9 @@ void GameScene::Update() {
 		Camera::GetInstance()->ChangeCameraMode();
 	}
 
-	enemy_->Update();
+	for (std::shared_ptr<Enemy> enemy : enemies_) {
+		enemy->Update();
+	}
 
 	player_->Update();
 
@@ -62,5 +75,8 @@ void GameScene::Draw() {
 	skydome_->Draw();
 	ground_->Draw();
 	player_->Draw();
-	enemy_->Draw();
+
+	for (std::shared_ptr<Enemy> enemy : enemies_) {
+		enemy->Draw();
+	}
 }

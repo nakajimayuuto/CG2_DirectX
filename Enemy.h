@@ -5,6 +5,8 @@ public:
 	void Initialize() override;
 
 	void Update()override;
+
+	void SetPosition(const Vector3& position) { transform_.translate = position; };
 private:
 	void InitializeRotateGimmick();
 

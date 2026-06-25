@@ -18,7 +18,7 @@ public:
 	void Draw() override;
 private:
 	std::unique_ptr<Player> player_;
-	std::unique_ptr<Enemy> enemy_;
+	std::list<std::shared_ptr<Enemy>> enemies_;
 	std::unique_ptr<Skydome> skydome_;
 	std::unique_ptr<Ground> ground_;
 	std::unique_ptr<FollowCamera> followCamera_;

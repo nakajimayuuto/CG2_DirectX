@@ -81,6 +81,7 @@
     </ClCompile>
     <ClCompile Include="FollowCamera.cpp" />
     <ClCompile Include="Ground.cpp" />
+    <ClCompile Include="LockOn.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Managers\CollisionManager.cpp" />
     <ClCompile Include="Managers\InputManager.cpp" />
@@ -139,6 +140,7 @@
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
     <ClInclude Include="FollowCamera.h" />
     <ClInclude Include="Ground.h" />
+    <ClInclude Include="LockOn.h" />
     <ClInclude Include="Managers\CollisionManager.h" />
     <ClInclude Include="Managers\InputManager.h" />
     <ClInclude Include="Managers\LightManager.h" />
