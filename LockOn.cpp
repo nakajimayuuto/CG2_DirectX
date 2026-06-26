@@ -5,19 +5,39 @@ void LockOn::Initialize() {
 	sprite_.Initialize(TextureManager::GetInstance()->GetTextureInfo("reticle"));
 	sprite_.SetColor({ 1.0f,0.0f,0.0f,1.0f });
 	transform_.Initialize();
+
+	isLockOn_ = false;
 }
 
 void LockOn::Update(std::list<std::unique_ptr<Enemy>>& enemies) {
 
 
-	if (isLockOn_) {
-
-	} else {
-		if (InputManager::GetInstance()->TriggerPadButton(PadButtons::INPUT_Y) || InputManager::GetInstance()->TriggerKey(DIK_LSHIFT)) {
+	if (InputManager::GetInstance()->TriggerPadButton(PadButtons::INPUT_Y) || InputManager::GetInstance()->TriggerKey(DIK_LSHIFT)) {
+		if (isLockOn_) {
+			target_ = nullptr;
+			isLockOn_ = false;
+		} else {
 			TargetLockOn(enemies);
 		}
 	}
 
+	if (isLockOn_) {
+		if (OutRange()) {
+			target_ = nullptr;
+			isLockOn_ = false;
+		}
+
+	}
+
+	if (target_) {
+		Vector3 positionWorld = target_->GetWorldPosition();
+
+		Vector3 positionScreen = Camera::GetInstance()->GetCameraVector3(positionWorld, Matrix4x4::Identity());
+
+		transform_.translate = positionScreen;
+	}
+
+	//TargetLockOn(enemies);
 
 	/*
 	std::list<std::pair<float, Enemy*>>targets;
@@ -66,7 +86,11 @@ void LockOn::Update(std::list<std::unique_ptr<Enemy>>& enemies) {
 }
 
 void LockOn::Draw() {
-	sprite_.Draw(transform_);
+	if (!isLockOn_) {
+		return;
+	}
+
+	Renderer::GetInstance()->DrawSprite(transform_, sprite_);
 }
 
 void LockOn::TargetLockOn(std::list<std::unique_ptr<Enemy>>& enemies) {
@@ -75,16 +99,14 @@ void LockOn::TargetLockOn(std::list<std::unique_ptr<Enemy>>& enemies) {
 	//Vector3 playerPos = player->GetWorldPosition();
 	//playerPos = Camera::GetInstance()->GetCameraVector3(playerPos, Matrix4x4::Identity());
 
-
 	for (const std::unique_ptr<Enemy>& enemy : enemies) {
 		Vector3 positionWorld = enemy->GetWorldPosition();
 
-		Vector3 positionScreen = Camera::GetInstance()->GetCameraVector3(positionWorld, Matrix4x4::Identity());
+		Vector3 positionView = Camera::GetInstance()->GetWorldViewProjectionMatrix(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, positionWorld).GetAffineMatrix()).GetMatrixToTranslate();
 
-		if (minDistance_ <= positionWorld.z && positionWorld.z <= maxDistance_) {
+		if (minDistance_ <= positionView.z && positionView.z <= maxDistance_) {
+			float arcTangent = std::atan2(std::sqrt(positionView.x * positionView.x + positionView.y * positionView.y), positionView.z);
 
-			float arcTangent = std::atan2(std::sqrt(positionScreen.x * positionScreen.x + positionScreen.y * positionScreen.y),positionScreen.z);
-			
 			if (std::fabs(arcTangent) <= angleRange_) {
 				targets.emplace_back(std::make_pair(arcTangent, enemy.get()));
 			}
@@ -93,20 +115,37 @@ void LockOn::TargetLockOn(std::list<std::unique_ptr<Enemy>>& enemies) {
 
 	target_ = nullptr;
 	isLockOn_ = false;
-	sprite_.SetIsVisible(false);
 
 	if (!targets.empty()) {
 		targets.sort([](auto& pair1, auto& pair2) {return pair1.first < pair2.first; });
 
 		target_ = targets.front().second;
+		isLockOn_ = true;
 
-	//	transform_.translate = target_->GetWorldPosition();
-	//
-	//	transform_.translate = Camera::GetInstance()->GetCameraVector3(transform_.translate, Matrix4x4::Identity());
-	//	sprite_.SetIsVisible(true);
-	//	isLockOn_ = true;
-	//} else {
-	//	transform_.translate.x = player->GetPositionReticle2D().x;
-	//	transform_.translate.y = player->GetPositionReticle2D().y;
+		//	transform_.translate = target_->GetWorldPosition();
+		//
+		//	transform_.translate = Camera::GetInstance()->GetCameraVector3(transform_.translate, Matrix4x4::Identity());
+		//	sprite_.SetIsVisible(true);
+		//	isLockOn_ = true;
+		//} else {
+		//	transform_.translate.x = player->GetPositionReticle2D().x;
+		//	transform_.translate.y = player->GetPositionReticle2D().y;
 	}
+}
+
+bool LockOn::OutRange(){
+	Vector3 positionWorld = target_->GetWorldPosition();
+
+	Vector3 positionView = Camera::GetInstance()->GetWorldViewProjectionMatrix(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, positionWorld).GetAffineMatrix()).GetMatrixToTranslate();
+
+	if (minDistance_ <= positionView.z && positionView.z <= maxDistance_) {
+		float arcTangent = std::atan2(std::sqrt(positionView.x * positionView.x + positionView.y * positionView.y), positionView.z);
+
+		if (std::fabs(arcTangent) <= angleRange_) {
+			return false;
+		}
+	}
+
+
+	return true;
 }

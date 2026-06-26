@@ -6,6 +6,7 @@ GameScene::~GameScene(){
 
 void GameScene::Initialize() {
 	TextureManager::GetInstance()->RegisterTexture("uvChecker","Resource/uvChecker.png");
+	TextureManager::GetInstance()->RegisterTexture("reticle","Resource/reticle.png");
 	ModelManager::GetInstance()->RegisterObj("skydome","Resource/skydome","skydome.obj");
 	ModelManager::GetInstance()->RegisterObj("ground","Resource/Ground","ground.obj");
 	ModelManager::GetInstance()->RegisterObj("player","Resource/player_hovering_mode","player.obj");
@@ -44,6 +45,7 @@ void GameScene::Initialize() {
 
 	Player::RegisterGlobalVariables();
 
+	lockOn_ = std::make_unique<LockOn>();
 	lockOn_->Initialize();
 }
 

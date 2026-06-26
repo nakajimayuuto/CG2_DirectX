@@ -22,7 +22,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// ウィンドウのxボタンが押されるまでループ.
 	while (system->ProcessMessage()) {
 		if (system->BeginFrame()) {
-			system->DrawSetup();
 //
 			/*=============================================================
 			以下にゲームの更新処理を記述.
@@ -35,6 +34,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			/*=============================================================
 			以下にゲームの描画処理を記述.
 			=============================================================*/
+			system->DrawSetup();
 
 			SceneManager::GetInstance()->Draw();
 

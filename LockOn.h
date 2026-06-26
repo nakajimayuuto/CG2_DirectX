@@ -11,13 +11,15 @@ public:
 	void Draw();
 	bool GetIsLockOn() { return isLockOn_; };
 
-	const Enemy* GetTarget() { return target_; }
+	Enemy* GetTarget() { return target_; }
 private:
 	void TargetLockOn(std::list<std::unique_ptr<Enemy>>& enemies);
+
+	bool OutRange();
 private:
 	static inline float kDistanceLockOn = 100.0f;
 
-	const Enemy* target_ = nullptr;
+	Enemy* target_ = nullptr;
 
 	Sprite sprite_;
 	Transform transform_;
@@ -25,9 +27,9 @@ private:
 
 	float minDistance_ = 10.0f;
 
-	float maxDistance_ = 10.0f;
+	float maxDistance_ = 50.0f;
 
-	float angleRange_ = Radian(20.0f);
+	float angleRange_ = Radian(35.0f);
 
 	bool isLockOn_;
 };
