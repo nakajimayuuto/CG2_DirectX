@@ -24,8 +24,8 @@ void CollisionManager::CheckAllCollision() {
 
 void CollisionManager::CheckCollisionPair(Collider* colliderA, Collider* colliderB) {
 	if (
-		((colliderA->GetCollisionAttribute() & colliderB->GetCollisionMask()) != 0x0) ||
-		((colliderB->GetCollisionAttribute() & colliderA->GetCollisionMask()) != 0x0)
+		((colliderA->GetCollisionAttribute() & colliderB->GetCollisionMask()) == 0x0) ||
+		((colliderB->GetCollisionAttribute() & colliderA->GetCollisionMask()) == 0x0)
 		) {
 		return;
 	}
