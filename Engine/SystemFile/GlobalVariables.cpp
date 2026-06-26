@@ -35,7 +35,10 @@ void GlobalVariables::Update() {
 			// 項目の参照を取得.
 			Item& item = itItem->second;
 
-			if (std::holds_alternative<int32_t>(item)) {
+			if (std::holds_alternative<bool>(item)) {
+				bool* ptr = std::get_if<bool>(&item);
+				ImGui::Checkbox(itemName.c_str(),ptr);
+			} else if (std::holds_alternative<int32_t>(item)) {
 				int32_t* ptr = std::get_if<int32_t>(&item);
 				ImGui::DragInt(itemName.c_str(),ptr,1.0f,-100,100);
 			} else if (std::holds_alternative<float>(item)) {
@@ -103,6 +106,14 @@ void GlobalVariables::SetValue(const std::string& groupName, const std::string& 
 	group[key] = newItem;
 }
 
+void GlobalVariables::SetValue(const std::string& groupName, const std::string& key, bool value){
+	Group& group = datas_[groupName];
+
+	Item newItem{};
+	newItem = value;
+	group[key] = newItem;
+}
+
 void GlobalVariables::AddValue(const std::string& groupName, const std::string& key, int32_t value){
 	Group& group = datas_[groupName];
 
@@ -153,6 +164,38 @@ void GlobalVariables::AddValue(const std::string& groupName, const std::string& 
 	}
 
 	SetValue(groupName, key, value);
+}
+
+void GlobalVariables::AddValue(const std::string& groupName, const std::string& key, bool value){
+	Group& group = datas_[groupName];
+
+	std::map<std::string, Item>::iterator itItem = group.find(key);
+
+	// 未登録チェック.
+	if (itItem != group.end()) {
+		return;
+	}
+
+	SetValue(groupName, key, value);
+}
+
+bool GlobalVariables::GetBoolValue(const std::string& groupName, const std::string& key){
+	// グループを検索.
+	std::map<std::string, Group>::iterator itGroup = datas_.find(groupName);
+
+	// 未登録チェック.
+	assert(itGroup != datas_.end());
+
+	Group& group = datas_.at(groupName);
+
+	std::map<std::string, Item>::iterator itItem = group.find(key);
+
+	// 未登録チェック.
+	assert(itItem != group.end());
+
+	Item& item = itItem->second;
+
+	return std::get<bool>(item);
 }
 
 int32_t GlobalVariables::GetIntValue(const std::string& groupName, const std::string& key){
@@ -251,7 +294,9 @@ void GlobalVariables::SaveFile(const std::string& groupName){
 		// 項目の参照を取得.
 		Item& item = itItem->second;
 
-		if (std::holds_alternative<int32_t>(item)) {
+		if (std::holds_alternative<bool>(item)) {
+			root[groupName][itemName] = std::get<bool>(item);
+		}else if (std::holds_alternative<int32_t>(item)) {
 			root[groupName][itemName] = std::get<int32_t>(item);
 		} else if (std::holds_alternative<float>(item)) {
 			root[groupName][itemName] = std::get<float>(item);
@@ -350,6 +395,9 @@ void GlobalVariables::LoadFile(const std::string& groupName){
 		const std::string& itemName = itItem.key();
 
 		if (itItem->is_number_integer()) {
+			bool value = itItem->get<bool>();
+			SetValue(groupName,itemName,value);
+		}else if(itItem->is_number_integer()) {
 			int32_t value = itItem->get<int32_t>();
 			SetValue(groupName,itemName,value);
 		}else if(itItem->is_number_float()) {

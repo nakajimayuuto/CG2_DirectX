@@ -11,6 +11,7 @@
 #include "../../Managers/LightManager.h"
 #include "../../Managers/ModelManager.h"
 #include "../../Managers/ParticleManager.h"
+#include "../../Managers/CollisionManager.h"
 #include "../../Environment.h"
 #include "../Math/Random.h"
 #include "GlobalVariables.h"
@@ -985,11 +986,13 @@ void GameSystem::WindowSizeUpdate() {
 
 void GameSystem::RegisterGlobalVariables() {
 	Camera::GetInstance()->RegisterGlobalVariables();
+	CollisionManager::RegisterGlobalVariables();
 	//DirectionalLight::GetInstance()->RegisterGlobalVariables();
 };
 
 void GameSystem::ApplyGlobalVariables() {
 	Camera::GetInstance()->ApplyGlobalVariables();
+	CollisionManager::ApplyGlobalVariables();
 	//DirectionalLight::GetInstance()->ApplyGlobalVariables();
 };
 

@@ -23,12 +23,15 @@ public:
 	void SetValue(const std::string& groupName, const std::string& key,float value);
 	void SetValue(const std::string& groupName, const std::string& key,const Vector3& value);
 	void SetValue(const std::string& groupName, const std::string& key,const Vector4& value);
+	void SetValue(const std::string& groupName, const std::string& key,bool value);
 
 	void AddValue(const std::string& groupName, const std::string& key,int32_t value);
 	void AddValue(const std::string& groupName, const std::string& key,float value);
 	void AddValue(const std::string& groupName, const std::string& key,const Vector3& value);
 	void AddValue(const std::string& groupName, const std::string& key,const Vector4& value);
+	void AddValue(const std::string& groupName, const std::string& key, bool value);
 
+	bool GetBoolValue(const std::string& groupName, const std::string& key);
 	int32_t GetIntValue(const std::string& groupName, const std::string& key);
 	float GetFloatValue(const std::string& groupName, const std::string& key);
 	Vector3 GetVector3Value(const std::string& groupName, const std::string& key);
@@ -56,7 +59,7 @@ private:
 private:
 	const std::string kDirectoryPath = "Resource/GlobalVariables/";
 
-	using Item = std::variant<int32_t, float, Vector3,Vector4>;
+	using Item = std::variant<bool,int32_t, float, Vector3,Vector4>;
 
 	using Group = std::map<std::string, Item>;
 

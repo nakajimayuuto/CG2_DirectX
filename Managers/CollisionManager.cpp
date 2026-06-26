@@ -1,5 +1,6 @@
 #include "CollisionManager.h"
 #include "../Engine/Renderer/Renderer.h"
+#include "../Engine/SystemFile/GlobalVariables.h"
 CollisionManager* CollisionManager::GetInstance() {
 	static CollisionManager instance;
 	return &instance;
@@ -46,8 +47,23 @@ void CollisionManager::CheckCollisionPair(Collider* colliderA, Collider* collide
 }
 
 void CollisionManager::DebugDraw() {
+	if (!isColliderDraw_) {
+		return;
+	}
+
 	for (Collider* collider : colliders_) {
 		Transform transform = Transform::GetInitialValue({collider->GetRadius(),collider->GetRadius(),collider->GetRadius()},{0.0f,0.0f,0.0f},collider->GetWorldPosition());
 		Renderer::GetInstance()->DrawSphere(transform, "white_template", {1.0f,1.0f,1.0f,1.0f});
 	}
 }
+
+void CollisionManager::RegisterGlobalVariables() {
+	const std::string name = "Collider";
+	GlobalVariables::GetInstance()->CreateGroup(name);
+	GlobalVariables::GetInstance()->AddValue(name, "colliderVisible", isColliderDraw_);
+};
+
+void CollisionManager::ApplyGlobalVariables() {
+	const std::string name = "Collider";
+	isColliderDraw_ = GlobalVariables::GetInstance()->GetBoolValue(name, "colliderVisible");
+};
