@@ -47,6 +47,9 @@ void GameScene::Initialize() {
 
 	lockOn_ = std::make_unique<LockOn>();
 	lockOn_->Initialize();
+
+	followCamera_->SetLockOn(lockOn_.get());
+	player_->SetLockOn(lockOn_.get());
 }
 
 void GameScene::Update() {
@@ -68,9 +71,9 @@ void GameScene::Update() {
 
 	player_->Update();
 
-	lockOn_->Update(enemies_ );
-
 	followCamera_->Update();
+
+	lockOn_->Update(enemies_ );
 
 	Camera::GetInstance()->Update();
 }

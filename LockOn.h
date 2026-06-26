@@ -9,7 +9,9 @@ public:
 	void Initialize();
 	void Update( std::list<std::unique_ptr<Enemy>>& enemies);
 	void Draw();
-	bool GetIsLockOn() { return isLockOn_; };
+	bool GetIsLockOn() const { return isLockOn_; };
+
+	Vector3 GetTargetPosition() const ;
 
 	Enemy* GetTarget() { return target_; }
 private:

@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "LockOn.h"
 
 void Player::Initialize() {
 	transform_.Initialize();
@@ -162,6 +163,11 @@ void Player::BehaviorRootUpdate() {
 
 	if (isMoving_) {
 		targetRotateY = std::atan2(velocity_.x, velocity_.z);
+	} else if(lockOn_ && lockOn_->GetIsLockOn()){
+		Vector3 lockOnPosition = lockOn_->GetTargetPosition();
+
+		Vector3 sub = lockOnPosition - transform_.translate;
+		targetRotateY = std::atan2(sub.x, sub.z);
 	}
 
 	transform_.rotate.y = LerpShortAngle(transform_.rotate.y, targetRotateY, kCompletionRate);
@@ -190,6 +196,26 @@ void Player::BehaviorAttackInitialize() {
 void Player::BehaviorAttackUpdate() {
 	// ここに処理を追加
 	workAttack_.attackParameter += DeltaTime::GetInstance()->GetDeltaTime();
+
+	float speed = kConstAttacks_[workAttack_.comboIndex].swingSpeed;
+
+	float distance;
+
+	if (lockOn_ && lockOn_->GetIsLockOn()) {
+		Vector3 lockOnPosition = lockOn_->GetTargetPosition();
+
+		Vector3 sub = lockOnPosition - transform_.translate;
+
+		distance = sub.Length();
+
+		if (distance > kThreshold) {
+			transform_.rotate.y = std::atan2(sub.x, sub.z);
+
+			if (speed > distance - kThreshold) {
+				speed = distance - kThreshold;
+			}
+		}
+	}
 
 	if (workAttack_.attackParameter > GetSumComboTime(workAttack_.comboIndex)) {
 		if (workAttack_.comboNext) {

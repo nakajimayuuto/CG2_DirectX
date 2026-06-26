@@ -1,4 +1,5 @@
 #include "FollowCamera.h"
+#include "LockOn.h"
 
 void FollowCamera::Initialize() {
 	transform_.Initialize();
@@ -11,18 +12,30 @@ void FollowCamera::Update() {
 
 	InputManager* input = InputManager::GetInstance();
 
-	if (input->IsGamePadConnect()) {
-		input->SetIsCursorFixed(false);
-		input->SetIsCursorVisible(true);
-		destinationAngleY_ += input->GetRightStickDirection().x * kRotateSpeed;
+	if (lockOn_->GetIsLockOn()) {
+		Vector3 lockOnPosition = lockOn_->GetTargetPosition();
 
-		if (input->TriggerPadButton(PadButtons::INPUT_R3)) {
-			Reset();
-		}
+		Vector3 sub = lockOnPosition - target_->translate;
+		destinationAngleY_ = std::atan2(sub.x,sub.z);
+		transform_.rotate.y = destinationAngleY_;
 	} else {
-		input->SetIsCursorFixed(true);
-		input->SetIsCursorVisible(false);
-		destinationAngleY_ += input->GetMouse().GetMove().x * kMouseRotateSpeed;
+		if (input->IsGamePadConnect()) {
+			input->SetIsCursorFixed(false);
+			input->SetIsCursorVisible(true);
+			destinationAngleY_ += input->GetRightStickDirection().x * kRotateSpeed;
+
+			if (input->TriggerPadButton(PadButtons::INPUT_R3)) {
+				Reset();
+			}
+		} else {
+			input->SetIsCursorFixed(true);
+			input->SetIsCursorVisible(false);
+			destinationAngleY_ += input->GetMouse().GetMove().x * kMouseRotateSpeed;
+
+			if (input->TriggerKey(DIK_C)) {
+				Reset();
+			}
+		}
 	}
 
 	Vector3 offset = GetOffset();

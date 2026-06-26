@@ -93,6 +93,14 @@ void LockOn::Draw() {
 	Renderer::GetInstance()->DrawSprite(transform_, sprite_);
 }
 
+Vector3 LockOn::GetTargetPosition() const { 
+	if (target_) {
+		return target_->GetWorldPosition();
+	} 
+	
+	return { 0.0f,0.0f,0.0f };
+}
+
 void LockOn::TargetLockOn(std::list<std::unique_ptr<Enemy>>& enemies) {
 	std::list<std::pair<float, Enemy*>>targets;
 

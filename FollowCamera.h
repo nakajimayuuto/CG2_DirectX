@@ -1,5 +1,8 @@
 #pragma once
 #include "Satlib.h"
+
+class LockOn;
+
 class FollowCamera{
 public:
 	void Initialize();
@@ -7,6 +10,8 @@ public:
 	void Update();
 
 	void SetTarget(const Transform* target) { target_ = target; Reset(); };
+
+	void SetLockOn(const LockOn* lockOn) { lockOn_ = lockOn; };
 
 	void Reset();
 private:
@@ -27,4 +32,6 @@ private:
 	const Transform* target_ = nullptr;
 
 	Vector3 interTarget_ = {};
+
+	const LockOn* lockOn_ = nullptr;
 };

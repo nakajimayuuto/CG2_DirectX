@@ -2,6 +2,8 @@
 #include "Satlib.h"
 #include "BaseCharacter.h"
 
+class LockOn;
+
 /// <summary>
 /// 自キャラ
 /// </summary>
@@ -40,6 +42,8 @@ public:
 
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();
+
+	void SetLockOn(LockOn* lockOn) { lockOn_ = lockOn; };
 private:
 	float GetSumComboTime(uint32_t index);
 
@@ -137,5 +141,9 @@ private:
 	static inline Transform transformHammer_;
 
 	static inline float kBodyBlankY = 1.2f;
+
+	static inline float kThreshold = 0.2f;
+
+	LockOn* lockOn_;
 };
 
