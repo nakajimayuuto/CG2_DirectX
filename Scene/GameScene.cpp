@@ -26,25 +26,25 @@ void GameScene::Initialize() {
 	ground_ = std::make_unique<Ground>();
 	ground_->Initialize();
 
-	std::unique_ptr<Enemy> newEnemy = std::make_unique<Enemy>();
-	newEnemy->Initialize();
-	enemies_.push_back(newEnemy);
+	Enemy newEnemy;
+	newEnemy.Initialize();
+	enemies_.push_back(std::make_unique<Enemy>(newEnemy));
 
-	newEnemy = std::make_unique<Enemy>();
-	newEnemy->Initialize();
-	newEnemy->SetPosition({5.0f,0.5f,0.0f});
-	enemies_.push_back(newEnemy);
+	newEnemy.Initialize();
+	newEnemy.SetPosition({5.0f,0.5f,0.0f});
+	enemies_.push_back(std::make_unique<Enemy>(newEnemy));
 
-	newEnemy = std::make_unique<Enemy>();
-	newEnemy->Initialize();
-	newEnemy->SetPosition({-5.0f,0.5f,0.0f});
-	enemies_.push_back(newEnemy);
+	newEnemy.Initialize();
+	newEnemy.SetPosition({-5.0f,0.5f,0.0f});
+	enemies_.push_back(std::make_unique<Enemy>(newEnemy));
 
 	followCamera_ = std::make_unique<FollowCamera>();
 	followCamera_->Initialize();
 	followCamera_->SetTarget(player_->GetTransform());
 
 	Player::RegisterGlobalVariables();
+
+	lockOn_->Initialize();
 }
 
 void GameScene::Update() {
@@ -60,11 +60,13 @@ void GameScene::Update() {
 		Camera::GetInstance()->ChangeCameraMode();
 	}
 
-	for (Enemy* enemy : enemies_) {
+	for (auto& enemy : enemies_) {
 		enemy->Update();
 	}
 
 	player_->Update();
+
+	lockOn_->Update(enemies_ );
 
 	followCamera_->Update();
 
@@ -75,6 +77,7 @@ void GameScene::Draw() {
 	skydome_->Draw();
 	ground_->Draw();
 	player_->Draw();
+	lockOn_->Draw();
 
 	for (auto& enemy : enemies_) {
 		enemy->Draw();

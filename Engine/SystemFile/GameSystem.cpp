@@ -792,11 +792,6 @@ void GameSystem::DrawSetup() {
 
 	LightManager::GetInstance()->Update();
 
-#ifdef USE_IMGUI
-	// ImGuiの内部コマンドを生成する.
-	ImGui::Render();
-#endif // USE_IMGUI
-
 
 	/*=============================================================
 	コマンドを積む
@@ -842,6 +837,11 @@ void GameSystem::DrawSetup() {
 }
 
 void GameSystem::EndFrame() {
+
+#ifdef USE_IMGUI
+	// ImGuiの内部コマンドを生成する.
+	ImGui::Render();
+#endif // USE_IMGUI
 #ifdef USE_IMGUI
 	// ImGuiの描画.
 	// 実際のcommandListのImGuiの描画コマンドを積む.

@@ -7,6 +7,8 @@ public:
 	void Update()override;
 
 	void SetPosition(const Vector3& position) { transform_.translate = position; };
+
+	Vector3 GetWorldPosition() { return transform_.GetAffineMatrix().GetMatrixToTranslate(); };
 private:
 	void InitializeRotateGimmick();
 

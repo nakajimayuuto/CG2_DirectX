@@ -7,6 +7,7 @@
 #include "../FollowCamera.h"
 #include "../Player.h"
 #include "../Enemy.h"
+#include "../LockOn.h"
 
 class GameScene : public IScene{
 public:
@@ -22,4 +23,5 @@ private:
 	std::unique_ptr<Skydome> skydome_;
 	std::unique_ptr<Ground> ground_;
 	std::unique_ptr<FollowCamera> followCamera_;
+	std::unique_ptr<LockOn> lockOn_;
 };
