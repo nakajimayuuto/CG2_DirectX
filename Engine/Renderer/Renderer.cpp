@@ -753,7 +753,7 @@ void Renderer::DrawSphere(const Transform& transform, const TextureInfo& texture
 
 void Renderer::DrawSphereWireFrame(const Transform& transform, const Vector4& color){
 	if (true) {
-		return;
+	//	return;
 	}
 
 	const uint32_t kSubdivision = 4;

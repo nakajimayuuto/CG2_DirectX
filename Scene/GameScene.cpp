@@ -89,6 +89,8 @@ void GameScene::Draw() {
 	for (auto& enemy : enemies_) {
 		enemy->Draw();
 	}
+
+	CollisionManager::GetInstance()->DebugDraw();
 }
 
 void GameScene::CheckAllCollisions(){

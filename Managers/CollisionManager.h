@@ -10,6 +10,8 @@ public:
 	void AddColliderList(Collider* collider) {colliders_.push_back(collider);};
 
 	void CheckAllCollision();
+
+	void DebugDraw();
 private:
 	void CheckCollisionPair(Collider* colliderA, Collider* colliderB);
 private:

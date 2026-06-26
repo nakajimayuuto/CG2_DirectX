@@ -1,4 +1,5 @@
 #include "CollisionManager.h"
+#include "../Engine/Renderer/Renderer.h"
 CollisionManager* CollisionManager::GetInstance() {
 	static CollisionManager instance;
 	return &instance;
@@ -41,5 +42,12 @@ void CollisionManager::CheckCollisionPair(Collider* colliderA, Collider* collide
 	if (Collision::SphereToSphere(sphereA, sphereB)) {
 		colliderA->OnCollision();
 		colliderB->OnCollision();
+	}
+}
+
+void CollisionManager::DebugDraw() {
+	for (Collider* collider : colliders_) {
+		Transform transform = Transform::GetInitialValue({collider->GetRadius(),collider->GetRadius(),collider->GetRadius()},{0.0f,0.0f,0.0f},collider->GetWorldPosition());
+		Renderer::GetInstance()->DrawSphere(transform, "white_template", {1.0f,1.0f,1.0f,1.0f});
 	}
 }
