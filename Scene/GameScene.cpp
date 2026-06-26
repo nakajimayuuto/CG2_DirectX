@@ -26,18 +26,18 @@ void GameScene::Initialize() {
 	ground_ = std::make_unique<Ground>();
 	ground_->Initialize();
 
-	std::shared_ptr<Enemy> newEnemy = std::make_shared<Enemy>();
+	std::unique_ptr<Enemy> newEnemy = std::make_unique<Enemy>();
 	newEnemy->Initialize();
 	enemies_.push_back(newEnemy);
 
-	newEnemy = std::make_shared<Enemy>();
+	newEnemy = std::make_unique<Enemy>();
 	newEnemy->Initialize();
-	newEnemy->SetPosition({0.0f,0.0f,3.0f});
+	newEnemy->SetPosition({5.0f,0.5f,0.0f});
 	enemies_.push_back(newEnemy);
 
-	newEnemy = std::make_shared<Enemy>();
+	newEnemy = std::make_unique<Enemy>();
 	newEnemy->Initialize();
-	newEnemy->SetPosition({0.0f,0.0f,-3.0f});
+	newEnemy->SetPosition({-5.0f,0.5f,0.0f});
 	enemies_.push_back(newEnemy);
 
 	followCamera_ = std::make_unique<FollowCamera>();
@@ -60,7 +60,7 @@ void GameScene::Update() {
 		Camera::GetInstance()->ChangeCameraMode();
 	}
 
-	for (std::shared_ptr<Enemy> enemy : enemies_) {
+	for (std::unique_ptr<Enemy> enemy : enemies_) {
 		enemy->Update();
 	}
 
@@ -76,7 +76,7 @@ void GameScene::Draw() {
 	ground_->Draw();
 	player_->Draw();
 
-	for (std::shared_ptr<Enemy> enemy : enemies_) {
+	for (auto& enemy : enemies_) {
 		enemy->Draw();
 	}
 }

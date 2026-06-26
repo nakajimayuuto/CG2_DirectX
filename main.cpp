@@ -1,8 +1,4 @@
 #include "Satlib.h"
-
-
-// オーディオ類.
-
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	GameSystem* system = GameSystem::GetInstance();

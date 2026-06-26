@@ -227,6 +227,7 @@ void Player::BehaviorAttackUpdate() {
 				workAttack_.inComboPhase++;
 			}
 			break;
+		case 1:
 			transformHammer_.rotate = Easing(beforeHammerRotate_, kRollingSwingHammerRotate, workAttack_.attackParameter - kConstAttacks_[workAttack_.comboIndex].chargeTime, kConstAttacks_[workAttack_.comboIndex].swingTime, EaseType::kEaseIn);
 			break;
 		}
