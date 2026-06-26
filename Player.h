@@ -1,6 +1,7 @@
 #pragma once
 #include "Satlib.h"
 #include "BaseCharacter.h"
+#include "Hammer.h"
 
 class LockOn;
 
@@ -132,7 +133,7 @@ private:
 	Vector3 velocity_;
 	static inline float kGravityAcceleration = 0.05f;
 
-
+	std::unique_ptr<Hammer> hammerOFJustice_ = nullptr;
 
 	bool isMoving_;
 

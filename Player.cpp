@@ -32,23 +32,16 @@ void Player::Initialize() {
 	//transform_.rotate.x = std::atan2(-velocity.y, velocityXZ.Length());
 
 	behavior_ = Behavior::kRoot;
-	// 01.振りかぶり時間.
-	// 02.ため時間.
-	// 03.攻撃時間.
-	// 04.硬直時間.
-	// 05.振りかぶり移動速度.
-	// 06.ため移動速度.
-	// 07.攻撃移動速度.
-	kConstAttacks_[0] = { 0.0f,0.0f,kStampAnimationMaxTime,0.0f,0.0f,0.0f,0.15f };
-	kConstAttacks_[1] = { 0.3f,0.2,0.3f,0.0f,0.2f,0.0f,0.0f };
-	kConstAttacks_[2] = { 0.3f,0.2f,0.3f,0.5f,0.2f,0.0f,0.0f };
 
 	InitializeFloatingGimmick();
 
-	BehaviorAttackInitialize();
 
 	collisionAttribute_ = kCollisionAttributePlayer;
 	collisionMask_ = kCollisionAttributeEnemy;
+
+	hammerOFJustice_ = std::make_unique<Hammer>();
+	hammerOFJustice_->SetTargetTransform(&transformBody_);
+	BehaviorAttackInitialize();
 }
 
 void Player::InitializeFloatingGimmick() {
@@ -166,7 +159,7 @@ void Player::BehaviorRootUpdate() {
 
 	if (isMoving_) {
 		targetRotateY = std::atan2(velocity_.x, velocity_.z);
-	} else if(lockOn_ && lockOn_->GetIsLockOn()){
+	} else if (lockOn_ && lockOn_->GetIsLockOn()) {
 		Vector3 lockOnPosition = lockOn_->GetTargetPosition();
 
 		Vector3 sub = lockOnPosition - transform_.translate;
@@ -184,20 +177,28 @@ void Player::BehaviorRootUpdate() {
 
 
 void Player::BehaviorAttackInitialize() {
-	workAttack_.comboNext = false;
-	workAttack_.attackParameter = 0.0f;
-	workAttack_.comboIndex = 0;
-	//workAttack_.inComboPhase
-
-	transformHammer_.rotate = { 0.0f,0.0f,0.0f };
-	beforeHammerRotate_ = transformHammer_.rotate;
-	workAttack_.inComboPhase = 0;
-
-	attackPhase_ = kCharge;
+	hammerOFJustice_->Initialize();
+	//workAttack_.comboNext = false;
+	//workAttack_.attackParameter = 0.0f;
+	//workAttack_.comboIndex = 0;
+	////workAttack_.inComboPhase
+	//
+	//transformHammer_.rotate = { 0.0f,0.0f,0.0f };
+	//beforeHammerRotate_ = transformHammer_.rotate;
+	//workAttack_.inComboPhase = 0;
+	//
+	//attackPhase_ = kCharge;
 }
 
 void Player::BehaviorAttackUpdate() {
+	hammerOFJustice_->Update();
+
+	if (hammerOFJustice_->GetIsFinished()) {
+		behaviorRequest_ = Behavior::kRoot;
+	}
+
 	// ここに処理を追加
+	/*
 	workAttack_.attackParameter += DeltaTime::GetInstance()->GetDeltaTime();
 
 	float speed = kConstAttacks_[workAttack_.comboIndex].swingSpeed;
@@ -285,6 +286,7 @@ void Player::BehaviorAttackUpdate() {
 	//if (hammerAnimationTimer_ > kStampAnimationMaxTime) {
 	//	behaviorRequest_ = Behavior::kRoot;
 	//}
+	*/
 }
 
 void Player::BehaviorDashInitialize() {
@@ -351,9 +353,11 @@ void Player::Draw() {
 	Renderer::GetInstance()->DrawShadow(transformRArm_, &models_["RArm"], { 0.0f,0.0f,0.0f,1.0f });
 
 	if (behavior_ == Behavior::kAttack) {
-		Renderer::GetInstance()->DrawModel(transformHammer_, &models_["hammer_of_justice"]);
-		Renderer::GetInstance()->DrawShadow(transformHammer_, &models_["hammer_of_justice"], { 0.0f,0.0f,0.0f,1.0f });
+		hammerOFJustice_->Draw();
 	}
+	//	Renderer::GetInstance()->DrawModel(transformHammer_, &models_["hammer_of_justice"]);
+	//	Renderer::GetInstance()->DrawShadow(transformHammer_, &models_["hammer_of_justice"], { 0.0f,0.0f,0.0f,1.0f });
+	//}
 }
 
 void Player::RegisterGlobalVariables() {
@@ -396,7 +400,7 @@ void Player::ApplyGlobalVariables() {
 	}
 }
 
-void Player::OnCollision(){
+void Player::OnCollision() {
 	behaviorRequest_ = Behavior::kJump;
 }
 

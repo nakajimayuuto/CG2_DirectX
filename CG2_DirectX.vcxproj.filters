@@ -169,6 +169,9 @@
     <Filter Include="ソース ファイル\LockOn">
       <UniqueIdentifier>{7a429119-b5d7-43bc-948a-1fa71ae8f423}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\HammerOfJustice">
+      <UniqueIdentifier>{c5920e65-1b44-4660-a56d-5cd1ae9c151d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -332,6 +335,9 @@
     </ClCompile>
     <ClCompile Include="LockOn.cpp">
       <Filter>ソース ファイル\LockOn</Filter>
+    </ClCompile>
+    <ClCompile Include="Hammer.cpp">
+      <Filter>ソース ファイル\HammerOfJustice</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -508,6 +514,9 @@
     </ClInclude>
     <ClInclude Include="LockOn.h">
       <Filter>ソース ファイル\LockOn</Filter>
+    </ClInclude>
+    <ClInclude Include="Hammer.h">
+      <Filter>ソース ファイル\HammerOfJustice</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
