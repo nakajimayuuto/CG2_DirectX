@@ -60,7 +60,7 @@ void GameScene::Update() {
 		Camera::GetInstance()->ChangeCameraMode();
 	}
 
-	for (std::unique_ptr<Enemy> enemy : enemies_) {
+	for (Enemy* enemy : enemies_) {
 		enemy->Update();
 	}
 
