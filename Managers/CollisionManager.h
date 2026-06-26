@@ -1,7 +1,6 @@
 #pragma once
 #include "../Engine/Math/Collider.h"
 #include <list>
-
 class CollisionManager{
 public:
 	static CollisionManager* GetInstance();

@@ -4,6 +4,8 @@ void Enemy::Initialize(){
 	models_["enemy"].Initialize("enemy");
 	transform_.Initialize();
 	transform_.translate.y = 0.5f;
+
+	collisionAttribute_ = kCollisionAttributeEnemy;
 }
 
 void Enemy::InitializeRotateGimmick(){

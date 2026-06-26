@@ -46,6 +46,9 @@ void Player::Initialize() {
 	InitializeFloatingGimmick();
 
 	BehaviorAttackInitialize();
+
+	collisionAttribute_ = kCollisionAttributePlayer;
+	collisionMask_ = kCollisionAttributeEnemy;
 }
 
 void Player::InitializeFloatingGimmick() {
@@ -391,6 +394,10 @@ void Player::ApplyGlobalVariables() {
 		kConstAttacks_[i].swingSpeed = GlobalVariables::GetInstance()->GetFloatValue(groupName, std::format("swingSpeed Combo{}", i));
 		kConstAttacks_[i].recoveryTime = GlobalVariables::GetInstance()->GetFloatValue(groupName, std::format("recoveryTime Combo{}", i));
 	}
+}
+
+void Player::OnCollision(){
+	behaviorRequest_ = Behavior::kJump;
 }
 
 float Player::GetSumComboTime(uint32_t index) {

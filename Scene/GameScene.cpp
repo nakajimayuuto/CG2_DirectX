@@ -76,6 +76,8 @@ void GameScene::Update() {
 	lockOn_->Update(enemies_ );
 
 	Camera::GetInstance()->Update();
+
+	CheckAllCollisions();
 }
 
 void GameScene::Draw() {
@@ -87,4 +89,14 @@ void GameScene::Draw() {
 	for (auto& enemy : enemies_) {
 		enemy->Draw();
 	}
+}
+
+void GameScene::CheckAllCollisions(){
+	CollisionManager::GetInstance()->ClearColliderList();
+	CollisionManager::GetInstance()->AddColliderList(player_.get());
+	for (const std::unique_ptr<Enemy>& enemy : enemies_) {
+		CollisionManager::GetInstance()->AddColliderList(enemy.get());
+	}
+
+	CollisionManager::GetInstance()->CheckAllCollision();
 }

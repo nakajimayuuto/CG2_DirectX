@@ -18,10 +18,13 @@ public:
 	uint32_t GetCollisionMask() { return collisionMask_; };
 
 	virtual Vector3 GetWorldPosition() = 0;
-private:
+protected:
 	float radius_ = 1.0f;
 
+	// 自分の属性(後々ここはstd::vectorにする)
 	uint32_t collisionAttribute_ = 0xFFFFFFFF;
+
+	// どの属性と当たるか(後々ここはstd::vectorにする)
 	uint32_t collisionMask_ = 0xFFFFFFFF;
 };
 

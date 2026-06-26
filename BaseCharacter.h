@@ -1,6 +1,6 @@
 #pragma once
 #include "Satlib.h"
-class BaseCharacter{
+class BaseCharacter : public Collider {
 public:
 	virtual void Initialize();
 

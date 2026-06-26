@@ -44,6 +44,10 @@ public:
 	static void ApplyGlobalVariables();
 
 	void SetLockOn(LockOn* lockOn) { lockOn_ = lockOn; };
+
+	Vector3 GetWorldPosition() override { return transform_.GetAffineMatrix().GetMatrixToTranslate(); };
+
+	void OnCollision()override;
 private:
 	float GetSumComboTime(uint32_t index);
 
