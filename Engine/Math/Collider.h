@@ -22,11 +22,11 @@ public:
 	uint32_t GetCollisionAttribute() { return collisionAttribute_; };
 	uint32_t GetCollisionMask() { return collisionMask_; };
 
-	void SetOnCollisionFunc(void (Collider::*func)());
+	void SetOnCollisionFunc(void (Collider::*func)([[maybe_unused]] Collider* other));
 
 	virtual Vector3 GetWorldPosition() { return transform_.GetAffineMatrix().GetMatrixToTranslate(); };
 protected:
-	void (Collider::* pOnCollision_)() = nullptr;
+	void (Collider::* pOnCollision_)([[maybe_unused]] Collider* other) = nullptr;
 
 	Transform transform_ = Transform::GetInitialValue();
 

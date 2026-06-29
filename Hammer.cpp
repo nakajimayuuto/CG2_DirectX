@@ -32,7 +32,7 @@ void Hammer::Initialize() {
 	colliderHammer_->SetRadius(radius_);
 	colliderHammer_->SetCollisionAttribute(collisionAttribute_);
 	colliderHammer_->SetCollisionMask(collisionMask_);
-	colliderHammer_->SetOnCollisionFunc();
+	colliderHammer_->SetOnCollisionFunc(&Hammer::OnCollision());
 }
 
 void Hammer::Update() {
