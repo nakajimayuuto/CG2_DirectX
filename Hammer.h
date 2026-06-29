@@ -18,7 +18,11 @@ public:
 
 	Vector3 GetWorldPosition() override { return transform_.GetAffineMatrix().GetMatrixToTranslate(); }
 
+	Collider* GetHammerStampCollision() { return colliderHammer_.get(); }
+
 	void SetEmitter(Emitter* emitter){ emitter_ = emitter; }
+
+	static void pOnCollision_([[maybe_unused]] Collider* other);
 
 	struct ConstAttack {
 		float anticipationTime; // 振りかぶり時間.
@@ -45,7 +49,7 @@ private:
 		bool comboNext = false;
 	};
 
-	Emitter* emitter_ = nullptr;
+	static inline Emitter* emitter_ = nullptr;
 
 	Transform transform_;
 

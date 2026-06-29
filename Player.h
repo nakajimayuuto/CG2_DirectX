@@ -48,7 +48,7 @@ public:
 
 	Vector3 GetWorldPosition() override { return transform_.GetAffineMatrix().GetMatrixToTranslate(); };
 
-	Collider* GetHammerCollider() { return hammerOfJustice_.get(); };
+	Collider* GetHammerCollider() { return hammerOfJustice_->GetHammerStampCollision(); };
 
 	void OnCollision([[maybe_unused]] Collider* other)override;
 private:

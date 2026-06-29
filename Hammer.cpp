@@ -27,12 +27,12 @@ void Hammer::Initialize() {
 	collisionMask_ = kCollisionAttributeEnemy;
 
 	colliderHammer_ = std::make_unique<Collider>();
-	colliderHammer_->SetTransform(Transform::GetInitialValue({1.0f,1.0f,1.0f}, {0.0f,0.0f,0.0f}, {0.0f,3.0f,0.0f}));
+	colliderHammer_->SetTransform(Transform::GetInitialValue({1.0f,1.0f,1.0f}, {0.0f,0.0f,0.0f}, {0.0f,5.0f,0.0f}));
 	colliderHammer_->SetParent(&transform_);
 	colliderHammer_->SetRadius(radius_);
 	colliderHammer_->SetCollisionAttribute(collisionAttribute_);
 	colliderHammer_->SetCollisionMask(collisionMask_);
-	colliderHammer_->SetOnCollisionFunc(&Hammer::OnCollision());
+	colliderHammer_->SetOnCollisionFunc(pOnCollision_);
 }
 
 void Hammer::Update() {
@@ -48,6 +48,7 @@ void Hammer::Update() {
 			workAttack_.comboIndex++;
 		} else {
 			transformTarget_->rotate = { 0.0f,0.0f,0.0f };
+			transform_.rotate = { 0.0f,0.0f,0.0f };
 			isFinished_ = true;
 		}
 	}
@@ -58,6 +59,7 @@ void Hammer::Update() {
 		}
 	} else {
 		transformTarget_->rotate = { 0.0f,0.0f,0.0f };
+		transform_.rotate = { 0.0f,0.0f,0.0f };
 		isFinished_ = true;
 	}
 
@@ -115,6 +117,11 @@ void Hammer::Draw() {
 }
 
 void Hammer::OnCollision([[maybe_unused]] Collider* other) {
-	emitter_->SetTransform(transform_.GetAffineMatrix().GetMatrixToTransform());
+//	emitter_->SetTransform(transform_.GetAffineMatrix().GetMatrixToTransform());
+//	emitter_->CreateParticle();
+}
+
+void Hammer::pOnCollision_(Collider* other){
+	emitter_->SetTransform(other->GetTransform());
 	emitter_->CreateParticle();
 }
