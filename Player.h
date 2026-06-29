@@ -1,14 +1,11 @@
 #pragma once
 #include "Satlib.h"
-#include "BaseCharacter.h"
-#include "Hammer.h"
-
-class LockOn;
+#include <string>
 
 /// <summary>
 /// 自キャラ
 /// </summary>
-class Player : public BaseCharacter{
+class Player : public Collider{
 public:
 	enum class Behavior {
 		kRoot,
@@ -33,22 +30,18 @@ public:
 		float swingSpeed; // 攻撃移動速度.
 	};
 
-	void Initialize() override;
+	void Initialize();
 
-	void Update()override;
+	void Update();
 
-	void Draw()override;
+	void Draw();
 
 	Transform* GetTransform() { return &transform_; };
 
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();
 
-	void SetLockOn(LockOn* lockOn) { lockOn_ = lockOn; };
-
 	Vector3 GetWorldPosition() override { return transform_.GetAffineMatrix().GetMatrixToTranslate(); };
-
-	Collider* GetHammerCollider() { return hammerOfJustice_->GetHammerStampCollision(); };
 
 	void OnCollision([[maybe_unused]] Collider* other)override;
 private:
@@ -135,8 +128,6 @@ private:
 	Vector3 velocity_;
 	static inline float kGravityAcceleration = 0.05f;
 
-	std::unique_ptr<Hammer> hammerOfJustice_ = nullptr;
-
 	std::unique_ptr<Particles> particles_ = nullptr;
 
 	std::unique_ptr<Emitter> emitter_ = nullptr;
@@ -151,10 +142,10 @@ private:
 	static inline Transform transformLArm_;
 	static inline Transform transformHammer_;
 
+	std::map<std::string, Model> models_;
+
 	static inline float kBodyBlankY = 1.2f;
 
 	static inline float kThreshold = 0.2f;
-
-	LockOn* lockOn_;
 };
 

@@ -1,6 +1,4 @@
 #include "Player.h"
-#include "LockOn.h"
-
 void Player::Initialize() {
 	transform_.Initialize();
 	targetRotateY = 0.0f;
@@ -38,8 +36,6 @@ void Player::Initialize() {
 	collisionAttribute_ = kCollisionAttributePlayer;
 	collisionMask_ = kCollisionAttributeEnemy;
 
-	hammerOfJustice_ = std::make_unique<Hammer>();
-	hammerOfJustice_->SetTargetTransform(&transformBody_);
 	BehaviorAttackInitialize();
 
 	emitter_ = std::make_unique<Emitter>();
@@ -48,7 +44,6 @@ void Player::Initialize() {
 	particles_->SetBillboardType(BillboardType::kAllAxis);
 	emitter_->SetParticle(particles_.get());
 	emitter_->Initialize(transform_, 3, 0.5f);
-	hammerOfJustice_->SetEmitter(emitter_.get());
 }
 
 void Player::InitializeFloatingGimmick() {
@@ -167,11 +162,6 @@ void Player::BehaviorRootUpdate() {
 
 	if (isMoving_) {
 		targetRotateY = std::atan2(velocity_.x, velocity_.z);
-	} else if (lockOn_ && lockOn_->GetIsLockOn()) {
-		Vector3 lockOnPosition = lockOn_->GetTargetPosition();
-
-		Vector3 sub = lockOnPosition - transform_.translate;
-		targetRotateY = std::atan2(sub.x, sub.z);
 	}
 
 	transform_.rotate.y = LerpShortAngle(transform_.rotate.y, targetRotateY, kCompletionRate);
@@ -185,116 +175,9 @@ void Player::BehaviorRootUpdate() {
 
 
 void Player::BehaviorAttackInitialize() {
-	hammerOfJustice_->Initialize();
-	//workAttack_.comboNext = false;
-	//workAttack_.attackParameter = 0.0f;
-	//workAttack_.comboIndex = 0;
-	////workAttack_.inComboPhase
-	//
-	//transformHammer_.rotate = { 0.0f,0.0f,0.0f };
-	//beforeHammerRotate_ = transformHammer_.rotate;
-	//workAttack_.inComboPhase = 0;
-	//
-	//attackPhase_ = kCharge;
 }
 
 void Player::BehaviorAttackUpdate() {
-	hammerOfJustice_->Update();
-
-	if (hammerOfJustice_->GetIsFinished()) {
-		behaviorRequest_ = Behavior::kRoot;
-	}
-
-	// ここに処理を追加
-	/*
-	workAttack_.attackParameter += DeltaTime::GetInstance()->GetDeltaTime();
-
-	float speed = kConstAttacks_[workAttack_.comboIndex].swingSpeed;
-
-	float distance;
-
-	if (lockOn_ && lockOn_->GetIsLockOn()) {
-		Vector3 lockOnPosition = lockOn_->GetTargetPosition();
-
-		Vector3 sub = lockOnPosition - transform_.translate;
-
-		distance = sub.Length();
-
-		if (distance > kThreshold) {
-			transform_.rotate.y = std::atan2(sub.x, sub.z);
-
-			if (speed > distance - kThreshold) {
-				speed = distance - kThreshold;
-			}
-		}
-	}
-
-	if (workAttack_.attackParameter > GetSumComboTime(workAttack_.comboIndex)) {
-		if (workAttack_.comboNext) {
-			beforeHammerRotate_ = transformHammer_.rotate;
-			workAttack_.comboNext = false;
-			workAttack_.attackParameter = 0.0f;
-			workAttack_.inComboPhase = 0;
-			workAttack_.comboIndex++;
-		} else {
-			transformBody_.rotate = { 0.0f,0.0f,0.0f };
-			behaviorRequest_ = Behavior::kRoot;
-		}
-	}
-
-	if (workAttack_.comboIndex < kComboNum) {
-		if (InputManager::GetInstance()->TriggerPadButton(PadButtons::INPUT_L1) || InputManager::GetInstance()->TriggerMouse(MouseButtons::MOUSE_LEFT)) {
-			workAttack_.comboNext = true;
-		}
-	} else {
-		transformBody_.rotate = { 0.0f,0.0f,0.0f };
-		behaviorRequest_ = Behavior::kRoot;
-	}
-
-	switch (workAttack_.comboIndex) {
-	case 0:
-		transformHammer_.rotate.x = Easing(kStartHammerRotateX, kStampHammerRotateX, workAttack_.attackParameter, kConstAttacks_[workAttack_.comboIndex].swingTime, EaseType::kEaseInBack);
-		break;
-	case 1:
-		switch (workAttack_.inComboPhase) {
-		case 0:
-			transformHammer_.rotate = Easing(beforeHammerRotate_, kRollingStartHammerRotate, workAttack_.attackParameter, kConstAttacks_[workAttack_.comboIndex].chargeTime, EaseType::kEaseIn);
-
-			if (workAttack_.attackParameter > kConstAttacks_[workAttack_.comboIndex].chargeTime) {
-				beforeHammerRotate_ = transformHammer_.rotate;
-				workAttack_.inComboPhase++;
-			}
-			break;
-		case 1:
-			transformHammer_.rotate = Easing(beforeHammerRotate_, kRollingSwingHammerRotate, workAttack_.attackParameter - kConstAttacks_[workAttack_.comboIndex].chargeTime, kConstAttacks_[workAttack_.comboIndex].swingTime, EaseType::kEaseIn);
-			break;
-		}
-		break;
-	case 2:
-		switch (workAttack_.inComboPhase) {
-		case 0:
-			transformHammer_.rotate = Easing(beforeHammerRotate_, { 0.0f,0.0f,0.0f }, workAttack_.attackParameter, kConstAttacks_[workAttack_.comboIndex].chargeTime, EaseType::kEaseIn);
-
-			if (workAttack_.attackParameter > kConstAttacks_[workAttack_.comboIndex].chargeTime) {
-				beforeHammerRotate_ = transformBody_.rotate;
-				workAttack_.inComboPhase++;
-			}
-			break;
-		case 1:
-			transformBody_.rotate = Easing(beforeHammerRotate_, kExtraSwingHammerRotate, workAttack_.attackParameter - kConstAttacks_[workAttack_.comboIndex].chargeTime, kConstAttacks_[workAttack_.comboIndex].swingTime, EaseType::kEaseIn);
-			break;
-		}
-		break;
-	}
-
-	//hammerAnimationTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
-	//
-	//transformHammer_.rotate.x = Easing(kStartHammerRotateX, kStampHammerRotateX, hammerAnimationTimer_, kStampAnimationMaxTime, EaseType::kEaseInBack);
-	//
-	//if (hammerAnimationTimer_ > kStampAnimationMaxTime) {
-	//	behaviorRequest_ = Behavior::kRoot;
-	//}
-	*/
 }
 
 void Player::BehaviorDashInitialize() {
@@ -361,13 +244,6 @@ void Player::Draw() {
 	Renderer::GetInstance()->DrawShadow(transformRArm_, &models_["RArm"], { 0.0f,0.0f,0.0f,1.0f });
 
 	particles_->Draw();
-
-	if (behavior_ == Behavior::kAttack) {
-		hammerOfJustice_->Draw();
-	}
-	//	Renderer::GetInstance()->DrawModel(transformHammer_, &models_["hammer_of_justice"]);
-	//	Renderer::GetInstance()->DrawShadow(transformHammer_, &models_["hammer_of_justice"], { 0.0f,0.0f,0.0f,1.0f });
-	//}
 }
 
 void Player::RegisterGlobalVariables() {

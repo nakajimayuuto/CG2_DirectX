@@ -15,9 +15,7 @@
     <Text Include="externals\imgui\LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BaseCharacter.cpp" />
     <ClCompile Include="ContactRecord.cpp" />
-    <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="Engine\Math\Beats.cpp" />
     <ClCompile Include="Engine\Math\Collider.cpp" />
     <ClCompile Include="Engine\Math\Collision.cpp" />
@@ -80,10 +78,7 @@
       </ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="FollowCamera.cpp" />
     <ClCompile Include="Ground.cpp" />
-    <ClCompile Include="Hammer.cpp" />
-    <ClCompile Include="LockOn.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Managers\CollisionManager.cpp" />
     <ClCompile Include="Managers\InputManager.cpp" />
@@ -99,9 +94,7 @@
     <ClCompile Include="Skydome.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BaseCharacter.h" />
     <ClInclude Include="ContactRecord.h" />
-    <ClInclude Include="Enemy.h" />
     <ClInclude Include="Engine\Math\Beats.h" />
     <ClInclude Include="Engine\Math\Collider.h" />
     <ClInclude Include="Engine\Math\Collision.h" />
@@ -141,10 +134,7 @@
     <ClInclude Include="externals\imgui\imstb_rectpack.h" />
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
-    <ClInclude Include="FollowCamera.h" />
     <ClInclude Include="Ground.h" />
-    <ClInclude Include="Hammer.h" />
-    <ClInclude Include="LockOn.h" />
     <ClInclude Include="Managers\CollisionManager.h" />
     <ClInclude Include="Managers\InputManager.h" />
     <ClInclude Include="Managers\LightManager.h" />

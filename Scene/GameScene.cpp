@@ -19,8 +19,8 @@ void GameScene::Initialize() {
 
 	Camera::GetInstance()->SetPosition({0.0f,2.0f,-30.0f});
 
-	player_ = std::make_unique<Player>();
-	player_->Initialize();
+	//player_ = std::make_unique<Player>();
+	//player_->Initialize();
 
 	skydome_ = std::make_unique<Skydome>();
 	skydome_->Initialize();
@@ -28,29 +28,7 @@ void GameScene::Initialize() {
 	ground_ = std::make_unique<Ground>();
 	ground_->Initialize();
 
-	Enemy newEnemy;
-	newEnemy.Initialize();
-	enemies_.push_back(std::make_unique<Enemy>(newEnemy));
-
-	newEnemy.Initialize();
-	newEnemy.SetPosition({5.0f,0.5f,0.0f});
-	enemies_.push_back(std::make_unique<Enemy>(newEnemy));
-
-	newEnemy.Initialize();
-	newEnemy.SetPosition({-5.0f,0.5f,0.0f});
-	enemies_.push_back(std::make_unique<Enemy>(newEnemy));
-
-	followCamera_ = std::make_unique<FollowCamera>();
-	followCamera_->Initialize();
-	followCamera_->SetTarget(player_->GetTransform());
-
 	Player::RegisterGlobalVariables();
-
-	lockOn_ = std::make_unique<LockOn>();
-	lockOn_->Initialize();
-
-	followCamera_->SetLockOn(lockOn_.get());
-	player_->SetLockOn(lockOn_.get());
 }
 
 void GameScene::Update() {
@@ -66,15 +44,7 @@ void GameScene::Update() {
 		Camera::GetInstance()->ChangeCameraMode();
 	}
 
-	for (auto& enemy : enemies_) {
-		enemy->Update();
-	}
-
-	player_->Update();
-
-	followCamera_->Update();
-
-	lockOn_->Update(enemies_ );
+	//player_->Update();
 
 	Camera::GetInstance()->Update();
 
@@ -84,23 +54,16 @@ void GameScene::Update() {
 void GameScene::Draw() {
 	skydome_->Draw();
 	ground_->Draw();
-	player_->Draw();
-	lockOn_->Draw();
-
-	for (auto& enemy : enemies_) {
-		enemy->Draw();
-	}
-
-	CollisionManager::GetInstance()->DebugDraw();
+	//player_->Draw();
 }
 
 void GameScene::CheckAllCollisions(){
-	CollisionManager::GetInstance()->ClearColliderList();
-	CollisionManager::GetInstance()->AddColliderList(player_.get());
-	CollisionManager::GetInstance()->AddColliderList(player_->GetHammerCollider());
-	for (const std::unique_ptr<Enemy>& enemy : enemies_) {
-		CollisionManager::GetInstance()->AddColliderList(enemy.get());
-	}
-
-	CollisionManager::GetInstance()->CheckAllCollision();
+	//CollisionManager::GetInstance()->ClearColliderList();
+	//CollisionManager::GetInstance()->AddColliderList(player_.get());
+	//CollisionManager::GetInstance()->AddColliderList(player_->GetHammerCollider());
+	//for (const std::unique_ptr<Enemy>& enemy : enemies_) {
+	//	CollisionManager::GetInstance()->AddColliderList(enemy.get());
+	//}
+	//
+	//CollisionManager::GetInstance()->CheckAllCollision();
 }
