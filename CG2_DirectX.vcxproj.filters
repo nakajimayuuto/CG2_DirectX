@@ -172,6 +172,9 @@
     <Filter Include="ソース ファイル\HammerOfJustice">
       <UniqueIdentifier>{c5920e65-1b44-4660-a56d-5cd1ae9c151d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\ContactRecord">
+      <UniqueIdentifier>{206fc2d1-1100-47c3-9446-75d9f020f81f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -338,6 +341,9 @@
     </ClCompile>
     <ClCompile Include="Hammer.cpp">
       <Filter>ソース ファイル\HammerOfJustice</Filter>
+    </ClCompile>
+    <ClCompile Include="ContactRecord.cpp">
+      <Filter>ソース ファイル\ContactRecord</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -517,6 +523,9 @@
     </ClInclude>
     <ClInclude Include="Hammer.h">
       <Filter>ソース ファイル\HammerOfJustice</Filter>
+    </ClInclude>
+    <ClInclude Include="ContactRecord.h">
+      <Filter>ソース ファイル\ContactRecord</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

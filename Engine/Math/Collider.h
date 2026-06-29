@@ -3,6 +3,7 @@
 #include "Shape.h"
 #include "CollisionConfig.h"
 #include "Transform.h"
+#include "../../ContactRecord.h"
 class Collider {
 public:
 	Collider() = default;

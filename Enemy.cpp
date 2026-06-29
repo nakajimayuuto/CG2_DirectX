@@ -1,5 +1,10 @@
 #include "Enemy.h"
 
+Enemy::Enemy(){
+	serialNumber_ = nextSerialNumber;
+	++nextSerialNumber;
+}
+
 void Enemy::Initialize(){
 	models_["enemy"].Initialize("enemy");
 	transform_.Initialize();

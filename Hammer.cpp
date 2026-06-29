@@ -1,4 +1,5 @@
 #include "Hammer.h"
+#include "Enemy.h"
 void Hammer::Initialize() {
 	workAttack_.comboNext = false;
 	workAttack_.attackParameter = 0.0f;
@@ -26,6 +27,9 @@ void Hammer::Initialize() {
 	collisionAttribute_ = kCollisionAttributePlayer;
 	collisionMask_ = kCollisionAttributeEnemy;
 
+	record_ = std::make_unique<ContactRecord>();
+	record_->Clear();
+
 	colliderHammer_ = std::make_unique<Collider>();
 	colliderHammer_->SetTransform(Transform::GetInitialValue({1.0f,1.0f,1.0f}, {0.0f,0.0f,0.0f}, {0.0f,5.0f,0.0f}));
 	colliderHammer_->SetParent(&transform_);
@@ -46,6 +50,7 @@ void Hammer::Update() {
 			workAttack_.attackParameter = 0.0f;
 			workAttack_.inComboPhase = 0;
 			workAttack_.comboIndex++;
+			record_->Clear();
 		} else {
 			transformTarget_->rotate = { 0.0f,0.0f,0.0f };
 			transform_.rotate = { 0.0f,0.0f,0.0f };
@@ -122,6 +127,15 @@ void Hammer::OnCollision([[maybe_unused]] Collider* other) {
 }
 
 void Hammer::pOnCollision_(Collider* other){
+	if (Enemy* enemy = static_cast<Enemy*>(other)) {
+		uint32_t serialNumber = enemy->GetSerialNumber();
+		
+		if (record_->RecordCheck(serialNumber)) {
+			return;
+		}
+
+		record_->AddRecord(serialNumber);
+	}
 	emitter_->SetTransform(other->GetTransform());
 	emitter_->CreateParticle();
 }

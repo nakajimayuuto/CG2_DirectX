@@ -51,6 +51,8 @@ private:
 
 	static inline Emitter* emitter_ = nullptr;
 
+	static inline std::unique_ptr<ContactRecord> record_;
+
 	Transform transform_;
 
 	Transform* transformTarget_;
