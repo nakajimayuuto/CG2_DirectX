@@ -9,6 +9,5 @@ public:
 	virtual void Draw();
 protected:
 	std::map<std::string, Model> models_;
-	Transform transform_;
 };
 

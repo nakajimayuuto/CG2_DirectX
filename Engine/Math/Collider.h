@@ -2,6 +2,7 @@
 #include "Collision.h"
 #include "Shape.h"
 #include "CollisionConfig.h"
+#include "Transform.h"
 class Collider {
 public:
 	Collider() = default;
@@ -17,9 +18,13 @@ public:
 	uint32_t GetCollisionAttribute() { return collisionAttribute_; };
 	uint32_t GetCollisionMask() { return collisionMask_; };
 
-	virtual Vector3 GetWorldPosition() = 0;
+	void DebugDraw();
+
+	virtual Vector3 GetWorldPosition() { return transform_.GetAffineMatrix().GetMatrixToTranslate(); };
 protected:
 	float radius_ = 1.0f;
+
+	Transform transform_;
 
 	// 自分の属性(後々ここはstd::vectorにする)
 	uint32_t collisionAttribute_ = 0xFFFFFFFF;
