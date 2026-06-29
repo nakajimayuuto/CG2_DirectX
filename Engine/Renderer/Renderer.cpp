@@ -1040,11 +1040,13 @@ void Renderer::DrawShadow(const Transform& transform, const Model* model){
 	CreateModel(newElements, modelMax_);
 
 	for (uint32_t i = 0; i < modelMax_; i++) {
+		newElements[i]->materialData_->lightingType = static_cast<uint32_t>(LightingType::kNone);
+		newElements[i]->materialData_->reflectionType = static_cast<uint32_t>(ReflectionType::kNone);
 		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
 		Matrix4x4 projectionMatrix = Matrix4x4::Identity();
 		projectionMatrix.matrix[1][1] = 0.01f;
 		worldMatrix = worldMatrix * projectionMatrix;
-		newElements[i]->wvpData_->World = worldMatrix * projectionMatrix;
+		newElements[i]->wvpData_->World = worldMatrix;
 		newElements[i]->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
 		newElements[i]->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
 
@@ -1073,15 +1075,16 @@ void Renderer::DrawShadow(const Transform& transform, const Model* model, const 
 	std::vector<ModelElement*> newElements;
 	newElements.resize(modelMax_);
 	newElements = model->GetModelElement();
-
 	CreateNewModel(newElements, modelMax_);
 
 	for (uint32_t i = 0; i < modelMax_; i++) {
+		newElements[i]->materialData_->lightingType = static_cast<uint32_t>(LightingType::kNone);
+		newElements[i]->materialData_->reflectionType = static_cast<uint32_t>(ReflectionType::kNone);
 		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
 		Matrix4x4 projectionMatrix = Matrix4x4::Identity();
 		projectionMatrix.matrix[1][1] = 0.01f;
 		worldMatrix = worldMatrix * projectionMatrix;
-		newElements[i]->wvpData_->World = worldMatrix * projectionMatrix;
+		newElements[i]->wvpData_->World = worldMatrix;
 		newElements[i]->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
 		newElements[i]->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
 
