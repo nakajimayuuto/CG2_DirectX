@@ -41,8 +41,8 @@ void CollisionManager::CheckCollisionPair(Collider* colliderA, Collider* collide
 	sphereB.radius = colliderB->GetRadius();
 
 	if (Collision::SphereToSphere(sphereA, sphereB)) {
-		colliderA->OnCollision();
-		colliderB->OnCollision();
+		colliderA->OnCollision(colliderB);
+		colliderB->OnCollision(colliderA);
 	}
 }
 

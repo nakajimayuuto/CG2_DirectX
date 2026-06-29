@@ -35,13 +35,20 @@ void Player::Initialize() {
 
 	InitializeFloatingGimmick();
 
-
 	collisionAttribute_ = kCollisionAttributePlayer;
 	collisionMask_ = kCollisionAttributeEnemy;
 
-	hammerOFJustice_ = std::make_unique<Hammer>();
-	hammerOFJustice_->SetTargetTransform(&transformBody_);
+	hammerOfJustice_ = std::make_unique<Hammer>();
+	hammerOfJustice_->SetTargetTransform(&transformBody_);
 	BehaviorAttackInitialize();
+
+	emitter_ = std::make_unique<Emitter>();
+	particles_ = std::make_unique<Particles>();
+	particles_->Initialize(TextureManager::GetInstance()->GetTextureInfo("effect_plane"));
+	particles_->SetBillboardType(BillboardType::kAllAxis);
+	emitter_->SetParticle(particles_.get());
+	emitter_->Initialize(transform_, 3, 0.5f);
+	hammerOfJustice_->SetEmitter(emitter_.get());
 }
 
 void Player::InitializeFloatingGimmick() {
@@ -88,6 +95,7 @@ void Player::Update() {
 	default:
 		break;
 	}
+	particles_->Update();
 }
 
 void Player::BehaviorRootInitialize() {
@@ -177,7 +185,7 @@ void Player::BehaviorRootUpdate() {
 
 
 void Player::BehaviorAttackInitialize() {
-	hammerOFJustice_->Initialize();
+	hammerOfJustice_->Initialize();
 	//workAttack_.comboNext = false;
 	//workAttack_.attackParameter = 0.0f;
 	//workAttack_.comboIndex = 0;
@@ -191,9 +199,9 @@ void Player::BehaviorAttackInitialize() {
 }
 
 void Player::BehaviorAttackUpdate() {
-	hammerOFJustice_->Update();
+	hammerOfJustice_->Update();
 
-	if (hammerOFJustice_->GetIsFinished()) {
+	if (hammerOfJustice_->GetIsFinished()) {
 		behaviorRequest_ = Behavior::kRoot;
 	}
 
@@ -352,8 +360,10 @@ void Player::Draw() {
 	Renderer::GetInstance()->DrawShadow(transformLArm_, &models_["LArm"], { 0.0f,0.0f,0.0f,1.0f });
 	Renderer::GetInstance()->DrawShadow(transformRArm_, &models_["RArm"], { 0.0f,0.0f,0.0f,1.0f });
 
+	particles_->Draw();
+
 	if (behavior_ == Behavior::kAttack) {
-		hammerOFJustice_->Draw();
+		hammerOfJustice_->Draw();
 	}
 	//	Renderer::GetInstance()->DrawModel(transformHammer_, &models_["hammer_of_justice"]);
 	//	Renderer::GetInstance()->DrawShadow(transformHammer_, &models_["hammer_of_justice"], { 0.0f,0.0f,0.0f,1.0f });
@@ -400,8 +410,8 @@ void Player::ApplyGlobalVariables() {
 	}
 }
 
-void Player::OnCollision() {
-	behaviorRequest_ = Behavior::kJump;
+void Player::OnCollision([[maybe_unused]] Collider* other) {
+	//behaviorRequest_ = Behavior::kJump;
 }
 
 float Player::GetSumComboTime(uint32_t index) {

@@ -48,7 +48,9 @@ public:
 
 	Vector3 GetWorldPosition() override { return transform_.GetAffineMatrix().GetMatrixToTranslate(); };
 
-	void OnCollision()override;
+	Collider* GetHammerCollider() { return hammerOfJustice_.get(); };
+
+	void OnCollision([[maybe_unused]] Collider* other)override;
 private:
 	float GetSumComboTime(uint32_t index);
 
@@ -133,7 +135,11 @@ private:
 	Vector3 velocity_;
 	static inline float kGravityAcceleration = 0.05f;
 
-	std::unique_ptr<Hammer> hammerOFJustice_ = nullptr;
+	std::unique_ptr<Hammer> hammerOfJustice_ = nullptr;
+
+	std::unique_ptr<Particles> particles_ = nullptr;
+
+	std::unique_ptr<Emitter> emitter_ = nullptr;
 
 	bool isMoving_;
 

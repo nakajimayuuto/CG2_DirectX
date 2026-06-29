@@ -22,6 +22,17 @@ void Hammer::Initialize() {
 	kConstAttacks_[0] = { 0.0f,0.0f,kStampAnimationMaxTime,0.0f,0.0f,0.0f,0.15f };
 	kConstAttacks_[1] = { 0.3f,0.2,0.3f,0.0f,0.2f,0.0f,0.0f };
 	kConstAttacks_[2] = { 0.3f,0.2f,0.3f,0.5f,0.2f,0.0f,0.0f };
+
+	collisionAttribute_ = kCollisionAttributePlayer;
+	collisionMask_ = kCollisionAttributeEnemy;
+
+	colliderHammer_ = std::make_unique<Collider>();
+	colliderHammer_->SetTransform(Transform::GetInitialValue({1.0f,1.0f,1.0f}, {0.0f,0.0f,0.0f}, {0.0f,3.0f,0.0f}));
+	colliderHammer_->SetParent(&transform_);
+	colliderHammer_->SetRadius(radius_);
+	colliderHammer_->SetCollisionAttribute(collisionAttribute_);
+	colliderHammer_->SetCollisionMask(collisionMask_);
+	colliderHammer_->SetOnCollisionFunc();
 }
 
 void Hammer::Update() {
@@ -101,4 +112,9 @@ float Hammer::GetSumComboTime(uint32_t index) {
 
 void Hammer::Draw() {
 	Renderer::GetInstance()->DrawModel(transform_,&model_);
+}
+
+void Hammer::OnCollision([[maybe_unused]] Collider* other) {
+	emitter_->SetTransform(transform_.GetAffineMatrix().GetMatrixToTransform());
+	emitter_->CreateParticle();
 }

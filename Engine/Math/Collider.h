@@ -2,14 +2,19 @@
 #include "Collision.h"
 #include "Shape.h"
 #include "CollisionConfig.h"
+#include "Transform.h"
 class Collider {
 public:
 	Collider() = default;
 	virtual ~Collider() = default;
-	virtual void OnCollision() {};
+	virtual void OnCollision([[maybe_unused]] Collider* other);
 
 	void SetRadius(float radius) { radius_ = radius; };
 	float GetRadius() const { return radius_; };
+
+	void SetTransform(Transform transform) { transform_ = transform; };
+	Transform GetTransform() { return transform_; };
+	void SetParent(Transform* transform) { transform_.SetParent(transform); };
 
 	void SetCollisionAttribute(uint32_t collisionAttribute) { collisionAttribute_ = collisionAttribute; };
 	void SetCollisionMask(uint32_t collisionMask) { collisionMask_ = ~collisionMask; };
@@ -17,8 +22,14 @@ public:
 	uint32_t GetCollisionAttribute() { return collisionAttribute_; };
 	uint32_t GetCollisionMask() { return collisionMask_; };
 
-	virtual Vector3 GetWorldPosition() = 0;
+	void SetOnCollisionFunc(void (Collider::*func)());
+
+	virtual Vector3 GetWorldPosition() { return transform_.GetAffineMatrix().GetMatrixToTranslate(); };
 protected:
+	void (Collider::* pOnCollision_)() = nullptr;
+
+	Transform transform_ = Transform::GetInitialValue();
+
 	float radius_ = 1.0f;
 
 	// 自分の属性(後々ここはstd::vectorにする)

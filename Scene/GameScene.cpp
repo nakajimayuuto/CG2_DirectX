@@ -7,6 +7,7 @@ GameScene::~GameScene(){
 void GameScene::Initialize() {
 	TextureManager::GetInstance()->RegisterTexture("uvChecker","Resource/uvChecker.png");
 	TextureManager::GetInstance()->RegisterTexture("reticle","Resource/reticle.png");
+	TextureManager::GetInstance()->RegisterTexture("effect_plane","Resource/EffectPlane/effect_plane.png");
 	ModelManager::GetInstance()->RegisterObj("skydome","Resource/skydome","skydome.obj");
 	ModelManager::GetInstance()->RegisterObj("ground","Resource/Ground","ground.obj");
 	ModelManager::GetInstance()->RegisterObj("player","Resource/player_hovering_mode","player.obj");
@@ -96,6 +97,7 @@ void GameScene::Draw() {
 void GameScene::CheckAllCollisions(){
 	CollisionManager::GetInstance()->ClearColliderList();
 	CollisionManager::GetInstance()->AddColliderList(player_.get());
+	CollisionManager::GetInstance()->AddColliderList(player_->GetHammerCollider());
 	for (const std::unique_ptr<Enemy>& enemy : enemies_) {
 		CollisionManager::GetInstance()->AddColliderList(enemy.get());
 	}

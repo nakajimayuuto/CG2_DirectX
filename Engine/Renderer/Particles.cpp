@@ -380,7 +380,7 @@ void Emitter::Update() {
 	frequencyTime_ += DeltaTime::GetInstance()->GetDeltaTime();
 
 	if (frequency_ <= frequencyTime_) {
-		CreateParticle();
+	//s	CreateParticle();
 		frequencyTime_ -= frequency_;
 	}
 }

@@ -12,9 +12,13 @@ public:
 
 	void SetTargetTransform(Transform* transform) { transformTarget_ = transform; };
 
+	void OnCollision([[maybe_unused]]Collider* other) override;
+
 	bool GetIsFinished()const { return isFinished_; };
 
 	Vector3 GetWorldPosition() override { return transform_.GetAffineMatrix().GetMatrixToTranslate(); }
+
+	void SetEmitter(Emitter* emitter){ emitter_ = emitter; }
 
 	struct ConstAttack {
 		float anticipationTime; // 振りかぶり時間.
@@ -40,6 +44,8 @@ private:
 		uint32_t inComboPhase = 0;
 		bool comboNext = false;
 	};
+
+	Emitter* emitter_ = nullptr;
 
 	Transform transform_;
 
@@ -71,5 +77,7 @@ private:
 	static inline std::array<Hammer::ConstAttack, Hammer::kComboNum> kConstAttacks_;
 
 	float hammerAnimationTimer_ = 0.0f;
+
+	std::unique_ptr<Collider> colliderHammer_ = nullptr;
 };
 
