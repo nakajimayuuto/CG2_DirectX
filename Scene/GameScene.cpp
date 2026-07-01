@@ -9,6 +9,7 @@ void GameScene::Initialize() {
 	TextureManager::GetInstance()->RegisterTexture("reticle","Resource/reticle.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_plane","Resource/EffectPlane/effect_plane.png");
 	ModelManager::GetInstance()->RegisterObj("skydome","Resource/skydome","skydome.obj");
+	ModelManager::GetInstance()->RegisterObj("creeking","Resource/creeking","creeking.obj");
 	ModelManager::GetInstance()->RegisterObj("ground","Resource/Ground","ground.obj");
 	ModelManager::GetInstance()->RegisterObj("player","Resource/player_hovering_mode","player.obj");
 	ModelManager::GetInstance()->RegisterObj("player_right_arm","Resource/player_hovering_mode/right_arm","right_arm.obj");
@@ -54,6 +55,7 @@ void GameScene::Update() {
 void GameScene::Draw() {
 	skydome_->Draw();
 	ground_->Draw();
+	Renderer::GetInstance()->DrawModel(Transform::GetInitialValue(), "creeking", {1.0f,1.0f,1.0f,1.0f});
 	//player_->Draw();
 }
 
