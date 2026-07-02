@@ -394,7 +394,7 @@ void GlobalVariables::LoadFile(const std::string& groupName){
 		// アイテム名を取得.
 		const std::string& itemName = itItem.key();
 
-		if (itItem->is_number_integer()) {
+		if (itItem->is_boolean()) {
 			bool value = itItem->get<bool>();
 			SetValue(groupName,itemName,value);
 		}else if(itItem->is_number_integer()) {
