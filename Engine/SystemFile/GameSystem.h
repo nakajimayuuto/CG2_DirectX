@@ -63,6 +63,35 @@ enum class BlendMode {
 	kNormalCullNone, // 通常ブレンド。背面カリング無し.
 	kLine, // 線の描画に使用.
 	kCount, // ブレンドモードの最大数.
+}; struct WindowData {
+	WNDCLASS wc{};
+
+	HWND hwnd;
+
+	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> swapChainResource[2] = { nullptr };
+
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap = nullptr;
+
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
+
+	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
+
+	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
+
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
+	D3D12_RESOURCE_BARRIER barrier{};
+	MSG msg{};
+
+	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
+
+	uint64_t fenceValue = 0;
+
+	HANDLE fenceEvent;
 };
 
 class GameSystem {
@@ -70,7 +99,7 @@ class GameSystem {
 	// GameSystemで使うやつ.
 public:
 	static GameSystem* GetInstance();
-	
+
 	static LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception);
 
 	void Initialize();
@@ -90,30 +119,32 @@ public:
 
 	Microsoft::WRL::ComPtr<ID3D12Device> GetDevice() { return device; };
 
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> GetCommandList() { return commandList; };
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> GetCommandList() { return windowDatas_[0].commandList; };
 
-	Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetCommandQueue() { return commandQueue; };
+	std::vector<WindowData> GetWindowsData() { return windowDatas_; };
 
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> GetCommandAllocator() { return commandAllocator; };
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetCommandQueue() { return windowDatas_[0].commandQueue; };
 
-	Microsoft::WRL::ComPtr<ID3D12Fence> GetFence() { return fence; };
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> GetCommandAllocator() { return windowDatas_[0].commandAllocator; };
 
-	uint64_t GetFenceValue() { return fenceValue; };
+	Microsoft::WRL::ComPtr<ID3D12Fence> GetFence() { return windowDatas_[0].fence; };
 
-	void FenceValueIncrement() { fenceValue++; };
-	
-	HANDLE GetFenceEvent() { return fenceEvent; };
+	uint64_t GetFenceValue() { return windowDatas_[0].fenceValue; };
+
+	void FenceValueIncrement() { windowDatas_[0].fenceValue++; };
+
+	HANDLE GetFenceEvent() { return windowDatas_[0].fenceEvent; };
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetSrvDescriptorHeap() { return srvDescriptorHeap; };
 	uint32_t GetDescriptorSizeSRV() { return descriptorSizeSRV; };
 
-	WNDCLASS GetWc() { return wc; };
+	WNDCLASS GetWc() { return windowDatas_[0].wc; };
 
-	HWND GetHWND() { return hwnd; };
+	HWND GetHWND() { return  windowDatas_[0].hwnd; };
 
 	std::ofstream& GetLogStream() { return logStream; };
 
-	Microsoft::WRL::ComPtr<IDXGISwapChain4> GetSwapChain() { return swapChain; }
+	Microsoft::WRL::ComPtr<IDXGISwapChain4> GetSwapChain() { return  windowDatas_[0].swapChain; }
 
 	D3D12_VIEWPORT GetViewport() { return viewport; };
 
@@ -184,37 +215,31 @@ private:
 	=============================================================*/
 	static D3DResourceLeakChecker resourceLeakChecker;
 
-	WNDCLASS wc{};
+	
 
-	MSG msg{};
+	std::vector<WindowData> windowDatas_;
+
+	uint32_t windowNum_ = 2;
+
+	//WNDCLASS wc{};
+
 
 	Microsoft::WRL::ComPtr<ID3D12Device> device = nullptr;
 
-	HWND hwnd;
+	//HWND hwnd;
 
 	std::ofstream logStream;
 
-	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue = nullptr;
 
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator = nullptr;
-
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
-
-	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain = nullptr;
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> swapChainResource[2] = { nullptr };
-
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap = nullptr;
+	//Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain = nullptr;
+	//
+	//Microsoft::WRL::ComPtr<ID3D12Resource> swapChainResource[2] = { nullptr };
+	//
+	//Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap = nullptr;
+	//
+	//D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvDescriptorHeap = nullptr;
-
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
-
-	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
-
-	uint64_t fenceValue = 0;
-
-	HANDLE fenceEvent;
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap = nullptr;
 
@@ -222,7 +247,6 @@ private:
 
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle;
 
-	D3D12_RESOURCE_BARRIER barrier{};
 
 	D3D12_VIEWPORT viewport{};
 

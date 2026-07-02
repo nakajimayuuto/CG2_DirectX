@@ -63,21 +63,6 @@ void GameSystem::Initialize() {
 	Window作成系
 	=============================================================*/
 
-	// ウィンドウプロシージャ
-	wc.lpfnWndProc = WindowProc;
-
-	// ウィンドウクラス名
-	wc.lpszClassName = L"CG2WindowClass";
-
-	// インスタンスハンドル.
-	wc.hInstance = GetModuleHandle(nullptr);
-
-	// カーソル.
-	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-
-	// ウィンドウクラスを登録する.
-	RegisterClass(&wc);
-
 	// クライアント領域のサイズ.
 	int32_t kClientWidth = Environment::GetInstance()->GetWindowSize().width;
 	int32_t kClientHeight = Environment::GetInstance()->GetWindowSize().height;
@@ -85,22 +70,50 @@ void GameSystem::Initialize() {
 	// ウィンドウサイズを表す構造体に九合アント領域を入れる.
 	RECT wrc{ 0,0,kClientWidth,kClientHeight };
 
-	// クライアント領域をもとに実際のサイズにwrcを変更してもらう.
-	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
+	for (uint32_t i = 0; i < windowNum_; i++) {
+		WindowData winData;
 
-	// ウィンドウの生成.
-	hwnd = CreateWindow(
-		wc.lpszClassName,		// 利用するクラス名.
-		Environment::GetInstance()->GetWindowTitle(),					// タイトルバーの文字.
-		WS_OVERLAPPEDWINDOW,	// よく見るウィンドウスタイル.
-		CW_USEDEFAULT,			// 表示X座標(Windowsに任せる).
-		CW_USEDEFAULT,			// 表示Y座標(WindowsOSに任せる).
-		wrc.right - wrc.left,	// ウィンドウ横幅.
-		wrc.bottom - wrc.top,	// ウィンドウ縦幅.
-		nullptr,				// 親ウィンドウハンドル.
-		nullptr,				// メニューウィンドウハンドル.
-		wc.hInstance,			// インスタンスハンドル.
-		nullptr);				// オプション.
+		// ウィンドウプロシージャ
+		winData.wc.lpfnWndProc = WindowProc;
+
+		// ウィンドウクラス名
+		winData.wc.lpszClassName = L"CG2WindowClass";
+
+		// インスタンスハンドル.
+		winData.wc.hInstance = GetModuleHandle(nullptr);
+
+		// カーソル.
+		winData.wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+
+		// ウィンドウクラスを登録する.
+		RegisterClass(&winData.wc);
+
+		// クライアント領域をもとに実際のサイズにwrcを変更してもらう.
+		AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
+
+		// ウィンドウの生成.
+		winData.hwnd = CreateWindow(
+			winData.wc.lpszClassName,		// 利用するクラス名.
+			Environment::GetInstance()->GetWindowTitle(),					// タイトルバーの文字.
+			WS_OVERLAPPEDWINDOW,	// よく見るウィンドウスタイル.
+			CW_USEDEFAULT,			// 表示X座標(Windowsに任せる).
+			CW_USEDEFAULT,			// 表示Y座標(WindowsOSに任せる).
+			wrc.right - wrc.left,	// ウィンドウ横幅.
+			wrc.bottom - wrc.top,	// ウィンドウ縦幅.
+			nullptr,				// 親ウィンドウハンドル.
+			nullptr,				// メニューウィンドウハンドル.
+			winData.wc.hInstance,			// インスタンスハンドル.
+			nullptr);				// オプション.
+
+
+		//const DWMNCRENDERINGPOLICY policy = DWMNCRP_DISABLED;
+		//DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &policy, sizeof(DWM_WINDOW_CORNER_PREFERENCE));
+		//
+		//// ウィンドウを表示する.
+		ShowWindow(winData.hwnd, SW_SHOW);
+		windowDatas_.push_back(winData);
+	}
+
 
 #ifdef _DEBUG
 	Microsoft::WRL::ComPtr<ID3D12Debug1> debugController = nullptr;
@@ -111,12 +124,6 @@ void GameSystem::Initialize() {
 		debugController->SetEnableGPUBasedValidation(TRUE);
 	}
 #endif // _DEBUG
-
-	//const DWMNCRENDERINGPOLICY policy = DWMNCRP_DISABLED;
-	//DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &policy, sizeof(DWM_WINDOW_CORNER_PREFERENCE));
-	//
-	//// ウィンドウを表示する.
-	ShowWindow(hwnd, SW_SHOW);
 
 	InputManager::GetInstance()->Initialize();
 
@@ -221,88 +228,89 @@ void GameSystem::Initialize() {
 
 	D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};
 
-	hr = device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&commandQueue));
+	for (WindowData& data : windowDatas_) {
+		hr = device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&data.commandQueue));
 
-	// コマンドキューの生成がうまくいかなかったので起動できない.
-	assert(SUCCEEDED(hr));
+		// コマンドキューの生成がうまくいかなかったので起動できない.
+		assert(SUCCEEDED(hr));
 
-	// コマンドアロケータを生成する
+		// コマンドアロケータを生成する
 
-	hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator));
-	// コマンドアロケータの生成がうまくいかなかったので起動できない.
-	assert(SUCCEEDED(hr));
+		hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&data.commandAllocator));
+		// コマンドアロケータの生成がうまくいかなかったので起動できない.
+		assert(SUCCEEDED(hr));
 
-	// コマンドリストを生成する
+		// コマンドリストを生成する
 
-	hr = device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), nullptr, IID_PPV_ARGS(&commandList));
-	// コマンドリストの生成がうまくいかなかったので起動できない.
-	assert(SUCCEEDED(hr));
+		hr = device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, data.commandAllocator.Get(), nullptr, IID_PPV_ARGS(&data.commandList));
+		// コマンドリストの生成がうまくいかなかったので起動できない.
+		assert(SUCCEEDED(hr));
+	}
+
+	for (WindowData& data : windowDatas_) {
+		/*=============================================================
+		スワップチェーン
+		=============================================================*/
+		// スワップチェーンを生成する.
+		data.swapChainDesc.Width = kClientWidth; //画面の幅。ウィンドウのクライアント領域を同じものにする.
+		data.swapChainDesc.Height = kClientHeight; //画面の高さ。ウィンドウのクライアント領域を同じものにする.
+		data.swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; //色の形式.
+		data.swapChainDesc.SampleDesc.Count = 1; // マルチサンプルしない.
+		data.swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // 描画のターゲットとして利用する.
+		data.swapChainDesc.BufferCount = 2; // ダブルバッファ.
+		data.swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD; //モニタに移したら中身を破棄.
+		// コマンドキュー、ウィンドウハンドル、設定を渡して生成する.
+		hr = dxgiFactory->CreateSwapChainForHwnd(data.commandQueue.Get(), data.hwnd, &data.swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(data.swapChain.GetAddressOf()));
+		assert(SUCCEEDED(hr));
 
 
-	/*=============================================================
-	スワップチェーン
-	=============================================================*/
-	// スワップチェーンを生成する.
-	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
-	swapChainDesc.Width = kClientWidth; //画面の幅。ウィンドウのクライアント領域を同じものにする.
-	swapChainDesc.Height = kClientHeight; //画面の高さ。ウィンドウのクライアント領域を同じものにする.
-	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; //色の形式.
-	swapChainDesc.SampleDesc.Count = 1; // マルチサンプルしない.
-	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // 描画のターゲットとして利用する.
-	swapChainDesc.BufferCount = 2; // ダブルバッファ.
-	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD; //モニタに移したら中身を破棄.
-	// コマンドキュー、ウィンドウハンドル、設定を渡して生成する.
-	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue.Get(), hwnd, &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf()));
-	assert(SUCCEEDED(hr));
+		/*=============================================================
+		ディスクリプタ系
+		=============================================================*/
+		// RTV用のヒープでディスクリプタの数は2。RTVはShader内で触るものではないので、ShaderVisibleはfalse.
+		data.rtvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
+		const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
+		// SwapChainからResourceを引っ張ってくる.
+		hr = data.swapChain->GetBuffer(0, IID_PPV_ARGS(&data.swapChainResource[0]));
+		// 上手く取得出来なければ起動できない.
+		assert(SUCCEEDED(hr));
+		hr = data.swapChain->GetBuffer(1, IID_PPV_ARGS(&data.swapChainResource[1]));
+		assert(SUCCEEDED(hr));
 
-	/*=============================================================
-	ディスクリプタ系
-	=============================================================*/
-	// RTV用のヒープでディスクリプタの数は2。RTVはShader内で触るものではないので、ShaderVisibleはfalse.
-	rtvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
-	const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+		// RTVの設定.
+		data.rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB; // 出力結果をSRGBに変換して書き込む.
+		data.rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D; // 2dテクスチャとして書き込む.
+		// RTVを2つ作るのでディスクリプタを2つ用意.
+		// まず1つ目を作る。1つ目は最初の所に作る。作る場所をこちらで指定して上げる必要がある.
+		const uint32_t rtvHandleMax = 2;
+
+		for (uint32_t dataNumber = 0; dataNumber < rtvHandleMax; dataNumber++) {
+			data.rtvHandles[dataNumber] = GetCPUDescriptorHandle(data.rtvDescriptorHeap, descriptorSizeRTV, dataNumber);
+		}
+		device->CreateRenderTargetView(data.swapChainResource[0].Get(), &data.rtvDesc, data.rtvHandles[0]);
+
+		// 2つ目を作る.
+		device->CreateRenderTargetView(data.swapChainResource[1].Get(), &data.rtvDesc, data.rtvHandles[1]);
+	}
 
 	// SRV用のヒープでディスクリプタの数は128。SRVはShader内で触るものなので、ShaderVisibleはtrue.
 	srvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
 	descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-	// SwapChainからResourceを引っ張ってくる.
-	hr = swapChain->GetBuffer(0, IID_PPV_ARGS(&swapChainResource[0]));
-	// 上手く取得出来なければ起動できない.
-	assert(SUCCEEDED(hr));
-	hr = swapChain->GetBuffer(1, IID_PPV_ARGS(&swapChainResource[1]));
-	assert(SUCCEEDED(hr));
-
-	// RTVの設定.
-	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
-	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB; // 出力結果をSRGBに変換して書き込む.
-	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D; // 2dテクスチャとして書き込む.
-	// RTVを2つ作るのでディスクリプタを2つ用意.
-	// まず1つ目を作る。1つ目は最初の所に作る。作る場所をこちらで指定して上げる必要がある.
-	const uint32_t rtvHandleMax = 2;
-
-	for (uint32_t dataNumber = 0; dataNumber < rtvHandleMax; dataNumber++) {
-		rtvHandles[dataNumber] = GetCPUDescriptorHandle(rtvDescriptorHeap, descriptorSizeRTV, dataNumber);
-	}
-	device->CreateRenderTargetView(swapChainResource[0].Get(), &rtvDesc, rtvHandles[0]);
-
-	// 2つ目を作る.
-	device->CreateRenderTargetView(swapChainResource[1].Get(), &rtvDesc, rtvHandles[1]);
-
-
 	/*=============================================================
 	Fence、Event系
 	=============================================================*/
 	// 初期値0でFenceを作る.
-	hr = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
-	assert(SUCCEEDED(hr));
+	for (WindowData& data : windowDatas_) {
+		hr = device->CreateFence(data.fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&data.fence));
+		assert(SUCCEEDED(hr));
 
-	// FenceのSignalを持つためのイベントを作成する.
-	//HANDLE fenceEvent 
-	fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	assert(fenceEvent != nullptr);
-
+		// FenceのSignalを持つためのイベントを作成する.
+		//HANDLE fenceEvent 
+		data.fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+		assert(data.fenceEvent != nullptr);
+	}
 
 
 	/*=============================================================
@@ -318,10 +326,10 @@ void GameSystem::Initialize() {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
-	ImGui_ImplWin32_Init(hwnd);
+	ImGui_ImplWin32_Init(windowDatas_[0].hwnd);
 	ImGui_ImplDX12_Init(device.Get(),
-		swapChainDesc.BufferCount,
-		rtvDesc.Format,
+		windowDatas_[0].swapChainDesc.BufferCount,
+		windowDatas_[0].rtvDesc.Format,
 		srvDescriptorHeap.Get(),
 		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
@@ -583,19 +591,21 @@ void GameSystem::CreatePipeline(BlendMode blendMode) {
 	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&pipeline_[static_cast<uint32_t>(blendMode)].graphicsPipelineState));
 	assert(SUCCEEDED(hr));
 
-	commandList->SetGraphicsRootSignature(pipeline_[static_cast<uint32_t>(blendMode)].rootSignature.Get());
-	commandList->SetPipelineState(pipeline_[static_cast<uint32_t>(blendMode)].graphicsPipelineState.Get()); // PS0を設定.
+	for (WindowData& data : windowDatas_) {
+		data.commandList->SetGraphicsRootSignature(pipeline_[static_cast<uint32_t>(blendMode)].rootSignature.Get());
+		data.commandList->SetPipelineState(pipeline_[static_cast<uint32_t>(blendMode)].graphicsPipelineState.Get()); // PS0を設定.
+	}
 
 	dxcCompiler->Release();
 	dxcUtils->Release();
 }
 
 void GameSystem::SetPipeline(BlendMode blendMode) {
-	commandList->RSSetViewports(1, &viewport); // Viewportを設定.
-	commandList->RSSetScissorRects(1, &scissorRect); // Scissorを設定.
-	// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
-	commandList->SetGraphicsRootSignature(pipeline_[static_cast<uint32_t>(blendMode)].rootSignature.Get());
-	commandList->SetPipelineState(pipeline_[static_cast<uint32_t>(blendMode)].graphicsPipelineState.Get()); // PS0を設定.
+	//commandList->RSSetViewports(1, &viewport); // Viewportを設定.
+	//commandList->RSSetScissorRects(1, &scissorRect); // Scissorを設定.
+	//// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
+	//commandList->SetGraphicsRootSignature(pipeline_[static_cast<uint32_t>(blendMode)].rootSignature.Get());
+	//commandList->SetPipelineState(pipeline_[static_cast<uint32_t>(blendMode)].graphicsPipelineState.Get()); // PS0を設定.
 }
 
 bool GameSystem::ProcessMessage() {
@@ -603,16 +613,20 @@ bool GameSystem::ProcessMessage() {
 		return false;
 	}
 
-	return msg.message != WM_QUIT;
+	for (WindowData& data : windowDatas_) {
+		return data.msg.message != WM_QUIT;
+	}
 }
 
 bool GameSystem::BeginFrame() {
 	// Windowにメッセージが来てたら最優先で処理させる.
-	if (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
+	for (WindowData& data : windowDatas_) {
+		if (PeekMessageW(&data.msg, NULL, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&data.msg);
+			DispatchMessage(&data.msg);
 
-		return false;
+			return false;
+		}
 	}
 
 	InputManager::GetInstance()->Update();
@@ -627,7 +641,9 @@ bool GameSystem::BeginFrame() {
 
 	// 指定した深度で画面全体をクリアする.
 	dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	for (WindowData& data : windowDatas_) {
+		data.commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	}
 
 	ApplyGlobalVariables();
 
@@ -644,101 +660,108 @@ void GameSystem::DrawSetup() {
 	ImGui::Render();
 #endif // USE_IMGUI
 
-
-	/*=============================================================
-	コマンドを積む
-	=============================================================*/
-	// これから書き込むバックバッファのインデックスを取得.
-	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
-
-
-	// TransitionBarrierの設定.
-	// 今回のバリアはTransition.
-	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	// Noneにしておく.
-	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	// バリアを張る対象のリソース。現在のバックバッファに対して行う.
-	barrier.Transition.pResource = swapChainResource[backBufferIndex].Get();
-	// 遷移前(現在)のResourceState.
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-	// 遷移後のResourceState.
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	// TransitionBarrierを張る.
-	commandList->ResourceBarrier(1, &barrier);
+	for (WindowData& data : windowDatas_) {
+		/*=============================================================
+		コマンドを積む
+		=============================================================*/
+		// これから書き込むバックバッファのインデックスを取得.
+		UINT backBufferIndex = data.swapChain->GetCurrentBackBufferIndex();
 
 
-	// 描画先のRTVとDSVを設定する.
-	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
-	// 指定した色で画面全体をクリアする.
-	//float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };// 青っぽい色。RGBAの順.
-	float clearColor[] = { 0.0f,0.0f,0.0f,1.0f };// 青っぽい色。RGBAの順.
-	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
+		// TransitionBarrierの設定.
+		// 今回のバリアはTransition.
+		data.barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		// Noneにしておく.
+		data.barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		// バリアを張る対象のリソース。現在のバックバッファに対して行う.
+		data.barrier.Transition.pResource = data.swapChainResource[backBufferIndex].Get();
+		// 遷移前(現在)のResourceState.
+		data.barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+		// 遷移後のResourceState.
+		data.barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		// TransitionBarrierを張る.
+		data.commandList->ResourceBarrier(1, &data.barrier);
 
 
+		// 描画先のRTVとDSVを設定する.
+		data.commandList->OMSetRenderTargets(1, &data.rtvHandles[backBufferIndex], false, &dsvHandle);
+		// 指定した色で画面全体をクリアする.
+		//float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };// 青っぽい色。RGBAの順.
+		float clearColor[] = { 0.0f,0.0f,0.0f,1.0f };// 青っぽい色。RGBAの順.
+		data.commandList->ClearRenderTargetView(data.rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 
-	// 描画用のDescriptorHeapの設定.
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { srvDescriptorHeap.Get() };
-	commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
+
+		// 描画用のDescriptorHeapの設定.
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { srvDescriptorHeap.Get() };
+		data.commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
 
 
-	commandList->RSSetViewports(1, &viewport); // Viewportを設定.
-	commandList->RSSetScissorRects(1, &scissorRect); // Scissorを設定.
-	// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
-	commandList->SetGraphicsRootSignature(pipeline_[static_cast<uint32_t>(BlendMode::kNormal)].rootSignature.Get());
-	commandList->SetPipelineState(pipeline_[static_cast<uint32_t>(BlendMode::kNormal)].graphicsPipelineState.Get()); // PS0を設定.
+		data.commandList->RSSetViewports(1, &viewport); // Viewportを設定.
+		data.commandList->RSSetScissorRects(1, &scissorRect); // Scissorを設定.
+		// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
+		data.commandList->SetGraphicsRootSignature(pipeline_[static_cast<uint32_t>(BlendMode::kNormal)].rootSignature.Get());
+		data.commandList->SetPipelineState(pipeline_[static_cast<uint32_t>(BlendMode::kNormal)].graphicsPipelineState.Get()); // PS0を設定.
+	}
 }
 
 void GameSystem::EndFrame() {
 #ifdef USE_IMGUI
 	// ImGuiの描画.
 	// 実際のcommandListのImGuiの描画コマンドを積む.
-	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
+	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), windowDatas_[0].commandList.Get());
 #endif // USE_IMGUI
 
 
 	// 画面に描く処理は全て終わり、画面に映すので状態を遷移.
 	// 今回はRenderTargetからPresentにする.
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-	// TransitionBarrierを張る.
-	commandList->ResourceBarrier(1, &barrier);
+	HRESULT hr;
+	for (WindowData& data : windowDatas_) {
+		data.barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		data.barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+		// TransitionBarrierを張る.
+		data.commandList->ResourceBarrier(1, &data.barrier);
 
 
-	// コマンドリストの内容を確定させる。全てのコマンドを積んでからCloseすること.
-	HRESULT hr = commandList->Close();
-	assert(SUCCEEDED(hr));
+		// コマンドリストの内容を確定させる。全てのコマンドを積んでからCloseすること.
+		hr = data.commandList->Close();
+		assert(SUCCEEDED(hr));
 
-	/*=============================================================
-	コマンドをキックする.
-	=============================================================*/
-	//GPUにコマンドリストの実行を行わせる.
-	Microsoft::WRL::ComPtr<ID3D12CommandList> commandLists[] = { commandList };
-	commandQueue->ExecuteCommandLists(1, commandLists->GetAddressOf());
-	//GPUとOSに画面の交換を行うよう通知する.
-	swapChain->Present(1, 0);
-
+		/*=============================================================
+		コマンドをキックする.
+		=============================================================*/
+		//GPUにコマンドリストの実行を行わせる.
+		Microsoft::WRL::ComPtr<ID3D12CommandList> commandLists[] = { data.commandList };
+		data.commandQueue->ExecuteCommandLists(1, commandLists->GetAddressOf());
+		//GPUとOSに画面の交換を行うよう通知する.
+		data.swapChain->Present(1, 0);
+		//}
+		//for (WindowData& data : windowDatas_) {
+			//windowDatas_[0].swapChain->Present(1, 0);
 
 	// Fenceの値を更新.
-	fenceValue++;
-	// GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る.
-	commandQueue->Signal(fence.Get(), fenceValue);
+		// GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る.
+		data.fenceValue++;
+		data.commandQueue->Signal(data.fence.Get(), data.fenceValue);
 
 
-	// Fenceの値が指定したSignal値にたどり着いているか確認する.
-	// GetCompletedValueの初期値はFence作成時に渡した初期値.
-	if (fence->GetCompletedValue() < fenceValue) {
-		// 指定したSignalにたどり着いていないので、たどり着くまで待つようにイベントを設定する.
-		fence->SetEventOnCompletion(fenceValue, fenceEvent);
-		// イベント待つ.
-		WaitForSingleObject(fenceEvent, INFINITE);
+		// Fenceの値が指定したSignal値にたどり着いているか確認する.
+		// GetCompletedValueの初期値はFence作成時に渡した初期値.
+		if (data.fence->GetCompletedValue() < data.fenceValue) {
+			// 指定したSignalにたどり着いていないので、たどり着くまで待つようにイベントを設定する.
+			data.fence->SetEventOnCompletion(data.fenceValue, data.fenceEvent);
+			// イベント待つ.
+			WaitForSingleObject(data.fenceEvent, INFINITE);
+		}
 	}
 
 
 	// 次のフレーム用のコマンドリストを準備.
-	hr = commandAllocator->Reset();
-	assert(SUCCEEDED(hr));
-	hr = commandList->Reset(commandAllocator.Get(), nullptr);
-	assert(SUCCEEDED(hr));
+	for (WindowData& data : windowDatas_) {
+		hr = data.commandAllocator->Reset();
+		assert(SUCCEEDED(hr));
+		hr = data.commandList->Reset(data.commandAllocator.Get(), nullptr);
+		assert(SUCCEEDED(hr));
+	}
 }
 
 void GameSystem::Finalize() {
@@ -747,8 +770,9 @@ void GameSystem::Finalize() {
 	/*=============================================================
 	メモリ解放系.
 	=============================================================*/
-	CloseHandle(fenceEvent);
-
+	for (WindowData& data : windowDatas_) {
+		CloseHandle(data.fenceEvent);
+	}
 	/*=============================================================
 	 ImGuiの終了処理.
 	=============================================================*/
@@ -759,7 +783,9 @@ void GameSystem::Finalize() {
 	ImGui::DestroyContext();
 #endif // USE_IMGUI
 
-	CloseWindow(hwnd);
+	for (WindowData& data : windowDatas_) {
+		CloseWindow(data.hwnd);
+	}
 
 	CoUninitialize();
 }
@@ -773,12 +799,12 @@ void GameSystem::WindowSizeUpdate() {
 		return;
 	}
 
-	if(Environment::GetInstance()->GetAspectMode() == kAspectChangeEverytime){
+	if (Environment::GetInstance()->GetAspectMode() == kAspectChangeEverytime) {
 		RECT clientRect{};
 		GetClientRect(GameSystem::GetInstance()->GetHWND(), &clientRect);
-		
+
 		//Camera::GetInstance()->
-		
+
 		float windowWidth = static_cast<float>(clientRect.right - clientRect.left);
 		float windowHeight = static_cast<float>(clientRect.bottom - clientRect.top);
 		float windowAspect = windowWidth / windowHeight;
@@ -788,7 +814,7 @@ void GameSystem::WindowSizeUpdate() {
 		aspectScale.x = windowWidth / Environment::GetInstance()->GetWindowSize().width;
 		aspectScale.y = windowHeight / Environment::GetInstance()->GetWindowSize().height;
 		aspectScale.z = 1.0f;
-		
+
 		Camera::GetInstance()->SetAspectScale(aspectScale);
 		Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
 
@@ -812,7 +838,7 @@ void GameSystem::WindowSizeUpdate() {
 
 	if (windowAspect > targetAspect) {
 		viewportHeight = windowHeight;
-		viewportWidth = viewportHeight * targetAspect *(Environment::GetInstance()->GetWindowSize().width / windowWidth);
+		viewportWidth = viewportHeight * targetAspect * (Environment::GetInstance()->GetWindowSize().width / windowWidth);
 		if (windowWidth > Environment::GetInstance()->GetWindowSize().width) {
 			viewportWidth = Environment::GetInstance()->GetWindowSize().width * (targetAspect / windowAspect);
 			viewportX = (Environment::GetInstance()->GetWindowSize().width - viewportWidth) * 0.5f;
