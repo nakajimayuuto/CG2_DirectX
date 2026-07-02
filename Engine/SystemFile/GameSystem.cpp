@@ -71,29 +71,29 @@ void GameSystem::Initialize() {
 	RECT wrc{ 0,0,kClientWidth,kClientHeight };
 
 	for (uint32_t i = 0; i < windowNum_; i++) {
-		WindowData winData;
+		WindowData data;
 
 		// ウィンドウプロシージャ
-		winData.wc.lpfnWndProc = WindowProc;
+		data.wc.lpfnWndProc = WindowProc;
 
 		// ウィンドウクラス名
-		winData.wc.lpszClassName = L"CG2WindowClass";
+		data.wc.lpszClassName = L"CG2WindowClass";
 
 		// インスタンスハンドル.
-		winData.wc.hInstance = GetModuleHandle(nullptr);
+		data.wc.hInstance = GetModuleHandle(nullptr);
 
 		// カーソル.
-		winData.wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+		data.wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 
 		// ウィンドウクラスを登録する.
-		RegisterClass(&winData.wc);
+		RegisterClass(&data.wc);
 
 		// クライアント領域をもとに実際のサイズにwrcを変更してもらう.
 		AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
 
 		// ウィンドウの生成.
-		winData.hwnd = CreateWindow(
-			winData.wc.lpszClassName,		// 利用するクラス名.
+		data.hwnd = CreateWindow(
+			data.wc.lpszClassName,		// 利用するクラス名.
 			Environment::GetInstance()->GetWindowTitle(),					// タイトルバーの文字.
 			WS_OVERLAPPEDWINDOW,	// よく見るウィンドウスタイル.
 			CW_USEDEFAULT,			// 表示X座標(Windowsに任せる).
@@ -102,16 +102,13 @@ void GameSystem::Initialize() {
 			wrc.bottom - wrc.top,	// ウィンドウ縦幅.
 			nullptr,				// 親ウィンドウハンドル.
 			nullptr,				// メニューウィンドウハンドル.
-			winData.wc.hInstance,			// インスタンスハンドル.
+			data.wc.hInstance,			// インスタンスハンドル.
 			nullptr);				// オプション.
 
 
-		//const DWMNCRENDERINGPOLICY policy = DWMNCRP_DISABLED;
-		//DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &policy, sizeof(DWM_WINDOW_CORNER_PREFERENCE));
-		//
-		//// ウィンドウを表示する.
-		ShowWindow(winData.hwnd, SW_SHOW);
-		windowDatas_.push_back(winData);
+		// ウィンドウを表示する.
+		ShowWindow(data.hwnd, SW_SHOW);
+		windowDatas_.push_back(data);
 	}
 
 
