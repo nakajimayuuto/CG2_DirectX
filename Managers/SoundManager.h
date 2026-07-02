@@ -5,6 +5,17 @@
 #include <assert.h>
 #include <map>
 #include "../externals/DirectXTex/d3dx12.h"
+#include <mfapi.h>
+#include <mfidl.h>
+#include <mfreadwrite.h>
+#include <mfobjects.h>
+#include <mferror.h>
+#include <wrl/client.h>
+
+#pragma comment(lib,"mfplat.lib")
+#pragma comment(lib,"mfreadwrite.lib")
+#pragma comment(lib,"mfuuid.lib")
+#pragma comment(lib,"mf.lib")
 
 // チャンクヘッダ.
 struct ChunkHeader {
@@ -42,6 +53,8 @@ public:
 	void Initialize();
 
 	void Finalize();
+
+	void LoadTest();
 
 	SoundData RegisterSound(const std::string& name, const std::string& filePath);
 

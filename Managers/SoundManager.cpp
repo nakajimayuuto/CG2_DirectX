@@ -1,5 +1,5 @@
 #include "SoundManager.h"
-
+using Microsoft::WRL::ComPtr;
 SoundManager* SoundManager::GetInstance() {
 	static SoundManager instance;
 	return &instance;
@@ -10,6 +10,9 @@ void SoundManager::Initialize() {
 
 	result = xAudio2->CreateMasteringVoice(&masterVoice);
 
+	result = MFStartup(MF_VERSION);
+	assert(SUCCEEDED(result));
+
 	//SoundData soundData = SoundLoadWave("Resource/Alarm01.wav");
 }
 
@@ -19,6 +22,27 @@ void SoundManager::Finalize() {
 	for (auto i : sounds_) {
 		SoundUnload(&i.second);
 	}
+
+	MFShutdown();
+}
+
+void SoundManager::LoadTest(){
+	// ここで読み込み
+	ComPtr<IMFSourceReader> reader;
+
+	HRESULT hr = MFCreateSourceReaderFromURL(
+		L"Resource/free_k.wav",
+		nullptr,
+		&reader
+	);
+
+	ComPtr<IMFMediaType> mediaType;
+
+	MFCreateMediaType(&mediaType);
+
+	mediaType->SetGUID(
+		MF_MT_MAJOR_TYPE,
+		MFMediaType_Audio);
 }
 
 SoundData SoundManager::RegisterSound(const std::string& name, const std::string& filePath){
