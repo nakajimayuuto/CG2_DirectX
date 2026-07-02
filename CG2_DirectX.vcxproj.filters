@@ -166,6 +166,9 @@
     <Filter Include="ソース ファイル\Enemy">
       <UniqueIdentifier>{0fb61ff8-d723-4ce2-8e90-ea558a44f06d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\PlaneProjectionShadow">
+      <UniqueIdentifier>{7b22be04-26a8-4c1a-99e2-6dbcf07e9398}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -326,6 +329,9 @@
     </ClCompile>
     <ClCompile Include="Enemy.cpp">
       <Filter>ソース ファイル\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="PlaneProjectionShadow.cpp">
+      <Filter>ソース ファイル\PlaneProjectionShadow</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -499,6 +505,9 @@
     </ClInclude>
     <ClInclude Include="Enemy.h">
       <Filter>ソース ファイル\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="PlaneProjectionShadow.h">
+      <Filter>ソース ファイル\PlaneProjectionShadow</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

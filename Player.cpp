@@ -30,6 +30,20 @@ void Player::Initialize() {
 	//Vector3 velocityXZ = { velocity.x,0.0f,velocity.z };
 	//transform_.rotate.x = std::atan2(-velocity.y, velocityXZ.Length());
 
+	shadowHead_ = std::make_unique<PlaneProjectionShadow>();
+	shadowBody_ = std::make_unique<PlaneProjectionShadow>();
+	shadowRArm_ = std::make_unique<PlaneProjectionShadow>();
+	shadowLArm_ = std::make_unique<PlaneProjectionShadow>();
+	shadowHammer = std::make_unique<PlaneProjectionShadow>();
+
+	shadowHead_->Initialize(&transformHead_, &models_["head"]);
+	shadowBody_->Initialize(&transformBody_, &models_["body"]);
+	shadowRArm_->Initialize(&transformRArm_, &models_["RArm"]);
+	shadowLArm_->Initialize(&transformLArm_, &models_["LArm"]);
+	shadowHammer->Initialize(&transformHammer_, &models_["hammer_of_justice"]);
+
+
+
 	behavior_ = Behavior::kRoot;
 	// 01.振りかぶり時間.
 	// 02.ため時間.
@@ -314,16 +328,14 @@ void Player::Draw() {
 	Renderer::GetInstance()->DrawModel(transformLArm_, &models_["LArm"]);
 	Renderer::GetInstance()->DrawModel(transformRArm_, &models_["RArm"]);
 
-	//models_["RArm"].GetColor();
-
-	Renderer::GetInstance()->DrawShadow(transformBody_, &models_["body"], { 0.0f,0.0f,0.0f,1.0f });
-	Renderer::GetInstance()->DrawShadow(transformHead_, &models_["head"], { 0.0f,0.0f,0.0f,1.0f });
-	Renderer::GetInstance()->DrawShadow(transformLArm_, &models_["LArm"], { 0.0f,0.0f,0.0f,1.0f });
-	Renderer::GetInstance()->DrawShadow(transformRArm_, &models_["RArm"], { 0.0f,0.0f,0.0f,1.0f });
+	shadowHead_->Draw();
+	shadowBody_->Draw();
+	shadowRArm_->Draw();
+	shadowLArm_->Draw();
 
 	if (behavior_ == Behavior::kAttack) {
 		Renderer::GetInstance()->DrawModel(transformHammer_, &models_["hammer_of_justice"]);
-		Renderer::GetInstance()->DrawShadow(transformHammer_, &models_["hammer_of_justice"], { 0.0f,0.0f,0.0f,1.0f });
+		shadowHammer->Draw();
 	}
 }
 

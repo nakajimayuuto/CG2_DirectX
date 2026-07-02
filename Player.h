@@ -1,6 +1,7 @@
 #pragma once
 #include "Satlib.h"
 #include "BaseCharacter.h"
+#include "PlaneProjectionShadow.h"
 
 /// <summary>
 /// 自キャラ
@@ -135,6 +136,12 @@ private:
 	static inline Transform transformRArm_;
 	static inline Transform transformLArm_;
 	static inline Transform transformHammer_;
+
+	std::unique_ptr<PlaneProjectionShadow> shadowHead_ = nullptr;
+	std::unique_ptr<PlaneProjectionShadow> shadowBody_ = nullptr;
+	std::unique_ptr<PlaneProjectionShadow> shadowRArm_ = nullptr;
+	std::unique_ptr<PlaneProjectionShadow> shadowLArm_ = nullptr;
+	std::unique_ptr<PlaneProjectionShadow> shadowHammer = nullptr;
 
 	static inline float kBodyBlankY = 1.2f;
 };
