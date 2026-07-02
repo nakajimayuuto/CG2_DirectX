@@ -27,9 +27,10 @@ void SoundManager::Finalize() {
 }
 
 void SoundManager::LoadTest(){
-	// ここで読み込み
+	// ここで読み込み.
 	ComPtr<IMFSourceReader> reader;
 
+	// 楽だね.
 	HRESULT hr = MFCreateSourceReaderFromURL(
 		L"Resource/free_k.wav",
 		nullptr,
@@ -40,9 +41,69 @@ void SoundManager::LoadTest(){
 
 	MFCreateMediaType(&mediaType);
 
+	// ここで音声ファイルをPCMにするらしい.
 	mediaType->SetGUID(
 		MF_MT_MAJOR_TYPE,
 		MFMediaType_Audio);
+
+	mediaType->SetGUID(
+		MF_MT_SUBTYPE,
+		MFAudioFormat_PCM);
+
+	reader->SetCurrentMediaType(
+		(DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM,
+		nullptr,
+		mediaType.Get());
+
+	//WaveFormatを取得するらしい
+	ComPtr<IMFMediaType> currentType;
+	
+	reader->GetCurrentMediaType(
+		MF_SOURCE_READER_FIRST_AUDIO_STREAM,
+		&currentType);
+	
+	WAVEFORMATEX* waveFormat = nullptr;
+	
+	MFCreateWaveFormatExFromMFMediaType(
+		currentType.Get(),
+		&waveFormat,
+		nullptr);
+	
+	CoTaskMemFree(waveFormat);
+	
+	// 音声データの取得
+	DWORD flags = 0;
+	
+	ComPtr<IMFSample> sample;
+	
+	reader->ReadSample(
+		MF_SOURCE_READER_FIRST_AUDIO_STREAM,
+		0,
+		nullptr,
+		&flags,
+		nullptr,
+		&sample);
+
+	if (flags & MF_SOURCE_READERF_ENDOFSTREAM){
+		assert(false);
+	}
+
+	// Bufferの取得
+	ComPtr<IMFMediaBuffer> buffer;
+
+	sample->ConvertToContiguousBuffer(&buffer);
+
+	BYTE* audioData = nullptr;
+
+	DWORD maxLength = 0;
+	DWORD currentLength = 0;
+
+	buffer->Lock(
+		&audioData,
+		&maxLength,
+		&currentLength);
+
+
 }
 
 SoundData SoundManager::RegisterSound(const std::string& name, const std::string& filePath){

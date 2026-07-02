@@ -19,6 +19,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	SceneManager::GetInstance()->Initialize();
 
+	SoundManager::GetInstance()->LoadTest();
+
 	// ウィンドウのxボタンが押されるまでループ.
 	while (system->ProcessMessage()) {
 		if (system->BeginFrame()) {
