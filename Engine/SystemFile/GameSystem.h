@@ -30,6 +30,7 @@
 
 #include "../../externals/DirectXTex/DirectXTex.h"
 #include "../../externals/DirectXTex/d3dx12.h"
+#include "dwmapi.h"
 
 #ifdef USE_IMGUI
 #include "../../externals/imgui/imgui.h"

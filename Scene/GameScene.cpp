@@ -76,7 +76,7 @@ void GameScene::Update() {
 		);
 
 	}
-
+	
 	if (InputManager::GetInstance()->TriggerKey(DIK_S)) {
 		GetWindowRect(GameSystem::GetInstance()->GetHWND(), &windowRect);
 	}

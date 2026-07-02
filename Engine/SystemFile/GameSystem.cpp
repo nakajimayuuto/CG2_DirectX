@@ -112,8 +112,10 @@ void GameSystem::Initialize() {
 	}
 #endif // _DEBUG
 
-
-	// ウィンドウを表示する.
+	//const DWMNCRENDERINGPOLICY policy = DWMNCRP_DISABLED;
+	//DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &policy, sizeof(DWM_WINDOW_CORNER_PREFERENCE));
+	//
+	//// ウィンドウを表示する.
 	ShowWindow(hwnd, SW_SHOW);
 
 	InputManager::GetInstance()->Initialize();
