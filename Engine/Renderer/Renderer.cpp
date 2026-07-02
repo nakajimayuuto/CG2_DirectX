@@ -116,25 +116,16 @@ void Renderer::Model::Draw(const Transform& transform) {
 
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = GameSystem::GetInstance()->GetCommandList();
 
-		/*=============================================================
-		三角形の描画のコマンド.
-		=============================================================*/
-		GameSystem::GetInstance()->SetPipeline(blendMode_);
-
-		commandList->IASetVertexBuffers(0, 1, &vertexBufferView_[i]); // VBVを設定.
-		// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
-		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		// CBufferの場所を設定.
-		// マテリアル用のCBufferの場所.
-		commandList->SetGraphicsRootConstantBufferView(0, materialResource_[i]->GetGPUVirtualAddress());
-		// WVP用のCBufferの場所.
-		commandList->SetGraphicsRootConstantBufferView(1, wvpResource_[i]->GetGPUVirtualAddress());
-		// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
-		commandList->SetGraphicsRootDescriptorTable(2, modelData_[i].textureSrvHandlesGPU);
-		// DirectionalLight用のCBufferの場所.
-		commandList->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
-		// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-		commandList->DrawInstanced(UINT(modelData_[i].vertices.size()), 1, 0, 0);
+		GameSystem::GetInstance()->DrawCommand(
+			blendMode_,
+			&vertexBufferView_[i],
+			nullptr,
+			D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+			materialResource_[i],
+			wvpResource_[i],
+			modelData_[i].textureSrvHandlesGPU,
+			UINT(modelData_[i].vertices.size())
+		);
 	}
 }
 
@@ -772,6 +763,17 @@ void Renderer::Sprite::Draw(const Transform& transform) {
 	三角形のSpriteの描画のコマンド.
 	=============================================================*/
 	// Spriteの描画。変更が必要なものだけ変更する.
+	GameSystem::GetInstance()->DrawCommand(
+		blendMode_,
+		&vertexBufferView_,
+		&indexBufferView_,
+		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+		materialResource_,
+		transformationMatrixResource_,
+		textureInfo_.textureSrvHandlesGPU,
+		6
+	);
+
 	GameSystem::GetInstance()->SetPipeline(blendMode_);
 
 	GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_); // VBVを設定.

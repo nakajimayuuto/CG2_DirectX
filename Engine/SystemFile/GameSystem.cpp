@@ -601,11 +601,57 @@ void GameSystem::CreatePipeline(BlendMode blendMode) {
 }
 
 void GameSystem::SetPipeline(BlendMode blendMode) {
-	//commandList->RSSetViewports(1, &viewport); // Viewportを設定.
-	//commandList->RSSetScissorRects(1, &scissorRect); // Scissorを設定.
-	//// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
-	//commandList->SetGraphicsRootSignature(pipeline_[static_cast<uint32_t>(blendMode)].rootSignature.Get());
-	//commandList->SetPipelineState(pipeline_[static_cast<uint32_t>(blendMode)].graphicsPipelineState.Get()); // PS0を設定.
+	for (WindowData& data : windowDatas_) {
+		data.commandList->RSSetViewports(1, &viewport); // Viewportを設定.
+		data.commandList->RSSetScissorRects(1, &scissorRect); // Scissorを設定.
+		// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
+		data.commandList->SetGraphicsRootSignature(pipeline_[static_cast<uint32_t>(blendMode)].rootSignature.Get());
+		data.commandList->SetPipelineState(pipeline_[static_cast<uint32_t>(blendMode)].graphicsPipelineState.Get()); // PS0を設定.
+	}
+}
+
+//void GameSystem::SetParticlePipeline(BlendMode blendMode) {
+//	commandList->RSSetViewports(1, &viewport); // Viewportを設定.
+//	commandList->RSSetScissorRects(1, &scissorRect); // Scissorを設定.
+//	// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
+//	commandList->SetGraphicsRootSignature(pipeline_[static_cast<uint32_t>(blendMode) + (static_cast<uint32_t>(ShaderType::kParticle) * static_cast<uint32_t>(BlendMode::kCount))].rootSignature.Get());
+//	commandList->SetPipelineState(pipeline_[static_cast<uint32_t>(blendMode) + (static_cast<uint32_t>(ShaderType::kParticle) * static_cast<uint32_t>(BlendMode::kCount))].graphicsPipelineState.Get()); // PS0を設定.
+//}
+
+void GameSystem::DrawCommand(
+	BlendMode blendMode,
+	D3D12_VERTEX_BUFFER_VIEW* vertexBufferView,
+	D3D12_INDEX_BUFFER_VIEW* indexBufferView,
+	D3D_PRIMITIVE_TOPOLOGY topology,
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource,
+	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource,
+	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU,
+	uint32_t indexInstancedNum
+) {
+	SetPipeline(blendMode);
+
+	for (WindowData& data : windowDatas_) {
+		data.commandList->IASetVertexBuffers(0, 1, vertexBufferView); // VBVを設定.
+		if (indexBufferView != nullptr) {
+			data.commandList->IASetIndexBuffer(indexBufferView); // IBVを設定.
+		}
+		// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
+		data.commandList->IASetPrimitiveTopology(topology);
+		// マテリアル用のCBufferの場所.
+		data.commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+		// transformationMatrixCBufferの場所.
+		data.commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
+		// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
+		data.commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+		// DirectionalLight用のCBufferの場所.
+		data.commandList->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
+		// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
+		if (indexBufferView == nullptr) {
+			data.commandList->DrawInstanced(indexInstancedNum, 1, 0, 0);
+		} else {
+			data.commandList->DrawIndexedInstanced(indexInstancedNum, 1, 0, 0, 0);
+		}
+	}
 }
 
 bool GameSystem::ProcessMessage() {
