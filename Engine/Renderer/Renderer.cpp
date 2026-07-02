@@ -1082,8 +1082,9 @@ void Renderer::DrawShadow(const Transform& transform, const Model* model, const 
 		newElements[i]->materialData_->reflectionType = static_cast<uint32_t>(ReflectionType::kNone);
 		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
 		Matrix4x4 projectionMatrix = Matrix4x4::Identity();
-		projectionMatrix.matrix[1][1] = 0.01f;
+		projectionMatrix.matrix[1][1] = 0.0f;
 		worldMatrix = worldMatrix * projectionMatrix;
+		worldMatrix.matrix[3][1] = 0.01f;
 		newElements[i]->wvpData_->World = worldMatrix;
 		newElements[i]->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
 		newElements[i]->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
