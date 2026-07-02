@@ -1,4 +1,6 @@
 #include "Hammer.h"
+#include "Enemy.h"
+
 void Hammer::Initialize() {
 	workAttack_.comboNext = false;
 	workAttack_.attackParameter = 0.0f;
@@ -117,11 +119,17 @@ void Hammer::Draw() {
 }
 
 void Hammer::OnCollision([[maybe_unused]] Collider* other) {
-//	emitter_->SetTransform(transform_.GetAffineMatrix().GetMatrixToTransform());
-//	emitter_->CreateParticle();
+	//if (type_ == CollisionTypeIdDef::kEnemy) {
+	//	Enemy* enemy = static_cast<Enemy*>(other);
+	//	emitter_->SetTransform(enemy->GetTransform());
+	//	emitter_->CreateParticle();
+	//}
 }
 
 void Hammer::pOnCollision_(Collider* other){
+	if (type_ == CollisionTypeIdDef::kEnemy) {
+	Enemy* enemy = static_cast<Enemy*>(other);
+	}
 	emitter_->SetTransform(other->GetTransform());
 	emitter_->CreateParticle();
 }

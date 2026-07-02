@@ -19,6 +19,8 @@ public:
 	void SetCollisionAttribute(uint32_t collisionAttribute) { collisionAttribute_ = collisionAttribute; };
 	void SetCollisionMask(uint32_t collisionMask) { collisionMask_ = collisionMask; };
 
+	void SetTypeID(CollisionTypeIdDef type) { type_ = type; };
+
 	uint32_t GetCollisionAttribute() { return collisionAttribute_; };
 	uint32_t GetCollisionMask() { return collisionMask_; };
 
@@ -37,5 +39,7 @@ protected:
 
 	// どの属性と当たるか(後々ここはstd::vectorにする)
 	uint32_t collisionMask_ = 0xFFFFFFFF;
+
+	static inline CollisionTypeIdDef type_;
 };
 
