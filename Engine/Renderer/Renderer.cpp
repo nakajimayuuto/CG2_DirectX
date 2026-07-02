@@ -1031,45 +1031,6 @@ void Renderer::DrawSprite(const Transform& transform, const Sprite& sprite) {
 	);
 }
 
-void Renderer::DrawShadow(const Transform& transform, const Model* model){
-	uint32_t modelMax_ = static_cast<uint32_t>(model->GetModelCountMax());
-	std::vector<ModelElement*> newElements;
-	newElements.resize(modelMax_);
-	newElements = model->GetModelElement();
-
-	CreateModel(newElements, modelMax_);
-
-	for (uint32_t i = 0; i < modelMax_; i++) {
-		newElements[i]->materialData_->lightingType = static_cast<uint32_t>(LightingType::kNone);
-		newElements[i]->materialData_->reflectionType = static_cast<uint32_t>(ReflectionType::kNone);
-		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
-		Matrix4x4 projectionMatrix = Matrix4x4::Identity();
-		projectionMatrix.matrix[1][1] = 0.01f;
-		worldMatrix = worldMatrix * projectionMatrix;
-		newElements[i]->wvpData_->World = worldMatrix;
-		newElements[i]->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
-		newElements[i]->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
-
-		newElements[i]->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(newElements[i]->uvTransform_);
-
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = GameSystem::GetInstance()->GetCommandList();
-
-		/*=============================================================
-		三角形の描画のコマンド.
-		=============================================================*/
-		GameSystem::GetInstance()->DrawCommand(
-			blendMode_,
-			&newElements[i]->vertexBufferView_,
-			nullptr,
-			D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
-			newElements[i]->materialResource_,
-			newElements[i]->wvpResource_,
-			newElements[i]->modelData_.textureSrvHandlesGPU,
-			UINT(newElements[i]->modelData_.vertices.size())
-		);
-	}
-}
-
 void Renderer::DrawShadow(const Transform& transform, const Model* model, const Vector4& color) {
 	uint32_t modelMax_ = static_cast<uint32_t>(model->GetModelCountMax());
 	std::vector<ModelElement*> newElements;
