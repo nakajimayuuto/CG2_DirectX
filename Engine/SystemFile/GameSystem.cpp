@@ -823,6 +823,8 @@ bool GameSystem::BeginFrame() {
 
 	DeltaTime::GetInstance()->GetStartDebugTime();
 
+	SoundManager::GetInstance()->Update();
+
 	//Renderer::Line::GetInstance()->ClearDrawIndex();
 	Renderer::GetInstance()->ClearDrawIndex();
 

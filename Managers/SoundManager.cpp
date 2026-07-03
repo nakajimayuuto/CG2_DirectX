@@ -1,4 +1,6 @@
 #include "SoundManager.h"
+#include "../Engine/SystemFile/Convert.h"
+
 using Microsoft::WRL::ComPtr;
 SoundManager* SoundManager::GetInstance() {
 	static SoundManager instance;
@@ -6,26 +8,61 @@ SoundManager* SoundManager::GetInstance() {
 }
 
 void SoundManager::Initialize() {
-	HRESULT result = XAudio2Create(&xAudio2);
+	HRESULT result = XAudio2Create(&xAudio2_);
 
-	result = xAudio2->CreateMasteringVoice(&masterVoice);
+	result = xAudio2_->CreateMasteringVoice(&masterVoice_);
 
 	result = MFStartup(MF_VERSION);
 	assert(SUCCEEDED(result));
 
 	sounds_.clear();
 	playSoundDatas_.clear();
-	playSoundEffectDatas_.clear();
+	soundOneTimeDatas_.clear();
 
 	//SoundData soundData = SoundLoadWave("Resource/Alarm01.wav");
+	soundNum_ = 0;
 }
 
 void SoundManager::Update() {
+	DeleteDatas();
+}
 
+void SoundManager::DeleteDatas() {
+	std::vector<std::string> deleteHandles;
+	std::vector<uint32_t> deleteNums;
+
+	for (std::pair<std::string, PlaySoundData*> data : playSoundDatas_) {
+		if (IsFinishedSound(data.first)) {
+			if (!data.second->canLoop) {
+				deleteHandles.push_back(data.first);
+			}
+		}
+	}
+
+	for (std::string& deleteHandle : deleteHandles) {
+		SoundStop(deleteHandle);
+	}
+
+
+	for (std::pair<uint32_t, PlaySoundData*> data : soundOneTimeDatas_) {
+		XAUDIO2_VOICE_STATE state;
+
+		data.second->voice->GetState(&state);
+
+		if (state.BuffersQueued == 0) {
+			deleteNums.push_back(data.first);
+		}
+	}
+
+	for (uint32_t& deleteNum : deleteNums) {
+		soundOneTimeDatas_[deleteNum]->voice->Stop();
+		soundOneTimeDatas_[deleteNum]->voice->FlushSourceBuffers();
+		soundOneTimeDatas_.erase(deleteNum);
+	}
 }
 
 void SoundManager::Finalize() {
-	xAudio2.Reset();
+	xAudio2_.Reset();
 
 	for (auto i : sounds_) {
 		SoundUnload(&i.second);
@@ -34,13 +71,13 @@ void SoundManager::Finalize() {
 	MFShutdown();
 }
 
-SoundData SoundManager::LoadTest() {
+SoundData SoundManager::LoadTest(const std::string& fileName) {
 	// ここで読み込み.
 	ComPtr<IMFSourceReader> reader;
 
 	// 楽だね.
 	HRESULT hr = MFCreateSourceReaderFromURL(
-		L"Resource/free_k.wav",
+		Convert::ConvertString(fileName).c_str(),
 		nullptr,
 		&reader
 	);
@@ -77,8 +114,6 @@ SoundData SoundManager::LoadTest() {
 		&waveFormat,
 		nullptr);
 
-	CoTaskMemFree(waveFormat);
-
 	// 音声データの取得
 	DWORD flags = 0;
 
@@ -95,31 +130,9 @@ SoundData SoundManager::LoadTest() {
 	if (flags & MF_SOURCE_READERF_ENDOFSTREAM) {
 		assert(false);
 	}
-
-	// Bufferの取得
 	ComPtr<IMFMediaBuffer> buffer;
-
-	sample->ConvertToContiguousBuffer(&buffer);
-
-	BYTE* audioData = nullptr;
-
-	DWORD maxLength = 0;
-	DWORD currentLength = 0;
-
-	buffer->Lock(
-		&audioData,
-		&maxLength,
-		&currentLength);
-
-
 	std::vector<BYTE> pcmData;
 
-	pcmData.insert(
-		pcmData.end(),
-		audioData,
-		audioData + currentLength);
-
-	buffer->Unlock();
 
 	while (true)
 	{
@@ -141,20 +154,40 @@ SoundData SoundManager::LoadTest() {
 		if (!sample)
 			continue;
 
-		// Buffer取得
+		// Bufferの取得
 
-		// vectorへ追加
+		sample->ConvertToContiguousBuffer(&buffer);
+
+		BYTE* audioData = nullptr;
+
+		DWORD maxLength = 0;
+		DWORD currentLength = 0;
+
+		buffer->Lock(
+			&audioData,
+			&maxLength,
+			&currentLength);
+
+		pcmData.insert(
+			pcmData.end(),
+			audioData,
+			audioData + currentLength);
+
+		buffer->Unlock();
+
 	}
 
 	SoundData data;
 	data.pcmData = pcmData;
 	data.waveFormat = *waveFormat;
 
+	CoTaskMemFree(waveFormat);
+
 	return data;
 }
 
 SoundData SoundManager::RegisterSound(const std::string& name, const std::string& filePath) {
-	sounds_[name] = SoundLoadWave(filePath.c_str());
+	sounds_[name] = LoadTest(filePath);
 
 	return sounds_[name];
 }
@@ -166,7 +199,21 @@ SoundData SoundManager::GetSoundData(const std::string& name) {
 	return it->second;
 }
 
-PlaySoundData SoundManager::GetPlaySoundData(const std::string& name){
+void SoundManager::SetSoundDataVolume(const std::string& name, float volume) {
+	auto it = playSoundDatas_.find(name);
+
+	assert(it != playSoundDatas_.end());
+	it->second->volume = volume;
+}
+
+void SoundManager::SetSoundDataSpeed(const std::string& name, float speed) {
+	auto it = playSoundDatas_.find(name);
+
+	assert(it != playSoundDatas_.end());
+	it->second->currentSpeed = speed;
+}
+
+PlaySoundData* SoundManager::GetPlaySoundData(const std::string& name) {
 	auto it = playSoundDatas_.find(name);
 
 	assert(it != playSoundDatas_.end());
@@ -265,11 +312,16 @@ void SoundManager::SoundUnload(SoundData* soundData) {
 }
 
 void SoundManager::SoundPlay(const SoundData& soundData, float speed, float volume, SoundType type, bool canLoop, std::string handle) {
+	auto it = playSoundDatas_.find(handle);
+	if (it != playSoundDatas_.end()) {
+		return;
+	}
+
 	HRESULT result;
 
 	// 波形フォーマットをもとにSourceVoiceの作成.
 	IXAudio2SourceVoice* pSourceVoice = nullptr;
-	result = xAudio2->CreateSourceVoice(&pSourceVoice, &soundData.waveFormat);
+	result = xAudio2_->CreateSourceVoice(&pSourceVoice, &soundData.waveFormat);
 	assert(SUCCEEDED(result));
 
 	// 再生する波形データの設定.
@@ -278,26 +330,35 @@ void SoundManager::SoundPlay(const SoundData& soundData, float speed, float volu
 	buf.AudioBytes = soundData.pcmData.size();
 	buf.Flags = XAUDIO2_END_OF_STREAM;
 
+	if (canLoop) {
+		buf.LoopLength = 0;
+		buf.LoopBegin = 0;
+		buf.LoopCount = XAUDIO2_LOOP_INFINITE;
+	}
+
 	// 波形データの再生.
 	result = pSourceVoice->SubmitSourceBuffer(&buf);
 	result = pSourceVoice->Start();
 
-	PlaySoundData data;
-	data.buffer = buf;
-	data.voice = pSourceVoice;
-	data.canLoop = canLoop;
-	data.currentSpeed = speed;
-	data.volume = volume;
+	PlaySoundData* data;
+	data = new PlaySoundData();
+
+	data->buffer = buf;
+	data->voice = pSourceVoice;
+	data->canLoop = canLoop;
+	data->currentSpeed = speed;
+	data->volume = volume;
+	data->type_ = type;
 
 	playSoundDatas_[handle] = data;
 }
 
-void SoundManager::SoundPlay(const SoundData& soundData, float speed, float volume, SoundType type){
+void SoundManager::SoundPlay(const SoundData& soundData, float speed, float volume, SoundType type) {
 	HRESULT result;
 
 	// 波形フォーマットをもとにSourceVoiceの作成.
 	IXAudio2SourceVoice* pSourceVoice = nullptr;
-	result = xAudio2->CreateSourceVoice(&pSourceVoice, &soundData.waveFormat);
+	result = xAudio2_->CreateSourceVoice(&pSourceVoice, &soundData.waveFormat);
 	assert(SUCCEEDED(result));
 
 	// 再生する波形データの設定.
@@ -309,7 +370,62 @@ void SoundManager::SoundPlay(const SoundData& soundData, float speed, float volu
 	// 波形データの再生.
 	result = pSourceVoice->SubmitSourceBuffer(&buf);
 	result = pSourceVoice->Start();
+	soundOneTimeDatas_[soundNum_] = new PlaySoundData();
+	soundOneTimeDatas_[soundNum_]->buffer = buf;
+	soundOneTimeDatas_[soundNum_]->voice = pSourceVoice;
+	soundOneTimeDatas_[soundNum_]->canLoop = false;
+	soundOneTimeDatas_[soundNum_]->currentSpeed = speed;
+	soundOneTimeDatas_[soundNum_]->volume = volume;
+	soundOneTimeDatas_[soundNum_]->type_ = type;
+
+	soundNum_++;
 }
+
+void SoundManager::SoundPause(std::string handle) {
+	auto it = playSoundDatas_.find(handle);
+	if (it != playSoundDatas_.end()) {
+		return;
+	}
+
+	GetPlaySoundData(handle)->voice->Stop();
+}
+
+void SoundManager::SoundResume(std::string handle) {
+	auto it = playSoundDatas_.find(handle);
+	if (it != playSoundDatas_.end()) {
+		return;
+	}
+
+	GetPlaySoundData(handle)->voice->Start();
+}
+
+void SoundManager::SoundStop(std::string handle) {
+	auto it = playSoundDatas_.find(handle);
+	if (it == playSoundDatas_.end()) {
+		return;
+	}
+
+	GetPlaySoundData(handle)->voice->Stop();
+	GetPlaySoundData(handle)->voice->FlushSourceBuffers();
+	playSoundDatas_.erase(handle);
+}
+
+bool SoundManager::IsFinishedSound(std::string handle) {
+	auto it = playSoundDatas_.find(handle);
+	if (it == playSoundDatas_.end()) {
+		return false;
+	}
+
+	XAUDIO2_VOICE_STATE state;
+
+	GetPlaySoundData(handle)->voice->GetState(&state);
+
+	if (state.BuffersQueued == 0) {
+		return true;
+	}
+
+	return false;
+};
 
 void SoundManager::SoundPlayWave(const SoundData& soundData) {
 
@@ -317,7 +433,7 @@ void SoundManager::SoundPlayWave(const SoundData& soundData) {
 
 	// 波形フォーマットをもとにSourceVoiceの作成.
 	IXAudio2SourceVoice* pSourceVoice = nullptr;
-	result = xAudio2->CreateSourceVoice(&pSourceVoice, &soundData.waveFormat);
+	result = xAudio2_->CreateSourceVoice(&pSourceVoice, &soundData.waveFormat);
 	assert(SUCCEEDED(result));
 
 	// 再生する波形データの設定.

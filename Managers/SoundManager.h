@@ -61,6 +61,8 @@ struct PlaySoundData {
 	float currentSpeed = 1.0f;
 	float volume = 1.0f;
 	bool canLoop = false;
+
+	SoundType type_;
 };
 
 class SoundManager{
@@ -73,13 +75,17 @@ public:
 
 	void Finalize();
 
-	SoundData LoadTest();
+	SoundData LoadTest(const std::string& fileName);
 
 	SoundData RegisterSound(const std::string& name, const std::string& filePath);
 
 	SoundData GetSoundData(const std::string& name);
 
-	PlaySoundData GetPlaySoundData(const std::string& name);
+	void SetSoundDataVolume(const std::string& name, float volume);
+
+	void SetSoundDataSpeed(const std::string& name, float speed);
+
+	PlaySoundData* GetPlaySoundData(const std::string& name);
 
 	SoundData SoundLoadWave(const char* fileName);
 
@@ -105,17 +111,30 @@ public:
 	/// <param name="type">音源の分類</param>
 	void SoundPlay(const SoundData& soundData, float speed, float volume, SoundType type);
 
-	void SoundPause(std::string handle) { GetPlaySoundData(handle).voice->Stop(); };
+	
+	void SoundPause(std::string handle);
 
-	void SoundResume(std::string handle) { GetPlaySoundData(handle).voice->Start(); };
+	void SoundResume(std::string handle);
+
+	void SoundStop(std::string handle);
+
+	void SetSoundVolume(std::string handle, float volume) { GetPlaySoundData(handle)->voice->SetVolume(volume); SetSoundDataVolume(handle, volume); };
+	
+	void SetSoundSpeed(std::string handle, float speed) { GetPlaySoundData(handle)->voice->SetFrequencyRatio(speed); SetSoundDataSpeed(handle, speed); };
+
+	bool IsFinishedSound(std::string handle);
 
 	//void SoundPlayWave(IXAudio2* xAudio2, const SoundData& soundData);
 	void SoundPlayWave(const SoundData& soundData);
 private:
-	Microsoft::WRL::ComPtr<IXAudio2> xAudio2;
-	IXAudio2MasteringVoice* masterVoice;
+	void DeleteDatas();
+private:
+	Microsoft::WRL::ComPtr<IXAudio2> xAudio2_;
+	IXAudio2MasteringVoice* masterVoice_;
 	std::map<std::string, SoundData> sounds_;
-	std::map<std::string, PlaySoundData> playSoundDatas_;
-	std::map<uint32_t, PlaySoundData> playSoundEffectDatas_;
+	std::map<std::string, PlaySoundData*> playSoundDatas_;
+	std::map<uint32_t, PlaySoundData*> soundOneTimeDatas_;
+
+	uint32_t soundNum_ = 0;
 };
 
