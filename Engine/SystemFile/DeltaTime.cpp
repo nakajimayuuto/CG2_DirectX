@@ -24,7 +24,8 @@ void DeltaTime::Update() {
 void DeltaTime::DebugUpdate(){
 #ifdef _DEBUG
 	ImGui::Begin("DeltaTime");
-	ImGui::Text(std::format("FPS : {} / 60",60.0f / (deltaTime * 60.0f)).c_str());
+	ImGui::Text(std::format("FPS : {} / 60", static_cast<int>(60.0f / (deltaTime * 60.0f))).c_str());
+	ImGui::Text(std::format("DebugFPS : {}",static_cast<int>(60.0f / (debugDeltaTime * 60.0f))).c_str());
 
 
 	ImGui::End();

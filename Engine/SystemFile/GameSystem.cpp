@@ -354,7 +354,30 @@ void GameSystem::Initialize() {
 	scissorRect.left = 0;
 	scissorRect.right = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().width);
 	scissorRect.top = 0;
-	scissorRect.bottom = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().height);
+	scissorRect.bottom = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().height);/*=============================================================
+	DXCの初期化.
+	=============================================================*/
+	// dxcCompilerを初期化.
+	IDxcUtils* dxcUtils = nullptr;
+	IDxcCompiler3* dxcCompiler = nullptr;
+	hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
+	assert(SUCCEEDED(hr));
+	hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler));
+	assert(SUCCEEDED(hr));
+
+	// 現時点でincludeはしないが、includeに対応するための設定を行っておく.
+	IDxcIncludeHandler* includeHandler = nullptr;
+	hr = dxcUtils->CreateDefaultIncludeHandler(&includeHandler);
+	assert(SUCCEEDED(hr));
+
+	vertexShaderBlobParticle = CompileShader(L"./hlsl/Particle.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
+	pixelShaderBlobParticle = CompileShader(L"./hlsl/Particle.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+
+	vertexShaderBlobLine = CompileShader(L"./hlsl/Line.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
+	pixelShaderBlobLine = CompileShader(L"./hlsl/Line.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+
+	vertexShaderBlob3dObject = CompileShader(L"./hlsl/Object3d.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
+	pixelShaderBlob3dObject = CompileShader(L"./hlsl/Object3d.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
 
 	for (uint32_t j = 0; j < static_cast<uint32_t>(ShaderType::kCount); j++) {
 		for (uint32_t i = 0; i < static_cast<uint32_t>(BlendMode::kCount); i++) {
@@ -387,26 +410,19 @@ void GameSystem::Initialize() {
 	ParticleManager::GetInstance()->Initialize();
 
 	RegisterGlobalVariables();
+
+	dxcCompiler->Release();
+	dxcUtils->Release();
 }
 
 void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 	uint32_t pipeLineIndex = static_cast<uint32_t>(blendMode) + (static_cast<uint32_t>(shaderType) * static_cast<uint32_t>(BlendMode::kCount));
+	if (shaderType == ShaderType::kParticle) {
+		if (blendMode == BlendMode::kLine) {
+			return;
+		}
+	}
 
-	/*=============================================================
-	DXCの初期化.
-	=============================================================*/
-	// dxcCompilerを初期化.
-	IDxcUtils* dxcUtils = nullptr;
-	IDxcCompiler3* dxcCompiler = nullptr;
-	HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
-	assert(SUCCEEDED(hr));
-	hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler));
-	assert(SUCCEEDED(hr));
-
-	// 現時点でincludeはしないが、includeに対応するための設定を行っておく.
-	IDxcIncludeHandler* includeHandler = nullptr;
-	hr = dxcUtils->CreateDefaultIncludeHandler(&includeHandler);
-	assert(SUCCEEDED(hr));
 
 	//
 	// もともとPSOがあった場所(03_01にて変更).
@@ -474,6 +490,7 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 	// RootParameter作成。複数設定出来るので配列。
 	D3D12_ROOT_PARAMETER rootParameters[8] = {};
 	D3D12_ROOT_PARAMETER rootParametersParticle[3] = {};
+	D3D12_ROOT_PARAMETER rootParametersLine[1] = {};
 
 	switch (shaderType) {
 	case ShaderType::kParticle:
@@ -495,6 +512,16 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 		descriptionRootSignature.NumParameters = _countof(rootParametersParticle); // 配列の長さ.
 		break;
 	default:
+		if (blendMode == BlendMode::kLine) {
+			rootParametersLine[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
+			rootParametersLine[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VertexShaderで使う.
+			rootParametersLine[0].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド.
+
+			descriptionRootSignature.pParameters = rootParametersLine; // ルートパラメータ配列へのポインタ.
+			descriptionRootSignature.NumParameters = _countof(rootParametersLine); // 配列の長さ.
+			break;
+		}
+
 		rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
 		rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
 		rootParameters[0].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド.
@@ -541,21 +568,23 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 
 	// Samplerの設定.
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
-	staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR; // バイリニアフィルタ.
-	staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP; // 0~1の範囲外をリピート.
-	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER; // 比較しない.
-	staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX; // ありったけのMipmapを使う.
-	staticSamplers[0].ShaderRegister = 0; // レジスタ番号0を使う.
-	staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
-	descriptionRootSignature.pStaticSamplers = staticSamplers;
-	descriptionRootSignature.NumStaticSamplers = _countof(staticSamplers);
+	if (blendMode != BlendMode::kLine) {
+		staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR; // バイリニアフィルタ.
+		staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP; // 0~1の範囲外をリピート.
+		staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER; // 比較しない.
+		staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX; // ありったけのMipmapを使う.
+		staticSamplers[0].ShaderRegister = 0; // レジスタ番号0を使う.
+		staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		descriptionRootSignature.pStaticSamplers = staticSamplers;
+		descriptionRootSignature.NumStaticSamplers = _countof(staticSamplers);
+	}
 
 	// シリアライズしてバイナリにする.
 	Microsoft::WRL::ComPtr<ID3DBlob> signatureBlob = nullptr;
 	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob = nullptr;
-	hr = D3D12SerializeRootSignature(&descriptionRootSignature, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
+	HRESULT hr = D3D12SerializeRootSignature(&descriptionRootSignature, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
 	if (FAILED(hr)) {
 		Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
 		assert(false);
@@ -564,23 +593,42 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 	hr = device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&pipeline_[pipeLineIndex].rootSignature));
 	assert(SUCCEEDED(hr));
 
-	// 【InputLayout】
 	D3D12_INPUT_ELEMENT_DESC inputElementalDescs[3] = {};
-	inputElementalDescs[0].SemanticName = "POSITION";
-	inputElementalDescs[0].SemanticIndex = 0;
-	inputElementalDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	inputElementalDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-	inputElementalDescs[1].SemanticName = "TEXCOORD";
-	inputElementalDescs[1].SemanticIndex = 0;
-	inputElementalDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
-	inputElementalDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-	inputElementalDescs[2].SemanticName = "NORMAL";
-	inputElementalDescs[2].SemanticIndex = 0;
-	inputElementalDescs[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	inputElementalDescs[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	D3D12_INPUT_ELEMENT_DESC inputElementalDescsLine[2] = {};
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
-	inputLayoutDesc.pInputElementDescs = inputElementalDescs;
-	inputLayoutDesc.NumElements = _countof(inputElementalDescs);
+	if (blendMode == BlendMode::kLine) {
+		// 【InputLayout】
+		inputElementalDescsLine[0].SemanticName = "POSITION";
+		inputElementalDescsLine[0].SemanticIndex = 0;
+		inputElementalDescsLine[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		inputElementalDescsLine[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+		inputElementalDescsLine[1].SemanticName = "COLOR";
+		inputElementalDescsLine[1].SemanticIndex = 0;
+		inputElementalDescsLine[1].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		inputElementalDescsLine[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+
+		inputLayoutDesc.pInputElementDescs = inputElementalDescsLine;
+		inputLayoutDesc.NumElements = _countof(inputElementalDescsLine);
+
+	} else {
+		// 【InputLayout】
+		inputElementalDescs[0].SemanticName = "POSITION";
+		inputElementalDescs[0].SemanticIndex = 0;
+		inputElementalDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		inputElementalDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+		inputElementalDescs[1].SemanticName = "TEXCOORD";
+		inputElementalDescs[1].SemanticIndex = 0;
+		inputElementalDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
+		inputElementalDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+		inputElementalDescs[2].SemanticName = "NORMAL";
+		inputElementalDescs[2].SemanticIndex = 0;
+		inputElementalDescs[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+		inputElementalDescs[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+
+		inputLayoutDesc.pInputElementDescs = inputElementalDescs;
+		inputLayoutDesc.NumElements = _countof(inputElementalDescs);
+
+	}
 
 	// 【BlendState設定】
 	D3D12_BLEND_DESC blendDesc{};
@@ -649,11 +697,14 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob;
 
 	if (shaderType == ShaderType::kParticle) {
-		vertexShaderBlob = CompileShader(L"./hlsl/Particle.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
-		pixelShaderBlob = CompileShader(L"./hlsl/Particle.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+		vertexShaderBlob = vertexShaderBlobParticle;
+		pixelShaderBlob = pixelShaderBlobParticle;
+	} else if(blendMode == BlendMode::kLine){
+		vertexShaderBlob = vertexShaderBlobLine;
+		pixelShaderBlob = pixelShaderBlobLine;
 	} else {
-		vertexShaderBlob = CompileShader(L"./hlsl/Object3d.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
-		pixelShaderBlob = CompileShader(L"./hlsl/Object3d.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+		vertexShaderBlob = vertexShaderBlob3dObject;
+		pixelShaderBlob = pixelShaderBlob3dObject;
 	}
 
 	assert(vertexShaderBlob != nullptr);
@@ -688,9 +739,6 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 
 	commandList->SetGraphicsRootSignature(pipeline_[pipeLineIndex].rootSignature.Get());
 	commandList->SetPipelineState(pipeline_[pipeLineIndex].graphicsPipelineState.Get()); // PS0を設定.
-
-	dxcCompiler->Release();
-	dxcUtils->Release();
 }
 
 void GameSystem::SetPipeline(BlendMode blendMode) {
@@ -727,20 +775,25 @@ void GameSystem::DrawCommand(
 	}
 	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
 	commandList->IASetPrimitiveTopology(topology);
-	// マテリアル用のCBufferの場所.
-	commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-	// transformationMatrixCBufferの場所.
-	commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
-	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
-	commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-	commandList->SetGraphicsRootConstantBufferView(3, LightManager::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootConstantBufferView(4, Camera::GetInstance()->GetCameraForGPUResource()->GetGPUVirtualAddress());
-	//commandList->SetGraphicsRootConstantBufferView(5, PointLight::GetInstance()->GetPointLightResource()->GetGPUVirtualAddress());
-	//commandList->SetGraphicsRootConstantBufferView(6, SpotLight::GetInstance()->GetSpotLightResource()->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootDescriptorTable(5, LightManager::GetInstance()->GetPointLightSrvHandleGPU());
-	commandList->SetGraphicsRootDescriptorTable(6, LightManager::GetInstance()->GetSpotLightSrvHandleGPU());
-	commandList->SetGraphicsRootConstantBufferView(7, LightManager::GetInstance()->GetLightNumResource()->GetGPUVirtualAddress());
 
+	if (blendMode == BlendMode::kLine) {
+		// transformationMatrixCBufferの場所.
+		commandList->SetGraphicsRootConstantBufferView(0, wvpResource->GetGPUVirtualAddress());
+	} else {
+		// マテリアル用のCBufferの場所.
+		commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+		// transformationMatrixCBufferの場所.
+		commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
+		// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
+		commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+		commandList->SetGraphicsRootConstantBufferView(3, LightManager::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootConstantBufferView(4, Camera::GetInstance()->GetCameraForGPUResource()->GetGPUVirtualAddress());
+		//commandList->SetGraphicsRootConstantBufferView(5, PointLight::GetInstance()->GetPointLightResource()->GetGPUVirtualAddress());
+		//commandList->SetGraphicsRootConstantBufferView(6, SpotLight::GetInstance()->GetSpotLightResource()->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootDescriptorTable(5, LightManager::GetInstance()->GetPointLightSrvHandleGPU());
+		commandList->SetGraphicsRootDescriptorTable(6, LightManager::GetInstance()->GetSpotLightSrvHandleGPU());
+		commandList->SetGraphicsRootConstantBufferView(7, LightManager::GetInstance()->GetLightNumResource()->GetGPUVirtualAddress());
+	}
 	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
 	if (indexBufferView == nullptr) {
 		commandList->DrawInstanced(indexInstancedNum, 1, 0, 0);
@@ -767,6 +820,8 @@ bool GameSystem::BeginFrame() {
 	}
 
 	InputManager::GetInstance()->Update();
+
+	DeltaTime::GetInstance()->GetStartDebugTime();
 
 	//Renderer::Line::GetInstance()->ClearDrawIndex();
 	Renderer::GetInstance()->ClearDrawIndex();
@@ -838,6 +893,7 @@ void GameSystem::DrawSetup() {
 }
 
 void GameSystem::EndFrame() {
+	Renderer::GetInstance()->DrawLineAll();
 
 #ifdef USE_IMGUI
 	// ImGuiの内部コマンドを生成する.
@@ -877,6 +933,7 @@ void GameSystem::EndFrame() {
 	// GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る.
 	commandQueue->Signal(fence.Get(), fenceValue);
 
+	DeltaTime::GetInstance()->GetEndDebugTime();
 
 	// Fenceの値が指定したSignal値にたどり着いているか確認する.
 	// GetCompletedValueの初期値はFence作成時に渡した初期値.
@@ -1353,9 +1410,9 @@ Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GameSystem::CreateDescriptorHeap(Mi
 	return descriptorHeap;
 }
 
-void GameSystem::SrvDescriptorHeapNumIncrement(){
+void GameSystem::SrvDescriptorHeapNumIncrement() {
 	if (srvDescriptorHeapNum_ >= kSrvDescriptorHeapNumMax) {
-		assert(false,"現在使えるsrvDescriptorHeapのサイズ(128)を使い切りました");
+		assert(false, "現在使えるsrvDescriptorHeapのサイズ(128)を使い切りました");
 		return;
 	}
 	srvDescriptorHeapNum_++;

@@ -32,6 +32,8 @@ struct ModelElement {
 
 	VertexData* vertexData = nullptr;
 
+	VertexDataLine* vertexDataLine = nullptr;
+
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_ = nullptr;
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_ = nullptr;
@@ -303,6 +305,8 @@ public:
 
 	void DrawShadow(const Transform& transform, const Model* model);
 	void DrawShadow(const Transform& transform, const Model* model,const Vector4& color);
+
+	void DrawLineAll();
 private:
 
 	void CreateLine(ModelElement* newElement);
@@ -321,7 +325,7 @@ private:
 private:
 
 
-	//std::vector<ModelElement*> modelElement;
+	ModelElement* lineElement_;
 
 	BlendMode blendMode_;
 
@@ -329,6 +333,9 @@ private:
 
 	ReflectionType reflectionType_;
 
+	uint32_t currentDrawLineIndex_;
+
+	const uint32_t maxLineNum_ = 100000;
 	uint32_t currentDrawIndex_;
 };
 
