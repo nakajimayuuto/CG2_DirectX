@@ -230,7 +230,7 @@ private:
 
 	std::vector<WindowData> windowDatas_;
 
-	uint32_t windowNum_ = 2;
+	uint32_t windowNum_ = 4;
 
 	//WNDCLASS wc{};
 

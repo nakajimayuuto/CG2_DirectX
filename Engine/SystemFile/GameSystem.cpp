@@ -106,6 +106,28 @@ void GameSystem::Initialize() {
 			nullptr);				// オプション.
 
 
+		if (i >= static_cast<int>(windowNum_ / 2.0f)) {
+			LONG style = GetWindowLong(data.hwnd, GWL_STYLE);
+
+			style &= ~WS_THICKFRAME;
+			style &= ~WS_CAPTION;
+
+			SetWindowLong(data.hwnd, GWL_STYLE, style);
+
+			SetWindowPos(
+				data.hwnd,
+				nullptr,
+				0,
+				0,
+				0,
+				0,
+				SWP_FRAMECHANGED |
+				SWP_NOMOVE |
+				SWP_NOSIZE |
+				SWP_NOZORDER
+			);
+		}
+
 		// ウィンドウを表示する.
 		ShowWindow(data.hwnd, SW_SHOW);
 		windowDatas_.push_back(data);
