@@ -734,8 +734,6 @@ void Renderer::DrawLineAll() {
 		lineElement_->modelData_.textureSrvHandlesGPU,
 		currentDrawLineIndex_ * 2
 	);
-
-	currentDrawLineIndex_++;
 }
 
 void Renderer::DrawSphere(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color) {

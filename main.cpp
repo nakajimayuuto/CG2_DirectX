@@ -19,7 +19,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	SceneManager::GetInstance()->Initialize();
 
-	SoundManager::GetInstance()->LoadTest();
+	SoundData data = SoundManager::GetInstance()->LoadTest();
+
+	SoundManager::GetInstance()->SoundPlay(data,1.0f,1.0f,kBGM,true,"test");
+
 
 	// ウィンドウのxボタンが押されるまでループ.
 	while (system->ProcessMessage()) {
@@ -32,6 +35,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			GlobalVariables::GetInstance()->Update();
 
 			SceneManager::GetInstance()->Update();
+
+			ImGui::Begin("bgmTest");
+			if (ImGui::Button("start")) {
+				SoundManager::GetInstance()->SoundPlay(data, 1.0f, 1.0f, kBGM);
+			}
+			ImGui::End();
 
 			/*=============================================================
 			以下にゲームの描画処理を記述.
