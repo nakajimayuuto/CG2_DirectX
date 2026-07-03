@@ -490,6 +490,9 @@
     <None Include="hlsl\Particle.hlsli">
       <Filter>hlsl</Filter>
     </None>
+    <None Include="hlsl\Line.hlsli">
+      <Filter>hlsl</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="hlsl\Object3d.PS.hlsl">
@@ -502,6 +505,12 @@
       <Filter>hlsl</Filter>
     </FxCompile>
     <FxCompile Include="hlsl\Particle.PS.hlsl">
+      <Filter>hlsl</Filter>
+    </FxCompile>
+    <FxCompile Include="hlsl\Line.PS.hlsl">
+      <Filter>hlsl</Filter>
+    </FxCompile>
+    <FxCompile Include="hlsl\Line.VS.hlsl">
       <Filter>hlsl</Filter>
     </FxCompile>
   </ItemGroup>

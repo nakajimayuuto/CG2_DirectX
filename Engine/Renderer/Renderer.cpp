@@ -649,11 +649,17 @@ void Renderer::Initialize() {
 	lightingType_ = LightingType::kHalfLambert;
 
 	reflectionType_ = ReflectionType::kBlinnPhong;
+	
+	lineElement_ = new ModelElement();
+	CreateLine(lineElement_);
 }
 
 void Renderer::ClearDrawIndex() {
 	currentDrawIndex_ = 0;
-	//modelElement.clear();
+	currentDrawLineIndex_ = 0;
+	delete lineElement_;
+	lineElement_ = new ModelElement();
+	CreateLine(lineElement_);
 }
 
 void Renderer::SetBlendMode(BlendMode blendMode) {
@@ -681,45 +687,55 @@ void Renderer::SetReflectionType(ReflectionType reflectionType){
 }
 
 void Renderer::DrawLine(const Vector3& startVector3, const Vector3& endVector3, const Vector4& color) {
-	ModelElement* newElement;
-	newElement = new ModelElement();
-	CreateLine(newElement);
+	if (currentDrawLineIndex_ * 2 >= maxLineNum_) {
+		return;
+	}
+
 	Vector3 centerVector3;
 	centerVector3.x = (static_cast<Vector3>(startVector3) + endVector3).x / 2.0f;
 	centerVector3.y = (static_cast<Vector3>(startVector3) + endVector3).y / 2.0f;
 	centerVector3.z = (static_cast<Vector3>(startVector3) + endVector3).z / 2.0f;
 	Vector3 diff = (static_cast<Vector3>(startVector3) - endVector3);
 
-	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, centerVector3);
+	Matrix4x4 worldMatrix = Matrix4x4::Identity();
 
-	newElement->vertexData[0].position = { -diff.x / 2.0f,-diff.y / 2.0f ,-diff.z / 2.0f ,1.0f };
-	newElement->vertexData[0].texcoord = { 0.0f,1.0f };
-	newElement->vertexData[0].normal = { 0.0f,0.0f,0.0f };
-	newElement->vertexData[1].position = { diff.x / 2.0f,diff.y / 2.0f ,diff.z / 2.0f ,1.0f };
-	newElement->vertexData[1].texcoord = { 0.0f,1.0f };
-	newElement->vertexData[1].normal = { 0.0f,0.0f,0.0f };
+	lineElement_->vertexDataLine[currentDrawLineIndex_ * 2].position = { ( - diff.x / 2.0f) + centerVector3.x,(- diff.y / 2.0f) + centerVector3.y ,(- diff.z / 2.0f) + centerVector3.z ,1.0f};
+	lineElement_->vertexDataLine[currentDrawLineIndex_ * 2].color = color;
+	lineElement_->vertexDataLine[(currentDrawLineIndex_ * 2) + 1].position = { (diff.x / 2.0f) + centerVector3.x,(diff.y / 2.0f) + centerVector3.y,(diff.z / 2.0f) ,1.0f };
+	lineElement_->vertexDataLine[(currentDrawLineIndex_ * 2) + 1].color = color;
 
-	newElement->wvpData_->World = worldMatrix;
-	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
-	newElement->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+	//GameSystem::GetInstance()->DrawCommand(
+	//	newElement->blendMode_,
+	//	&newElement->vertexBufferView_,
+	//	nullptr,
+	//	D3D_PRIMITIVE_TOPOLOGY_LINELIST,
+	//	newElement->materialResource_,
+	//	newElement->wvpResource_,
+	//	newElement->modelData_.textureSrvHandlesGPU,
+	//	4
+	//);
 
-	newElement->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(newElement->uvTransform_);
-	newElement->materialData_->color = color;
+	currentDrawLineIndex_++;
+}
 
-	/*=============================================================
-	三角形の描画のコマンド.
-	=============================================================*/
+void Renderer::DrawLineAll() {
+	Matrix4x4 worldMatrix = Matrix4x4::Identity();
+	lineElement_->wvpData_->World = worldMatrix;
+	lineElement_->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+	lineElement_->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+
 	GameSystem::GetInstance()->DrawCommand(
-		newElement->blendMode_,
-		&newElement->vertexBufferView_,
+		lineElement_->blendMode_,
+		&lineElement_->vertexBufferView_,
 		nullptr,
 		D3D_PRIMITIVE_TOPOLOGY_LINELIST,
-		newElement->materialResource_,
-		newElement->wvpResource_,
-		newElement->modelData_.textureSrvHandlesGPU,
-		2
+		lineElement_->materialResource_,
+		lineElement_->wvpResource_,
+		lineElement_->modelData_.textureSrvHandlesGPU,
+		currentDrawLineIndex_ * 2
 	);
-	currentDrawIndex_++;
+
+	currentDrawLineIndex_++;
 }
 
 void Renderer::DrawSphere(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color) {
@@ -752,11 +768,7 @@ void Renderer::DrawSphere(const Transform& transform, const TextureInfo& texture
 }
 
 void Renderer::DrawSphereWireFrame(const Transform& transform, const Vector4& color){
-	if (true) {
-	//	return;
-	}
-
-	const uint32_t kSubdivision = 4;
+	const uint32_t kSubdivision = 16;
 	const float kLonEvery = std::numbers::pi_v<float> *2.0f / kSubdivision;
 	const float kLatEvery = std::numbers::pi_v<float> / kSubdivision;
 
@@ -1110,18 +1122,7 @@ void Renderer::CreateLine(ModelElement* newElement) {
 	newElement->blendMode_ = BlendMode::kLine;
 
 	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
-	newElement->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * 2);
-
-	// 【MaterialResourceを生成する】
-	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
-	newElement->materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
-	// マテリアルにデータを書き込む.
-	// 書き込むためのアドレスを取得.
-	newElement->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->materialData_));
-	// 今回は赤を書き込んでみる
-	newElement->materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	newElement->materialData_->lightingType = static_cast<uint32_t>(LightingType::kNone);
-	newElement->materialData_->uvTransform = Matrix4x4::Identity();
+	newElement->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexDataLine) * maxLineNum_);
 
 	// 【TransformationMatrix】
 	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
@@ -1138,13 +1139,13 @@ void Renderer::CreateLine(ModelElement* newElement) {
 	// リソースの先頭のアドレスから使う.
 	newElement->vertexBufferView_.BufferLocation = newElement->vertexResource_->GetGPUVirtualAddress();
 	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
-	newElement->vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * 2);
+	newElement->vertexBufferView_.SizeInBytes = UINT(sizeof(VertexDataLine) * maxLineNum_);
 	// 1頂点あたりのサイズ.
-	newElement->vertexBufferView_.StrideInBytes = sizeof(VertexData);
+	newElement->vertexBufferView_.StrideInBytes = sizeof(VertexDataLine);
 
 	// 【Resourceにデータを書き込む】
 	// 書き込むためのアドレスを取得.
-	newElement->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->vertexData));
+	newElement->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->vertexDataLine));
 }
 
 void Renderer::CreateSphere(ModelElement* newElement) {

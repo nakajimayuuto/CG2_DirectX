@@ -15,3 +15,8 @@ struct VertexData {
 	Vector2 texcoord;
 	Vector3 normal;
 };
+
+struct VertexDataLine {
+	Vector4 position;
+	Vector4 color;
+};

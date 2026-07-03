@@ -265,5 +265,19 @@ private:
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
 
 	Pipeline pipeline_[static_cast<uint32_t>(BlendMode::kCount) * static_cast<uint32_t>(ShaderType::kCount)];
+
+	// Shaderをコンパイルする.
+	// 【VertexShader】
+	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob3dObject;
+	// 【PixelShader】
+	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob3dObject;
+	// 【VertexShader】
+	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlobParticle;
+	// 【PixelShader】
+	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlobParticle;
+	// 【VertexShader】
+	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlobLine;
+	// 【PixelShader】
+	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlobLine;
 };
 
