@@ -120,7 +120,7 @@ SoundData SoundManager::LoadTest() {
 		audioData + currentLength);
 
 	buffer->Unlock();
-5
+
 	while (true)
 	{
 		DWORD flags = 0;
