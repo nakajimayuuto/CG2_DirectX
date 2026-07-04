@@ -97,6 +97,19 @@ void Transform::TransformSynthesis(const Transform& targetTransform) {
 	translate = sourceMatrix.GetMatrixToTranslate();
 }
 
+float Transform::GetMaxScale()const {
+	float maxRadius = scale.x;
+	if (scale.y > maxRadius) {
+		maxRadius = scale.y;
+	}
+
+	if (scale.z > maxRadius) {
+		maxRadius = scale.z;
+	}
+
+	return maxRadius;
+}
+
 void Transform2D::Initialize() {
 	scale.x = 1.0f;
 	scale.y = 1.0f;

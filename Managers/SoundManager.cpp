@@ -133,6 +133,25 @@ SoundData SoundManager::LoadTest(const std::string& fileName) {
 	ComPtr<IMFMediaBuffer> buffer;
 	std::vector<BYTE> pcmData;
 
+	sample->ConvertToContiguousBuffer(&buffer);
+
+	BYTE* audioData = nullptr;
+
+	DWORD maxLength = 0;
+	DWORD currentLength = 0;
+
+	buffer->Lock(
+		&audioData,
+		&maxLength,
+		&currentLength);
+
+	pcmData.insert(
+		pcmData.end(),
+		audioData,
+		audioData + currentLength);
+
+	buffer->Unlock();
+
 
 	while (true)
 	{

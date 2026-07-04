@@ -701,7 +701,7 @@ void Renderer::DrawLine(const Vector3& startVector3, const Vector3& endVector3, 
 
 	lineElement_->vertexDataLine[currentDrawLineIndex_ * 2].position = { ( - diff.x / 2.0f) + centerVector3.x,(- diff.y / 2.0f) + centerVector3.y ,(- diff.z / 2.0f) + centerVector3.z ,1.0f};
 	lineElement_->vertexDataLine[currentDrawLineIndex_ * 2].color = color;
-	lineElement_->vertexDataLine[(currentDrawLineIndex_ * 2) + 1].position = { (diff.x / 2.0f) + centerVector3.x,(diff.y / 2.0f) + centerVector3.y,(diff.z / 2.0f) ,1.0f };
+	lineElement_->vertexDataLine[(currentDrawLineIndex_ * 2) + 1].position = { (diff.x / 2.0f) + centerVector3.x,(diff.y / 2.0f) + centerVector3.y,(diff.z / 2.0f) + centerVector3.z,1.0f };
 	lineElement_->vertexDataLine[(currentDrawLineIndex_ * 2) + 1].color = color;
 
 	//GameSystem::GetInstance()->DrawCommand(
@@ -766,7 +766,11 @@ void Renderer::DrawSphere(const Transform& transform, const TextureInfo& texture
 }
 
 void Renderer::DrawSphereWireFrame(const Transform& transform, const Vector4& color){
-	const uint32_t kSubdivision = 16;
+	if (!Camera::GetInstance()->IsInCameraFrustum(transform.translate,transform.GetMaxScale())) {
+		return;
+	}
+
+	const uint32_t kSubdivision = 8;
 	const float kLonEvery = std::numbers::pi_v<float> *2.0f / kSubdivision;
 	const float kLatEvery = std::numbers::pi_v<float> / kSubdivision;
 
@@ -864,6 +868,33 @@ void Renderer::DrawBoxWireFrame(const Transform& transform,const Vector3& size, 
 	DrawLine(vertices[3],vertices[7],color);
 }
 
+void Renderer::DrawPlane(Plane& plane) {
+	Vector3 center = plane.normal * plane.distance * -1.0f; // 1.
+	Vector3 perpendiculars[4];
+	perpendiculars[0] = Vector3::Normalize(plane.normal.Perpendicular()); // 2.
+	perpendiculars[1] = { -perpendiculars[0].x,-perpendiculars[0].y ,-perpendiculars[0].z }; // 3.
+	perpendiculars[2] = plane.normal.Cross(perpendiculars[0]); // 4.
+	perpendiculars[3] = { -perpendiculars[2].x,-perpendiculars[2].y ,-perpendiculars[2].z }; // 5.
+	// 6.
+	Vector3 points[4];
+	for (int32_t index = 0; index < 4; ++index) {
+		Vector3 extend = perpendiculars[index] * 2.0f;
+		points[index] = center + extend;
+
+	}
+
+
+	DrawLine(points[0], points[3],{1.0f,1.0f,1.0f,1.0f});
+	DrawLine(points[3], points[1],{1.0f,1.0f,1.0f,1.0f});
+	DrawLine(points[1], points[2],{1.0f,1.0f,1.0f,1.0f});
+	DrawLine(points[2], points[0],{1.0f,1.0f,1.0f,1.0f});
+
+	DrawLine(
+		center,
+		center + plane.normal * 5.0f,
+		{1.0f,0.0f,0.0f,1.0f});
+}
+
 void Renderer::DrawBoxWireFrame(const AABB& aabb, const Vector4& color){
 	std::vector<Vector3> vertices;
 
@@ -894,12 +925,18 @@ void Renderer::DrawBoxWireFrame(const AABB& aabb, const Vector4& color){
 }
 
 void Renderer::DrawModel(const Transform& transform, const ModelInfo& modelInfo, const Vector4& color) {
+	if (!Camera::GetInstance()->IsInCameraFrustum(transform.translate, modelInfo.radius * transform.GetMaxScale())) {
+		return;
+	}
+
 	uint32_t modelMax_ = static_cast<uint32_t>(modelInfo.modelData.size());
 	std::vector<ModelElement*> newElements;
 	newElements.resize(modelMax_);
 	for (uint32_t i = 0; i < modelMax_; i++) {
 		newElements[i] = new ModelElement();
 		newElements[i]->modelData_ = modelInfo.modelData[i];
+		newElements[i]->vertexResource_ = modelInfo.modelData[i].vertexResource_;
+		newElements[i]->vertexBufferView_ = modelInfo.modelData[i].vertexBufferView_;
 	}
 
 	CreateNewModel(newElements, modelMax_);
@@ -1312,8 +1349,6 @@ void Renderer::CreateNewModel(std::vector<ModelElement*> newElements, const uint
 		}
 
 		newElements[i]->blendMode_ = blendMode_;
-		newElements[i]->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * newElements[i]->modelData_.vertices.size());
-
 		// 【MaterialResourceを生成する】
 		// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
 		//Microsoft::WRL::ComPtr<ID3D12Resource> materialResource 
@@ -1344,27 +1379,6 @@ void Renderer::CreateNewModel(std::vector<ModelElement*> newElements, const uint
 		newElements[i]->uvTransform_.scale = newElements[i]->materialData_->uvTransform.GetMatrixToTransform().scale;
 		newElements[i]->uvTransform_.rotate = newElements[i]->materialData_->uvTransform.GetMatrixToTransform().rotate;
 		newElements[i]->uvTransform_.translate = newElements[i]->materialData_->uvTransform.GetMatrixToTransform().translate;
-
-		// 【VertexBufferViewを作成する】
-
-		// 頂点バッファビューを作成する.
-		//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-		// リソースの先頭のアドレスから使う.
-		newElements[i]->vertexBufferView_.BufferLocation = newElements[i]->vertexResource_->GetGPUVirtualAddress();
-		// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
-		//vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 4;
-		newElements[i]->vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * newElements[i]->modelData_.vertices.size());
-		// 1頂点あたりのサイズ.
-		newElements[i]->vertexBufferView_.StrideInBytes = sizeof(VertexData);
-
-
-		// 【Resourceにデータを書き込む】
-
-		// 頂点リソースにデータを書き込む.
-		VertexData* vertexData = nullptr;
-		// 書き込むためのアドレスを取得.
-		newElements[i]->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-		memcpy(vertexData, newElements[i]->modelData_.vertices.data(), sizeof(VertexData) * newElements[i]->modelData_.vertices.size());
 	}
 
 

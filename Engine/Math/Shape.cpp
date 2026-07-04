@@ -10,3 +10,12 @@ OBB& OBB::operator=(const Matrix4x4& matrix){
 
     return *this;
 }
+
+void Plane::SetPlane(const Vector3& p0, const Vector3& p1, const Vector3& p2) {
+	Vector3 v1 = static_cast<Vector3>(p1) - p0;
+	Vector3 v2 = static_cast<Vector3>(p2) - p0;
+
+	normal = v1.Cross(v2).Normalize();
+
+	distance = -normal.Dot(p0);
+}

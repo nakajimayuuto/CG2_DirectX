@@ -14,6 +14,7 @@ public:
 
 	//Transform(Vector3 newScale, Vector3 newRotate, Vector3 newTranslate) { scale = newScale; rotate = newRotate; translate = newTranslate; };
 
+
 	void Initialize();
 	static Transform GetInitialValue();
 	static Transform GetInitialValue(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
@@ -35,6 +36,8 @@ public:
 	const Transform* GetParent() { return parent_; };
 
 	void ClearParent() { parent_ = nullptr; };
+
+	float GetMaxScale()const;
 public:
 	Vector3 scale;
 	Vector3 rotate;

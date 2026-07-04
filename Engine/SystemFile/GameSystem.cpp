@@ -895,8 +895,9 @@ void GameSystem::DrawSetup() {
 }
 
 void GameSystem::EndFrame() {
-	Renderer::GetInstance()->DrawLineAll();
+	Camera::GetInstance()->Draw();
 
+	Renderer::GetInstance()->DrawLineAll();
 #ifdef USE_IMGUI
 	// ImGuiの内部コマンドを生成する.
 	ImGui::Render();

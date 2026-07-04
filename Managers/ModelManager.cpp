@@ -19,7 +19,8 @@ void ModelManager::RegisterObj(const std::string& name, const std::string& direc
 	}
 
 	models_[name].modelData = LoadObjFile(directoryPath, fileName);
-
+	Vector3 min={ 0.0f,0.0f,0.0f };
+	Vector3 max = { 0.0f,0.0f,0.0f };
 	for (ModelData& data : models_[name].modelData) {
 		if (data.materialData.textureFilePath == "") {
 			continue;
@@ -29,7 +30,58 @@ void ModelManager::RegisterObj(const std::string& name, const std::string& direc
 
 		data.textureSrvHandlesCPU = TextureManager::GetInstance()->GetTextureInfo(name + "_" + data.meshName).textureSrvHandlesCPU;
 		data.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo(name + "_" + data.meshName).textureSrvHandlesGPU;
+
+		// 【VertexBufferViewを作成する】
+		data.vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * data.vertices.size());
+		// 頂点バッファビューを作成する.
+		//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+		// リソースの先頭のアドレスから使う.
+		data.vertexBufferView_.BufferLocation = data.vertexResource_->GetGPUVirtualAddress();
+		// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
+		//vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 4;
+		data.vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * data.vertices.size());
+		// 1頂点あたりのサイズ.
+		data.vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+
+		// 【Resourceにデータを書き込む】
+
+		// 頂点リソースにデータを書き込む.
+		VertexData* vertexData = nullptr;
+		// 書き込むためのアドレスを取得.
+		data.vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+		memcpy(vertexData, data.vertices.data(), sizeof(VertexData) * data.vertices.size());
+
+		for (VertexData& vertexData : data.vertices) {
+			if (vertexData.position.x > max.x) {
+				max.x = vertexData.position.x;
+			} else if(vertexData.position.x < min.x){
+				min.x = vertexData.position.x;
+			}
+
+			if (vertexData.position.y > max.y) {
+				max.y = vertexData.position.y;
+			} else if(vertexData.position.y < min.y){
+				min.y = vertexData.position.y;
+			}
+
+			if (vertexData.position.z > max.z) {
+				max.z = vertexData.position.z;
+			} else if(vertexData.position.z < min.z){
+				min.z = vertexData.position.z;
+			}
+		}
 	}
+
+	float maxSize = max.x - min.x;
+	if(max.y - min.y > maxSize){
+		maxSize = max.y - min.y;
+	}
+	if(max.z - min.z > maxSize){
+		maxSize = max.z - min.z;
+	}
+
+	models_[name].radius = maxSize * 1.7f;
 }
 
 ModelInfo ModelManager::GetModelInfo(const std::string& name) {

@@ -26,6 +26,8 @@
 struct ModelInfo {
 	std::vector<ModelData> modelData;
 
+	float radius;
+
 	uint32_t index;
 };
 

@@ -27,9 +27,11 @@ struct Triangle {
 	Vector3 vertices[3]; // 頂点.
 };
 
-struct Plane {
+class Plane {
+public:
 	Vector3 normal; // 法線.
 	float distance; // 距離.
+	void SetPlane(const Vector3& p0, const Vector3& p1, const Vector3& p2);
 };
 
 struct AABB {

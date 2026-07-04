@@ -21,6 +21,8 @@ public:
 
 	void Update();
 
+	void Draw();
+
 	void SetPosition(Vector3 vector3) { translate_ = vector3; }
 
 	void SetRotate(Vector3 rotate) { rotate_ = rotate; };
@@ -61,9 +63,14 @@ public:
 	Microsoft::WRL::ComPtr<ID3D12Resource> GetCameraForGPUResource() { return cameraResource_; };
 
 	void CreateResource();
+
+	bool IsInCameraFrustum(const Vector3& point, float radius);
 private:
 	void DebugUpdate();
 
+	void FrustumUpdate();
+
+	void DrawRange();
 private:
 	Vector3 scale_;
 	Vector3 rotate_;
@@ -96,6 +103,14 @@ private:
 	Vector3 aspectScale_;
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource_ = nullptr;
+
+	Matrix4x4 gameCameraMatrix_;
+
+	Vertex4 nearVertex_;
+
+	Vertex4 farVertex_;
+
+	Plane planes_[6];
 
 	CameraForGPU* cameraData_ = nullptr;
 };

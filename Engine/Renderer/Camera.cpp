@@ -5,6 +5,7 @@
 #include "../SystemFile/GlobalVariables.h"
 #include "../../Environment.h"
 #include "../SystemFile/GameSystem.h"
+#include "../Renderer/Renderer.h"
 
 Camera* Camera::GetInstance() {
 	static Camera instance;
@@ -67,17 +68,30 @@ void Camera::CreateResource() {
 	cameraData_->worldPosition = { 0.0f,0.0f,0.0f };
 }
 
+bool Camera::IsInCameraFrustum(const Vector3& point,float radius){
+	for (int i = 0; i < 6; i++){
+		float d = static_cast<Vector3>(point).Dot(planes_[i].normal)+ planes_[i].distance;
+
+		if (d > radius){
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void Camera::Update() {
 	if (useDebugCamera_) {
 		DebugUpdate();
-
 		//matrix_ = Matrix4x4::MakeAffineMatrix(debugScale_, debugRotate_, debugTranslate_);
 		return;
 	}
 
 	cameraData_->worldPosition = translate_;
-
+	gameCameraMatrix_ = matrix_;
+	
 	matrix_ = Matrix4x4::MakeAffineMatrix(scale_, rotate_, translate_);
+	FrustumUpdate();
 }
 
 void Camera::DebugUpdate() {
@@ -132,6 +146,116 @@ void Camera::DebugUpdate() {
 	//matrix_ = Matrix4x4::MakeScaleMatrix(debugScale_);
 	matrix_ = debugMatRot_;
 	matrix_ *= Matrix4x4::MakeTranslateMatrix(debugTranslate_);
+}
+
+void Camera::FrustumUpdate(){
+
+	Vector3 cameraPos = translate_;
+	Vector3 right = gameCameraMatrix_.GetXAxis().Normalize();
+	Vector3 up = gameCameraMatrix_.GetYAxis().Normalize();
+	Vector3 forward = gameCameraMatrix_.GetZAxis().Normalize();
+
+	float aspect =
+		windowWidth_ / windowHeight_;
+
+	float nearHeight =
+		2.0f * tanf(fovY_ * 0.5f) * nearClip_;
+
+	float nearWidth =
+		nearHeight * aspect;
+
+	float farHeight =
+		2.0f * tanf(fovY_ * 0.5f) * farClip_;
+
+	float farWidth =
+		farHeight * aspect;
+
+	Vector3 nearCenter =
+		cameraPos + forward * nearClip_;
+
+	Vector3 farCenter =
+		cameraPos + forward * farClip_;
+
+	float nearHalfW = nearWidth * 0.5f;
+	float nearHalfH = nearHeight * 0.5f;
+
+	nearVertex_.leftTop =
+		nearCenter
+		+ up * nearHalfH
+		- right * nearHalfW;
+
+	nearVertex_.rightTop =
+		nearCenter
+		+ up * nearHalfH
+		+ right * nearHalfW;
+
+	nearVertex_.leftBottom =
+		nearCenter
+		- up * nearHalfH
+		- right * nearHalfW;
+
+	nearVertex_.rightBottom =
+		nearCenter
+		- up * nearHalfH
+		+ right * nearHalfW;
+
+	float farHalfW = farWidth * 0.5f;
+	float farHalfH = farHeight * 0.5f;
+
+	farVertex_.leftTop =
+		farCenter
+		+ up * farHalfH
+		- right * farHalfW;
+
+	farVertex_.rightTop =
+		farCenter
+		+ up * farHalfH
+		+ right * farHalfW;
+
+	farVertex_.leftBottom =
+		farCenter
+		- up * farHalfH
+		- right * farHalfW;
+
+	farVertex_.rightBottom =
+		farCenter
+		- up * farHalfH
+		+ right * farHalfW;
+
+	// near
+	planes_[0].SetPlane(nearVertex_.rightTop, nearVertex_.leftBottom, nearVertex_.leftTop);
+	// far
+	planes_[1].SetPlane(farVertex_.rightTop, farVertex_.leftTop, farVertex_.leftBottom);
+	// left
+	planes_[2].SetPlane(farVertex_.leftTop, nearVertex_.leftTop, nearVertex_.leftBottom);
+	// right
+	planes_[3].SetPlane(farVertex_.rightTop, farVertex_.rightBottom, nearVertex_.rightTop);
+	// top
+	planes_[4].SetPlane(nearVertex_.rightTop, nearVertex_.leftTop, farVertex_.leftTop);
+	// bottom
+	planes_[5].SetPlane(farVertex_.rightBottom, farVertex_.leftBottom, nearVertex_.leftBottom);
+
+}
+
+void Camera::Draw() {
+	DrawRange();
+}
+
+void Camera::DrawRange() {
+	Renderer::GetInstance()->DrawLine(nearVertex_.leftTop, nearVertex_.rightTop,{1.0f,1.0f,1.0f,1.0f});
+	Renderer::GetInstance()->DrawLine(nearVertex_.rightTop, nearVertex_.rightBottom,{1.0f,1.0f,1.0f,1.0f});
+	Renderer::GetInstance()->DrawLine(nearVertex_.rightBottom, nearVertex_.leftBottom,{1.0f,1.0f,1.0f,1.0f});
+	Renderer::GetInstance()->DrawLine(nearVertex_.leftBottom, nearVertex_.leftTop,{1.0f,1.0f,1.0f,1.0f});
+
+	Renderer::GetInstance()->DrawLine(farVertex_.leftTop, farVertex_.rightTop,{1.0f,1.0f,1.0f,1.0f});
+	Renderer::GetInstance()->DrawLine(farVertex_.rightTop, farVertex_.rightBottom,{1.0f,1.0f,1.0f,1.0f});
+	Renderer::GetInstance()->DrawLine(farVertex_.rightBottom, farVertex_.leftBottom,{1.0f,1.0f,1.0f,1.0f});
+	Renderer::GetInstance()->DrawLine(farVertex_.leftBottom, farVertex_.leftTop,{1.0f,1.0f,1.0f,1.0f});
+
+	Renderer::GetInstance()->DrawLine(nearVertex_.leftTop, farVertex_.leftTop,{1.0f,1.0f,1.0f,1.0f});
+	Renderer::GetInstance()->DrawLine(nearVertex_.rightTop, farVertex_.rightTop,{1.0f,1.0f,1.0f,1.0f});
+	Renderer::GetInstance()->DrawLine(nearVertex_.leftBottom, farVertex_.leftBottom,{1.0f,1.0f,1.0f,1.0f});
+	Renderer::GetInstance()->DrawLine(nearVertex_.rightBottom, farVertex_.rightBottom,{1.0f,1.0f,1.0f,1.0f});
 }
 
 Vector3 Camera::GetCameraVector3(Vector3 vector3, Matrix4x4 matrix) {
