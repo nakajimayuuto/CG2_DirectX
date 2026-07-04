@@ -20,8 +20,8 @@ void GameScene::Initialize() {
 
 	Camera::GetInstance()->SetPosition({ 0.0f,2.0f,-30.0f });
 
-	//player_ = std::make_unique<Player>();
-	//player_->Initialize();
+	player_ = std::make_unique<Player>();
+	player_->Initialize();
 
 	skydome_ = std::make_unique<Skydome>();
 	skydome_->Initialize();
@@ -49,7 +49,7 @@ void GameScene::Update() {
 	ImGui::DragInt("num", &testNum_, 1.0f, 0, 2000);
 	ImGui::End();
 
-	//player_->Update();
+	player_->Update();
 
 	Camera::GetInstance()->Update();
 
@@ -74,7 +74,7 @@ void GameScene::Draw() {
 		//Renderer::GetInstance()->DrawSphereWireFrame(transformTest, {1.0f,1.0f,1.0f,1.0f});
 	}
 
-	//player_->Draw();
+	player_->Draw();
 }
 
 void GameScene::CheckAllCollisions() {
