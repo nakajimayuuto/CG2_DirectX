@@ -88,9 +88,9 @@ void Camera::Update() {
 	}
 
 	cameraData_->worldPosition = translate_;
-	gameCameraMatrix_ = matrix_;
-	
 	matrix_ = Matrix4x4::MakeAffineMatrix(scale_, rotate_, translate_);
+	
+	gameCameraMatrix_ = Matrix4x4::MakeAffineMatrix(scale_, -rotate_, translate_);
 	FrustumUpdate();
 }
 
@@ -242,6 +242,10 @@ void Camera::Draw() {
 }
 
 void Camera::DrawRange() {
+	if (!useDebugCamera_) {
+		return;
+	}
+
 	Renderer::GetInstance()->DrawLine(nearVertex_.leftTop, nearVertex_.rightTop,{1.0f,1.0f,1.0f,1.0f});
 	Renderer::GetInstance()->DrawLine(nearVertex_.rightTop, nearVertex_.rightBottom,{1.0f,1.0f,1.0f,1.0f});
 	Renderer::GetInstance()->DrawLine(nearVertex_.rightBottom, nearVertex_.leftBottom,{1.0f,1.0f,1.0f,1.0f});

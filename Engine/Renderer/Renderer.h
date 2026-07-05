@@ -53,6 +53,14 @@ struct ModelElement {
 	uint32_t indexInstanceNum_;
 };
 
+struct ModelInstance{
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_ = nullptr; // 消すかも.
+	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_ = nullptr; // 消すかも.
+
+};
+
+using ModelElements = std::vector<ModelElement>;
+
 class Model {
 public:
 	~Model();
@@ -92,7 +100,7 @@ public:
 
 	uint32_t GetModelCountMax()const { return modelMax_; };
 
-	std::vector<ModelElement*> GetModelElement()const;
+	ModelElements  GetModelElement()const;
 private:
 	uint32_t modelMax_;
 
@@ -317,15 +325,18 @@ private:
 
 	void CreateBox(ModelElement* newElement);
 
-	void CreateNewModel(std::vector<ModelElement*> newElements, const uint32_t modelMax);
+	void CreateNewModel(ModelElements* newElements, const uint32_t modelMax);
 
-	void CreateModel(std::vector<ModelElement*> newElements, const uint32_t modelMax);
+	void CreateModel(ModelElements* newElements, const ModelElements& targetElements, const uint32_t modelMax);
 
 	void CreateNewSprite(ModelElement* newElement,float width,float height);
 
 	void CreateSprite(ModelElement* newElement, float width, float height);
 private:
+	const uint32_t maxModelNum = 300;
+	uint32_t currentDrawModelIndex_;
 
+	std::vector<std::unique_ptr<ModelInstance>> modelInstances;
 
 	ModelElement* lineElement_;
 
@@ -336,9 +347,7 @@ private:
 	ReflectionType reflectionType_;
 
 	uint32_t currentDrawLineIndex_;
-
 	const uint32_t maxLineNum_ = 100000;
-	uint32_t currentDrawIndex_;
 };
 
 class TestParticle {

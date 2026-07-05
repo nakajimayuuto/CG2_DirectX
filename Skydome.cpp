@@ -26,5 +26,6 @@ void Skydome::Update() {
 }
 
 void Skydome::Draw() {
+	//model_.Draw(transform_);
 	Renderer::GetInstance()->DrawModel(transform_, &model_);
 }

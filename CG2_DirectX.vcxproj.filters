@@ -160,6 +160,9 @@
     <Filter Include="ソース ファイル\ContactRecord">
       <UniqueIdentifier>{206fc2d1-1100-47c3-9446-75d9f020f81f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\GameCamera">
+      <UniqueIdentifier>{c44faba6-95e3-4233-a697-58728d0da2c0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -314,6 +317,9 @@
     </ClCompile>
     <ClCompile Include="ContactRecord.cpp">
       <Filter>ソース ファイル\ContactRecord</Filter>
+    </ClCompile>
+    <ClCompile Include="FollowCamera.cpp">
+      <Filter>ソース ファイル\GameCamera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -481,6 +487,9 @@
     </ClInclude>
     <ClInclude Include="ContactRecord.h">
       <Filter>ソース ファイル\ContactRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="FollowCamera.h">
+      <Filter>ソース ファイル\GameCamera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -137,14 +137,6 @@ void Player::BehaviorRootUpdate() {
 			velocity_.x += 1.0f;
 		}
 
-		if (input->TriggerMouse(MouseButtons::MOUSE_LEFT)) {
-			behaviorRequest_ = Behavior::kAttack;
-		}
-
-		if (input->TriggerMouse(MouseButtons::MOUSE_RIGHT)) {
-			behaviorRequest_ = Behavior::kDash;
-		}
-
 		if (input->TriggerKey(DIK_SPACE)) {
 			behaviorRequest_ = Behavior::kJump;
 		}

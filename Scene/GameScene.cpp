@@ -29,6 +29,10 @@ void GameScene::Initialize() {
 	ground_ = std::make_unique<Ground>();
 	ground_->Initialize();
 
+	camera_ = std::make_unique<FollowCamera>();
+	camera_->SetTarget(player_->GetTransform());
+	camera_->Initialize();
+
 	Player::RegisterGlobalVariables();
 }
 
@@ -48,6 +52,8 @@ void GameScene::Update() {
 	ImGui::Begin("drawTest");
 	ImGui::DragInt("num", &testNum_, 1.0f, 0, 2000);
 	ImGui::End();
+
+	camera_->Update();
 
 	player_->Update();
 
