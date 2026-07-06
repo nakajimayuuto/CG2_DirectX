@@ -17,7 +17,7 @@ private:
 private:
 	static inline float kCompletionRate = 0.25f;
 
-	static inline float kAutoCompletionRate = 0.025f;
+	static inline float kAutoCompletionRate = 0.01f;
 
 	static inline Vector3 kOffset = { 0.0f,2.0f,-20.0f };
 
