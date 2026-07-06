@@ -1089,7 +1089,7 @@ void Renderer::DrawSprite(const Transform& transform, const Sprite& sprite) {
 void Renderer::DrawShadow(const Transform& transform, const Model* model) {
 	uint32_t modelMax_ = static_cast<uint32_t>(model->GetModelCountMax());
 	std::unique_ptr<ModelElements> newElements;
-	newElements = std::make_unique<ModelElements>(model->GetModelCountMax());
+	newElements = std::make_unique<ModelElements>(model->GetModelElement());
 	//newElements->resize(modelMax_);
 	CreateModel(newElements.get(), model->GetModelElement(), modelMax_);
 
@@ -1123,14 +1123,10 @@ void Renderer::DrawShadow(const Transform& transform, const Model* model) {
 }
 
 void Renderer::DrawShadow(const Transform& transform, const Model* model, const Vector4& color) {
-	return;
 	uint32_t modelMax_ = static_cast<uint32_t>(model->GetModelCountMax());
 	std::unique_ptr<ModelElements> newElements;
-	newElements = std::make_unique<ModelElements>(model->GetModelCountMax());
-	newElements->resize(modelMax_);
-	//newElements = model->GetModelElement();
-
-	CreateNewModel(newElements.get(), modelMax_);
+	newElements = std::make_unique<ModelElements>(model->GetModelElement());
+	CreateModel(newElements.get(), model->GetModelElement(), modelMax_);
 
 	for (uint32_t i = 0; i < modelMax_; i++) {
 		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
@@ -1404,40 +1400,19 @@ void Renderer::CreateNewModel(ModelElements* newElements, const uint32_t modelMa
 
 void Renderer::CreateModel(ModelElements* newElements, const ModelElements& targetElements, const uint32_t modelMax) {
 	for (uint32_t i = 0; i < modelMax; i++) {
-		// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
-
 		if (newElements[i].data()->modelData_.materialData.textureFilePath == "") {
 			newElements[i].data()->modelData_.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesGPU;
 		}
 
-
-
-
+		// 個別設定のResourceを取得.
 		newElements[i].data()->materialResource_ = modelInstances[currentDrawModelIndex_]->materialResource_;
 		newElements[i].data()->wvpResource_ = modelInstances[currentDrawModelIndex_]->wvpResource_;
 
-
-		// 【MaterialResourceを生成する】
-		// 書き込むためのアドレスを取得.
+		// newElementsのデータと紐づけ.
 		newElements[i].data()->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElements[i].data()->materialData_));
-		// 今回は赤を書き込んでみる
-		//newElements[i]->materialData_->color;
-		//newElements[i]->materialData_->lightingType = static_cast<uint32_t>(LightingType::kHalfLambert);
-		//newElements[i]->materialData_->uvTransform = newElements[i]->modelData_.materialData.matarial.uvTransform;
-
-		// 【TransformationMatrix】
-		// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
-		// データを書き込む.
-		//TransformationMatrix* wvpData = nullptr;
-		// 書き込むためのアドレスを取得.
 		newElements[i].data()->wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElements[i].data()->wvpData_));
-		// 単位行列を書き込んでおく.
-		//newElements[i].data()->wvpData_->WVP = Matrix4x4::Identity();
-		//newElements[i].data()->wvpData_->World = Matrix4x4::Identity();
-		//newElements[i]->uvTransform_.Initialize();
-		//newElements[i]->uvTransform_.scale = newElements[i]->materialData_->uvTransform.GetMatrixToTransform().scale;
-		//newElements[i]->uvTransform_.rotate = newElements[i]->materialData_->uvTransform.GetMatrixToTransform().rotate;
-		//newElements[i]->uvTransform_.translate = newElements[i]->materialData_->uvTransform.GetMatrixToTransform().translate;
+
+		// materialDataにModelのデータを記入.
 		newElements[i].data()->materialData_->color = targetElements[i].materialData_->color;
 		newElements[i].data()->materialData_->lightingType = targetElements[i].materialData_->lightingType;
 		newElements[i].data()->materialData_->reflectionType= targetElements[i].materialData_->reflectionType;
@@ -1448,22 +1423,13 @@ void Renderer::CreateModel(ModelElements* newElements, const ModelElements& targ
 		// 【VertexBufferViewを作成する】
 
 		// 頂点バッファビューを作成する.
-		//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-		// リソースの先頭のアドレスから使う.
+
 		newElements[i].data()->vertexBufferView_.BufferLocation = newElements[i].data()->vertexResource_->GetGPUVirtualAddress();
-		// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
-		//vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 4;
+
 		newElements[i].data()->vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * newElements[i].data()->modelData_.vertices.size());
 		// 1頂点あたりのサイズ.
 		newElements[i].data()->vertexBufferView_.StrideInBytes = sizeof(VertexData);
 
-		//newElements[i].data()->materialData_ = targetElements[i].materialData_;
-		//newElements[i].data()->wvpData_ = targetElements[i].wvpData_;
-		//newElements[i].data()->modelData_ = targetElements[i].modelData_;
-		//newElements[i].data()->vertexResource_ = targetElements[i].vertexResource_;
-		//newElements[i].data()->vertexBufferView_ = targetElements[i].vertexBufferView_;
-		//newElements[i].data()->uvTransform_ = targetElements[i].uvTransform_;
-		//newElements[i].data()->blendMode_ = targetElements[i].blendMode_;
 		currentDrawModelIndex_++;
 
 
