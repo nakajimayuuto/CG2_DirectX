@@ -12,7 +12,7 @@ struct PointLightData {
 	float intensity; // ライトの輝度.
 	float radius; // ライトの届く最大距離.
 	float decay; // 減衰率.
-	float padding[0];
+	//float padding[0];
 };
 
 class PointLight {

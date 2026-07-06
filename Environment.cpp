@@ -50,10 +50,10 @@ void Environment::SetAspectMode(AspectMode aspectMode) {
 	switch (aspectMode) {
 	case kAspectNone:
 	case kAspectWindowFixed:
-		Camera::GetInstance()->SetWindowSize(kWindowSize_.width, kWindowSize_.height);
+		Camera::GetInstance()->SetWindowSize(static_cast<float>(kWindowSize_.width), static_cast<float>(kWindowSize_.height));
 		currentStyle = WS_OVERLAPPEDWINDOW;
 
-		SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, currentStyle);
+		SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, static_cast<LONG>(currentStyle));
 		SetWindowPos(
 			GameSystem::GetInstance()->GetHWND(),
 			HWND_TOP,
@@ -65,14 +65,14 @@ void Environment::SetAspectMode(AspectMode aspectMode) {
 		);
 		break;
 	case kAspectNoChange:
-		Camera::GetInstance()->SetWindowSize(kWindowSize_.width, kWindowSize_.height);
+		Camera::GetInstance()->SetWindowSize(static_cast<float>(kWindowSize_.width), static_cast<float>(kWindowSize_.height));
 
 		// リサイズと最大化を禁止
 		currentStyle = WS_OVERLAPPED |
 			WS_CAPTION |
 			WS_SYSMENU;
 
-		SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, currentStyle);
+		SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, static_cast<LONG>(currentStyle));
 		SetWindowPos(
 			GameSystem::GetInstance()->GetHWND(),
 			HWND_TOP,
@@ -87,7 +87,7 @@ void Environment::SetAspectMode(AspectMode aspectMode) {
 	case kAspectChangeEverytime:
 		currentStyle = WS_OVERLAPPEDWINDOW;
 
-		SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, currentStyle);
+		SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, static_cast<LONG>(currentStyle));
 		SetWindowPos(
 			GameSystem::GetInstance()->GetHWND(),
 			HWND_TOP,
@@ -120,7 +120,7 @@ void Environment::SetBorderlessFullscreen() {
 }
 
 void Environment::SetWindowed() {
-	SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, currentStyle);
+	SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, static_cast<LONG>(currentStyle));
 
 	SetWindowPos(
 		GameSystem::GetInstance()->GetHWND(),

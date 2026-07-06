@@ -108,7 +108,7 @@ void ParticleManager::SetBillboardType(BillboardType type){
 void ParticleManager::SetBillboardType(const std::string& name, BillboardType type){
 	auto it = particles_.find(name);
 
-	assert(it != particles_.end(), std::format("name : {}と一致するParticlesが見つかりませんでした", name));
+	//assert(it != particles_.end(), std::format("name : {}と一致するParticlesが見つかりませんでした", name));
 
 	if (particles_[name]->GetBillboardType() == type) {
 		return;
@@ -120,7 +120,11 @@ void ParticleManager::SetBillboardType(const std::string& name, BillboardType ty
 void ParticleManager::SetEmitterTransform(const std::string& name, const Transform& transform){
 	auto it = emitters_.find(name);
 
+#ifdef _DEBUG
+
 	assert(it != emitters_.end(), std::format("name : {}と一致するEmitterが見つかりませんでした", name));
+
+#endif // _DEBUG
 
 	emitters_[name]->SetTransform(transform);
 }
@@ -128,7 +132,9 @@ void ParticleManager::SetEmitterTransform(const std::string& name, const Transfo
 void ParticleManager::SetEmitterCount(const std::string& name, uint32_t count){
 	auto it = emitters_.find(name);
 
+#ifdef _DEBUG
 	assert(it != emitters_.end(), std::format("name : {}と一致するEmitterが見つかりませんでした", name));
+#endif //_DEBUG
 
 	emitters_[name]->SetCount(count);
 }
@@ -136,48 +142,52 @@ void ParticleManager::SetEmitterCount(const std::string& name, uint32_t count){
 void ParticleManager::SetEmitterFrequency(const std::string& name, float frequency){
 	auto it = emitters_.find(name);
 
+#ifdef _DEBUG
+
 	assert(it != emitters_.end(), std::format("name : {}と一致するEmitterが見つかりませんでした", name));
+
+#endif // _DEBUG
 
 	emitters_[name]->SetFrequency(frequency);
 }
 
 void ParticleManager::SetEmitterShape(const std::string& name, EmitterShape shape){
 	auto it = emitters_.find(name);
-
+#ifdef _DEBUG
 	assert(it != emitters_.end(), std::format("name : {}と一致するEmitterが見つかりませんでした", name));
-
+#endif // _DEBUG
 	emitters_[name]->SetShape(shape);
 }
 
 void ParticleManager::SetFieldArea(const std::string& name, const AABB& area){
 	auto it = fields_.find(name);
-
+#ifdef _DEBUG
 	assert(it != fields_.end(), std::format("name : {}と一致するFieldが見つかりませんでした", name));
-
+#endif // _DEBUG
 	fields_[name]->SetArea(area);
 
 }
 
 void ParticleManager::SetFieldAcceleration(const std::string& name, const Vector3& acceleration){
 	auto it = fields_.find(name);
-
+#ifdef _DEBUG
 	assert(it != fields_.end(), std::format("name : {}と一致するFieldが見つかりませんでした", name));
-
+#endif // _DEBUG
 	fields_[name]->SetAcceleration(acceleration);
 }
 
 void ParticleManager::SetFieldIsActive(const std::string& name, bool isActive){
 	auto it = fields_.find(name);
-
+#ifdef _DEBUG
 	assert(it != fields_.end(), std::format("name : {}と一致するFieldが見つかりませんでした", name));
-
+#endif // _DEBUG
 	fields_[name]->SetIsActive(isActive);
 }
 
 Particles* ParticleManager::GetParticles(const std::string& name){
 	auto it = particles_.find(name);
-
+#ifdef _DEBUG
 	assert(it != particles_.end(), std::format("name : {}と一致するParticlesが見つかりませんでした",name ));
-
+#endif // _DEBUG
 	return it->second;
 }

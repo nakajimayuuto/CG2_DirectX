@@ -5,12 +5,8 @@
 
 using namespace std;
 
-const Vector3& Vector3::operator-(){
-	Vector3 result;
-	result.x = x * -1.0f;
-	result.y = y * -1.0f;
-	result.z = z * -1.0f;
-	return result;
+Vector3 Vector3::operator-(){
+	return { -x, -y, -z };
 }
 
 Vector3 Vector3::operator+(const Vector3& v1){

@@ -346,7 +346,7 @@ void SoundManager::SoundPlay(const SoundData& soundData, float speed, float volu
 	// 再生する波形データの設定.
 	XAUDIO2_BUFFER buf{};
 	buf.pAudioData = soundData.pcmData.data();
-	buf.AudioBytes = soundData.pcmData.size();
+	buf.AudioBytes = static_cast<UINT32>(soundData.pcmData.size());
 	buf.Flags = XAUDIO2_END_OF_STREAM;
 
 	if (canLoop) {
@@ -383,7 +383,7 @@ void SoundManager::SoundPlay(const SoundData& soundData, float speed, float volu
 	// 再生する波形データの設定.
 	XAUDIO2_BUFFER buf{};
 	buf.pAudioData = soundData.pcmData.data();
-	buf.AudioBytes = soundData.pcmData.size();
+	buf.AudioBytes = static_cast<UINT32>(soundData.pcmData.size());
 	buf.Flags = XAUDIO2_END_OF_STREAM;
 
 	// 波形データの再生.
@@ -458,7 +458,7 @@ void SoundManager::SoundPlayWave(const SoundData& soundData) {
 	// 再生する波形データの設定.
 	XAUDIO2_BUFFER buf{};
 	buf.pAudioData = soundData.pcmData.data();
-	buf.AudioBytes = soundData.pcmData.size();
+	buf.AudioBytes = static_cast<UINT32>(soundData.pcmData.size());
 	buf.Flags = XAUDIO2_END_OF_STREAM;
 
 	// 波形データの再生.

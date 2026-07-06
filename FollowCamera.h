@@ -15,6 +15,8 @@ private:
 private:
 	static inline float kCompletionRate = 0.25f;
 
+	static inline float kAutoCompletionRate = 0.25f;
+
 	static inline Vector3 kOffset = { 0.0f,2.0f,-20.0f };
 
 	static inline float kRotateSpeed = Radian(1.0f);
@@ -22,6 +24,7 @@ private:
 	static inline float kMouseRotateSpeed = Radian(0.1f);
 
 	float destinationAngleY_;
+	float autoAngleY_;
 	
 	Transform transform_;
 

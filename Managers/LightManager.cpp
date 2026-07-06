@@ -83,14 +83,22 @@ void LightManager::Update() {
 LightData* LightManager::GetLightData(std::string name){
 	auto it = lightDatas_.find(name);
 
+#ifdef _DEBUG
+
 	assert(it != lightDatas_.end(), std::format("name : {}と一致するlightDataが見つかりませんでした", name));
+
+#endif // _DEBUG
 
 	return lightDatas_[name];
 }
 
 void LightManager::CreatePointLight(std::string name){
-	if (lightNum.pointLightNum >= pointLight_->GetLightMax()) {
+	if (lightNum.pointLightNum >= static_cast<int32_t>(pointLight_->GetLightMax())) {
+#ifdef _DEBUG
+
 		assert(false,"pointLightの同時設置数の上限を超えました。");
+
+#endif // _DEBUG
 	}
 
 	if (lightDatas_.find(name) != lightDatas_.end()) {
@@ -102,8 +110,12 @@ void LightManager::CreatePointLight(std::string name){
 }
 
 void LightManager::CreateSpotLight(std::string name){
-	if (lightNum.spotLightNum >= pointLight_->GetLightMax()) {
+	if (lightNum.spotLightNum >= static_cast<int32_t>(pointLight_->GetLightMax())) {
+#ifdef _DEBUG
+
 		assert(false, "pointLightの同時設置数の上限を超えました。");
+
+#endif // _DEBUG
 	}
 
 	if (lightDatas_.find(name) != lightDatas_.end()) {

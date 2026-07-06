@@ -15,12 +15,12 @@ SceneManager* SceneManager::GetInstance() {
 };
 
 void SceneManager::Initialize() {
-	currentScene_ = new TitleScene();
+	//currentScene_ = new TitleScene();
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	Debug::GetInstance()->LoadDebugSettings();
 	currentScene_ = new GameScene();
-#endif // _DEBUG
+//#endif // _DEBUG
 
 	currentScene_->Initialize();
 }

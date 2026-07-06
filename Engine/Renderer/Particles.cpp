@@ -9,7 +9,11 @@ void Particles::Initialize(const ModelInfo& info) {
 	modelMax_ = static_cast<uint32_t>(info.modelData.size());
 
 	if (modelMax_ > 1) {
+#ifdef _DEBUG
+
 		assert(false, "テスト用のやつなんでメッシュ1以上のやつはやらんといてください");
+
+#endif // _DEBUG
 	}
 
 	isVisible_ = true;
@@ -107,7 +111,11 @@ void Particles::Initialize(const TextureInfo& info) {
 	modelMax_ = static_cast<uint32_t>(modelInfo.modelData.size());
 
 	if (modelMax_ > 1) {
+#ifdef _DEBUG
+
 		assert(false, "テスト用のやつなんでメッシュ1以上のやつはやらんといてください");
+
+#endif // _DEBUG
 	}
 
 	isVisible_ = true;

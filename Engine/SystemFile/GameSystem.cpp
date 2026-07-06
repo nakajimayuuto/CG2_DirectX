@@ -1011,7 +1011,7 @@ void GameSystem::WindowSizeUpdate() {
 			viewportX = (windowWidth - (viewportHeight * targetAspect)) * 0.5f * (Environment::GetInstance()->GetWindowSize().width / windowWidth);
 		}
 
-		viewportHeight = Environment::GetInstance()->GetWindowSize().height;
+		viewportHeight =static_cast<float>(Environment::GetInstance()->GetWindowSize().height);
 	} else {
 		viewportWidth = windowWidth;
 		viewportHeight = viewportWidth / targetAspect * (Environment::GetInstance()->GetWindowSize().height / windowHeight);
@@ -1023,7 +1023,7 @@ void GameSystem::WindowSizeUpdate() {
 		}
 
 
-		viewportWidth = Environment::GetInstance()->GetWindowSize().width;
+		viewportWidth = static_cast<float>(Environment::GetInstance()->GetWindowSize().width);
 	}
 
 	// こっちがカメラの位置みたいなやつ.
@@ -1059,9 +1059,13 @@ void GameSystem::ApplyGlobalVariables() {
 LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	float aspect = Environment::GetInstance()->GetAspect();
 
+#ifdef _DEBUG
+
+
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
 		return true;
 	}
+#endif // _DEBUG
 
 	RECT* rect;
 	int width;
@@ -1415,7 +1419,11 @@ Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GameSystem::CreateDescriptorHeap(Mi
 
 void GameSystem::SrvDescriptorHeapNumIncrement() {
 	if (srvDescriptorHeapNum_ >= kSrvDescriptorHeapNumMax) {
+#ifdef DEBUG
+
 		assert(false, "現在使えるsrvDescriptorHeapのサイズ(128)を使い切りました");
+
+#endif // DEBUG
 		return;
 	}
 	srvDescriptorHeapNum_++;

@@ -1,4 +1,6 @@
 #include "Renderer.h"
+
+#include "../../Managers/SoundManager.h"
 #include <vector>
 Model::~Model() {
 	materialData_.clear();
@@ -1023,8 +1025,8 @@ void Renderer::DrawSprite(const Transform& transform, const TextureInfo& texture
 	Transform worldTransform = transform;
 
 	Vector2 size;
-	size.x = textureInfo.width;
-	size.y = textureInfo.height;
+	size.x = static_cast<float>(textureInfo.width);
+	size.y = static_cast<float>(textureInfo.height);
 
 	ModelElement* newElement;
 	newElement = new ModelElement();
@@ -2105,7 +2107,11 @@ void TestParticle::Initialize(const ModelInfo& info, uint32_t numInstanced) {
 	modelMax_ = static_cast<uint32_t>(info.modelData.size());
 
 	if (modelMax_ > 1) {
+#ifdef _DEBUG
+
 		assert(false, "テスト用のやつなんでメッシュ1以上のやつはやらんといてください");
+
+#endif // _DEBUG
 	}
 
 	isVisible_ = true;

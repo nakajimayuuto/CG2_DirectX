@@ -34,6 +34,8 @@ void GameScene::Initialize() {
 	camera_->Initialize();
 
 	Player::RegisterGlobalVariables();
+
+	testNum_ = 5;
 }
 
 void GameScene::Update() {
@@ -49,9 +51,13 @@ void GameScene::Update() {
 		Camera::GetInstance()->ChangeCameraMode();
 	}
 
+#ifdef _DEBUG
+
 	ImGui::Begin("drawTest");
 	ImGui::DragInt("num", &testNum_, 1.0f, 0, 2000);
 	ImGui::End();
+
+#endif // _DEBUG
 
 	camera_->Update();
 
@@ -71,7 +77,7 @@ void GameScene::Draw() {
 		testNum_ = testNum_;
 	}
 
-	for (uint32_t i = 0; i < testNum_; i++) {
+	for (uint32_t i = 0; i < static_cast<uint32_t>(testNum_); i++) {
 		Transform transformTest = Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { (-static_cast<float>(testNum_) / 2.0f) + static_cast<float>(i),0.0f,0.0f });
 		Vector3 startPos = { (-static_cast<float>(testNum_) / 2.0f) + static_cast<float>(i),0.0f,0.0f };
 		Vector3 endPos = { (-static_cast<float>(testNum_) / 2.0f) + static_cast<float>(i),1.0f,0.0f };

@@ -20,8 +20,8 @@ void FollowCamera::Update() {
 			Reset();
 		}
 	} else {
-		input->SetIsCursorFixed(true);
-		input->SetIsCursorVisible(false);
+		//input->SetIsCursorFixed(true);
+		//input->SetIsCursorVisible(false);
 		destinationAngleY_ += input->GetMouse().GetMove().x * kMouseRotateSpeed;
 
 		if (input->TriggerKey(DIK_C)) {
@@ -32,6 +32,9 @@ void FollowCamera::Update() {
 	Vector3 offset = GetOffset();
 
 	interTarget_ = Lerp(interTarget_, target_->translate, kCompletionRate);
+
+	transform_.rotate.y = Lerp(transform_.rotate.y, destinationAngleY_, kCompletionRate);
+	
 	transform_.rotate.y = Lerp(transform_.rotate.y, destinationAngleY_, kCompletionRate);
 
 	transform_.translate = interTarget_ + offset;

@@ -17,8 +17,8 @@ TextureInfo TextureManager::RegisterTexture(const std::string& name, const std::
 	metadata = mipImage.GetMetadata();
 	textures_[name].textureResource = CreateTextureResource(GameSystem::GetInstance()->GetDevice(), metadata);
 	textures_[name].intermediateResource = UploadTextureData(textures_[name].textureResource, mipImage, GameSystem::GetInstance()->GetDevice(), GameSystem::GetInstance()->GetCommandList());
-	textures_[name].width = mipImage.GetMetadata().width;
-	textures_[name].height = mipImage.GetMetadata().height;
+	textures_[name].width = static_cast<uint32_t>(mipImage.GetMetadata().width);
+	textures_[name].height = static_cast<uint32_t>(mipImage.GetMetadata().height);
 
 	// commandListをCloseし、キックしたりする(スワップチェーン無しのフレーム更新みたいなもの).
 	HRESULT hr = GameSystem::GetInstance()->GetCommandList()->Close();

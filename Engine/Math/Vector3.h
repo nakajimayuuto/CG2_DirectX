@@ -13,7 +13,7 @@ public:
 	float y;
 	float z;
 
-	const Vector3& operator-();
+	Vector3 operator-();
 
 	Vector3 operator+(const Vector3& v1);
 	Vector3 operator+(float scalar);
