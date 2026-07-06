@@ -931,7 +931,7 @@ void Renderer::DrawBoxWireFrame(const AABB& aabb, const Vector4& color) {
 	DrawLine(vertices[3], vertices[7], color);
 }
 
-void Renderer::DrawModel(const Transform& transform, const ModelInfo& modelInfo, const Vector4& color) {
+void Renderer::DrawModel(const Transform& transform, const ModelInfo& modelInfo, const Vector4& color, bool useTransparent) {
 	if (!Camera::GetInstance()->IsInCameraFrustum(transform.translate, modelInfo.radius * transform.GetMaxScale())) {
 		return;
 	}
@@ -958,6 +958,9 @@ void Renderer::DrawModel(const Transform& transform, const ModelInfo& modelInfo,
 
 		(*newElements)[i].materialData_->uvTransform = Matrix4x4::MakeAffineMatrix((*newElements)[i].uvTransform_);
 
+		if (useTransparent) {
+			(*newElements)[i].materialData_->color = Camera::GetInstance()->GetTransparentColor(worldMatrix.GetMatrixToTranslate(), (*newElements)[i].materialData_->color);
+		}
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = GameSystem::GetInstance()->GetCommandList();
 
 		/*=============================================================
@@ -976,7 +979,7 @@ void Renderer::DrawModel(const Transform& transform, const ModelInfo& modelInfo,
 	}
 }
 
-void Renderer::DrawModel(const Transform& transform, const Model* model) {
+void Renderer::DrawModel(const Transform& transform, const Model* model, bool useTransparent) {
 	uint32_t modelMax_ = static_cast<uint32_t>(model->GetModelCountMax());
 
 	std::unique_ptr<ModelElements> newElements;
@@ -995,6 +998,10 @@ void Renderer::DrawModel(const Transform& transform, const Model* model) {
 		(*newElements)[i].wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
 
 		(*newElements)[i].materialData_->uvTransform = Matrix4x4::MakeAffineMatrix((*newElements)[i].uvTransform_);
+		
+		if (useTransparent) {
+			(*newElements)[i].materialData_->color = Camera::GetInstance()->GetTransparentColor(worldMatrix.GetMatrixToTranslate(), (*newElements)[i].materialData_->color);
+		}
 
 		/*=============================================================
 		三角形の描画のコマンド.

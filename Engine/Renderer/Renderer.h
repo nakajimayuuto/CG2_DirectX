@@ -273,7 +273,7 @@ public:
 	/// <param name="transform">トランスフォーム</param>
 	/// <param name="modelInfo">モデルインフォ</param>
 	/// <param name="color">色</param>
-	void DrawModel(const Transform& transform, const ModelInfo& modelInfo, const Vector4& color);
+	void DrawModel(const Transform& transform, const ModelInfo& modelInfo, const Vector4& color,bool useTransparent);
 
 	/// <summary>
 	/// モデルの描画.
@@ -281,14 +281,14 @@ public:
 	/// <param name="transform">トランスフォーム</param>
 	/// <param name="name">モデルネーム</param>
 	/// <param name="color">色</param>
-	void DrawModel(const Transform& transform, const std::string& name, const Vector4& color) { DrawModel(transform, ModelManager::GetInstance()->GetModelInfo(name), color); };
+	void DrawModel(const Transform& transform, const std::string& name, const Vector4& color, bool useTransparent) { DrawModel(transform, ModelManager::GetInstance()->GetModelInfo(name), color,useTransparent); };
 
 	/// <summary>
 	/// モデルの描画.
 	/// </summary>
 	/// <param name="transform">トランスフォーム</param>
 	/// <param name="model">モデル</param>
-	void DrawModel(const Transform& transform, const Model* model);
+	void DrawModel(const Transform& transform, const Model* model, bool useTransparent);
 
 	/// <summary>
 	/// スプライトの描画.

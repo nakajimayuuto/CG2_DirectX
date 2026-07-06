@@ -223,10 +223,10 @@ void Player::UpdateFloatingGimmick() {
 }
 
 void Player::Draw() {
-	Renderer::GetInstance()->DrawModel(transformBody_, &models_["body"]);
-	Renderer::GetInstance()->DrawModel(transformHead_, &models_["head"]);
-	Renderer::GetInstance()->DrawModel(transformLArm_, &models_["LArm"]);
-	Renderer::GetInstance()->DrawModel(transformRArm_, &models_["RArm"]);
+	Renderer::GetInstance()->DrawModel(transformBody_, &models_["body"],false);
+	Renderer::GetInstance()->DrawModel(transformHead_, &models_["head"],false);
+	Renderer::GetInstance()->DrawModel(transformLArm_, &models_["LArm"],false);
+	Renderer::GetInstance()->DrawModel(transformRArm_, &models_["RArm"],false);
 
 	//models_["RArm"].GetColor();
 

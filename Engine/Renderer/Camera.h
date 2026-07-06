@@ -65,6 +65,8 @@ public:
 	void CreateResource();
 
 	bool IsInCameraFrustum(const Vector3& point, float radius);
+
+	Vector4 GetTransparentColor(const Vector3& position,const Vector4& color);
 private:
 	void DebugUpdate();
 
@@ -113,5 +115,9 @@ private:
 	Plane planes_[6];
 
 	CameraForGPU* cameraData_ = nullptr;
-};
 
+	float transparentRadiusMax_;
+	float transparentRadiusMin_;
+
+	float transparentAlphaMin_;
+};

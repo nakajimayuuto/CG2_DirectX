@@ -6,6 +6,8 @@
 #include "../../Environment.h"
 #include "../SystemFile/GameSystem.h"
 #include "../Renderer/Renderer.h"
+#include "../Math/Collision.h"
+#include "../Math/Easing.h"
 
 Camera* Camera::GetInstance() {
 	static Camera instance;
@@ -35,6 +37,10 @@ void Camera::Initialize(float windowWidth, float windowHeight) {
 
 	aspectScale_ = { 1.0f,1.0f,1.0f };
 
+	transparentRadiusMax_ = 9.0f;
+	transparentRadiusMin_ = 2.0f;
+	transparentAlphaMin_ = 0.0f;
+
 	debugMatRot_ = Matrix4x4::MakeAffineMatrix(debugScale_, rotate_, debugTranslate_);
 }
 
@@ -55,6 +61,10 @@ void Camera::Initialize() {
 
 	debugScale_ = { 1.0f,1.0f,1.0f };
 	debugTranslate_ = { 0.0f,0.0f,-10.0f };
+
+	transparentRadiusMax_ = 9.0f;
+	transparentRadiusMin_ = 2.0f;
+	transparentAlphaMin_ = 0.0f;
 
 	debugMatRot_ = Matrix4x4::MakeAffineMatrix(debugScale_, rotate_, debugTranslate_);
 }
@@ -78,6 +88,24 @@ bool Camera::IsInCameraFrustum(const Vector3& point,float radius){
 	}
 
 	return true;
+}
+
+Vector4 Camera::GetTransparentColor(const Vector3& position, const Vector4& color){
+	if (!Collision::SphereToSphere({ translate_,transparentRadiusMax_ }, {position,0.5f})) {
+		return color;
+	}
+
+	if (color.w <= transparentAlphaMin_) {
+		return color;
+	}
+
+	float distance = Vector3::Length(static_cast<Vector3>(translate_) - position);
+
+	Vector4 newColor = color;
+
+	newColor.w = Easing(transparentAlphaMin_, color.w,std::max(distance - transparentRadiusMin_, transparentRadiusMin_),transparentRadiusMax_ - transparentRadiusMin_,EaseType::kConstant);
+
+	return newColor;
 }
 
 void Camera::Update() {

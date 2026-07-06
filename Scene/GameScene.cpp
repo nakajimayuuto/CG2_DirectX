@@ -65,6 +65,7 @@ void GameScene::Update() {
 void GameScene::Draw() {
 	skydome_->Draw();
 	ground_->Draw();
+	player_->Draw();
 
 	if (testNum_ > 50) {
 		testNum_ = testNum_;
@@ -75,12 +76,11 @@ void GameScene::Draw() {
 		Vector3 startPos = { (-static_cast<float>(testNum_) / 2.0f) + static_cast<float>(i),0.0f,0.0f };
 		Vector3 endPos = { (-static_cast<float>(testNum_) / 2.0f) + static_cast<float>(i),1.0f,0.0f };
 		
-		Renderer::GetInstance()->DrawModel(transformTest, "creeking", { 1.0f,1.0f,1.0f,1.0f });
+		Renderer::GetInstance()->DrawModel(transformTest, "creeking", { 1.0f,1.0f,1.0f,1.0f },true);
 		//Renderer::GetInstance()->DrawLine(startPos, endPos, { 1.0f,1.0f,1.0f,1.0f });
 		//Renderer::GetInstance()->DrawSphereWireFrame(transformTest, {1.0f,1.0f,1.0f,1.0f});
 	}
 
-	player_->Draw();
 }
 
 void GameScene::CheckAllCollisions() {
