@@ -316,6 +316,9 @@ public:
 	void DrawShadow(const Transform& transform, const Model* model);
 	void DrawShadow(const Transform& transform, const Model* model,const Vector4& color);
 
+	void DrawShadow(const Transform& transform, const std::string& name, const Vector4& color) { DrawShadow(transform, ModelManager::GetInstance()->GetModelInfo(name), color); };
+	void DrawShadow(const Transform& transform, const ModelInfo& modelInfo, const Vector4& color);
+
 	void DrawLineAll();
 private:
 

@@ -727,6 +727,8 @@ void Renderer::DrawLine(const Vector3& startVector3, const Vector3& endVector3, 
 	currentDrawLineIndex_++;
 }
 
+
+
 void Renderer::DrawLineAll() {
 	Matrix4x4 worldMatrix = Matrix4x4::Identity();
 	lineElement_->wvpData_->World = worldMatrix;
@@ -1000,7 +1002,7 @@ void Renderer::DrawModel(const Transform& transform, const Model* model, bool us
 		(*newElements)[i].wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
 
 		(*newElements)[i].materialData_->uvTransform = Matrix4x4::MakeAffineMatrix((*newElements)[i].uvTransform_);
-		
+
 		if (useTransparent) {
 			(*newElements)[i].materialData_->color = Camera::GetInstance()->GetTransparentColor(worldMatrix.GetMatrixToTranslate(), (*newElements)[i].materialData_->color);
 		}
@@ -1162,6 +1164,55 @@ void Renderer::DrawShadow(const Transform& transform, const Model* model, const 
 			newElements.get()[i].data()->wvpResource_,
 			newElements.get()[i].data()->modelData_.textureSrvHandlesGPU,
 			UINT(newElements.get()[i].data()->modelData_.vertices.size())
+		);
+	}
+}
+
+void Renderer::DrawShadow(const Transform& transform, const ModelInfo& modelInfo, const Vector4& color) {
+	//if (!Camera::GetInstance()->IsInCameraFrustum(transform.translate, modelInfo.radius * transform.GetMaxScale())) {
+	//	return;
+	//}
+
+	uint32_t modelMax_ = static_cast<uint32_t>(modelInfo.modelData.size());
+	std::unique_ptr<ModelElements> newElements;
+	newElements = std::make_unique<ModelElements>();
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		ModelElement element;
+		element.modelData_ = modelInfo.modelData[i];
+		element.vertexResource_ = modelInfo.modelData[i].vertexResource_;
+		element.vertexBufferView_ = modelInfo.modelData[i].vertexBufferView_;
+		newElements.get()->push_back(element);
+	}
+
+	CreateNewModel(newElements.get(), modelMax_);
+
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+		Matrix4x4 projectionMatrix = Matrix4x4::Identity();
+		projectionMatrix.matrix[1][1] = 0.0f;
+		worldMatrix = worldMatrix * projectionMatrix;
+		worldMatrix.matrix[3][1] = 0.01f;
+		(*newElements)[i].wvpData_->World = worldMatrix;
+		(*newElements)[i].wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+		(*newElements)[i].wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+
+		(*newElements)[i].materialData_->uvTransform = Matrix4x4::MakeAffineMatrix((*newElements)[i].uvTransform_);
+		(*newElements)[i].materialData_->color = color;
+
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = GameSystem::GetInstance()->GetCommandList();
+
+		/*=============================================================
+		三角形の描画のコマンド.
+		=============================================================*/
+		GameSystem::GetInstance()->DrawCommand(
+			blendMode_,
+			&(*newElements)[i].vertexBufferView_,
+			nullptr,
+			D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+			(*newElements)[i].materialResource_,
+			(*newElements)[i].wvpResource_,
+			(*newElements)[i].modelData_.textureSrvHandlesGPU,
+			UINT((*newElements)[i].modelData_.vertices.size())
 		);
 	}
 }
@@ -1424,7 +1475,7 @@ void Renderer::CreateModel(ModelElements* newElements, const ModelElements& targ
 		// materialDataにModelのデータを記入.
 		newElements[i].data()->materialData_->color = targetElements[i].materialData_->color;
 		newElements[i].data()->materialData_->lightingType = targetElements[i].materialData_->lightingType;
-		newElements[i].data()->materialData_->reflectionType= targetElements[i].materialData_->reflectionType;
+		newElements[i].data()->materialData_->reflectionType = targetElements[i].materialData_->reflectionType;
 		newElements[i].data()->materialData_->shininess = targetElements[i].materialData_->shininess;
 		newElements[i].data()->materialData_->uvTransform = targetElements[i].materialData_->uvTransform;
 
