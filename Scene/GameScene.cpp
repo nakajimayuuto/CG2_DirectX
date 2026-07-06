@@ -59,9 +59,11 @@ void GameScene::Update() {
 
 #endif // _DEBUG
 
-	camera_->Update();
 
 	player_->Update();
+
+	camera_->SetTargetIsMove(player_->GetIsMoving());
+	camera_->Update();
 
 	Camera::GetInstance()->Update();
 

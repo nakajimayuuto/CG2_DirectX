@@ -9,13 +9,15 @@ public:
 
 	void SetTarget(const Transform* target) { target_ = target; Reset(); };
 
+	void SetTargetIsMove(bool isMove) { isMove_ = isMove; };
+
 	void Reset();
 private:
 	Vector3 GetOffset()const;
 private:
 	static inline float kCompletionRate = 0.25f;
 
-	static inline float kAutoCompletionRate = 0.25f;
+	static inline float kAutoCompletionRate = 0.025f;
 
 	static inline Vector3 kOffset = { 0.0f,2.0f,-20.0f };
 
@@ -29,6 +31,8 @@ private:
 	Transform transform_;
 
 	const Transform* target_ = nullptr;
+
+	 bool isMove_;
 
 	Vector3 interTarget_ = {};
 };

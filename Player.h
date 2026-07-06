@@ -36,6 +36,8 @@ public:
 
 	void Draw();
 
+	bool GetIsMoving() { return isMoving_; };
+
 	Transform* GetTransform() { return &transform_; };
 
 	static void RegisterGlobalVariables();
