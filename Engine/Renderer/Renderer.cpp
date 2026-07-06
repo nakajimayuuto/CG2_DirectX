@@ -980,9 +980,9 @@ void Renderer::DrawModel(const Transform& transform, const Model* model) {
 	uint32_t modelMax_ = static_cast<uint32_t>(model->GetModelCountMax());
 
 	std::unique_ptr<ModelElements> newElements;
-	newElements = std::make_unique<ModelElements>();
+	newElements = std::make_unique<ModelElements>(model->GetModelElement());
 
-	newElements->resize(modelMax_);
+	//newElements->resize(modelMax_);
 	ModelElements modelData = model->GetModelElement();
 
 	CreateModel(newElements.get(), model->GetModelElement(), modelMax_);
@@ -1089,8 +1089,8 @@ void Renderer::DrawSprite(const Transform& transform, const Sprite& sprite) {
 void Renderer::DrawShadow(const Transform& transform, const Model* model) {
 	uint32_t modelMax_ = static_cast<uint32_t>(model->GetModelCountMax());
 	std::unique_ptr<ModelElements> newElements;
-	newElements = std::make_unique<ModelElements>();
-	newElements->resize(modelMax_);
+	newElements = std::make_unique<ModelElements>(model->GetModelCountMax());
+	//newElements->resize(modelMax_);
 	CreateModel(newElements.get(), model->GetModelElement(), modelMax_);
 
 	for (uint32_t i = 0; i < modelMax_; i++) {
@@ -1126,7 +1126,7 @@ void Renderer::DrawShadow(const Transform& transform, const Model* model, const 
 	return;
 	uint32_t modelMax_ = static_cast<uint32_t>(model->GetModelCountMax());
 	std::unique_ptr<ModelElements> newElements;
-	newElements = std::make_unique<ModelElements>();
+	newElements = std::make_unique<ModelElements>(model->GetModelCountMax());
 	newElements->resize(modelMax_);
 	//newElements = model->GetModelElement();
 
@@ -1438,36 +1438,42 @@ void Renderer::CreateModel(ModelElements* newElements, const ModelElements& targ
 		//newElements[i]->uvTransform_.scale = newElements[i]->materialData_->uvTransform.GetMatrixToTransform().scale;
 		//newElements[i]->uvTransform_.rotate = newElements[i]->materialData_->uvTransform.GetMatrixToTransform().rotate;
 		//newElements[i]->uvTransform_.translate = newElements[i]->materialData_->uvTransform.GetMatrixToTransform().translate;
+		newElements[i].data()->materialData_->color = targetElements[i].materialData_->color;
+		newElements[i].data()->materialData_->lightingType = targetElements[i].materialData_->lightingType;
+		newElements[i].data()->materialData_->reflectionType= targetElements[i].materialData_->reflectionType;
+		newElements[i].data()->materialData_->shininess = targetElements[i].materialData_->shininess;
+		newElements[i].data()->materialData_->uvTransform = targetElements[i].materialData_->uvTransform;
+
 
 		// 【VertexBufferViewを作成する】
 
 		// 頂点バッファビューを作成する.
 		//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 		// リソースの先頭のアドレスから使う.
-		//newElements[i].data()->vertexBufferView_.BufferLocation = newElements[i].data()->vertexResource_->GetGPUVirtualAddress();
-		//// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
-		////vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 4;
-		//newElements[i].data()->vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * newElements[i].data()->modelData_.vertices.size());
-		//// 1頂点あたりのサイズ.
-		//newElements[i].data()->vertexBufferView_.StrideInBytes = sizeof(VertexData);
+		newElements[i].data()->vertexBufferView_.BufferLocation = newElements[i].data()->vertexResource_->GetGPUVirtualAddress();
+		// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
+		//vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 4;
+		newElements[i].data()->vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * newElements[i].data()->modelData_.vertices.size());
+		// 1頂点あたりのサイズ.
+		newElements[i].data()->vertexBufferView_.StrideInBytes = sizeof(VertexData);
 
-		newElements[i].data()->materialData_ = targetElements[i].materialData_;
-		newElements[i].data()->wvpData_ = targetElements[i].wvpData_;
-		newElements[i].data()->modelData_ = targetElements[i].modelData_;
-		newElements[i].data()->vertexResource_ = targetElements[i].vertexResource_;
-		newElements[i].data()->vertexBufferView_ = targetElements[i].vertexBufferView_;
-		newElements[i].data()->uvTransform_ = targetElements[i].uvTransform_;
-		newElements[i].data()->blendMode_ = targetElements[i].blendMode_;
+		//newElements[i].data()->materialData_ = targetElements[i].materialData_;
+		//newElements[i].data()->wvpData_ = targetElements[i].wvpData_;
+		//newElements[i].data()->modelData_ = targetElements[i].modelData_;
+		//newElements[i].data()->vertexResource_ = targetElements[i].vertexResource_;
+		//newElements[i].data()->vertexBufferView_ = targetElements[i].vertexBufferView_;
+		//newElements[i].data()->uvTransform_ = targetElements[i].uvTransform_;
+		//newElements[i].data()->blendMode_ = targetElements[i].blendMode_;
 		currentDrawModelIndex_++;
 
 
 		// 【Resourceにデータを書き込む】
 
 		// 頂点リソースにデータを書き込む.
-		//VertexData* vertexData = nullptr;
-		//// 書き込むためのアドレスを取得.
-		//newElements[i].data()->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-		//memcpy(vertexData, newElements[i].data()->modelData_.vertices.data(), sizeof(VertexData) * newElements[i].data()->modelData_.vertices.size());
+		VertexData* vertexData = nullptr;
+		// 書き込むためのアドレスを取得.
+		newElements[i].data()->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+		memcpy(vertexData, newElements[i].data()->modelData_.vertices.data(), sizeof(VertexData) * newElements[i].data()->modelData_.vertices.size());
 	}
 }
 
