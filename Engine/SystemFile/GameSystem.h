@@ -92,11 +92,17 @@ enum class BlendMode {
 	uint64_t fenceValue = 0;
 
 	HANDLE fenceEvent;
+
+	std::string WindowHandle;
 };
 
 class GameSystem {
 
 	// GameSystemで使うやつ.
+private:
+	void WindowUpdate();
+
+	void WindowSynthesize();
 public:
 	static GameSystem* GetInstance();
 
@@ -230,7 +236,9 @@ private:
 
 	std::vector<WindowData> windowDatas_;
 
-	uint32_t windowNum_ = 4;
+	uint32_t kWindowMaxNum_ = 4;
+
+	uint32_t kGuiDrawWindowNum_ = (kWindowMaxNum_ / 2);
 
 	//WNDCLASS wc{};
 

@@ -18,6 +18,48 @@
 #include "../Renderer/Renderer.h"
 #include "DeltaTime.h"
 
+void GameSystem::WindowUpdate() {
+	WindowSynthesize();
+}
+
+void GameSystem::WindowSynthesize() {
+	uint32_t windowNumHalfSize = (kWindowMaxNum_ / 2);
+	for (uint32_t i = 0; i < windowNumHalfSize; i++) {
+		RECT rect = { 0,0,0,0 };
+		GetWindowRect(windowDatas_[i].hwnd, &rect);
+		RECT borderRect = { 0,0,0,0 };
+		bool is = AdjustWindowRectEx(
+			&borderRect,
+			static_cast<DWORD>(GetWindowLongPtr(windowDatas_[i].hwnd, GWL_STYLE)),
+			FALSE,
+			static_cast<DWORD>(GetWindowLongPtr(windowDatas_[i].hwnd, GWL_EXSTYLE))
+		);
+
+		borderRect;
+
+		rect.left = rect.left - borderRect.left;
+		rect.right = rect.right - borderRect.right;
+		rect.bottom = rect.bottom - borderRect.bottom;
+		rect.top = rect.top - borderRect.top;
+
+		if (!is) {
+			continue;
+		}
+
+		SetWindowPos(windowDatas_[i + windowNumHalfSize].hwnd, HWND_TOPMOST, rect.left, rect.top, 1280, 720, SWP_NOZORDER);
+		//rect = { 0,0,0,0 };
+		//GetWindowRect(windowDatas_[i + windowNumHalfSize].hwnd, &rect);
+		//RECT borderRect = { 0,0,0,0 };
+		//bool is = AdjustWindowRectEx(
+		//	&borderRect,
+		//	static_cast<DWORD>(GetWindowLongPtr(windowDatas_[i].hwnd, GWL_STYLE)),
+		//	FALSE,
+		//	static_cast<DWORD>(GetWindowLongPtr(windowDatas_[i].hwnd, GWL_EXSTYLE))
+		//);
+		//rect = rect;
+	}
+}
+
 GameSystem* GameSystem::GetInstance() {
 	static GameSystem gameSystem;
 	return &gameSystem;
@@ -70,10 +112,10 @@ void GameSystem::Initialize() {
 	// ウィンドウサイズを表す構造体に九合アント領域を入れる.
 	RECT wrc{ 0,0,kClientWidth,kClientHeight };
 
-	for (uint32_t i = 0; i < windowNum_; i++) {
+	for (uint32_t i = 0; i < kWindowMaxNum_; i++) {
 		WindowData data;
-
-		// ウィンドウプロシージャ
+		wrc = { 0,0,kClientWidth,kClientHeight };
+			// ウィンドウプロシージャ
 		data.wc.lpfnWndProc = WindowProc;
 
 		// ウィンドウクラス名
@@ -106,7 +148,7 @@ void GameSystem::Initialize() {
 			nullptr);				// オプション.
 
 
-		if (i >= static_cast<int>(windowNum_ / 2.0f)) {
+		if (i >= static_cast<int>(kWindowMaxNum_ / 2)) {
 			LONG style = GetWindowLong(data.hwnd, GWL_STYLE);
 
 			style &= ~WS_THICKFRAME;
@@ -345,10 +387,10 @@ void GameSystem::Initialize() {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
-	ImGui_ImplWin32_Init(windowDatas_[0].hwnd);
+	ImGui_ImplWin32_Init(windowDatas_[kGuiDrawWindowNum_].hwnd);
 	ImGui_ImplDX12_Init(device.Get(),
-		windowDatas_[0].swapChainDesc.BufferCount,
-		windowDatas_[0].rtvDesc.Format,
+		windowDatas_[kGuiDrawWindowNum_].swapChainDesc.BufferCount,
+		windowDatas_[kGuiDrawWindowNum_].rtvDesc.Format,
 		srvDescriptorHeap.Get(),
 		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
@@ -649,26 +691,26 @@ void GameSystem::DrawCommand(
 ) {
 	SetPipeline(blendMode);
 
-	for (WindowData& data : windowDatas_) {
-		data.commandList->IASetVertexBuffers(0, 1, vertexBufferView); // VBVを設定.
+	for (uint32_t i = 2; i < kWindowMaxNum_; i++) {
+		windowDatas_[i].commandList->IASetVertexBuffers(0, 1, vertexBufferView); // VBVを設定.
 		if (indexBufferView != nullptr) {
-			data.commandList->IASetIndexBuffer(indexBufferView); // IBVを設定.
+			windowDatas_[i].commandList->IASetIndexBuffer(indexBufferView); // IBVを設定.
 		}
 		// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
-		data.commandList->IASetPrimitiveTopology(topology);
+		windowDatas_[i].commandList->IASetPrimitiveTopology(topology);
 		// マテリアル用のCBufferの場所.
-		data.commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+		windowDatas_[i].commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 		// transformationMatrixCBufferの場所.
-		data.commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
+		windowDatas_[i].commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 		// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
-		data.commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+		windowDatas_[i].commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 		// DirectionalLight用のCBufferの場所.
-		data.commandList->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
+		windowDatas_[i].commandList->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
 		// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
 		if (indexBufferView == nullptr) {
-			data.commandList->DrawInstanced(indexInstancedNum, 1, 0, 0);
+			windowDatas_[i].commandList->DrawInstanced(indexInstancedNum, 1, 0, 0);
 		} else {
-			data.commandList->DrawIndexedInstanced(indexInstancedNum, 1, 0, 0, 0);
+			windowDatas_[i].commandList->DrawIndexedInstanced(indexInstancedNum, 1, 0, 0, 0);
 		}
 	}
 }
@@ -697,6 +739,8 @@ bool GameSystem::BeginFrame() {
 	InputManager::GetInstance()->Update();
 
 	Renderer::Line::GetInstance()->ClearDrawIndex();
+
+	WindowUpdate();
 
 #ifdef USE_IMGUI
 	ImGui_ImplDX12_NewFrame();
@@ -773,7 +817,7 @@ void GameSystem::EndFrame() {
 #ifdef USE_IMGUI
 	// ImGuiの描画.
 	// 実際のcommandListのImGuiの描画コマンドを積む.
-	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), windowDatas_[0].commandList.Get());
+	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), windowDatas_[kGuiDrawWindowNum_].commandList.Get());
 #endif // USE_IMGUI
 
 
