@@ -15,5 +15,7 @@ private:
 	Transform* casterTransform_ = nullptr;
 
 	Matrix4x4 shadowMatrix_;
+
+	Matrix4x4 worldMatrix_;
 };
 

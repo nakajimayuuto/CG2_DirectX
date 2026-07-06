@@ -1,22 +1,30 @@
 #include "PlaneProjectionShadow.h"
 
-void PlaneProjectionShadow::Initialize(Transform* casterWorldTransform, Model* model){
+void PlaneProjectionShadow::Initialize(Transform* casterWorldTransform, Model* model) {
 	casterTransform_ = casterWorldTransform;
 	model_ = model;
 
 	transform_.Initialize();
 
-	shadowMatrix_.Identity();
+	// 【ShadowMatrixを単位行列で初期化】
+	shadowMatrix_ = Matrix4x4::Identity();
+
+	// 【ShadowMatrixの要素[1][1]に0.0fを代入】
 	shadowMatrix_.matrix[1][1] = 0.0f;
 
 }
 
 void PlaneProjectionShadow::Update() {
+	worldMatrix_ = transform_.GetAffineMatrix();
+
+	Camera* camera = Camera::GetInstance();
+
+	if (casterTransform_) {
+		worldMatrix_ = worldMatrix_ * shadowMatrix_ * camera->GetViewMatrix() * camera->GetProjectionMatrix();
+	}
 }
 
 void PlaneProjectionShadow::Draw() {
-	if (casterTransform_) {
-		Renderer::GetInstance()->DrawShadow(*casterTransform_,model_, {0.0f,0.0f,0.0f,1.0f});
-	}
+	Renderer::GetInstance()->DrawModel(worldMatrix_.GetMatrixToTransform(), model_);
 
 }
