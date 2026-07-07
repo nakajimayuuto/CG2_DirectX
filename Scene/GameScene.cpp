@@ -19,6 +19,7 @@ void GameScene::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("enemy", "Resource/enemy", "enemy.obj");
 
 	Camera::GetInstance()->SetPosition({ 0.0f,2.0f,-30.0f });
+	FollowCamera::GetInstance()->Initialize();
 
 	player_ = std::make_unique<Player>();
 	player_->Initialize();
@@ -29,13 +30,13 @@ void GameScene::Initialize() {
 	ground_ = std::make_unique<Ground>();
 	ground_->Initialize();
 
-	camera_ = std::make_unique<FollowCamera>();
-	camera_->SetTarget(player_->GetTransform());
-	camera_->Initialize();
+
+	boss_ = std::make_unique<Boss>();
+	boss_->Initialize();
 
 	Player::RegisterGlobalVariables();
 
-	testNum_ = 5;
+	//testNum_ = 5;
 }
 
 void GameScene::Update() {
@@ -62,8 +63,9 @@ void GameScene::Update() {
 
 	player_->Update();
 
-	camera_->SetTargetIsMove(player_->GetIsMoving());
-	camera_->Update();
+	boss_->Update();
+
+	FollowCamera::GetInstance()->Update();
 
 	Camera::GetInstance()->Update();
 
@@ -74,6 +76,7 @@ void GameScene::Draw() {
 	skydome_->Draw();
 	ground_->Draw();
 	player_->Draw();
+	boss_->Draw();
 
 	if (testNum_ > 50) {
 		testNum_ = testNum_;
@@ -83,11 +86,8 @@ void GameScene::Draw() {
 		Transform transformTest = Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { (-static_cast<float>(testNum_) / 2.0f) + static_cast<float>(i),0.0f,0.0f });
 		Vector3 startPos = { (-static_cast<float>(testNum_) / 2.0f) + static_cast<float>(i),0.0f,0.0f };
 		Vector3 endPos = { (-static_cast<float>(testNum_) / 2.0f) + static_cast<float>(i),1.0f,0.0f };
-		
-		Renderer::GetInstance()->DrawModel(transformTest, "creeking", { 1.0f,1.0f,1.0f,1.0f },true);
-		Renderer::GetInstance()->DrawShadow(transformTest, "creeking", { 0.0f,0.0f,0.0f,1.0f });
 		//Renderer::GetInstance()->DrawLine(startPos, endPos, { 1.0f,1.0f,1.0f,1.0f });
-		//Renderer::GetInstance()->DrawSphereWireFrame(transformTest, {1.0f,1.0f,1.0f,1.0f});
+		Renderer::GetInstance()->DrawSphereWireFrame(transformTest, {1.0f,1.0f,1.0f,1.0f});
 	}
 
 }

@@ -163,6 +163,9 @@
     <Filter Include="ソース ファイル\GameCamera">
       <UniqueIdentifier>{c44faba6-95e3-4233-a697-58728d0da2c0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Boss">
+      <UniqueIdentifier>{54dbb19c-1e7c-4b7f-8339-ba7744303a1d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -320,6 +323,9 @@
     </ClCompile>
     <ClCompile Include="FollowCamera.cpp">
       <Filter>ソース ファイル\GameCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="Boss.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -490,6 +496,9 @@
     </ClInclude>
     <ClInclude Include="FollowCamera.h">
       <Filter>ソース ファイル\GameCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="Boss.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

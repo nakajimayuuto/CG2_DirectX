@@ -3,6 +3,8 @@
 
 class FollowCamera{
 public:
+	static FollowCamera* GetInstance();
+
 	void Initialize();
 
 	void Update();
@@ -17,7 +19,7 @@ private:
 private:
 	static inline float kCompletionRate = 0.25f;
 
-	static inline float kAutoCompletionRate = 0.01f;
+	static inline float kAutoCompletionRate = 0.025f;
 
 	static inline Vector3 kOffset = { 0.0f,2.0f,-20.0f };
 
@@ -28,6 +30,12 @@ private:
 	float destinationAngleY_;
 	float autoAngleY_;
 	
+	static inline float kLerpPlayerDirectionMin_ = 30.0f;
+	static inline float kLerpPlayerDirectionMax_ = 90.0f;
+	static inline float kLerpPlayerDirectionEase_ = 175.0f;
+
+	float angleDirection_;
+
 	Transform transform_;
 
 	const Transform* target_ = nullptr;

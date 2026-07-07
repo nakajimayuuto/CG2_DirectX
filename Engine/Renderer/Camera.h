@@ -35,6 +35,8 @@ public:
 
 	Vector3 GetPosition() { return translate_; };
 
+	Vector3 GetRotate() { return rotate_; };
+
 	Vector3 GetCameraVector3(Vector3 vector3,Matrix4x4 matrix);
 
 	Matrix4x4 GetMatrix() {return matrix_;};

@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "FollowCamera.h"
 void Player::Initialize() {
 	transform_.Initialize();
 	targetRotateY = 0.0f;
@@ -44,6 +45,8 @@ void Player::Initialize() {
 	particles_->SetBillboardType(BillboardType::kAllAxis);
 	emitter_->SetParticle(particles_.get());
 	emitter_->Initialize(transform_, 3, 0.5f);
+
+	FollowCamera::GetInstance()->SetTarget(&transform_);
 }
 
 void Player::InitializeFloatingGimmick() {
@@ -91,6 +94,10 @@ void Player::Update() {
 		break;
 	}
 	particles_->Update();
+
+	transform_.rotate.y = std::fmod(transform_.rotate.y, Radian(360.0f));
+
+	FollowCamera::GetInstance()->SetTargetIsMove(isMoving_);
 }
 
 void Player::BehaviorRootInitialize() {

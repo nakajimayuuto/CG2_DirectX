@@ -15,6 +15,7 @@
     <Text Include="externals\imgui\LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Boss.cpp" />
     <ClCompile Include="ContactRecord.cpp" />
     <ClCompile Include="Engine\Math\Beats.cpp" />
     <ClCompile Include="Engine\Math\Collider.cpp" />
@@ -95,6 +96,7 @@
     <ClCompile Include="Skydome.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Boss.h" />
     <ClInclude Include="ContactRecord.h" />
     <ClInclude Include="Engine\Math\Beats.h" />
     <ClInclude Include="Engine\Math\Collider.h" />
