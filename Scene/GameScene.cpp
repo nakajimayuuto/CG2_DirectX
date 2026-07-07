@@ -43,7 +43,7 @@ void GameScene::Initialize() {
 	backGroundSprite_.SetSize(Environment::GetInstance()->GetWindowSize());
 	backGroundSprite_.SetColor({ 0.1f,0.25f,0.5f,1.0f });
 
-	sprite_.SetIsVisible(false);
+	sprite_.SetIsVisible(true);
 }
 
 void GameScene::Update() {
@@ -129,7 +129,7 @@ void GameScene::Draw() {
 
 	//skydome_->Draw();
 
-	model_.Draw(transform_);
+	//model_.Draw(transform_);
 
 	sprite_.Draw(transformSprite_);
 

@@ -32,6 +32,8 @@ class Camera {
 	bool useDebugCamera_;
 
 	Vector3 aspectScale_;
+
+	Transform spriteTransform_;
 public:
 
 	static Camera* GetInstance();
@@ -43,6 +45,8 @@ public:
 	void Update();
 
 	void DebugUpdate();
+
+	void SetSpritePosition(Vector2 vector2) { spriteTransform_.translate.x = vector2.x;spriteTransform_.translate.y = vector2.y; };
 
 	void SetPosition(Vector3 vector3) { translate_ = vector3; }
 

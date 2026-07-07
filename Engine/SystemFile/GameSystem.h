@@ -174,7 +174,10 @@ public:
 		Microsoft::WRL::ComPtr<ID3D12Resource> materialResource,
 		Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource,
 		D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU,
-		uint32_t indexInstancedNum
+		uint32_t indexInstancedNum,
+		TransformationMatrix* wvpMatrix,
+		Transform transform,
+		bool isSprite
 	);
 private:
 

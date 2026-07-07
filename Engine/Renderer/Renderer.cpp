@@ -109,9 +109,6 @@ void Renderer::Model::Draw(const Transform& transform) {
 
 		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
 
-		wvpData_[i]->World = worldMatrix;
-		wvpData_[i]->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
-
 		materialData_[i]->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransform_[i]);
 
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = GameSystem::GetInstance()->GetCommandList();
@@ -124,7 +121,10 @@ void Renderer::Model::Draw(const Transform& transform) {
 			materialResource_[i],
 			wvpResource_[i],
 			modelData_[i].textureSrvHandlesGPU,
-			UINT(modelData_[i].vertices.size())
+			UINT(modelData_[i].vertices.size()),
+			wvpData_[i],
+			transform,
+			false
 		);
 	}
 }
@@ -753,11 +753,6 @@ void Renderer::Sprite::Draw(const Transform& transform) {
 	worldTransform.translate.x = transform .translate.x - (size_.x / 2.0f);
 	worldTransform.translate.y = transform .translate.y - (size_.y / 2.0f);
 
-	Matrix4x4 worldMatrix = worldTransform.GetAffineMatrix();
-
-	transformationMatrixData_->World = worldMatrix;
-	transformationMatrixData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
-
 	materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransform_);
 	/*=============================================================
 	三角形のSpriteの描画のコマンド.
@@ -771,7 +766,10 @@ void Renderer::Sprite::Draw(const Transform& transform) {
 		materialResource_,
 		transformationMatrixResource_,
 		textureInfo_.textureSrvHandlesGPU,
-		6
+		6,
+		transformationMatrixData_,
+		transform,
+		true
 	);
 
 	//GameSystem::GetInstance()->SetPipeline(blendMode_);

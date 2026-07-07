@@ -17,6 +17,7 @@
 #include <chrono>
 #include "../Renderer/Renderer.h"
 #include "DeltaTime.h"
+#include "../Math/Matrix4x4.h"
 
 void GameSystem::WindowUpdate() {
 	WindowSynthesize();
@@ -687,11 +688,28 @@ void GameSystem::DrawCommand(
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource,
 	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource,
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU,
-	uint32_t indexInstancedNum
+	uint32_t indexInstancedNum,
+	TransformationMatrix* wvpMatrix,
+	Transform transform,
+	bool isSprite
 ) {
+	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+
+
 	SetPipeline(blendMode);
 
 	for (uint32_t i = 2; i < kWindowMaxNum_; i++) {
+		if (isSprite) {
+			RECT rect = { 0,0,0,0 };
+			 GetWindowRect(windowDatas_[i].hwnd,&rect);
+			Camera::GetInstance()->SetSpritePosition(Vector2(-rect.left,-rect.top));
+			wvpMatrix->World = worldMatrix;
+			wvpMatrix->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
+		} else {
+			wvpMatrix->World = worldMatrix;
+			wvpMatrix->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+		}
+
 		windowDatas_[i].commandList->IASetVertexBuffers(0, 1, vertexBufferView); // VBVを設定.
 		if (indexBufferView != nullptr) {
 			windowDatas_[i].commandList->IASetIndexBuffer(indexBufferView); // IBVを設定.

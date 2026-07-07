@@ -56,6 +56,8 @@ void Camera::Initialize() {
 	debugTranslate_ = { 0.0f,0.0f,-10.0f };
 
 	debugMatRot_ = Matrix4x4::MakeAffineMatrix(debugScale_, rotate_, debugTranslate_);
+
+	spriteTransform_.Initialize();
 }
 
 void Camera::Update() {
@@ -65,6 +67,8 @@ void Camera::Update() {
 		//matrix_ = Matrix4x4::MakeAffineMatrix(debugScale_, debugRotate_, debugTranslate_);
 		return;
 	}
+
+	spriteTransform_.translate.x += 1.0f;
 
 	matrix_ = Matrix4x4::MakeAffineMatrix(scale_, rotate_, translate_);
 }
@@ -154,7 +158,9 @@ Matrix4x4 Camera::GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix) {
 	Matrix4x4 viewMatrix;
 	Matrix4x4 projectionMatrix;
 	Matrix4x4 worldViewProjectionMatrix;
-	viewMatrix = matrix_.Identity();
+	viewMatrix = Matrix4x4::Identity();
+	viewMatrix.matrix[3][3] = 0.0f;
+	viewMatrix += spriteTransform_.GetAffineMatrix();
 	projectionMatrix = Matrix4x4::MakeOrthographicMatrix({ viewportLeftTop_,{0.0f,0.0f},{0.0f,0.0f},{windowWidth_,windowHeight_} }, 0.0f, 100.0f);
 
 	// 旧式の式(ガハハwww).
@@ -243,6 +249,7 @@ void Camera::RegisterGlobalVariables() {
 };
 
 void Camera::ApplyGlobalVariables() {
+	return;
 	const std::string& groupName = "Camera";
 
 	fovY_ = GlobalVariables::GetInstance()->GetFloatValue(groupName, "FovY");
