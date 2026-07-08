@@ -436,6 +436,18 @@ void GameSystem::Initialize() {
 	Environment::GetInstance()->Initialize();
 
 	RegisterGlobalVariables();
+
+	wvpDataIndex_ = 0;
+
+	for (uint32_t i = 0; i < kWvpDataMax; i++) {
+		WVPData newData;
+
+		newData.wvpResource_ = CreateBufferResource(device, sizeof(TransformationMatrix));
+		newData.wvpData_ = new TransformationMatrix;
+		newData.wvpData_->WVP = Matrix4x4::Identity();
+		newData.wvpData_->World = Matrix4x4::Identity();
+		wvpDatas_.push_back(newData);
+	}
 }
 
 void GameSystem::CreatePipeline(BlendMode blendMode) {
@@ -703,12 +715,14 @@ void GameSystem::DrawCommand(
 			RECT rect = { 0,0,0,0 };
 			 GetWindowRect(windowDatas_[i].hwnd,&rect);
 			Camera::GetInstance()->SetSpritePosition(Vector2(-rect.left,-rect.top));
-			wvpMatrix->World = worldMatrix;
-			wvpMatrix->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
+			wvpDatas_[wvpDataIndex_].wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&wvpDatas_[wvpDataIndex_].wvpData_));
+			wvpDatas_[wvpDataIndex_].wvpData_->World = worldMatrix;
+			wvpDatas_[wvpDataIndex_].wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
 		} else {
 			wvpMatrix->World = worldMatrix;
 			wvpMatrix->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
 		}
+
 
 		windowDatas_[i].commandList->IASetVertexBuffers(0, 1, vertexBufferView); // VBVを設定.
 		if (indexBufferView != nullptr) {
@@ -719,7 +733,7 @@ void GameSystem::DrawCommand(
 		// マテリアル用のCBufferの場所.
 		windowDatas_[i].commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 		// transformationMatrixCBufferの場所.
-		windowDatas_[i].commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
+		windowDatas_[i].commandList->SetGraphicsRootConstantBufferView(1, wvpDatas_[wvpDataIndex_].wvpResource_->GetGPUVirtualAddress());
 		// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
 		windowDatas_[i].commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 		// DirectionalLight用のCBufferの場所.
@@ -730,6 +744,8 @@ void GameSystem::DrawCommand(
 		} else {
 			windowDatas_[i].commandList->DrawIndexedInstanced(indexInstancedNum, 1, 0, 0, 0);
 		}
+
+		wvpDataIndex_++;
 	}
 }
 
@@ -759,6 +775,8 @@ bool GameSystem::BeginFrame() {
 	Renderer::Line::GetInstance()->ClearDrawIndex();
 
 	WindowUpdate();
+
+	wvpDataIndex_ = 0;
 
 #ifdef USE_IMGUI
 	ImGui_ImplDX12_NewFrame();

@@ -96,6 +96,12 @@ enum class BlendMode {
 	std::string WindowHandle;
 };
 
+struct WVPData {
+	TransformationMatrix* wvpData_ = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_ = nullptr;
+};
+
 class GameSystem {
 
 	// GameSystemで使うやつ.
@@ -283,5 +289,11 @@ private:
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
 
 	Pipeline pipeline_[static_cast<uint32_t>(BlendMode::kCount)];
+
+	uint32_t kWvpDataMax = 1000;
+
+	uint32_t wvpDataIndex_;
+
+	std::vector<WVPData> wvpDatas_;
 };
 
