@@ -95,6 +95,7 @@ void Player::Update() {
 	}
 	particles_->Update();
 
+
 	transform_.rotate.y = std::fmod(transform_.rotate.y, Radian(360.0f));
 
 	FollowCamera::GetInstance()->SetTargetIsMove(isMoving_);

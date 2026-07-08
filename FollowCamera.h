@@ -42,5 +42,7 @@ private:
 
 	 bool isMove_;
 
+	 float preTargetRotateY_;
+
 	Vector3 interTarget_ = {};
 };
