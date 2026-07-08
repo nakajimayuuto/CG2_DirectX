@@ -241,11 +241,9 @@ private:
 	=============================================================*/
 	static D3DResourceLeakChecker resourceLeakChecker;
 
-	
-
 	std::vector<WindowData> windowDatas_;
 
-	uint32_t kWindowMaxNum_ = 4;
+	uint32_t kWindowMaxNum_ = 6;
 
 	uint32_t kGuiDrawWindowNum_ = (kWindowMaxNum_ / 2);
 
