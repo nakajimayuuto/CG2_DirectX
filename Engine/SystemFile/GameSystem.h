@@ -94,6 +94,8 @@ enum class BlendMode {
 	HANDLE fenceEvent;
 
 	std::string WindowHandle;
+
+	Vector2 windowSize_;
 };
 
 struct WVPData {

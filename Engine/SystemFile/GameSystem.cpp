@@ -47,7 +47,7 @@ void GameSystem::WindowSynthesize() {
 			continue;
 		}
 
-		SetWindowPos(windowDatas_[i + windowNumHalfSize].hwnd, HWND_TOPMOST, rect.left, rect.top, 1280, 720, SWP_NOZORDER);
+		SetWindowPos(windowDatas_[i + windowNumHalfSize].hwnd, HWND_TOPMOST, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOZORDER);
 		//rect = { 0,0,0,0 };
 		//GetWindowRect(windowDatas_[i + windowNumHalfSize].hwnd, &rect);
 		//RECT borderRect = { 0,0,0,0 };
@@ -116,7 +116,7 @@ void GameSystem::Initialize() {
 	for (uint32_t i = 0; i < kWindowMaxNum_; i++) {
 		WindowData data;
 		wrc = { 0,0,kClientWidth,kClientHeight };
-			// ウィンドウプロシージャ
+		// ウィンドウプロシージャ
 		data.wc.lpfnWndProc = WindowProc;
 
 		// ウィンドウクラス名
@@ -710,11 +710,12 @@ void GameSystem::DrawCommand(
 
 	SetPipeline(blendMode);
 
-	for (uint32_t i = 2; i < kWindowMaxNum_; i++) {
+	for (uint32_t i = kGuiDrawWindowNum_; i < kWindowMaxNum_; i++) {
 		if (isSprite) {
 			RECT rect = { 0,0,0,0 };
-			 GetWindowRect(windowDatas_[i].hwnd,&rect);
-			Camera::GetInstance()->SetSpritePosition(Vector2(-rect.left,-rect.top));
+			GetWindowRect(windowDatas_[i].hwnd, &rect);
+			Camera::GetInstance()->SetSpritePosition(Vector2(-rect.left, -rect.top));
+			//Camera::GetInstance()->SetWindowSize(windowDatas_[i].windowSize_.x,windowDatas_[i].windowSize_.y);
 			wvpDatas_[wvpDataIndex_].wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&wvpDatas_[wvpDataIndex_].wvpData_));
 			wvpDatas_[wvpDataIndex_].wvpData_->World = worldMatrix;
 			wvpDatas_[wvpDataIndex_].wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
@@ -945,23 +946,28 @@ void GameSystem::WindowSizeUpdate() {
 	}
 
 	if (Environment::GetInstance()->GetAspectMode() == kAspectChangeEverytime) {
-		RECT clientRect{};
-		GetClientRect(GameSystem::GetInstance()->GetHWND(), &clientRect);
+		for (uint32_t i = kGuiDrawWindowNum_; i < kWindowMaxNum_; i++) {
+			RECT clientRect{};
+			GetClientRect(windowDatas_[i].hwnd, &clientRect);
 
-		//Camera::GetInstance()->
+			//Camera::GetInstance()->
 
-		float windowWidth = static_cast<float>(clientRect.right - clientRect.left);
-		float windowHeight = static_cast<float>(clientRect.bottom - clientRect.top);
-		float windowAspect = windowWidth / windowHeight;
-		float targetAspect = Environment::GetInstance()->GetAspect();
-		Vector3 aspectScale;
-		//Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
-		aspectScale.x = windowWidth / Environment::GetInstance()->GetWindowSize().width;
-		aspectScale.y = windowHeight / Environment::GetInstance()->GetWindowSize().height;
-		aspectScale.z = 1.0f;
+			float windowWidth = static_cast<float>(clientRect.right - clientRect.left);
+			float windowHeight = static_cast<float>(clientRect.bottom - clientRect.top);
+			float windowAspect = windowWidth / windowHeight;
+			float targetAspect = Environment::GetInstance()->GetAspect();
+			Vector3 aspectScale;
+			//Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
+			aspectScale.x = windowWidth / Environment::GetInstance()->GetWindowSize().width;
+			aspectScale.y = windowHeight / Environment::GetInstance()->GetWindowSize().height;
+			aspectScale.z = 1.0f;
 
-		Camera::GetInstance()->SetAspectScale(aspectScale);
-		Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
+			Camera::GetInstance()->SetAspectScale(aspectScale);
+			windowDatas_[i].windowSize_.x = windowWidth;
+			windowDatas_[i].windowSize_.y = windowHeight;
+			Camera::GetInstance()->SetWindowSize(windowWidth, windowHeight);
+
+		}
 
 		return;
 	}

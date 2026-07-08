@@ -64,7 +64,7 @@ public:
 
 	Matrix4x4 GetWorldViewProjectionMatrix(Matrix4x4 matrix);
 
-	Matrix4x4 GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix);	
+	Matrix4x4 GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix);
 
 	Matrix4x4 GetVPVMatrix(Matrix4x4 matrix);
 
