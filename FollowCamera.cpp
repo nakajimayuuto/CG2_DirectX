@@ -19,6 +19,10 @@ void FollowCamera::Update() {
 
 	InputManager* input = InputManager::GetInstance();
 
+	if (input->TriggerKey(DIK_E)) {
+		isMove_ = isMove_;
+	}
+
 	if (input->IsGamePadConnect()) {
 		input->SetIsCursorFixed(false);
 		input->SetIsCursorVisible(true);
@@ -43,35 +47,58 @@ void FollowCamera::Update() {
 
 	interTarget_ = Lerp(interTarget_, target_->translate, kCompletionRate);
 	float direction = 0.0f;
-	if (isMove_) {
-		direction = std::fabs(Degree(transform_.rotate.y - target_->rotate.y));
-		if (direction >= 180.0f) {
-			direction = std::fabs(direction - 360.0f);
-			if (destinationAngleY_ >= 0.0f) {
-				transform_.rotate.y -= Radian(360.0f);
-				destinationAngleY_ -= Radian(360.0f);
-			} else {
-				destinationAngleY_ += Radian(360.0f);
-				transform_.rotate.y += Radian(360.0f);
-			}
-		}
 
-		if (direction <= kLerpPlayerDirectionMin_) {
-			destinationAngleY_ = Lerp(destinationAngleY_, target_->rotate.y, Easing(0.0f, kAutoCompletionRate, direction, kLerpPlayerDirectionMin_, EaseType::kConstant));
-		} else if (direction <= kLerpPlayerDirectionMax_) {
-			destinationAngleY_ = Lerp(destinationAngleY_, target_->rotate.y, kAutoCompletionRate);
-		} else if (direction <= kLerpPlayerDirectionEase_) {
-			destinationAngleY_ = Lerp(destinationAngleY_, target_->rotate.y, Easing(kAutoCompletionRate, 0.0f, direction - kLerpPlayerDirectionMax_, kLerpPlayerDirectionEase_ - kLerpPlayerDirectionMax_, EaseType::kConstant));
+	float distance = (interTarget_ + offset).Length();
+
+	if (distance <= movingRadius_) {
+		if (isMove_) {
+			direction = std::fabs(Degree(transform_.rotate.y - target_->rotate.y));
+			// ここのdirectionの部分で何かがバグっています
+			if (direction >= 300.0f) {
+				direction = std::fabs(direction - 360.0f);
+				if (destinationAngleY_ >= 0.0f) {
+					transform_.rotate.y -= Radian(360.0f);
+					destinationAngleY_ -= Radian(360.0f);
+				} else {
+					destinationAngleY_ += Radian(360.0f);
+					transform_.rotate.y += Radian(360.0f);
+				}
+			}
+
+			if (direction <= kLerpPlayerDirectionMin_) {
+				destinationAngleY_ = Lerp(destinationAngleY_, target_->rotate.y, Easing(0.0f, kAutoCompletionRate, direction, kLerpPlayerDirectionMin_, EaseType::kConstant));
+			} else if (direction <= kLerpPlayerDirectionMax_) {
+				destinationAngleY_ = Lerp(destinationAngleY_, target_->rotate.y, kAutoCompletionRate);
+			} else if (direction <= kLerpPlayerDirectionEase_) {
+				destinationAngleY_ = Lerp(destinationAngleY_, target_->rotate.y, Easing(kAutoCompletionRate, 0.0f, direction - kLerpPlayerDirectionMax_, kLerpPlayerDirectionEase_ - kLerpPlayerDirectionMax_, EaseType::kConstant));
+			}
 		}
 	}
 
-	ImGui::Begin("aa");
-	ImGui::Text("%f,%f,%f,%f", direction, destinationAngleY_, target_->rotate.y, Degree(transform_.rotate.y - target_->rotate.y));
-	ImGui::End();
+	interOffsetTarget_ = interTarget_ + offset;
+
+	/// ここから地獄
+	distance = interOffsetTarget_.Length();
+
+	Vector3 wallOffsetPos = interOffsetTarget_;
+
+	float wallDirection = 0.0f;
+	if (distance > movingRadius_) {
+		wallOffsetPos = transform_.translate.Normalize() * movingRadius_;
+		transform_.translate = Lerp(interOffsetTarget_, wallOffsetPos, 0.5f);
+		wallDirection = std::atan2(target_->translate.x - transform_.translate.x, target_->translate.z - transform_.translate.z);
+
+		if (wallDirection < 0.0f) {
+			wallDirection += Radian(360.0f);
+		}
+
+		destinationAngleY_ = Lerp(destinationAngleY_, wallDirection, 1.0f);
+		transform_.rotate.y = Lerp(transform_.rotate.y, wallDirection, 1.0f);
+	} else {
+		transform_.translate = Lerp(interOffsetTarget_, wallOffsetPos, 0.25f);
+	}
 
 	transform_.rotate.y = Lerp(transform_.rotate.y, destinationAngleY_, kCompletionRate);
-
-	transform_.translate = interTarget_ + offset;
 
 	if (std::fabs(transform_.rotate.y) >= Radian(360.0f)) {
 		if (transform_.rotate.y >= 0.0f) {
@@ -83,12 +110,14 @@ void FollowCamera::Update() {
 		}
 		//transform_.rotate.y = std::fmod(transform_.rotate.y, Radian(360.0f));
 	}
+	GameSystem::Log(std::format("translate:{},{},{}\n", transform_.translate.x, transform_.translate.y, transform_.translate.z));
+	GameSystem::Log(std::format("rotate:{},{},{}\n", transform_.rotate.x, transform_.rotate.y, transform_.rotate.z));
 
-	float distance = transform_.translate.Length();
+	ImGui::Begin("aa");
+	ImGui::Text("%f,%f,%f", transform_.rotate.y, wallDirection, std::atan2(target_->translate.x - transform_.translate.x, target_->translate.z - transform_.translate.z));
+	ImGui::End();
 
-	if (distance > movingRadius_) {
-		transform_.translate = transform_.translate.Normalize()* movingRadius_;
-	}
+	// ここまで地獄
 
 	preTargetRotateY_ = target_->rotate.y;
 

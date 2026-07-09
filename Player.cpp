@@ -39,12 +39,12 @@ void Player::Initialize() {
 
 	BehaviorAttackInitialize();
 
-	emitter_ = std::make_unique<Emitter>();
-	particles_ = std::make_unique<Particles>();
-	particles_->Initialize(TextureManager::GetInstance()->GetTextureInfo("effect_plane"));
-	particles_->SetBillboardType(BillboardType::kAllAxis);
-	emitter_->SetParticle(particles_.get());
-	emitter_->Initialize(transform_, 3, 0.5f);
+	//emitter_ = std::make_unique<Emitter>();
+	//particles_ = std::make_unique<Particles>();
+	//particles_->Initialize(TextureManager::GetInstance()->GetTextureInfo("effect_plane"));
+	//particles_->SetBillboardType(BillboardType::kAllAxis);
+	//emitter_->SetParticle(particles_.get());
+	//emitter_->Initialize(transform_, 3, 0.5f);
 
 	FollowCamera::GetInstance()->SetTarget(&transform_);
 }
@@ -93,7 +93,7 @@ void Player::Update() {
 	default:
 		break;
 	}
-	particles_->Update();
+	//particles_->Update();
 
 
 	transform_.rotate.y = std::fmod(transform_.rotate.y, Radian(360.0f));
@@ -243,7 +243,7 @@ void Player::Draw() {
 	Renderer::GetInstance()->DrawShadow(transformLArm_, &models_["LArm"], { 0.0f,0.0f,0.0f,1.0f });
 	Renderer::GetInstance()->DrawShadow(transformRArm_, &models_["RArm"], { 0.0f,0.0f,0.0f,1.0f });
 
-	particles_->Draw();
+	//particles_->Draw();
 }
 
 void Player::RegisterGlobalVariables() {

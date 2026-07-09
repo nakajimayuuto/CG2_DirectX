@@ -130,9 +130,9 @@ private:
 	Vector3 velocity_;
 	static inline float kGravityAcceleration = 0.05f;
 
-	std::unique_ptr<Particles> particles_ = nullptr;
-
-	std::unique_ptr<Emitter> emitter_ = nullptr;
+	//std::unique_ptr<Particles> particles_ = nullptr;
+	//
+	//std::unique_ptr<Emitter> emitter_ = nullptr;
 
 	bool isMoving_;
 

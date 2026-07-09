@@ -47,4 +47,5 @@ private:
 	float movingRadius_ = 70.0f;
 
 	Vector3 interTarget_ = {};
+	Vector3 interOffsetTarget_ = {};
 };
