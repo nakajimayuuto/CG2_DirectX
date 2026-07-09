@@ -3,6 +3,7 @@
 #include <cmath>
 #include "Math.h"
 #include <algorithm>
+#include <vector>
 
 bool Collision::SphereToSphere(const Sphere& sphere1, const Sphere& sphere2) {
 	float distance = Vector3::Length(static_cast<Vector3>(sphere2.center) - sphere1.center);
@@ -355,124 +356,84 @@ bool Collision::OBBToSegment(const OBB& obb, const Segment& segment) {
 }
 
 bool Collision::OBBToOBB(const OBB& obb1, const OBB& obb2) {
-	obb1;
-	obb2;
-	//Matrix4x4 matrix1;
-	//Matrix4x4 rotateMatrix;
-	//Matrix4x4 matrix2;
-	//
-	//Line lineObb1[3];
-	//Line lineObb2[3];
-	//
-	//rotateMatrix = rotateMatrix.Identity();
-	//for (uint32_t i = 0; i < 3; i++) {
-	//	rotateMatrix.matrix[i][0] = obb1.orientations[i].x;
-	//	rotateMatrix.matrix[i][1] = obb1.orientations[i].y;
-	//	rotateMatrix.matrix[i][2] = obb1.orientations[i].z;
-	//}
-	//
-	//matrix1 = rotateMatrix;
-	//matrix1 = matrix1 * Matrix4x4::MakeTranslateMatrix(obb1.center);
-	//
-	//rotateMatrix = rotateMatrix.Identity();
-	//for (uint32_t i = 0; i < 3; i++) {
-	//	rotateMatrix.matrix[i][0] = obb2.orientations[i].x;
-	//	rotateMatrix.matrix[i][1] = obb2.orientations[i].y;
-	//	rotateMatrix.matrix[i][2] = obb2.orientations[i].z;
-	//}
-	//
-	//matrix2 = rotateMatrix;
-	//matrix2 = matrix2 * Matrix4x4::MakeTranslateMatrix(obb2.center);
-	//
-	//lineObb1[0].origin = matrix1.Transform({ 0.0f,0.0f,0.0f });
-	//lineObb1[1].origin = matrix1.Transform({ 0.0f,0.0f,0.0f });
-	//lineObb1[2].origin = matrix1.Transform({ 0.0f,0.0f,0.0f });
-	//Vector3 sizeObb1 = matrix1.Transform(obb1.size);
-	//lineObb1[0].diff = matrix1.Transform({ obb1.size.x,0.0f,0.0f });
-	//lineObb1[1].diff = matrix1.Transform({ 0.0f,obb1.size.y,0.0f });
-	//lineObb1[2].diff = matrix1.Transform({ 0.0f,0.0f,obb1.size.z });
-	//
-	//lineObb2[0].origin = matrix2.Transform({ 0.0f,0.0f,0.0f });
-	//lineObb2[1].origin = matrix2.Transform({ 0.0f,0.0f,0.0f });
-	//lineObb2[2].origin = matrix2.Transform({ 0.0f,0.0f,0.0f });
-	//Vector3 sizeObb2 = matrix2.Transform(obb2.size);
-	//lineObb2[0].diff = matrix2.Transform({ obb2.size.x,0.0f,0.0f });
-	//lineObb2[1].diff = matrix2.Transform({ 0.0f,obb2.size.y,0.0f });
-	//lineObb2[2].diff = matrix2.Transform({ 0.0f,0.0f,obb2.size.z });
-	//
-	//Vector3 obb1Vertices[8];
-	//Vector3 obb2Vertices[8];
-	//
-	//Vector3 obb1ClosestPoint[3][8];
-	//Vector3 obb2ClosestPoint[3][8];
-	//
-	//obb1Vertices[0] = matrix2.Transform({ -obb1.size.x,-obb1.size.y,-obb1.size.z });
-	//obb1Vertices[1] = matrix2.Transform({ obb1.size.x,-obb1.size.y,-obb1.size.z });
-	//obb1Vertices[2] = matrix2.Transform({ -obb1.size.x,obb1.size.y,-obb1.size.z });
-	//obb1Vertices[3] = matrix2.Transform({ -obb1.size.x,-obb1.size.y,obb1.size.z });
-	//obb1Vertices[4] = matrix2.Transform({ obb1.size.x,obb1.size.y,-obb1.size.z });
-	//obb1Vertices[5] = matrix2.Transform({ obb1.size.x,-obb1.size.y,obb1.size.z });
-	//obb1Vertices[6] = matrix2.Transform({ -obb1.size.x,obb1.size.y,obb1.size.z });
-	//obb1Vertices[7] = matrix2.Transform({ obb1.size.x,obb1.size.y,obb1.size.z });
-	//
-	//obb2Vertices[0] = matrix2.Transform({ -obb2.size.x,-obb2.size.y,-obb2.size.z });
-	//obb2Vertices[1] = matrix2.Transform({ obb2.size.x,-obb2.size.y,-obb2.size.z });
-	//obb2Vertices[2] = matrix2.Transform({ -obb2.size.x,obb2.size.y,-obb2.size.z });
-	//obb2Vertices[3] = matrix2.Transform({ -obb2.size.x,-obb2.size.y,obb2.size.z });
-	//obb2Vertices[4] = matrix2.Transform({ obb2.size.x,obb2.size.y,-obb2.size.z });
-	//obb2Vertices[5] = matrix2.Transform({ obb2.size.x,-obb2.size.y,obb2.size.z });
-	//obb2Vertices[6] = matrix2.Transform({ -obb2.size.x,obb2.size.y,obb2.size.z });
-	//obb2Vertices[7] = matrix2.Transform({ obb2.size.x,obb2.size.y,obb2.size.z });
-	//
-	//float max1[3];
-	//float min1[3];
-	//
-	//float max2[3];
-	//float min2[3];
-	//
-	//for (uint32_t i = 0; i < 3; i++) {
-	//	for (uint32_t j = 0; j < 8; j++) {
-	//		obb1ClosestPoint[i][j] = obb1Vertices[j].ClosestPoint(lineObb1[i]);
-	//		obb2ClosestPoint[i][j] = obb2Vertices[j].ClosestPoint(lineObb2[i]);
-	//
-	//		if (j == 0) {
-	//			min1[i] = std::min(std::min(obb1ClosestPoint[i][j].x, obb1ClosestPoint[i][j].y), obb1ClosestPoint[i][j].z);
-	//			max1[i] = std::max(std::max(obb1ClosestPoint[i][j].x, obb1ClosestPoint[i][j].y), obb1ClosestPoint[i][j].z);
-	//			min2[i] = std::min(std::min(obb2ClosestPoint[i][j].x, obb2ClosestPoint[i][j].y), obb2ClosestPoint[i][j].z);
-	//			max2[i] = std::max(std::max(obb2ClosestPoint[i][j].x, obb2ClosestPoint[i][j].y), obb2ClosestPoint[i][j].z);
-	//		} else {
-	//			float tempMin = std::min(std::min(obb1ClosestPoint[i][j].x, obb1ClosestPoint[i][j].y), obb1ClosestPoint[i][j].z);
-	//			float tempMax = std::max(std::max(obb1ClosestPoint[i][j].x, obb1ClosestPoint[i][j].y), obb1ClosestPoint[i][j].z);
-	//
-	//			min1[i] = std::min(min1[i], tempMin);
-	//			max1[i] = std::max(max1[i], tempMax);
-	//
-	//			tempMin = std::min(std::min(obb2ClosestPoint[i][j].x, obb2ClosestPoint[i][j].y), obb2ClosestPoint[i][j].z);
-	//			tempMax = std::max(std::max(obb2ClosestPoint[i][j].x, obb2ClosestPoint[i][j].y), obb2ClosestPoint[i][j].z);
-	//
-	//			min2[i] = std::min(min2[i], tempMin);
-	//			max2[i] = std::max(max2[i], tempMax);
-	//		}
-	//	}
-	//}
-	//
-	//float L1;
-	//float L2;
-	//
-	//float sumSpan;
-	//float longSpan;
-	//
-	//for (uint32_t i = 0; i < 3; i++) {
-	//	L1 = max1[i] - min1[i];
-	//	L2 = max2[i] - min2[i];
-	//
-	//	sumSpan = L1 + L2;
-	//	longSpan = std::max(max1[i], max2[i]) - std::min(min1[i],min2[i]);
-	//
-	//	if (sumSpan < longSpan) {
+	auto CreateVertices = [](const OBB& obb) {
+		std::vector<Vector3> vertices;
+		Vector3 ax = static_cast<Vector3>(obb.orientations[0]) * obb.size.x;
+		Vector3 ay = static_cast<Vector3>(obb.orientations[1]) * obb.size.y;
+		Vector3 az = static_cast<Vector3>(obb.orientations[2]) * obb.size.z;
+
+		vertices.push_back(static_cast<Vector3>(obb.center) - ax - ay - az);
+		vertices.push_back(static_cast<Vector3>(obb.center) + ax - ay - az);
+		vertices.push_back(static_cast<Vector3>(obb.center) - ax + ay - az);
+		vertices.push_back(static_cast<Vector3>(obb.center) + ax + ay - az);
+
+		vertices.push_back(static_cast<Vector3>(obb.center) - ax - ay + az);
+		vertices.push_back(static_cast<Vector3>(obb.center) + ax - ay + az);
+		vertices.push_back(static_cast<Vector3>(obb.center) - ax + ay + az);
+		vertices.push_back(static_cast<Vector3>(obb.center) + ax + ay + az);
+
+		return vertices;
+		};
+
+	auto ProjectVertices = [](const std::vector<Vector3>& vertices, const Vector3& axis, float& outMin, float& outMax) {
+		float dot = Vector3::GetDot(vertices[0], axis);
+
+		outMin = dot;
+		outMax = dot;
+
+		for (size_t i = 1; i < vertices.size(); ++i) {
+			float projection = Vector3::GetDot(vertices[i], axis);
+
+			if (projection < outMin) {
+				outMin = projection;
+			}
+
+			if (projection > outMax) {
+				outMax = projection;
+			}
+		}
+		};
+
+	std::vector<Vector3> vertices1 = CreateVertices(obb1);
+	std::vector<Vector3> vertices2 = CreateVertices(obb2);
+
+
+	std::vector<Vector3> axes;
+
+	axes.push_back(obb1.orientations[0]);
+	axes.push_back(obb1.orientations[1]);
+	axes.push_back(obb1.orientations[2]);
+
+	axes.push_back(obb2.orientations[0]);
+	axes.push_back(obb2.orientations[1]);
+	axes.push_back(obb2.orientations[2]);
+
+	for (int i = 0; i < 3; ++i) {
+		for (int j = 0; j < 3; ++j) {
+			Vector3 axis = Vector3::GetCross(obb1.orientations[i], obb2.orientations[j]);
+
+			if (axis.Length() > 0.0001f) {
+				axis.Normalize();
+				axes.push_back(axis);
+			}
+		}
+	}
+
+	for (const Vector3& axis : axes) {
+		float min1, max1;
+		float min2, max2;
+
+		ProjectVertices(vertices1, axis, min1, max1);
+		ProjectVertices(vertices2, axis, min2, max2);
+
+		float L1 = max1 - min1;
+		float L2 = max2 - min2;
+		float sumSpan = L1 + L2;
+		float longSpan = std::max(max1, max2) - std::min(min1, min2);
+
+		if (sumSpan < longSpan) {
 			return false;
-	//	}
-	//}
-	//
-	//return true;
+		}
+	}
+	return true;
 }

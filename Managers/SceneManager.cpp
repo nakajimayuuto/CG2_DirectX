@@ -6,7 +6,6 @@
 #include "../Engine/SystemFile/Debug.h"
 
 SceneManager::~SceneManager() {
-	delete currentScene_;
 }
 
 SceneManager* SceneManager::GetInstance() {
@@ -15,12 +14,10 @@ SceneManager* SceneManager::GetInstance() {
 };
 
 void SceneManager::Initialize() {
-	//currentScene_ = new TitleScene();
-
-//#ifdef _DEBUG
+	//#ifdef _DEBUG
 	Debug::GetInstance()->LoadDebugSettings();
-	currentScene_ = new GameScene();
-//#endif // _DEBUG
+	currentScene_ = std::make_unique<GameScene>();
+	//#endif // _DEBUG
 
 	currentScene_->Initialize();
 }
@@ -44,16 +41,14 @@ void SceneManager::ChangeSceneUpdate() {
 		return;
 	}
 
-	delete currentScene_;
-
 	switch (sceneName_) {
 	case SceneName::kGameScene:
 
-		currentScene_ = new GameScene();
+		currentScene_ = std::make_unique <GameScene>();
 		currentScene_->Initialize();
 		break;
 	case SceneName::kTitleScene:
-		currentScene_ = new TitleScene();
+		currentScene_ = std::make_unique <TitleScene>();
 		currentScene_->Initialize();
 		break;
 	}
@@ -66,6 +61,6 @@ void SceneManager::ChengeScene(SceneName name) {
 	isSceneChange_ = true;
 }
 
-void SceneManager::ReloadScene(){
+void SceneManager::ReloadScene() {
 	isSceneChange_ = true;
 }

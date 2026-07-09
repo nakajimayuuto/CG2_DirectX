@@ -4,6 +4,12 @@
 #include "../Math/Easing.h"
 #include "Renderer.h"
 
+Particles::~Particles(){
+	delete vertexData;
+	delete materialData_;
+	delete instancingData_;
+}
+
 void Particles::Initialize(const ModelInfo& info) {
 	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
 	modelMax_ = static_cast<uint32_t>(info.modelData.size());

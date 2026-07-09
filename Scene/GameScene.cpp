@@ -75,6 +75,12 @@ void GameScene::Update() {
 void GameScene::Draw() {
 	skydome_->Draw();
 	ground_->Draw();
+
+	Renderer::GetInstance()->SetBlendMode(BlendMode::kNormalCullNone);
+	Renderer::GetInstance()->DrawBox(Transform::GetInitialValue({ 150.0f,50.0f,150.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
+	Renderer::GetInstance()->DrawBox(Transform::GetInitialValue({ 150.0f,50.0f,150.0f }, { 0.0f,Radian(45.0f),0.0f }, { 0.0f,0.0f,0.0f }), "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
+	Renderer::GetInstance()->SetBlendMode(BlendMode::kNormal);
+
 	player_->Draw();
 	boss_->Draw();
 
@@ -87,23 +93,9 @@ void GameScene::Draw() {
 		Transform transformTest = Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { (-static_cast<float>(testNum_) / 2.0f) + static_cast<float>(i),0.0f,0.0f });
 		Vector3 startPos = { (-static_cast<float>(testNum_) / 2.0f) + static_cast<float>(i),0.0f,0.0f };
 		Vector3 endPos = { (-static_cast<float>(testNum_) / 2.0f) + static_cast<float>(i),1.0f,0.0f };
-		//Renderer::GetInstance()->DrawLine(startPos, endPos, { 1.0f,1.0f,1.0f,1.0f });
 		Renderer::GetInstance()->DrawSphereWireFrame(transformTest, {1.0f,1.0f,1.0f,1.0f});
 	}
-
-	Renderer::GetInstance()->SetBlendMode(BlendMode::kNormalCullNone);
-	Renderer::GetInstance()->DrawBox(Transform::GetInitialValue({ 150.0f,50.0f,150.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "uvChecker", {1.0f,1.0f,1.0f,1.0f});
-	Renderer::GetInstance()->DrawBox(Transform::GetInitialValue({ 150.0f,50.0f,150.0f }, { 0.0f,Radian(45.0f),0.0f }, { 0.0f,0.0f,0.0f }), "uvChecker", {1.0f,1.0f,1.0f,1.0f});
-	Renderer::GetInstance()->SetBlendMode(BlendMode::kNormal);
 }
 
 void GameScene::CheckAllCollisions() {
-	//CollisionManager::GetInstance()->ClearColliderList();
-	//CollisionManager::GetInstance()->AddColliderList(player_.get());
-	//CollisionManager::GetInstance()->AddColliderList(player_->GetHammerCollider());
-	//for (const std::unique_ptr<Enemy>& enemy : enemies_) {
-	//	CollisionManager::GetInstance()->AddColliderList(enemy.get());
-	//}
-	//
-	//CollisionManager::GetInstance()->CheckAllCollision();
 }

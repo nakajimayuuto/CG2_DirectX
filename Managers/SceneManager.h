@@ -22,7 +22,7 @@ public:
 
 	void ReloadScene();
 private:
-	IScene* currentScene_ = nullptr;
+	std::unique_ptr<IScene> currentScene_ = nullptr;
 
 	SceneName sceneName_;
 

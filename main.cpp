@@ -21,16 +21,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	SoundManager::GetInstance()->RegisterSound("test", "Resource/free_k.wav");
 	SoundData data = SoundManager::GetInstance()->GetSoundData("test");
-	//SoundManager::GetInstance()->SoundPlay(data,1.0f, 1.0f, kBGM, true, "test");
 
 	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 1.0f;
 	// ウィンドウのxボタンが押されるまでループ.
 	while (system->ProcessMessage()) {
 		if (system->BeginFrame()) {
-			//
-						/*=============================================================
-						以下にゲームの更新処理を記述.
-						=============================================================*/
+			/*=============================================================
+			以下にゲームの更新処理を記述.
+			=============================================================*/
 
 			GlobalVariables::GetInstance()->Update();
 

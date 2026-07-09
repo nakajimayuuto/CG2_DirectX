@@ -6,6 +6,9 @@ TextureManager* TextureManager::GetInstance() {
 }
 
 TextureInfo TextureManager::RegisterTexture(const std::string& name, const std::string& filePath){
+	if (textures_.find(name) != textures_.end()) {
+		return TextureInfo();
+	}
 	/*=============================================================
 	Texture読み込み.
 	=============================================================*/

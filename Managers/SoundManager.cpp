@@ -359,17 +359,14 @@ void SoundManager::SoundPlay(const SoundData& soundData, float speed, float volu
 	result = pSourceVoice->SubmitSourceBuffer(&buf);
 	result = pSourceVoice->Start();
 
-	PlaySoundData* data;
-	data = new PlaySoundData();
+	playSoundDatas_[handle] = new PlaySoundData();
 
-	data->buffer = buf;
-	data->voice = pSourceVoice;
-	data->canLoop = canLoop;
-	data->currentSpeed = speed;
-	data->volume = volume;
-	data->type_ = type;
-
-	playSoundDatas_[handle] = data;
+	playSoundDatas_[handle]->buffer = buf;
+	playSoundDatas_[handle]->voice = pSourceVoice;
+	playSoundDatas_[handle]->canLoop = canLoop;
+	playSoundDatas_[handle]->currentSpeed = speed;
+	playSoundDatas_[handle]->volume = volume;
+	playSoundDatas_[handle]->type_ = type;
 }
 
 void SoundManager::SoundPlay(const SoundData& soundData, float speed, float volume, SoundType type) {

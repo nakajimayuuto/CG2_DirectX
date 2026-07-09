@@ -8,7 +8,6 @@ Random* Random::GetInstance() {
 
 void Random::Initialize() {
 	std::random_device seedGen;
-	//std::uint32_t seed = seed_gen();
 	engine.seed(seedGen());
 }
 

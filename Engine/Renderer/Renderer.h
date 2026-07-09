@@ -54,6 +54,7 @@ struct ModelElement {
 };
 
 struct ModelInstance{
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_ = nullptr; // 消すかも.
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_ = nullptr; // 消すかも.
 	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_ = nullptr; // 消すかも.
 

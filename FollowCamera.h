@@ -1,7 +1,7 @@
 #pragma once
 #include "Satlib.h"
 
-class FollowCamera{
+class FollowCamera {
 public:
 	static FollowCamera* GetInstance();
 
@@ -29,7 +29,7 @@ private:
 
 	float destinationAngleY_;
 	float autoAngleY_;
-	
+
 	static inline float kLerpPlayerDirectionMin_ = 30.0f;
 	static inline float kLerpPlayerDirectionMax_ = 90.0f;
 	static inline float kLerpPlayerDirectionEase_ = 175.0f;
@@ -40,9 +40,11 @@ private:
 
 	const Transform* target_ = nullptr;
 
-	 bool isMove_;
+	bool isMove_;
 
-	 float preTargetRotateY_;
+	float preTargetRotateY_;
+
+	float movingRadius_ = 70.0f;
 
 	Vector3 interTarget_ = {};
 };

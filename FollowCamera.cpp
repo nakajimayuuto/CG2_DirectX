@@ -84,6 +84,12 @@ void FollowCamera::Update() {
 		//transform_.rotate.y = std::fmod(transform_.rotate.y, Radian(360.0f));
 	}
 
+	float distance = transform_.translate.Length();
+
+	if (distance > movingRadius_) {
+		transform_.translate = transform_.translate.Normalize()* movingRadius_;
+	}
+
 	preTargetRotateY_ = target_->rotate.y;
 
 	Camera::GetInstance()->SetTransform(transform_);
