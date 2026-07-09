@@ -26,7 +26,7 @@ void FollowCamera::Update() {
 	if (input->IsGamePadConnect()) {
 		input->SetIsCursorFixed(false);
 		input->SetIsCursorVisible(true);
-		destinationAngleY_ += input->GetRightStickDirection().x * kRotateSpeed;
+		//destinationAngleY_ += input->GetRightStickDirection().x * kRotateSpeed;
 
 		if (input->TriggerPadButton(PadButtons::INPUT_R3)) {
 			Reset();
@@ -34,7 +34,7 @@ void FollowCamera::Update() {
 	} else {
 		input->SetIsCursorFixed(true);
 		input->SetIsCursorVisible(false);
-		destinationAngleY_ += input->GetMouse().GetMove().x * kMouseRotateSpeed;
+		//destinationAngleY_ += input->GetMouse().GetMove().x * kMouseRotateSpeed;
 
 		if (input->TriggerKey(DIK_C)) {
 			Reset();
@@ -54,15 +54,8 @@ void FollowCamera::Update() {
 		if (isMove_) {
 			direction = std::fabs(Degree(transform_.rotate.y - target_->rotate.y));
 			// ここのdirectionの部分で何かがバグっています
-			if (direction >= 300.0f) {
-				direction = std::fabs(direction - 360.0f);
-				if (destinationAngleY_ >= 0.0f) {
-					transform_.rotate.y -= Radian(360.0f);
-					destinationAngleY_ -= Radian(360.0f);
-				} else {
-					destinationAngleY_ += Radian(360.0f);
-					transform_.rotate.y += Radian(360.0f);
-				}
+			if (direction >= 360.0f) {
+
 			}
 
 			if (direction <= kLerpPlayerDirectionMin_) {
@@ -71,6 +64,23 @@ void FollowCamera::Update() {
 				destinationAngleY_ = Lerp(destinationAngleY_, target_->rotate.y, kAutoCompletionRate);
 			} else if (direction <= kLerpPlayerDirectionEase_) {
 				destinationAngleY_ = Lerp(destinationAngleY_, target_->rotate.y, Easing(kAutoCompletionRate, 0.0f, direction - kLerpPlayerDirectionMax_, kLerpPlayerDirectionEase_ - kLerpPlayerDirectionMax_, EaseType::kConstant));
+			} else {
+				//direction = std::fabs(direction - 360.0f);
+				if (destinationAngleY_ >= 0.0f) {
+					transform_.rotate.y -= Radian(360.0f);
+					destinationAngleY_ -= Radian(360.0f);
+				} else {
+					destinationAngleY_ += Radian(360.0f);
+					transform_.rotate.y += Radian(360.0f);
+				}
+
+				if (direction <= kLerpPlayerDirectionMin_) {
+					destinationAngleY_ = Lerp(destinationAngleY_, target_->rotate.y, Easing(0.0f, kAutoCompletionRate, direction, kLerpPlayerDirectionMin_, EaseType::kConstant));
+				} else if (direction <= kLerpPlayerDirectionMax_) {
+					destinationAngleY_ = Lerp(destinationAngleY_, target_->rotate.y, kAutoCompletionRate);
+				} else if (direction <= kLerpPlayerDirectionEase_) {
+					destinationAngleY_ = Lerp(destinationAngleY_, target_->rotate.y, Easing(kAutoCompletionRate, 0.0f, direction - kLerpPlayerDirectionMax_, kLerpPlayerDirectionEase_ - kLerpPlayerDirectionMax_, EaseType::kConstant));
+				}
 			}
 		}
 	}
@@ -92,8 +102,11 @@ void FollowCamera::Update() {
 			wallDirection += Radian(360.0f);
 		}
 
+		GameSystem::Log(std::format("before:{},{}\n", transform_.rotate.y, destinationAngleY_, transform_.translate.z));
+		// ここ二つの値をうまくやると何とかなりそう。バグるときは大体-6.??から0.??に変換するとき
 		destinationAngleY_ = Lerp(destinationAngleY_, wallDirection, 1.0f);
 		transform_.rotate.y = Lerp(transform_.rotate.y, wallDirection, 1.0f);
+		GameSystem::Log(std::format("after:{},{}\n", transform_.rotate.y, destinationAngleY_, transform_.translate.z));
 	} else {
 		transform_.translate = Lerp(interOffsetTarget_, wallOffsetPos, 0.25f);
 	}
@@ -110,12 +123,11 @@ void FollowCamera::Update() {
 		}
 		//transform_.rotate.y = std::fmod(transform_.rotate.y, Radian(360.0f));
 	}
-	GameSystem::Log(std::format("translate:{},{},{}\n", transform_.translate.x, transform_.translate.y, transform_.translate.z));
-	GameSystem::Log(std::format("rotate:{},{},{}\n", transform_.rotate.x, transform_.rotate.y, transform_.rotate.z));
-
 	ImGui::Begin("aa");
-	ImGui::Text("%f,%f,%f", transform_.rotate.y, wallDirection, std::atan2(target_->translate.x - transform_.translate.x, target_->translate.z - transform_.translate.z));
+	ImGui::Text("%f,%f,%f", transform_.rotate.y, destinationAngleY_, wallDirection);
 	ImGui::End();
+
+	//GameSystem::Log(std::format("rotate:{},{},{}\n", transform_.rotate.x, transform_.rotate.y, transform_.rotate.z));
 
 	// ここまで地獄
 

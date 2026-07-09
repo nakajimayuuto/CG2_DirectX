@@ -118,7 +118,7 @@ void Player::BehaviorRootUpdate() {
 		velocity_ = velocity_.Normalize() * kSpeed;
 
 		if (input->TriggerPadButton(PadButtons::INPUT_L1)) {
-			behaviorRequest_ = Behavior::kAttack;
+		//	behaviorRequest_ = Behavior::kAttack;
 		}
 
 		if (input->TriggerPadButton(PadButtons::INPUT_R1)) {
