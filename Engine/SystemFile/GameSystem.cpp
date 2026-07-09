@@ -68,9 +68,9 @@ void GameSystem::Initialize() {
 	int32_t kClientHeight = Environment::GetInstance()->GetWindowSize().height;
 
 	// ウィンドウサイズを表す構造体に九合アント領域を入れる.
-	RECT wrc{ 0,0,kClientWidth,kClientHeight };
 
 	for (uint32_t i = 0; i < windowNum_; i++) {
+		RECT wrc{ 0,0,kClientWidth,kClientHeight };
 		WindowData winData;
 
 		// ウィンドウプロシージャ
@@ -754,7 +754,7 @@ void GameSystem::EndFrame() {
 #ifdef USE_IMGUI
 	// ImGuiの描画.
 	// 実際のcommandListのImGuiの描画コマンドを積む.
-	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), windowDatas_[0].commandList.Get());
+	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), windowDatas_[1].commandList.Get());
 #endif // USE_IMGUI
 
 
