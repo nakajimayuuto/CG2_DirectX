@@ -78,6 +78,7 @@ void GameScene::Draw() {
 	player_->Draw();
 	boss_->Draw();
 
+
 	if (testNum_ > 50) {
 		testNum_ = testNum_;
 	}
@@ -90,6 +91,10 @@ void GameScene::Draw() {
 		Renderer::GetInstance()->DrawSphereWireFrame(transformTest, {1.0f,1.0f,1.0f,1.0f});
 	}
 
+	Renderer::GetInstance()->SetBlendMode(BlendMode::kNormalCullNone);
+	Renderer::GetInstance()->DrawBox(Transform::GetInitialValue({ 150.0f,50.0f,150.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "uvChecker", {1.0f,1.0f,1.0f,1.0f});
+	Renderer::GetInstance()->DrawBox(Transform::GetInitialValue({ 150.0f,50.0f,150.0f }, { 0.0f,Radian(45.0f),0.0f }, { 0.0f,0.0f,0.0f }), "uvChecker", {1.0f,1.0f,1.0f,1.0f});
+	Renderer::GetInstance()->SetBlendMode(BlendMode::kNormal);
 }
 
 void GameScene::CheckAllCollisions() {

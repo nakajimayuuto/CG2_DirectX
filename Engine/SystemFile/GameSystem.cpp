@@ -152,7 +152,7 @@ void GameSystem::Initialize() {
 		// ソフトウェアアダプタでなければ採用!出なければ帰れ!
 		if (!(adapterDesc.Flags & DXGI_ADAPTER_FLAG3_SOFTWARE)) {
 			// 採用したアダプタの情報をログに出力.
-			Log(Convert::ConvertString(std::format(L"Use Adapter : {}\n", adapterDesc.Description)));
+			ExportLog(Convert::ConvertString(std::format(L"Use Adapter : {}\n", adapterDesc.Description)));
 			break;
 		}
 
@@ -175,14 +175,14 @@ void GameSystem::Initialize() {
 		// 指定した昨日レベルでデバイスが生成できたかを確認
 		if (SUCCEEDED(hr)) {
 			// 生成できたログ出力を行ってループを抜ける.
-			Log(std::format("FeatureLevel : {}\n", featureLevelStrings[i]));
+			ExportLog(std::format("FeatureLevel : {}\n", featureLevelStrings[i]));
 			break;
 		}
 
 	}
 
 	assert(useAdapter != nullptr);
-	Log("Complete create D3D12Device!!!\n");
+	ExportLog("Complete create D3D12Device!!!\n");
 
 #ifdef _DEBUG
 	Microsoft::WRL::ComPtr <ID3D12InfoQueue> infoQueue = nullptr;
@@ -586,7 +586,7 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob = nullptr;
 	HRESULT hr = D3D12SerializeRootSignature(&descriptionRootSignature, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
 	if (FAILED(hr)) {
-		Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+		ExportLog(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
 		assert(false);
 	}
 	// バイナリを元に生成.
@@ -1112,8 +1112,8 @@ LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPAR
 
 			borderHeight = borderRect.bottom - borderRect.top;
 
-			Log(std::format("Rect l:{},r:{},t:{},b:{}\n", rect->left, rect->right, rect->top, rect->bottom));
-			Log(std::format("Rect w:{},h:{}\n", width, height));
+			//Log(std::format("Rect l:{},r:{},t:{},b:{}\n", rect->left, rect->right, rect->top, rect->bottom));
+			//Log(std::format("Rect w:{},h:{}\n", width, height));
 
 			width -= borderWidth;
 			height -= borderHeight;
@@ -1297,7 +1297,7 @@ IDxcBlob* GameSystem::CompileShader(const std::wstring& filePath, const wchar_t*
 	// 1. hlslファイルを読む.
 
 	// これからシェーダーをコンパイルする旨をログに出す.
-	Log(Convert::ConvertString(std::format(L"Begin CompileShader, path:{},profile:{}\n", filePath, profile)));
+	ExportLog(Convert::ConvertString(std::format(L"Begin CompileShader, path:{},profile:{}\n", filePath, profile)));
 	// hlslファイルを読む.
 	IDxcBlobEncoding* shaderSource = nullptr;
 	HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
@@ -1339,7 +1339,7 @@ IDxcBlob* GameSystem::CompileShader(const std::wstring& filePath, const wchar_t*
 	IDxcBlobUtf8* shaderError = nullptr;
 	shaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), nullptr);
 	if (shaderError != nullptr && shaderError->GetStringLength() != 0) {
-		Log(shaderError->GetStringPointer());
+		ExportLog(shaderError->GetStringPointer());
 		// 警告・エラー　ダメゼッタイ.
 		assert(false);
 	}
@@ -1350,7 +1350,7 @@ IDxcBlob* GameSystem::CompileShader(const std::wstring& filePath, const wchar_t*
 	hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
 	assert(SUCCEEDED(hr));
 	// 成功したログを出す.
-	Log(Convert::ConvertString(std::format(L"Compile Succeeded, path:{}, profile:{}\n", filePath, profile)));
+	ExportLog(Convert::ConvertString(std::format(L"Compile Succeeded, path:{}, profile:{}\n", filePath, profile)));
 	// もう使わないリソースを解放.
 	shaderSource->Release();
 	shaderResult->Release();

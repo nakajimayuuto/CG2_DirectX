@@ -879,7 +879,7 @@ void Renderer::DrawBoxWireFrame(const Transform& transform, const Vector3& size,
 	DrawLine(vertices[3], vertices[7], color);
 }
 
-void Renderer::DrawPlane(Plane& plane) {
+void Renderer::DrawPlaneWireFrame(Plane& plane) {
 	Vector3 center = plane.normal * plane.distance * -1.0f; // 1.
 	Vector3 perpendiculars[4];
 	perpendiculars[0] = Vector3::Normalize(plane.normal.Perpendicular()); // 2.

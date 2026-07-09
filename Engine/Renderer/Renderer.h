@@ -256,7 +256,7 @@ public:
 	/// <param name="color">色</param>
 	void DrawBoxWireFrame(const Transform& transform, const Vector3& size, const Vector4& color);
 
-	void DrawPlane(Plane& plane);
+	void DrawPlaneWireFrame(Plane& plane);
 
 	/// <summary>
 	/// ワイヤーフレームのボックスの描画.
