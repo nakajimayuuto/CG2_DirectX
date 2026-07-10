@@ -184,6 +184,9 @@
     <Filter Include="ソース ファイル\Boss\Attacks\Warp">
       <UniqueIdentifier>{4625ffc8-94d1-48d9-ba16-1eea523929c7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Bullet">
+      <UniqueIdentifier>{09fd979a-538a-4f10-999a-1312ef95cd20}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -350,6 +353,9 @@
     </ClCompile>
     <ClCompile Include="BossWarp.cpp">
       <Filter>ソース ファイル\Boss\Attacks\Warp</Filter>
+    </ClCompile>
+    <ClCompile Include="ProjectileManager.cpp">
+      <Filter>ソース ファイル\Bullet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -529,6 +535,9 @@
     </ClInclude>
     <ClInclude Include="BossWarp.h">
       <Filter>ソース ファイル\Boss\Attacks\Warp</Filter>
+    </ClInclude>
+    <ClInclude Include="ProjectileManager.h">
+      <Filter>ソース ファイル\Bullet</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

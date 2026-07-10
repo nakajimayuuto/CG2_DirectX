@@ -1,5 +1,13 @@
 #include "Boss.h"
 
+void (Boss::* Boss::pInitializeFunc[])() = {
+		&Boss::WarpInitialize,
+};
+
+void (Boss::* Boss::pUpdateFunc[])() = {
+		&Boss::WarpUpdate,
+};
+
 Boss::~Boss() {
 	delete targetTransform_;
 }
@@ -36,7 +44,9 @@ void Boss::Update() {
 	ImGui::DragFloat3("scale", reinterpret_cast<float*>(&transform_.scale), 0.05f, 0.0f, 5.0f);
 	ImGui::DragFloat3("rotate", reinterpret_cast<float*>(&imRotate), 1.0f, -360.0f, 360.0f);
 	ImGui::DragFloat3("translate", reinterpret_cast<float*>(&transform_.translate), 0.25f, -100.0f, 100.0f);
-
+	if (ImGui::Button("play")) {
+		attackRequest_ = Attacks::kWarp;
+	}
 
 
 	transform_.rotate = Radian(imRotate);
@@ -47,7 +57,8 @@ void Boss::Update() {
 	AttackUpdate();
 	
 	if (!isPlayAttack_) {
-		transform_.rotate.y = atan2( transform_.translate.x - targetTransform_->translate.x,transform_.translate.z - targetTransform_->translate.z);
+		destinationAngleY_ = atan2( transform_.translate.x - targetTransform_->translate.x,transform_.translate.z - targetTransform_->translate.z);
+		transform_.rotate.y = LerpShortAngle(transform_.rotate.y, destinationAngleY_, 0.25f);
 	}
 
 }
@@ -66,28 +77,19 @@ void Boss::OnCollision(Collider* other) {
 }
 
 void Boss::AttackInitialize() {
-	if (!isPlayAttack_ && !attackRequest_) {
+	if (isPlayAttack_ || !attackRequest_) {
 		return;
 	}
 
+	transform_.rotate.y = destinationAngleY_;
+	currentAttack_ = attackRequest_.value();
+	//attackRequest_ = std::nullopt;
 	isPlayAttack_ = true;
-	attackRequest_ = std::nullopt;
 	currentAttackTimer_ = 0.0f; // 攻撃のタイマー.
 	kMaxAttackTimer = 0.0f; // 攻撃のタイマー最大値.
 	currentAttackPhase = 0; // 攻撃のフェーズ.
 
-	currentAttack_ = attackRequest_.value();
-	switch (currentAttack_) {
-	case Attacks::kWarp:
-		WarpInitialize();
-		break;
-	case Attacks::kBulletShot:
-		break;
-	case Attacks::kThreeWayShot:
-		break;
-	case Attacks::kFireBulletShot:
-		break;
-	}
+	(this->*pInitializeFunc[static_cast<size_t>(currentAttack_)])();
 }
 
 void Boss::AttackUpdate() {
@@ -95,17 +97,9 @@ void Boss::AttackUpdate() {
 		return;
 	}
 
-	switch (currentAttack_) {
-	case Attacks::kWarp:
-		WarpUpdate();
-		break;
-	case Attacks::kBulletShot:
-		break;
-	case Attacks::kThreeWayShot:
-		break;
-	case Attacks::kFireBulletShot:
-		break;
-	}
+	(this->*pUpdateFunc[static_cast<size_t>(currentAttack_)])();
+
+	currentAttackTimer_ += deltaTime_ * difficultyMagnificationTime * dopamineSpeed_;
 }
 
 void Boss::AttackFinished() {
@@ -129,6 +123,18 @@ void Boss::WarpUpdate() {
 			currentAttackTimer_ = 0;
 			kMaxAttackTimer = kWarpFinishedTimerMax;
 			currentAttackPhase = 1;
+			float maxLength = 0.0f;
+			Vector3 newPos;
+			for (Vector3& pos : anchorPoints_) {
+				float newLength = (pos - targetTransform_->translate).Length();
+				if (newLength >= maxLength) {
+					maxLength = newLength;
+					newPos = pos;
+				}
+			}
+
+			transform_.translate = newPos;
+			
 		}
 
 		break;
@@ -140,4 +146,11 @@ void Boss::WarpUpdate() {
 		}
 		break;
 	}
+}
+
+void Boss::BulletInitialize(){
+
+}
+
+void Boss::BulletUpdate(){
 }

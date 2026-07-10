@@ -32,6 +32,8 @@ private:
 
 	std::vector<Vector3> anchorPoints_; // それぞれのアンカーポイント.
 
+	float destinationAngleY_ = 0.0f;
+
 	Vector3 anchorPointCenter_; // アンカーポイントの中心.
 
 	Transform* targetTransform_ = nullptr; // プレイヤーの位置.
@@ -50,6 +52,12 @@ private:
 
 	void WarpUpdate();
 
+	void BulletInitialize();
+
+	void BulletUpdate();
+private:
+	static void (Boss::* pInitializeFunc[])();
+	static void (Boss::* pUpdateFunc[])();
 private:
 	// 攻撃全般.
 	Attacks currentAttack_ = Attacks::kWarp; // 現在の攻撃.
@@ -64,8 +72,9 @@ private:
 
 
 	// Warp
-	float kWarpEnterTimerMax;
-	float kWarpFinishedTimerMax;
+	float kWarpEnterTimerMax = 0.5f;
+	float kWarpFinishedTimerMax = 0.5f;
+
 
 };
 
