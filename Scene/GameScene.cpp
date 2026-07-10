@@ -43,7 +43,7 @@ void GameScene::Initialize() {
 	backGroundSprite_.SetSize(Environment::GetInstance()->GetWindowSize());
 	backGroundSprite_.SetColor({ 0.1f,0.25f,0.5f,1.0f });
 
-	sprite_.SetIsVisible(false);
+	model_.SetIsVisible(false);
 
 	Environment::GetInstance()->SetWindowMode(kFullscreen);
 }
@@ -127,13 +127,14 @@ void GameScene::Update() {
 }
 
 void GameScene::Draw() {
+	sprite_.SetBlendMode(BlendMode::kStencil);
+	sprite_.Draw(transformSprite_);
 	backGroundSprite_.Draw(Transform::GetInitialValue({ 100.0f,100.0f,100.0f }, { 0.0f ,0.0f,0.0f}, { -backGroundSprite_.GetSize().x / 2.0f * 50.0f,-backGroundSprite_.GetSize().y / 2.0f * 50.0f ,100.0f}));
 
 	//skydome_->Draw();
 
-	model_.Draw(transform_);
 
-	sprite_.Draw(transformSprite_);
+	model_.Draw(transform_);
 
 	//frameSpriteLeft_.Draw({ {1.0f,1.0f},0.0f, {-frameSpriteLeft_.GetSize().x / 2.0f,frameSpriteLeft_.GetSize().y / 2.0f} });
 	//frameSpriteRight_.Draw({ {1.0f,1.0f},0.0f, {Environment::GetInstance()->GetWindowSize().width + (frameSpriteRight_.GetSize().x / 2.0f),frameSpriteRight_.GetSize().y / 2.0f } });

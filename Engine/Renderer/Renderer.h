@@ -189,6 +189,8 @@ namespace Renderer {
 		void SetSize(Vector2 size);
 		void SetSize(WindowSize windowSize);
 
+		void SetBlendMode(BlendMode blendMode) { blendMode_ = blendMode; };
+
 		Vector2 GetSize() { return size_; };
 	private:
 		void AdaptationSize();

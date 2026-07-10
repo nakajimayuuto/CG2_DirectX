@@ -53,8 +53,8 @@ struct D3DResourceLeakChecker {
 };
 
 enum class BlendMode {
-	kAspectNone, // ブレンドモード無し.
 	kNormal, // 通常.
+	kAspectNone, // ブレンドモード無し.
 	kAdd, // 加算.
 	kSubtract, // 減算.
 	kMultily, // 乗算.
@@ -62,6 +62,7 @@ enum class BlendMode {
 
 	kNormalCullNone, // 通常ブレンド。背面カリング無し.
 	kLine, // 線の描画に使用.
+	kStencil, // StencilBufferをいじるやつ.
 	kCount, // ブレンドモードの最大数.
 }; struct WindowData {
 	WNDCLASS wc{};
