@@ -70,6 +70,7 @@ enum class BlendMode {
 
 enum class ShaderType {
 	kObject3d, // オブジェクト3D.
+	kNoTexture, // テクスチャ無しモデル.
 	kParticle, // パーティクル.
 	kCount // 最大数.
 };
@@ -279,5 +280,9 @@ private:
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlobLine;
 	// 【PixelShader】
 	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlobLine;
+	// 【VertexShader】
+	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlobNoTexture;
+	// 【PixelShader】
+	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlobNoTexture;
 };
 

@@ -166,6 +166,18 @@
     <Filter Include="ソース ファイル\Boss">
       <UniqueIdentifier>{54dbb19c-1e7c-4b7f-8339-ba7744303a1d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="hlsl\Line">
+      <UniqueIdentifier>{35f66e28-054b-4a86-8811-c9fd21879c0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="hlsl\Object3d">
+      <UniqueIdentifier>{d8782f84-fd00-4955-b939-28e7ae43066a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="hlsl\Particle">
+      <UniqueIdentifier>{937ff768-2f3a-4901-9dd7-14f65085835a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="hlsl\NoTexture">
+      <UniqueIdentifier>{45463921-b44e-47d9-8819-3c82493703f3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -502,34 +514,43 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="hlsl\Line.hlsli">
+      <Filter>hlsl\Line</Filter>
+    </None>
     <None Include="hlsl\Object3d.hlsli">
-      <Filter>hlsl</Filter>
+      <Filter>hlsl\Object3d</Filter>
     </None>
     <None Include="hlsl\Particle.hlsli">
-      <Filter>hlsl</Filter>
+      <Filter>hlsl\Particle</Filter>
     </None>
-    <None Include="hlsl\Line.hlsli">
-      <Filter>hlsl</Filter>
+    <None Include="hlsl\NoTexture.hlsli">
+      <Filter>hlsl\NoTexture</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="hlsl\Object3d.PS.hlsl">
-      <Filter>hlsl</Filter>
-    </FxCompile>
-    <FxCompile Include="hlsl\Object3d.VS.hlsl">
-      <Filter>hlsl</Filter>
-    </FxCompile>
-    <FxCompile Include="hlsl\Particle.VS.hlsl">
-      <Filter>hlsl</Filter>
-    </FxCompile>
-    <FxCompile Include="hlsl\Particle.PS.hlsl">
-      <Filter>hlsl</Filter>
+    <FxCompile Include="hlsl\Line.VS.hlsl">
+      <Filter>hlsl\Line</Filter>
     </FxCompile>
     <FxCompile Include="hlsl\Line.PS.hlsl">
-      <Filter>hlsl</Filter>
+      <Filter>hlsl\Line</Filter>
     </FxCompile>
-    <FxCompile Include="hlsl\Line.VS.hlsl">
-      <Filter>hlsl</Filter>
+    <FxCompile Include="hlsl\Object3d.PS.hlsl">
+      <Filter>hlsl\Object3d</Filter>
+    </FxCompile>
+    <FxCompile Include="hlsl\Object3d.VS.hlsl">
+      <Filter>hlsl\Object3d</Filter>
+    </FxCompile>
+    <FxCompile Include="hlsl\Particle.VS.hlsl">
+      <Filter>hlsl\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="hlsl\Particle.PS.hlsl">
+      <Filter>hlsl\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="hlsl\NoTexture.PS.hlsl">
+      <Filter>hlsl\NoTexture</Filter>
+    </FxCompile>
+    <FxCompile Include="hlsl\NoTexture.VS.hlsl">
+      <Filter>hlsl\NoTexture</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

@@ -379,6 +379,9 @@ void GameSystem::Initialize() {
 	vertexShaderBlob3dObject = CompileShader(L"./hlsl/Object3d.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
 	pixelShaderBlob3dObject = CompileShader(L"./hlsl/Object3d.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
 
+	vertexShaderBlobNoTexture = CompileShader(L"./hlsl/NoTexture.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
+	pixelShaderBlobNoTexture = CompileShader(L"./hlsl/NoTexture.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+
 	for (uint32_t j = 0; j < static_cast<uint32_t>(ShaderType::kCount); j++) {
 		for (uint32_t i = 0; i < static_cast<uint32_t>(BlendMode::kCount); i++) {
 			CreatePipeline(static_cast<BlendMode>(i), static_cast<ShaderType>(j));
@@ -417,7 +420,7 @@ void GameSystem::Initialize() {
 
 void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 	uint32_t pipeLineIndex = static_cast<uint32_t>(blendMode) + (static_cast<uint32_t>(shaderType) * static_cast<uint32_t>(BlendMode::kCount));
-	if (shaderType == ShaderType::kParticle) {
+	if (shaderType != ShaderType::kObject3d) {
 		if (blendMode == BlendMode::kLine) {
 			return;
 		}
@@ -489,6 +492,7 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 
 	// RootParameter作成。複数設定出来るので配列。
 	D3D12_ROOT_PARAMETER rootParameters[8] = {};
+	D3D12_ROOT_PARAMETER rootParametersNoTexture[7] = {};
 	D3D12_ROOT_PARAMETER rootParametersParticle[3] = {};
 	D3D12_ROOT_PARAMETER rootParametersLine[1] = {};
 
@@ -510,6 +514,44 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 
 		descriptionRootSignature.pParameters = rootParametersParticle; // ルートパラメータ配列へのポインタ.
 		descriptionRootSignature.NumParameters = _countof(rootParametersParticle); // 配列の長さ.
+		break;
+	case ShaderType::kNoTexture:
+		rootParametersNoTexture[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
+		rootParametersNoTexture[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		rootParametersNoTexture[0].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド.
+
+		rootParametersNoTexture[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
+		rootParametersNoTexture[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VertexShaderで使う.
+		rootParametersNoTexture[1].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド.
+
+		// DirectionalLightData.
+		rootParametersNoTexture[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
+		rootParametersNoTexture[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		rootParametersNoTexture[2].Descriptor.ShaderRegister = 1; // レジスタ番号1を使う.
+
+		// CameraData.
+		rootParametersNoTexture[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
+		rootParametersNoTexture[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		rootParametersNoTexture[3].Descriptor.ShaderRegister = 2; // レジスタ番号2を使う.
+
+		// PointLightData.
+		rootParametersNoTexture[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; //DescriptorTableを使う.
+		rootParametersNoTexture[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		rootParametersNoTexture[4].DescriptorTable.pDescriptorRanges = pointLightDescriptorRange; // Tableの中身の配列を指定.
+		rootParametersNoTexture[4].DescriptorTable.NumDescriptorRanges = _countof(pointLightDescriptorRange); // Tableで利用する数.
+
+		// SpotLightData.
+		rootParametersNoTexture[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; //DescriptorTableを使う.
+		rootParametersNoTexture[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		rootParametersNoTexture[5].DescriptorTable.pDescriptorRanges = spotLightDescriptorRange; // Tableの中身の配列を指定.
+		rootParametersNoTexture[5].DescriptorTable.NumDescriptorRanges = _countof(spotLightDescriptorRange); // Tableで利用する数.
+		// LightNumData.
+		rootParametersNoTexture[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う.
+		rootParametersNoTexture[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+		rootParametersNoTexture[6].Descriptor.ShaderRegister = 3; // レジスタ番号3を使う.
+
+		descriptionRootSignature.pParameters = rootParametersNoTexture; // ルートパラメータ配列へのポインタ.
+		descriptionRootSignature.NumParameters = _countof(rootParametersNoTexture); // 配列の長さ.
 		break;
 	default:
 		if (blendMode == BlendMode::kLine) {
@@ -568,7 +610,7 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 
 	// Samplerの設定.
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
-	if (blendMode != BlendMode::kLine) {
+	if (blendMode != BlendMode::kLine && shaderType != ShaderType::kNoTexture) {
 		staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR; // バイリニアフィルタ.
 		staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP; // 0~1の範囲外をリピート.
 		staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -595,6 +637,7 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 
 	D3D12_INPUT_ELEMENT_DESC inputElementalDescs[3] = {};
 	D3D12_INPUT_ELEMENT_DESC inputElementalDescsLine[2] = {};
+	D3D12_INPUT_ELEMENT_DESC inputElementalDescsNoTexture[2] = {};
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
 	if (blendMode == BlendMode::kLine) {
 		// 【InputLayout】
@@ -610,6 +653,19 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 		inputLayoutDesc.pInputElementDescs = inputElementalDescsLine;
 		inputLayoutDesc.NumElements = _countof(inputElementalDescsLine);
 
+	}else if(shaderType == ShaderType::kNoTexture){
+		// 【InputLayout】
+		inputElementalDescsNoTexture[0].SemanticName = "POSITION";
+		inputElementalDescsNoTexture[0].SemanticIndex = 0;
+		inputElementalDescsNoTexture[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		inputElementalDescsNoTexture[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+		inputElementalDescsNoTexture[1].SemanticName = "NORMAL";
+		inputElementalDescsNoTexture[1].SemanticIndex = 0;
+		inputElementalDescsNoTexture[1].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+		inputElementalDescsNoTexture[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+
+		inputLayoutDesc.pInputElementDescs = inputElementalDescsNoTexture;
+		inputLayoutDesc.NumElements = _countof(inputElementalDescsNoTexture);
 	} else {
 		// 【InputLayout】
 		inputElementalDescs[0].SemanticName = "POSITION";
@@ -627,7 +683,6 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 
 		inputLayoutDesc.pInputElementDescs = inputElementalDescs;
 		inputLayoutDesc.NumElements = _countof(inputElementalDescs);
-
 	}
 
 	// 【BlendState設定】
@@ -699,6 +754,9 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 	if (shaderType == ShaderType::kParticle) {
 		vertexShaderBlob = vertexShaderBlobParticle;
 		pixelShaderBlob = pixelShaderBlobParticle;
+	} else if (shaderType == ShaderType::kNoTexture) {
+		vertexShaderBlob = vertexShaderBlobNoTexture;
+		pixelShaderBlob = pixelShaderBlobNoTexture;
 	} else if(blendMode == BlendMode::kLine){
 		vertexShaderBlob = vertexShaderBlobLine;
 		pixelShaderBlob = pixelShaderBlobLine;
