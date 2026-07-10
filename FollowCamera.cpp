@@ -26,7 +26,7 @@ void FollowCamera::Update() {
 	if (input->IsGamePadConnect()) {
 		input->SetIsCursorFixed(false);
 		input->SetIsCursorVisible(true);
-		//destinationAngleY_ += input->GetRightStickDirection().x * kRotateSpeed;
+		destinationAngleY_ += input->GetRightStickDirection().x * kRotateSpeed;
 
 		if (input->TriggerPadButton(PadButtons::INPUT_R3)) {
 			Reset();
@@ -34,7 +34,7 @@ void FollowCamera::Update() {
 	} else {
 		input->SetIsCursorFixed(true);
 		input->SetIsCursorVisible(false);
-		//destinationAngleY_ += input->GetMouse().GetMove().x * kMouseRotateSpeed;
+		destinationAngleY_ += input->GetMouse().GetMove().x * kMouseRotateSpeed;
 
 		if (input->TriggerKey(DIK_C)) {
 			Reset();
