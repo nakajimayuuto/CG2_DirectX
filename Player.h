@@ -52,8 +52,8 @@ private:
 	void BehaviorRootInitialize();
 	void BehaviorRootUpdate();
 
-	void BehaviorAttackInitialize();
-	void BehaviorAttackUpdate();
+	void BehaviorAttackInitialize() {};
+	void BehaviorAttackUpdate() {};
 
 	void BehaviorDashInitialize();
 	void BehaviorDashUpdate();

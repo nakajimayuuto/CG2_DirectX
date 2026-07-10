@@ -1,5 +1,5 @@
 #include "Player.h"
-#include "FollowCamera.h"
+#include "GameCamera.h"
 void Player::Initialize() {
 	transform_.Initialize();
 	targetRotateY = 0.0f;
@@ -116,11 +116,6 @@ void Player::BehaviorRootUpdate() {
 		velocity_ = { input->GetLeftStickDirection().x,0.0f,input->GetLeftStickDirection().y };
 
 		velocity_ = velocity_.Normalize() * kSpeed;
-
-		if (input->TriggerPadButton(PadButtons::INPUT_L1)) {
-		//	behaviorRequest_ = Behavior::kAttack;
-		}
-
 		if (input->TriggerPadButton(PadButtons::INPUT_R1)) {
 			behaviorRequest_ = Behavior::kDash;
 		}
@@ -176,33 +171,43 @@ void Player::BehaviorRootUpdate() {
 	UpdateFloatingGimmick();
 
 }
-
-
-void Player::BehaviorAttackInitialize() {
-}
-
-void Player::BehaviorAttackUpdate() {
-}
-
 void Player::BehaviorDashInitialize() {
 	workDash_.dashParameter_ = 0.0f;
 	transform_.rotate.y = targetRotateY;
 }
 
 void Player::BehaviorDashUpdate() {
+	isMoving_ = true;
+	InputManager* input = InputManager::GetInstance();
+	if (input->IsGamePadConnect()) {
+		if (input->TriggerPadButton(PadButtons::INPUT_R1)) {
+			behaviorRequest_ = Behavior::kRoot;
+		}
+	} else {
+		if (input->TriggerKey(DIK_LCONTROL)) {
+			behaviorRequest_ = Behavior::kRoot;
+		}
+
+		if (input->PressKey(DIK_A)) {
+			transform_.rotate.y -= Radian(10.0f);
+		}
+
+		if (input->PressKey(DIK_D)) {
+			transform_.rotate.y += Radian(10.0f);
+		}
+	}
+
 	workDash_.dashParameter_ += DeltaTime::GetInstance()->GetDeltaTime();
 
-	Vector3 move = { 0.0f,0.0f,1.0f };
+	Vector3 move = { 0.0f,0.0f,0.5f };
+
+	transform_.rotate.y;//Camera::GetInstance()->GetTransform().rotate.y;
 
 	Matrix4x4 rotateMatrix = Matrix4x4::MakeRotateMatrix(transform_.rotate);
-
+	
 	move = rotateMatrix.TransformNomal(move);
 
 	transform_.translate += move;
-
-	if (workDash_.dashParameter_ >= kBehaviorDashTime) {
-		behaviorRequest_ = Behavior::kRoot;
-	}
 }
 
 void Player::BehaviorJumpInitialize() {
@@ -235,10 +240,10 @@ void Player::UpdateFloatingGimmick() {
 }
 
 void Player::Draw() {
-	Renderer::GetInstance()->DrawModel(transformBody_, &models_["body"],false);
-	Renderer::GetInstance()->DrawModel(transformHead_, &models_["head"],false);
-	Renderer::GetInstance()->DrawModel(transformLArm_, &models_["LArm"],false);
-	Renderer::GetInstance()->DrawModel(transformRArm_, &models_["RArm"],false);
+	Renderer::GetInstance()->DrawModel(transformBody_, &models_["body"], false);
+	Renderer::GetInstance()->DrawModel(transformHead_, &models_["head"], false);
+	Renderer::GetInstance()->DrawModel(transformLArm_, &models_["LArm"], false);
+	Renderer::GetInstance()->DrawModel(transformRArm_, &models_["RArm"], false);
 
 	//models_["RArm"].GetColor();
 

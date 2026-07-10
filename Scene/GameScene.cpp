@@ -58,6 +58,12 @@ void GameScene::Update() {
 	ImGui::DragInt("num", &testNum_, 1.0f, 0, 2000);
 	ImGui::End();
 
+	ImGui::Begin("spriteTest");
+	testRotate_ = Degree(testRotate_);
+	ImGui::DragFloat("num", &testRotate_, 1.0f, -360.0f, 360.0f);
+	testRotate_ = Radian(testRotate_);
+	ImGui::End();
+
 #endif // _DEBUG
 
 
@@ -80,6 +86,8 @@ void GameScene::Draw() {
 	Renderer::GetInstance()->DrawBox(Transform::GetInitialValue({ 150.0f,50.0f,150.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
 	Renderer::GetInstance()->DrawBox(Transform::GetInitialValue({ 150.0f,50.0f,150.0f }, { 0.0f,Radian(45.0f),0.0f }, { 0.0f,0.0f,0.0f }), "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
 	Renderer::GetInstance()->SetBlendMode(BlendMode::kNormal);
+
+	//Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({1.0f,1.0f,1.0f}, { testRotate_,0.0f,0.0f }, { 150.0f,50.0f,150.0f }), "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
 
 	player_->Draw();
 	boss_->Draw();
