@@ -2,6 +2,7 @@
 #include "Satlib.h"
 class Boss : public Collider{
 public:
+	~Boss();
 	void Initialize();
 
 	  void Update();
@@ -9,6 +10,8 @@ public:
 	  void Draw();
 
 	  Transform* GetTransform() { return &transform_; };
+
+	  void SetTargetTransform(Transform* transform);
 
 	  static void RegisterGlobalVariables();
 	  static void ApplyGlobalVariables();
@@ -22,5 +25,14 @@ private:
 	std::vector<Vector3> anchorPoints_;
 
 	Vector3 anchorPointCenter_;
+
+	Transform* targetTransform = nullptr;
+
+	void (*pAttackInitialize)() = nullptr;
+	void (*pAttackUpdate)() = nullptr;
+private:
+	void WarpInitialize();
+
+	void WarpUpdate();
 };
 

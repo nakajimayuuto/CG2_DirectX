@@ -77,11 +77,6 @@ void GameCamera::FollowedUpdate(){
 	if (distance <= movingRadius_) {
 		if (isMove_) {
 			direction = std::fabs(Degree(transform_.rotate.y - target_->rotate.y));
-			// ここのdirectionの部分で何かがバグっています
-			if (direction >= 360.0f) {
-
-			}
-
 			if (direction <= kLerpPlayerDirectionMin_) {
 				destinationAngleY_ = Lerp(destinationAngleY_, target_->rotate.y, Easing(0.0f, kAutoCompletionRate, direction, kLerpPlayerDirectionMin_, EaseType::kConstant));
 			} else if (direction <= kLerpPlayerDirectionMax_) {
@@ -89,7 +84,6 @@ void GameCamera::FollowedUpdate(){
 			} else if (direction <= kLerpPlayerDirectionEase_) {
 				destinationAngleY_ = Lerp(destinationAngleY_, target_->rotate.y, Easing(kAutoCompletionRate, 0.0f, direction - kLerpPlayerDirectionMax_, kLerpPlayerDirectionEase_ - kLerpPlayerDirectionMax_, EaseType::kConstant));
 			} else {
-				//direction = std::fabs(direction - 360.0f);
 				if (destinationAngleY_ >= 0.0f) {
 					transform_.rotate.y -= Radian(360.0f);
 					destinationAngleY_ -= Radian(360.0f);

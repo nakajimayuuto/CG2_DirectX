@@ -33,6 +33,7 @@ void GameScene::Initialize() {
 
 	boss_ = std::make_unique<Boss>();
 	boss_->Initialize();
+	boss_->SetTargetTransform(player_->GetTransform());
 
 	Player::RegisterGlobalVariables();
 
@@ -91,7 +92,6 @@ void GameScene::Draw() {
 
 	player_->Draw();
 	boss_->Draw();
-
 
 	if (testNum_ > 50) {
 		testNum_ = testNum_;

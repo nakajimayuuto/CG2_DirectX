@@ -1,5 +1,9 @@
 #include "Boss.h"
 
+Boss::~Boss(){
+	delete targetTransform;
+}
+
 void Boss::Initialize() {
 	model_.Initialize("creeking");
 	anchorPointCenter_ = Vector3(0.0f, 0.5f, 0.0f);
@@ -21,6 +25,17 @@ void Boss::Initialize() {
 }
 
 void Boss::Update() {
+	ImGui::Begin("BossDebug");
+	Vector3 imRotate = Degree(transform_.rotate);
+	ImGui::DragFloat3("scale",reinterpret_cast<float*>(&transform_.scale),0.05f,0.0f,5.0f);
+	ImGui::DragFloat3("rotate",reinterpret_cast<float*>(&imRotate),1.0f,-360.0f,360.0f);
+	ImGui::DragFloat3("translate",reinterpret_cast<float*>(&transform_.translate),0.25f,-100.0f,100.0f);
+	transform_.rotate = Radian(imRotate);
+	ImGui::End();
+
+
+
+
 
 }
 
@@ -35,4 +50,10 @@ void Boss::Draw() {
 }
 
 void Boss::OnCollision(Collider* other){
+}
+
+void Boss::WarpInitialize(){
+}
+
+void Boss::WarpUpdate(){
 }
