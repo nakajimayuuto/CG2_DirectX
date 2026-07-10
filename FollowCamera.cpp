@@ -95,23 +95,29 @@ void FollowCamera::Update() {
 	float wallDirection = 0.0f;
 	if (distance > movingRadius_) {
 		wallOffsetPos = transform_.translate.Normalize() * movingRadius_;
-		transform_.translate = Lerp(interOffsetTarget_, wallOffsetPos, 0.5f);
+		transform_.translate = Lerp(interOffsetTarget_, wallOffsetPos, 0.75f);
 		wallDirection = std::atan2(target_->translate.x - transform_.translate.x, target_->translate.z - transform_.translate.z);
 
-		if (wallDirection < 0.0f) {
-			wallDirection += Radian(360.0f);
+		if (std::fabs(destinationAngleY_ - wallDirection) >= Radian(360.0f)) {
+			if (wallDirection < 0.0f) {
+				wallDirection += Radian(360.0f);
+			} else {
+				wallDirection -= Radian(360.0f);
+			}
 		}
 
 		GameSystem::Log(std::format("before:{},{}\n", transform_.rotate.y, destinationAngleY_, transform_.translate.z));
 		// ここ二つの値をうまくやると何とかなりそう。バグるときは大体-6.??から0.??に変換するとき
-		destinationAngleY_ = Lerp(destinationAngleY_, wallDirection, 1.0f);
-		transform_.rotate.y = Lerp(transform_.rotate.y, wallDirection, 1.0f);
-		GameSystem::Log(std::format("after:{},{}\n", transform_.rotate.y, destinationAngleY_, transform_.translate.z));
+		destinationAngleY_ = LerpShortAngle(destinationAngleY_, wallDirection, 0.1f);
+		//transform_.rotate.y = Lerp(transform_.rotate.y, wallDirection, 1.0f);
+		GameSystem::Log(std::format("after :{},{}\n", transform_.rotate.y, destinationAngleY_, transform_.translate.z));
 	} else {
 		transform_.translate = Lerp(interOffsetTarget_, wallOffsetPos, 0.25f);
+		GameSystem::Log(std::format("none  :{},{}\n", transform_.rotate.y, destinationAngleY_, transform_.translate.z));
 	}
 
-	transform_.rotate.y = Lerp(transform_.rotate.y, destinationAngleY_, kCompletionRate);
+	
+	transform_.rotate.y = LerpShortAngle(transform_.rotate.y, destinationAngleY_, kCompletionRate);
 
 	if (std::fabs(transform_.rotate.y) >= Radian(360.0f)) {
 		if (transform_.rotate.y >= 0.0f) {

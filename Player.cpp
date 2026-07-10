@@ -149,6 +149,10 @@ void Player::BehaviorRootUpdate() {
 			behaviorRequest_ = Behavior::kJump;
 		}
 
+		if (input->TriggerKey(DIK_LCONTROL)) {
+			behaviorRequest_ = Behavior::kDash;
+		}
+
 		velocity_ = velocity_.Normalize() * kSpeed;
 	}
 

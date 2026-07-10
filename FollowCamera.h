@@ -44,6 +44,8 @@ private:
 
 	float preTargetRotateY_;
 
+	float wallNearDirection_;
+
 	float movingRadius_ = 70.0f;
 
 	Vector3 interTarget_ = {};
