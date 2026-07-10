@@ -46,7 +46,7 @@ void Player::Initialize() {
 	//emitter_->SetParticle(particles_.get());
 	//emitter_->Initialize(transform_, 3, 0.5f);
 
-	FollowCamera::GetInstance()->SetTarget(&transform_);
+	GameCamera::GetInstance()->SetTarget(&transform_);
 }
 
 void Player::InitializeFloatingGimmick() {
@@ -98,7 +98,7 @@ void Player::Update() {
 
 	transform_.rotate.y = std::fmod(transform_.rotate.y, Radian(360.0f));
 
-	FollowCamera::GetInstance()->SetTargetIsMove(isMoving_);
+	GameCamera::GetInstance()->SetTargetIsMove(isMoving_);
 }
 
 void Player::BehaviorRootInitialize() {

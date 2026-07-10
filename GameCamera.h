@@ -1,9 +1,9 @@
 #pragma once
 #include "Satlib.h"
 
-class FollowCamera {
+class GameCamera {
 public:
-	static FollowCamera* GetInstance();
+	static GameCamera* GetInstance();
 
 	void Initialize();
 
@@ -15,6 +15,8 @@ public:
 
 	void Reset();
 private:
+	void FollowedUpdate();
+
 	Vector3 GetOffset()const;
 private:
 	static inline float kCompletionRate = 0.25f;

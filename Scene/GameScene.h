@@ -5,7 +5,7 @@
 #include "../Skydome.h"
 #include "../Ground.h"
 #include "../Player.h"
-#include "../FollowCamera.h"
+#include "../GameCamera.h"
 #include "../Boss.h"
 
 class GameScene : public IScene {

@@ -19,7 +19,7 @@ void GameScene::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("enemy", "Resource/enemy", "enemy.obj");
 
 	Camera::GetInstance()->SetPosition({ 0.0f,2.0f,-30.0f });
-	FollowCamera::GetInstance()->Initialize();
+	GameCamera::GetInstance()->Initialize();
 
 	player_ = std::make_unique<Player>();
 	player_->Initialize();
@@ -65,7 +65,7 @@ void GameScene::Update() {
 
 	boss_->Update();
 
-	FollowCamera::GetInstance()->Update();
+	GameCamera::GetInstance()->Update();
 
 	Camera::GetInstance()->Update();
 

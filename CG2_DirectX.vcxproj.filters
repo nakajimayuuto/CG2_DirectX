@@ -333,7 +333,7 @@
     <ClCompile Include="ContactRecord.cpp">
       <Filter>ソース ファイル\ContactRecord</Filter>
     </ClCompile>
-    <ClCompile Include="FollowCamera.cpp">
+    <ClCompile Include="GameCamera.cpp">
       <Filter>ソース ファイル\GameCamera</Filter>
     </ClCompile>
     <ClCompile Include="Boss.cpp">
@@ -506,7 +506,7 @@
     <ClInclude Include="ContactRecord.h">
       <Filter>ソース ファイル\ContactRecord</Filter>
     </ClInclude>
-    <ClInclude Include="FollowCamera.h">
+    <ClInclude Include="GameCamera.h">
       <Filter>ソース ファイル\GameCamera</Filter>
     </ClInclude>
     <ClInclude Include="Boss.h">

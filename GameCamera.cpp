@@ -1,18 +1,42 @@
-#include "FollowCamera.h"
+#include "GameCamera.h"
 
-FollowCamera* FollowCamera::GetInstance() {
-	static FollowCamera instance;
+GameCamera* GameCamera::GetInstance() {
+	static GameCamera instance;
 	return &instance;
 }
 
-void FollowCamera::Initialize() {
+void GameCamera::Initialize() {
 	transform_.Initialize();
 	isMove_ = false;
 
 	angleDirection_ = 0.0f;
 }
 
-void FollowCamera::Update() {
+void GameCamera::Update() {
+
+	FollowedUpdate();
+
+	Camera::GetInstance()->SetTransform(transform_);
+}
+
+void GameCamera::Reset() {
+	if (!target_) {
+		return;
+	}
+	interTarget_ = target_->translate;
+
+	transform_.rotate.y = target_->rotate.y;
+
+	destinationAngleY_ = transform_.rotate.y;
+
+	Vector3 offset = GetOffset();
+
+	transform_.translate = interTarget_ + offset;
+
+	Camera::GetInstance()->SetTransform(transform_);
+}
+
+void GameCamera::FollowedUpdate(){
 	if (!target_) {
 		return;
 	}
@@ -116,7 +140,7 @@ void FollowCamera::Update() {
 		GameSystem::Log(std::format("none  :{},{}\n", transform_.rotate.y, destinationAngleY_, transform_.translate.z));
 	}
 
-	
+
 	transform_.rotate.y = LerpShortAngle(transform_.rotate.y, destinationAngleY_, kCompletionRate);
 
 	if (std::fabs(transform_.rotate.y) >= Radian(360.0f)) {
@@ -138,28 +162,9 @@ void FollowCamera::Update() {
 	// ここまで地獄
 
 	preTargetRotateY_ = target_->rotate.y;
-
-	Camera::GetInstance()->SetTransform(transform_);
 }
 
-void FollowCamera::Reset() {
-	if (!target_) {
-		return;
-	}
-	interTarget_ = target_->translate;
-
-	transform_.rotate.y = target_->rotate.y;
-
-	destinationAngleY_ = transform_.rotate.y;
-
-	Vector3 offset = GetOffset();
-
-	transform_.translate = interTarget_ + offset;
-
-	Camera::GetInstance()->SetTransform(transform_);
-}
-
-Vector3 FollowCamera::GetOffset() const {
+Vector3 GameCamera::GetOffset() const {
 	Matrix4x4 cameraRotateMatrix = Matrix4x4::MakeRotateYMatrix(transform_.rotate.y);
 	return cameraRotateMatrix.TransformNomal(kOffset);
 }

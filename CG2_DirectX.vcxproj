@@ -79,7 +79,7 @@
       </ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="FollowCamera.cpp" />
+    <ClCompile Include="GameCamera.cpp" />
     <ClCompile Include="Ground.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Managers\CollisionManager.cpp" />
@@ -137,7 +137,7 @@
     <ClInclude Include="externals\imgui\imstb_rectpack.h" />
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
-    <ClInclude Include="FollowCamera.h" />
+    <ClInclude Include="GameCamera.h" />
     <ClInclude Include="Ground.h" />
     <ClInclude Include="Managers\CollisionManager.h" />
     <ClInclude Include="Managers\InputManager.h" />
