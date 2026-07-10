@@ -178,6 +178,12 @@
     <Filter Include="hlsl\NoTexture">
       <UniqueIdentifier>{45463921-b44e-47d9-8819-3c82493703f3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Boss\Attacks">
+      <UniqueIdentifier>{57ef6318-f59f-4bae-ac6e-4b908b75f36a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Boss\Attacks\Warp">
+      <UniqueIdentifier>{4625ffc8-94d1-48d9-ba16-1eea523929c7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -338,6 +344,12 @@
     </ClCompile>
     <ClCompile Include="Boss.cpp">
       <Filter>ソース ファイル\Boss</Filter>
+    </ClCompile>
+    <ClCompile Include="IBossAttack.cpp">
+      <Filter>ソース ファイル\Boss\Attacks</Filter>
+    </ClCompile>
+    <ClCompile Include="BossWarp.cpp">
+      <Filter>ソース ファイル\Boss\Attacks\Warp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -511,6 +523,12 @@
     </ClInclude>
     <ClInclude Include="Boss.h">
       <Filter>ソース ファイル\Boss</Filter>
+    </ClInclude>
+    <ClInclude Include="IBossAttack.h">
+      <Filter>ソース ファイル\Boss\Attacks</Filter>
+    </ClInclude>
+    <ClInclude Include="BossWarp.h">
+      <Filter>ソース ファイル\Boss\Attacks\Warp</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

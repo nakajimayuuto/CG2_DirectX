@@ -1,10 +1,16 @@
 #pragma once
 #include "Satlib.h"
+#include <vector>
 class IBossAttack {
 public:
-	void Initialize(Transform*);
+	~IBossAttack();
+	virtual void Initialize(Transform* bossTransform,Transform*weaponTransform);
 
-	void Update();
+	virtual void Update(){};
 
-	void Draw();
+	virtual void Draw(){};
+protected:
+protected:
+	Transform* bossTransform_;
+	std::vector<Transform*> weaponTransform_;
 };
