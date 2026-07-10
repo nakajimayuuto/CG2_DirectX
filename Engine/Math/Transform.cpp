@@ -119,3 +119,12 @@ void Transform2D::Initialize() {
 	translate.x = 0.0f;
 	translate.y = 0.0f;
 }
+
+Transform Transform2D::GetTransformValue(const Vector2& scale, const float rotate, const Vector2& translate, float depth) {
+	Transform transform;
+
+	transform.scale = { scale.x,scale.y,1.0f };
+	transform.rotate = { 0.0f,0.0f,rotate };
+	transform.translate = { translate.x,translate.y,depth };
+	return transform;
+}

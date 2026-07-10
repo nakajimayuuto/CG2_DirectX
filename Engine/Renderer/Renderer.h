@@ -32,6 +32,8 @@ struct ModelElement {
 
 	VertexData* vertexData = nullptr;
 
+	uint32_t* indexData = nullptr;
+
 	VertexDataLine* vertexDataLine = nullptr;
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_ = nullptr;
@@ -54,10 +56,15 @@ struct ModelElement {
 };
 
 struct ModelInstance{
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_ = nullptr; // 消すかも.
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_ = nullptr; // 消すかも.
 	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_ = nullptr; // 消すかも.
+};
 
+struct SpriteInstance{
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_ = nullptr; // 消すかも.
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource_ = nullptr; // 消すかも.
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_ = nullptr; // 消すかも.
+	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_ = nullptr; // 消すかも.
 };
 
 using ModelElements = std::vector<ModelElement>;
@@ -338,9 +345,13 @@ private:
 	void CreateSprite(ModelElement* newElement, float width, float height);
 private:
 	const uint32_t maxModelNum = 300;
+	const uint32_t maxSpriteNum = 300;
 	uint32_t currentDrawModelIndex_;
+	uint32_t currentDrawSpriteIndex_;
 
 	std::vector<std::unique_ptr<ModelInstance>> modelInstances;
+
+	std::vector<std::unique_ptr<SpriteInstance>> spriteInstances;
 
 	ModelElement* lineElement_;
 

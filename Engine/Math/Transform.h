@@ -49,6 +49,12 @@ private:
 class Transform2D{
 public:
 	void Initialize();
+
+	static Transform2D GetInitialValue();
+	static Transform2D GetInitialValue(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
+
+	static Transform GetTransformValue(const Vector2& scale, const float rotate, const Vector2& translate,float depth);
+	static Transform GetTransformValue(const Vector2& scale, const float rotate, const Vector2& translate) { GetTransformValue(scale,rotate,translate,0.0f); };
 public:
 	Vector2 scale;
 	float rotate;

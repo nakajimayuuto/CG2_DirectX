@@ -605,6 +605,7 @@ Renderer* Renderer::GetInstance() {
 
 void Renderer::Initialize() {
 	currentDrawModelIndex_ = 0;
+	currentDrawSpriteIndex_ = 0;
 
 	blendMode_ = BlendMode::kNormal;
 
@@ -622,11 +623,23 @@ void Renderer::Initialize() {
 		instance->materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
 		instance->wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
 	}
+
+	spriteInstances.clear();
+	spriteInstances.resize(maxModelNum);
+
+	for (auto& instance : spriteInstances) {
+		instance = std::make_unique<SpriteInstance>();
+		instance->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * 4);
+		instance->indexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * 6);
+		instance->materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+		instance->wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+	}
 }
 
 void Renderer::ClearDrawIndex() {
 	currentDrawModelIndex_ = 0;
 	currentDrawLineIndex_ = 0;
+	currentDrawSpriteIndex_ = 0;
 	delete lineElement_;
 	lineElement_ = new ModelElement();
 	CreateLine(lineElement_);
@@ -982,14 +995,23 @@ void Renderer::DrawSprite(const Transform& transform, const TextureInfo& texture
 	size.x = static_cast<float>(textureInfo.width);
 	size.y = static_cast<float>(textureInfo.height);
 
-	ModelElement* newElement;
-	newElement = new ModelElement();
+	std::unique_ptr<ModelElement> newElement;
+	newElement = std::make_unique<ModelElement>();
 	newElement->modelData_.textureSrvHandlesGPU = textureInfo.textureSrvHandlesGPU;
 
-	CreateNewSprite(newElement, size.x, size.y);
+	CreateNewSprite(newElement.get(), size.x, size.y);
 
-	worldTransform.translate.x = transform.translate.x - (size.x / 2.0f);
-	worldTransform.translate.y = transform.translate.y - (size.y / 2.0f);
+	// インデックスリソースにデータを書き込む.
+	
+	// 書き込むためのアドレスを取得.
+	newElement->indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->indexData));
+	// 1枚目の三角形.
+	newElement->indexData[0] = 0;
+	newElement->indexData[1] = 1;
+	newElement->indexData[2] = 2;
+	newElement->indexData[3] = 1;
+	newElement->indexData[4] = 3;
+	newElement->indexData[5] = 2;
 
 	Matrix4x4 worldMatrix = worldTransform.GetAffineMatrix();
 
@@ -1452,10 +1474,13 @@ void Renderer::CreateNewSprite(ModelElement* newElement, float width, float heig
 	/*=============================================================
 	Sprite用のResourceとView.
 	=============================================================*/
+	newElement->vertexResource_ = spriteInstances[currentDrawSpriteIndex_]->vertexResource_;
+	newElement->indexResource_ = spriteInstances[currentDrawSpriteIndex_]->indexResource_;
+	newElement->materialResource_ = spriteInstances[currentDrawSpriteIndex_]->materialResource_;
+	newElement->wvpResource_ = spriteInstances[currentDrawSpriteIndex_]->wvpResource_;
+	currentDrawSpriteIndex_++;
 	// 【VertexResourceを生成する】
 	// 実際に頂点リソースを作る.
-	newElement->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * 4);
-
 	// 頂点バッファビューを作成する.
 	// リソースの先頭のアドレスから使う.
 	newElement->vertexBufferView_.BufferLocation = newElement->vertexResource_->GetGPUVirtualAddress();
@@ -1466,7 +1491,6 @@ void Renderer::CreateNewSprite(ModelElement* newElement, float width, float heig
 
 	// 【IndexResourceを生成する】
 	// 実際に頂点リソースを作る.
-	newElement->indexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * 6);
 
 	// 頂点バッファビューを作成する.
 	// リソースの先頭のアドレスから使う.
@@ -1479,7 +1503,6 @@ void Renderer::CreateNewSprite(ModelElement* newElement, float width, float heig
 
 	// 【MaterialResourceを生成する】
 	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
-	newElement->materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
 	// マテリアルにデータを書き込む.
 	// 書き込むためのアドレスを取得.
 	newElement->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->materialData_));
@@ -1492,7 +1515,6 @@ void Renderer::CreateNewSprite(ModelElement* newElement, float width, float heig
 
 	// 【TransformationMatrix】
 	//Sprite用のTransformationMatrixを作る。Matrix4x4 1つ分のサイズを用意する.
-	newElement->wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
 	// データを書き込む.
 	// 書き込むためのアドレスを取得.
 	newElement->wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->wvpData_));
@@ -1501,34 +1523,23 @@ void Renderer::CreateNewSprite(ModelElement* newElement, float width, float heig
 	newElement->wvpData_->World = Matrix4x4::Identity();
 
 	// 【Resourceにデータを書き込む】
-
+	float halfWidth = width * 0.5f;
+	float halfHeight = height * 0.5f;
 	// 頂点リソースにデータを書き込む.
 	// 書き込むためのアドレスを取得.
 	newElement->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->vertexData));
-	newElement->vertexData[0].position = { 0.0f,height,0.0f,1.0f }; // 左下.
+	newElement->vertexData[0].position = { -halfWidth,halfHeight,0.0f,1.0f }; // 左下.
 	newElement->vertexData[0].texcoord = { 0.0f,1.0f };
 	newElement->vertexData[0].normal = { 0.0f,0.0f,-1.0f };
-	newElement->vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f }; // 左上.
+	newElement->vertexData[1].position = { -halfWidth ,-halfHeight,0.0f,1.0f }; // 左上.
 	newElement->vertexData[1].texcoord = { 0.0f,0.0f };
 	newElement->vertexData[1].normal = { 0.0f,0.0f,-1.0f };
-	newElement->vertexData[2].position = { width,height,0.0f,1.0f }; // 右下.
+	newElement->vertexData[2].position = { halfWidth ,halfHeight,0.0f,1.0f }; // 右下.
 	newElement->vertexData[2].texcoord = { 1.0f,1.0f };
 	newElement->vertexData[2].normal = { 0.0f,0.0f,-1.0f };
-	newElement->vertexData[3].position = { width,0.0f,0.0f,1.0f }; // 右上.
+	newElement->vertexData[3].position = { halfWidth ,-halfHeight,0.0f,1.0f }; // 右上.
 	newElement->vertexData[3].texcoord = { 1.0f,0.0f };
 	newElement->vertexData[3].normal = { 0.0f,0.0f,-1.0f };
-
-	// インデックスリソースにデータを書き込む.
-	uint32_t* indexDataSprite = nullptr;
-	// 書き込むためのアドレスを取得.
-	newElement->indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
-	// 1枚目の三角形.
-	indexDataSprite[0] = 0;
-	indexDataSprite[1] = 1;
-	indexDataSprite[2] = 2;
-	indexDataSprite[3] = 1;
-	indexDataSprite[4] = 3;
-	indexDataSprite[5] = 2;
 }
 
 void Renderer::CreateSprite(ModelElement* newElement, float width, float height) {
