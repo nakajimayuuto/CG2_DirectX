@@ -42,6 +42,10 @@ Matrix4x4 Transform::GetAffineMatrix()const {
 	return worldMatrix;
 }
 
+Vector3 Transform::GetWorldPosition() const{
+	return (GetAffineMatrix().GetMatrixToTranslate());
+}
+
 Matrix4x4 Transform::GetScaleMatrix() const{
 	Matrix4x4 worldMatrix = Matrix4x4::MakeScaleMatrix(scale);
 	if (parent_) {

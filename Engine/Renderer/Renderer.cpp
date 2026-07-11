@@ -634,6 +634,8 @@ void Renderer::Initialize() {
 		instance->materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
 		instance->wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
 	}
+
+	CreateSphereResource();
 }
 
 void Renderer::ClearDrawIndex() {
@@ -709,9 +711,65 @@ void Renderer::DrawLineAll() {
 	);
 }
 
-void Renderer::DrawSphere(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color) {
-	const uint32_t kSubdivision_ = 16;
+void Renderer::CreateSphereResource(){
 
+	// 【Resourceにデータを書き込む】
+	sphereVertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * kSubdivision_ * kSubdivision_ * 4);
+	sphereIndexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * kSubdivision_ * kSubdivision_ * 6);
+
+	// 頂点リソースにデータを書き込む.
+	VertexData* vertexData = nullptr;
+	// 書き込むためのアドレスを取得.
+	sphereVertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+
+	// インデックスリソースにデータを書き込む.
+	uint32_t* indexData = nullptr;
+	// 書き込むためのアドレスを取得.
+	sphereIndexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
+
+
+	// スフィアの描画プログラム.(いつかRendererに入れる)
+	const float kLonEvery = std::numbers::pi_v<float> *2.0f / kSubdivision_;
+	const float kLatEvery = std::numbers::pi_v<float> / kSubdivision_;
+
+	for (uint32_t latIndex = 0; latIndex < kSubdivision_; latIndex++) {
+		float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;
+
+		for (uint32_t lonIndex = 0; lonIndex < kSubdivision_; lonIndex++) {
+			uint32_t start = (latIndex * kSubdivision_ + lonIndex) * 4;
+			uint32_t indexStart = (latIndex * kSubdivision_ + lonIndex) * 6;
+			float lon = lonIndex * kLonEvery;
+
+			float u = static_cast<float>(lonIndex) / static_cast<float>(kSubdivision_);
+			float v = 1.0f - static_cast<float>(latIndex) / static_cast<float>(kSubdivision_);
+
+			vertexData[start].position = { cos(lat) * cos(lon),sin(lat),cos(lat) * sin(lon) ,1.0f };
+			vertexData[start].texcoord = { u - 1.0f / static_cast<float>(kSubdivision_),v };
+			vertexData[start + 1].position = { cos(lat + std::numbers::pi_v<float> / kSubdivision_) * cos(lon),sin(lat + std::numbers::pi_v<float> / kSubdivision_),cos(lat + std::numbers::pi_v<float> / kSubdivision_) * sin(lon) ,1.0f };
+			vertexData[start + 1].texcoord = { u - 1.0f / static_cast<float>(kSubdivision_) ,v - 1.0f / static_cast<float>(kSubdivision_) };
+			vertexData[start + 2].position = { cos(lat) * cos(lon + std::numbers::pi_v<float> *2.0f / kSubdivision_),sin(lat),cos(lat) * sin(lon + std::numbers::pi_v<float> *2.0f / kSubdivision_) ,1.0f };
+			vertexData[start + 2].texcoord = { u ,v };
+			vertexData[start + 3].position = { cos(lat + std::numbers::pi_v<float> / kSubdivision_) * cos(lon + std::numbers::pi_v<float> *2.0f / kSubdivision_),sin(lat + std::numbers::pi_v<float> / kSubdivision_),cos(lat + std::numbers::pi_v<float> / kSubdivision_) * sin(lon + std::numbers::pi_v<float> *2.0f / kSubdivision_),1.0f };
+			vertexData[start + 3].texcoord = { u ,v - 1.0f / static_cast<float>(kSubdivision_) };
+
+			indexData[indexStart] = start;
+			indexData[indexStart + 1] = start + 1;
+			indexData[indexStart + 2] = start + 2;
+			indexData[indexStart + 3] = start + 1;
+			indexData[indexStart + 4] = start + 3;
+			indexData[indexStart + 5] = start + 2;
+
+
+			for (uint32_t i = 0; i < 4; i++) {
+				vertexData[start + i].normal.x = vertexData[start + i].position.x;
+				vertexData[start + i].normal.y = vertexData[start + i].position.y;
+				vertexData[start + i].normal.z = vertexData[start + i].position.z;
+			}
+		}
+	}
+}
+
+void Renderer::DrawSphere(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color) {
 	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
 	ModelElement* newElement;
 	newElement = new ModelElement();
@@ -739,7 +797,7 @@ void Renderer::DrawSphere(const Transform& transform, const TextureInfo& texture
 }
 
 void Renderer::DrawSphereWireFrame(const Transform& transform, const Vector4& color) {
-	if (!Camera::GetInstance()->IsInCameraFrustum(transform.translate, transform.GetMaxScale())) {
+	if (!Camera::GetInstance()->IsInCameraFrustum(transform.GetWorldPosition(), transform.GetMaxScale())) {
 		return;
 	}
 
@@ -758,7 +816,7 @@ void Renderer::DrawSphereWireFrame(const Transform& transform, const Vector4& co
 			Vector3 b = { cos(lat + std::numbers::pi_v<float> / kSubdivision) * cos(lon),sin(lat + std::numbers::pi_v<float> / kSubdivision),cos(lat + std::numbers::pi_v<float> / kSubdivision) * sin(lon) };
 			Vector3 c = { cos(lat) * cos(lon + std::numbers::pi_v<float> *2.0f / kSubdivision),sin(lat),cos(lat) * sin(lon + std::numbers::pi_v<float> *2.0f / kSubdivision) };
 
-			Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+			Matrix4x4 worldMatrix = transform.GetAffineMatrix();
 			Vector3 startPosition = worldMatrix.MatrixTransform(a);
 			Vector3 endPosition = worldMatrix.MatrixTransform(b);
 
@@ -1223,12 +1281,12 @@ void Renderer::CreateLine(ModelElement* newElement) {
 }
 
 void Renderer::CreateSphere(ModelElement* newElement) {
-	const uint32_t kSubdivision_ = 16;
 
 	newElement->blendMode_ = blendMode_;//BlendMode::kNormal;
 
 	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
-	newElement->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * kSubdivision_ * kSubdivision_ * 6);
+	newElement->vertexResource_ = sphereVertexResource_;
+	newElement->indexResource_ = sphereIndexResource_;
 
 	// 【MaterialResourceを生成する】
 	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
@@ -1266,7 +1324,6 @@ void Renderer::CreateSphere(ModelElement* newElement) {
 
 	// 【IndexResourceを生成する】
 	// 実際に頂点リソースを作る.
-	newElement->indexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * kSubdivision_ * kSubdivision_ * 6);
 
 	// 頂点バッファビューを作成する.
 	// リソースの先頭のアドレスから使う.
@@ -1277,65 +1334,12 @@ void Renderer::CreateSphere(ModelElement* newElement) {
 	newElement->indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
 
 
-	// 【Resourceにデータを書き込む】
-
-	// 頂点リソースにデータを書き込む.
-	VertexData* vertexData = nullptr;
-	// 書き込むためのアドレスを取得.
-	newElement->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-
-	// インデックスリソースにデータを書き込む.
-	uint32_t* indexData = nullptr;
-	// 書き込むためのアドレスを取得.
-	newElement->indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
-
-
-	// スフィアの描画プログラム.(いつかRendererに入れる)
-	const float kLonEvery = std::numbers::pi_v<float> *2.0f / kSubdivision_;
-	const float kLatEvery = std::numbers::pi_v<float> / kSubdivision_;
-
-	for (uint32_t latIndex = 0; latIndex < kSubdivision_; latIndex++) {
-		float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;
-
-		for (uint32_t lonIndex = 0; lonIndex < kSubdivision_; lonIndex++) {
-			uint32_t start = (latIndex * kSubdivision_ + lonIndex) * 4;
-			uint32_t indexStart = (latIndex * kSubdivision_ + lonIndex) * 6;
-			float lon = lonIndex * kLonEvery;
-
-			float u = static_cast<float>(lonIndex) / static_cast<float>(kSubdivision_);
-			float v = 1.0f - static_cast<float>(latIndex) / static_cast<float>(kSubdivision_);
-
-			vertexData[start].position = { cos(lat) * cos(lon),sin(lat),cos(lat) * sin(lon) ,1.0f };
-			vertexData[start].texcoord = { u - 1.0f / static_cast<float>(kSubdivision_),v };
-			vertexData[start + 1].position = { cos(lat + std::numbers::pi_v<float> / kSubdivision_) * cos(lon),sin(lat + std::numbers::pi_v<float> / kSubdivision_),cos(lat + std::numbers::pi_v<float> / kSubdivision_) * sin(lon) ,1.0f };
-			vertexData[start + 1].texcoord = { u - 1.0f / static_cast<float>(kSubdivision_) ,v - 1.0f / static_cast<float>(kSubdivision_) };
-			vertexData[start + 2].position = { cos(lat) * cos(lon + std::numbers::pi_v<float> *2.0f / kSubdivision_),sin(lat),cos(lat) * sin(lon + std::numbers::pi_v<float> *2.0f / kSubdivision_) ,1.0f };
-			vertexData[start + 2].texcoord = { u ,v };
-			vertexData[start + 3].position = { cos(lat + std::numbers::pi_v<float> / kSubdivision_) * cos(lon + std::numbers::pi_v<float> *2.0f / kSubdivision_),sin(lat + std::numbers::pi_v<float> / kSubdivision_),cos(lat + std::numbers::pi_v<float> / kSubdivision_) * sin(lon + std::numbers::pi_v<float> *2.0f / kSubdivision_),1.0f };
-			vertexData[start + 3].texcoord = { u ,v - 1.0f / static_cast<float>(kSubdivision_) };
-
-			indexData[indexStart] = start;
-			indexData[indexStart + 1] = start + 1;
-			indexData[indexStart + 2] = start + 2;
-			indexData[indexStart + 3] = start + 1;
-			indexData[indexStart + 4] = start + 3;
-			indexData[indexStart + 5] = start + 2;
-
-
-			for (uint32_t i = 0; i < 4; i++) {
-				vertexData[start + i].normal.x = vertexData[start + i].position.x;
-				vertexData[start + i].normal.y = vertexData[start + i].position.y;
-				vertexData[start + i].normal.z = vertexData[start + i].position.z;
-			}
-		}
-	}
 }
 
 void Renderer::CreateBox(ModelElement* newElement) {
 	newElement->blendMode_ = blendMode_;
 	newElement->uvTransform_.Initialize();
 	newElement->modelData_ = ModelManager::GetInstance()->GetModelInfo("block_template").modelData[0];
-	newElement->modelData_.textureSrvHandlesGPU = newElement->modelData_.textureSrvHandlesGPU;
 	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
 
 	// 【MaterialResourceを生成する】

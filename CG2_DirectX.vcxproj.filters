@@ -70,12 +70,6 @@
     <Filter Include="Engine\Renderer\Material">
       <UniqueIdentifier>{11d1524a-bd52-4efb-b175-13c2c83cd246}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\SystemFile\imgui">
-      <UniqueIdentifier>{88847a18-f60d-4774-a014-42b6fbca9de0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Engine\SystemFile\imgui\ImGuiLibrary">
-      <UniqueIdentifier>{58b25aba-c5fb-4a4c-9377-9f8c3a31634c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Engine\SystemFile\GameSystem">
       <UniqueIdentifier>{b04344e2-3355-43ce-b3b7-85d81f384337}</UniqueIdentifier>
     </Filter>
@@ -187,11 +181,20 @@
     <Filter Include="ソース ファイル\Bullet">
       <UniqueIdentifier>{09fd979a-538a-4f10-999a-1312ef95cd20}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\SystemFile\externals">
+      <UniqueIdentifier>{c7c7cb2c-f375-4217-8afd-c3ff9c8d5438}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\SystemFile\externals\imgui">
+      <UniqueIdentifier>{88847a18-f60d-4774-a014-42b6fbca9de0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\SystemFile\externals\imgui\ImGuiLibrary">
+      <UniqueIdentifier>{58b25aba-c5fb-4a4c-9377-9f8c3a31634c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
     <Text Include="externals\imgui\LICENSE.txt">
-      <Filter>Engine\SystemFile\imgui</Filter>
+      <Filter>Engine\SystemFile\externals\imgui</Filter>
     </Text>
   </ItemGroup>
   <ItemGroup>
@@ -199,25 +202,25 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui.cpp">
-      <Filter>Engine\SystemFile\imgui</Filter>
+      <Filter>Engine\SystemFile\externals\imgui</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_demo.cpp">
-      <Filter>Engine\SystemFile\imgui</Filter>
+      <Filter>Engine\SystemFile\externals\imgui</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_draw.cpp">
-      <Filter>Engine\SystemFile\imgui</Filter>
+      <Filter>Engine\SystemFile\externals\imgui</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_impl_dx12.cpp">
-      <Filter>Engine\SystemFile\imgui</Filter>
+      <Filter>Engine\SystemFile\externals\imgui</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_impl_win32.cpp">
-      <Filter>Engine\SystemFile\imgui</Filter>
+      <Filter>Engine\SystemFile\externals\imgui</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_tables.cpp">
-      <Filter>Engine\SystemFile\imgui</Filter>
+      <Filter>Engine\SystemFile\externals\imgui</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_widgets.cpp">
-      <Filter>Engine\SystemFile\imgui</Filter>
+      <Filter>Engine\SystemFile\externals\imgui</Filter>
     </ClCompile>
     <ClCompile Include="Environment.cpp">
       <Filter>Environment</Filter>
@@ -360,28 +363,28 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
-      <Filter>Engine\SystemFile\imgui</Filter>
+      <Filter>Engine\SystemFile\externals\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imgui.h">
-      <Filter>Engine\SystemFile\imgui</Filter>
+      <Filter>Engine\SystemFile\externals\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imgui_impl_dx12.h">
-      <Filter>Engine\SystemFile\imgui</Filter>
+      <Filter>Engine\SystemFile\externals\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imgui_impl_win32.h">
-      <Filter>Engine\SystemFile\imgui</Filter>
+      <Filter>Engine\SystemFile\externals\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imgui_internal.h">
-      <Filter>Engine\SystemFile\imgui</Filter>
+      <Filter>Engine\SystemFile\externals\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imstb_rectpack.h">
-      <Filter>Engine\SystemFile\imgui</Filter>
+      <Filter>Engine\SystemFile\externals\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imstb_textedit.h">
-      <Filter>Engine\SystemFile\imgui</Filter>
+      <Filter>Engine\SystemFile\externals\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imstb_truetype.h">
-      <Filter>Engine\SystemFile\imgui</Filter>
+      <Filter>Engine\SystemFile\externals\imgui</Filter>
     </ClInclude>
     <ClInclude Include="Environment.h">
       <Filter>Environment</Filter>
@@ -429,7 +432,7 @@
       <Filter>Engine\SystemFile\GameSystem</Filter>
     </ClInclude>
     <ClInclude Include="Engine\SystemFile\ImGui.h">
-      <Filter>Engine\SystemFile\imgui\ImGuiLibrary</Filter>
+      <Filter>Engine\SystemFile\externals\imgui\ImGuiLibrary</Filter>
     </ClInclude>
     <ClInclude Include="Managers\InputManager.h">
       <Filter>Managers\InputManager</Filter>
@@ -538,6 +541,9 @@
     </ClInclude>
     <ClInclude Include="ProjectileManager.h">
       <Filter>ソース ファイル\Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\magic_enum\magic_enum.hpp">
+      <Filter>Engine\SystemFile\externals</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

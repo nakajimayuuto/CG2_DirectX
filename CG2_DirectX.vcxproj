@@ -101,6 +101,7 @@
   <ItemGroup>
     <ClInclude Include="Boss.h" />
     <ClInclude Include="BossWarp.h" />
+    <ClInclude Include="externals\magic_enum\magic_enum.hpp" />
     <ClInclude Include="ProjectileManager.h" />
     <ClInclude Include="ContactRecord.h" />
     <ClInclude Include="Engine\Math\Beats.h" />

@@ -1,11 +1,14 @@
 #include "Boss.h"
+#include "ProjectileManager.h"
 
 void (Boss::* Boss::pInitializeFunc[])() = {
 		&Boss::WarpInitialize,
+		&Boss::BulletInitialize,
 };
 
 void (Boss::* Boss::pUpdateFunc[])() = {
 		&Boss::WarpUpdate,
+		&Boss::BulletUpdate,
 };
 
 Boss::~Boss() {
@@ -44,8 +47,14 @@ void Boss::Update() {
 	ImGui::DragFloat3("scale", reinterpret_cast<float*>(&transform_.scale), 0.05f, 0.0f, 5.0f);
 	ImGui::DragFloat3("rotate", reinterpret_cast<float*>(&imRotate), 1.0f, -360.0f, 360.0f);
 	ImGui::DragFloat3("translate", reinterpret_cast<float*>(&transform_.translate), 0.25f, -100.0f, 100.0f);
-	if (ImGui::Button("play")) {
-		attackRequest_ = Attacks::kWarp;
+	for (Attacks attack : magic_enum::enum_values<Attacks>()) {
+		if (static_cast<size_t>(attack) == std::size(pUpdateFunc)) {
+			break;
+		}
+
+		if (ImGui::Button(magic_enum::enum_name(attack).data())) {
+			attackRequest_ = attack;
+		}
 	}
 
 
@@ -55,9 +64,9 @@ void Boss::Update() {
 	AttackInitialize();
 
 	AttackUpdate();
-	
+
 	if (!isPlayAttack_) {
-		destinationAngleY_ = atan2( transform_.translate.x - targetTransform_->translate.x,transform_.translate.z - targetTransform_->translate.z);
+		destinationAngleY_ = atan2(transform_.translate.x - targetTransform_->translate.x, transform_.translate.z - targetTransform_->translate.z);
 		transform_.rotate.y = LerpShortAngle(transform_.rotate.y, destinationAngleY_, 0.25f);
 	}
 
@@ -124,7 +133,7 @@ void Boss::WarpUpdate() {
 			kMaxAttackTimer = kWarpFinishedTimerMax;
 			currentAttackPhase = 1;
 			float maxLength = 0.0f;
-			Vector3 newPos;
+			Vector3 newPos = { 0.0f,0.0f,0.0f };
 			for (Vector3& pos : anchorPoints_) {
 				float newLength = (pos - targetTransform_->translate).Length();
 				if (newLength >= maxLength) {
@@ -134,7 +143,7 @@ void Boss::WarpUpdate() {
 			}
 
 			transform_.translate = newPos;
-			
+
 		}
 
 		break;
@@ -148,9 +157,18 @@ void Boss::WarpUpdate() {
 	}
 }
 
-void Boss::BulletInitialize(){
-
+void Boss::BulletInitialize() {
+	kMaxAttackTimer = kWarpEnterTimerMax;
 }
 
-void Boss::BulletUpdate(){
+void Boss::BulletUpdate() {
+	Vector3 direction = { 0.0f,0.0f,1.0f };
+	
+	if ((targetTransform_->translate - transform_.translate).Length() != 0.0f) {
+		direction = (targetTransform_->translate - transform_.translate).Normalize();
+	}
+
+
+	ProjectileManager::GetInstance()->CreateBullet(transform_, direction *30.0f, BulletType::kNormal);
+	AttackFinished();
 }

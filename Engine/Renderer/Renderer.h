@@ -329,6 +329,8 @@ public:
 
 	void DrawLineAll();
 private:
+	void CreateSphereResource();
+
 
 	void CreateLine(ModelElement* newElement);
 
@@ -344,10 +346,20 @@ private:
 
 	void CreateSprite(ModelElement* newElement, float width, float height);
 private:
+	const uint32_t kSubdivision_ = 16;
+
 	const uint32_t maxModelNum = 300;
 	const uint32_t maxSpriteNum = 300;
 	uint32_t currentDrawModelIndex_;
 	uint32_t currentDrawSpriteIndex_;
+
+	// SphereResource.
+	Microsoft::WRL::ComPtr<ID3D12Resource> sphereVertexResource_ = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> sphereIndexResource_ = nullptr;
+
+	// TorusResource.
+	Microsoft::WRL::ComPtr<ID3D12Resource> torusVertexResource_ = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> torusIndexResource_ = nullptr;
 
 	std::vector<std::unique_ptr<ModelInstance>> modelInstances;
 

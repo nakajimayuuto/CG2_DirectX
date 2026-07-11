@@ -96,6 +96,7 @@ void GameScene::Draw() {
 	Renderer::GetInstance()->SetBlendMode(BlendMode::kNormal);
 
 	//Renderer::GetInstance()->DrawSprite(Transform2D::GetTransformValue({ 1.0f,1.0f }, testRotate_, { 150.0f,50.0f },0.0f), "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
+	Renderer::GetInstance()->DrawSphere(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
 
 	ProjectileManager::GetInstance()->Draw();
 

@@ -30,7 +30,7 @@ private:
 	BulletType type_;
 
 	float lifeTimer_ = 0.0f;
-	static inline float lifeTimeMax_ = 60.0f;
+	static inline float lifeTimeMax_ = 3.0f;
 
 	bool isActive_;
 };

@@ -126,10 +126,10 @@ private:
 
 	WorkDash workDash_;
 
-	static inline float kJumpFirstSpeed_ = 1.0f;
+	static inline float kJumpFirstSpeed_ = 10.0f;
 
 	Vector3 velocity_;
-	static inline float kGravityAcceleration = 0.05f;
+	static inline float kGravityAcceleration = 0.5f;
 
 	//std::unique_ptr<Particles> particles_ = nullptr;
 	//

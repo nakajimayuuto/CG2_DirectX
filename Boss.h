@@ -25,7 +25,7 @@ private:
 		kBulletShot,
 		kThreeWayShot,
 		kFireBulletShot,
-
+		kCountMax,
 
 	};
 	Model model_;

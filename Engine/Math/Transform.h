@@ -21,6 +21,8 @@ public:
 
 	Matrix4x4 GetAffineMatrix()const;
 
+	Vector3 GetWorldPosition()const;
+
 	Matrix4x4 GetScaleMatrix()const;
 	Matrix4x4 GetRotateMatrix()const;
 	Matrix4x4 GetTranslateMatrix()const;

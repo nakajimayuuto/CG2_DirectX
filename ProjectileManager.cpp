@@ -14,9 +14,13 @@ void ProjectileManager::Update() {
 		bullet->Update();
 	}
 
-	std::erase_if(bullets, [](const std::unique_ptr<Bullet>& bullet) {
-		return !bullet->GetIsActive(); }
-	);
+	for (auto it = bullets.begin(); it != bullets.end(); ){
+		if (!(*it)->GetIsActive()){
+			it = bullets.erase(it);
+		} else{
+			++it;
+		}
+	}
 }
 
 void ProjectileManager::Draw() {
@@ -48,7 +52,6 @@ void Bullet::Initialize(const Transform& transform, const Vector3& velocity, Bul
 	velocity_ = velocity;
 	type_ = type;
 	lifeTimer_ = 0.0f;
-	lifeTimeMax_ = 60.0f;
 	isActive_ = true;
 
 	(this->*pInitializeFunc[static_cast<size_t>(type_)])();
