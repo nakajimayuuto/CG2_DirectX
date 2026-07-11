@@ -1,5 +1,6 @@
 #include "GameScene.h"
 #include "../Satlib.h"
+#include "../ProjectileManager.h"
 
 GameScene::~GameScene() {
 }
@@ -21,6 +22,8 @@ void GameScene::Initialize() {
 	Camera::GetInstance()->SetPosition({ 0.0f,2.0f,-30.0f });
 	GameCamera::GetInstance()->Initialize();
 
+
+
 	player_ = std::make_unique<Player>();
 	player_->Initialize();
 
@@ -34,6 +37,8 @@ void GameScene::Initialize() {
 	boss_ = std::make_unique<Boss>();
 	boss_->Initialize();
 	boss_->SetTargetTransform(player_->GetTransform());
+
+	ProjectileManager::GetInstance()->Initialize();
 
 	Player::RegisterGlobalVariables();
 
@@ -72,6 +77,8 @@ void GameScene::Update() {
 
 	boss_->Update();
 
+	ProjectileManager::GetInstance()->Update();
+
 	GameCamera::GetInstance()->Update();
 
 	Camera::GetInstance()->Update();
@@ -89,6 +96,8 @@ void GameScene::Draw() {
 	Renderer::GetInstance()->SetBlendMode(BlendMode::kNormal);
 
 	//Renderer::GetInstance()->DrawSprite(Transform2D::GetTransformValue({ 1.0f,1.0f }, testRotate_, { 150.0f,50.0f },0.0f), "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
+
+	ProjectileManager::GetInstance()->Draw();
 
 	player_->Draw();
 	boss_->Draw();

@@ -43,17 +43,13 @@ private:
 	float deltaTime_;
 private:
 	void AttackInitialize();
-
 	void AttackUpdate();
-
 	void AttackFinished();
 
 	void WarpInitialize();
-
 	void WarpUpdate();
 
 	void BulletInitialize();
-
 	void BulletUpdate();
 private:
 	static void (Boss::* pInitializeFunc[])();
@@ -69,7 +65,6 @@ private:
 	float difficultyMagnificationTime = 1.0f; // タイマーの難易度倍率.
 	float difficultyMagnificationDamage = 1.0f; // ダメージの難易度倍率.
 	float dopamineSpeed_ = 1.0f; // スーパードパガキモード.
-
 
 	// Warp
 	float kWarpEnterTimerMax = 0.5f;

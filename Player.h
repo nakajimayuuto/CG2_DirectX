@@ -83,7 +83,8 @@ private:
 		bool comboNext = false;
 	};
 
-	static inline float kSpeed = 0.3f;
+	static inline float kSpeed = 10.0f;
+	static inline float kDashSpeed = 15.0f;
 	static inline float kCompletionRate = 0.25f;
 
 	static inline uint16_t kFloatingAnimationPeriod = 120;

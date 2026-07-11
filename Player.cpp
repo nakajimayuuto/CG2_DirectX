@@ -166,7 +166,7 @@ void Player::BehaviorRootUpdate() {
 	transform_.rotate.y = LerpShortAngle(transform_.rotate.y, targetRotateY, kCompletionRate);
 	//transform_.rotate.y = std::atan2(move.x, move.z);
 
-	transform_.translate += velocity_;
+	transform_.translate += velocity_ * DeltaTime::GetInstance()->GetDeltaTime();;
 
 	UpdateFloatingGimmick();
 
@@ -199,7 +199,7 @@ void Player::BehaviorDashUpdate() {
 
 	workDash_.dashParameter_ += DeltaTime::GetInstance()->GetDeltaTime();
 
-	Vector3 move = { 0.0f,0.0f,0.5f };
+	Vector3 move = { 0.0f,0.0f,kDashSpeed };
 
 	transform_.rotate.y;//Camera::GetInstance()->GetTransform().rotate.y;
 
@@ -207,7 +207,7 @@ void Player::BehaviorDashUpdate() {
 	
 	move = rotateMatrix.TransformNomal(move);
 
-	transform_.translate += move;
+	transform_.translate += move * DeltaTime::GetInstance()->GetDeltaTime();
 }
 
 void Player::BehaviorJumpInitialize() {
@@ -218,7 +218,7 @@ void Player::BehaviorJumpInitialize() {
 }
 
 void Player::BehaviorJumpUpdate() {
-	transform_.translate += velocity_;
+	transform_.translate += velocity_ * DeltaTime::GetInstance()->GetDeltaTime();
 
 	Vector3 accelerationVector = { 0.0f,-kGravityAcceleration,0.0f };
 
