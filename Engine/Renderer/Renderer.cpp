@@ -606,6 +606,7 @@ Renderer* Renderer::GetInstance() {
 void Renderer::Initialize() {
 	currentDrawModelIndex_ = 0;
 	currentDrawSpriteIndex_ = 0;
+	currentDrawTorusIndex_ = 0;
 
 	blendMode_ = BlendMode::kNormal;
 
@@ -636,12 +637,16 @@ void Renderer::Initialize() {
 	}
 
 	CreateSphereResource();
+	torusInstances.clear();
+	torusInstances.resize(maxTorusNum);
+	CreateTorusResource();
 }
 
 void Renderer::ClearDrawIndex() {
 	currentDrawModelIndex_ = 0;
 	currentDrawLineIndex_ = 0;
 	currentDrawSpriteIndex_ = 0;
+	currentDrawTorusIndex_ = 0;
 	delete lineElement_;
 	lineElement_ = new ModelElement();
 	CreateLine(lineElement_);
@@ -711,60 +716,100 @@ void Renderer::DrawLineAll() {
 	);
 }
 
-void Renderer::CreateSphereResource(){
+void Renderer::CreateSphereResource() {
 
 	// 【Resourceにデータを書き込む】
-	sphereVertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * kSubdivision_ * kSubdivision_ * 4);
-	sphereIndexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * kSubdivision_ * kSubdivision_ * 6);
+	sphereVertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * kSphereSubdivision_ * kSphereSubdivision_ * 4);
+	sphereIndexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * kSphereSubdivision_ * kSphereSubdivision_ * 6);
 
 	// 頂点リソースにデータを書き込む.
-	VertexData* vertexData = nullptr;
 	// 書き込むためのアドレスを取得.
-	sphereVertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	sphereVertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&sphereVertexData));
 
 	// インデックスリソースにデータを書き込む.
-	uint32_t* indexData = nullptr;
 	// 書き込むためのアドレスを取得.
-	sphereIndexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
+	sphereIndexResource_->Map(0, nullptr, reinterpret_cast<void**>(&sphereIndexData));
 
 
 	// スフィアの描画プログラム.(いつかRendererに入れる)
-	const float kLonEvery = std::numbers::pi_v<float> *2.0f / kSubdivision_;
-	const float kLatEvery = std::numbers::pi_v<float> / kSubdivision_;
+	const float kLonEvery = std::numbers::pi_v<float> *2.0f / kSphereSubdivision_;
+	const float kLatEvery = std::numbers::pi_v<float> / kSphereSubdivision_;
 
-	for (uint32_t latIndex = 0; latIndex < kSubdivision_; latIndex++) {
+	for (uint32_t latIndex = 0; latIndex < kSphereSubdivision_; latIndex++) {
 		float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;
 
-		for (uint32_t lonIndex = 0; lonIndex < kSubdivision_; lonIndex++) {
-			uint32_t start = (latIndex * kSubdivision_ + lonIndex) * 4;
-			uint32_t indexStart = (latIndex * kSubdivision_ + lonIndex) * 6;
+		for (uint32_t lonIndex = 0; lonIndex < kSphereSubdivision_; lonIndex++) {
+			uint32_t start = (latIndex * kSphereSubdivision_ + lonIndex) * 4;
+			uint32_t indexStart = (latIndex * kSphereSubdivision_ + lonIndex) * 6;
 			float lon = lonIndex * kLonEvery;
 
-			float u = static_cast<float>(lonIndex) / static_cast<float>(kSubdivision_);
-			float v = 1.0f - static_cast<float>(latIndex) / static_cast<float>(kSubdivision_);
+			float u = static_cast<float>(lonIndex) / static_cast<float>(kSphereSubdivision_);
+			float v = 1.0f - static_cast<float>(latIndex) / static_cast<float>(kSphereSubdivision_);
 
-			vertexData[start].position = { cos(lat) * cos(lon),sin(lat),cos(lat) * sin(lon) ,1.0f };
-			vertexData[start].texcoord = { u - 1.0f / static_cast<float>(kSubdivision_),v };
-			vertexData[start + 1].position = { cos(lat + std::numbers::pi_v<float> / kSubdivision_) * cos(lon),sin(lat + std::numbers::pi_v<float> / kSubdivision_),cos(lat + std::numbers::pi_v<float> / kSubdivision_) * sin(lon) ,1.0f };
-			vertexData[start + 1].texcoord = { u - 1.0f / static_cast<float>(kSubdivision_) ,v - 1.0f / static_cast<float>(kSubdivision_) };
-			vertexData[start + 2].position = { cos(lat) * cos(lon + std::numbers::pi_v<float> *2.0f / kSubdivision_),sin(lat),cos(lat) * sin(lon + std::numbers::pi_v<float> *2.0f / kSubdivision_) ,1.0f };
-			vertexData[start + 2].texcoord = { u ,v };
-			vertexData[start + 3].position = { cos(lat + std::numbers::pi_v<float> / kSubdivision_) * cos(lon + std::numbers::pi_v<float> *2.0f / kSubdivision_),sin(lat + std::numbers::pi_v<float> / kSubdivision_),cos(lat + std::numbers::pi_v<float> / kSubdivision_) * sin(lon + std::numbers::pi_v<float> *2.0f / kSubdivision_),1.0f };
-			vertexData[start + 3].texcoord = { u ,v - 1.0f / static_cast<float>(kSubdivision_) };
+			sphereVertexData[start].position = { cos(lat) * cos(lon),sin(lat),cos(lat) * sin(lon) ,1.0f };
+			sphereVertexData[start].texcoord = { u - 1.0f / static_cast<float>(kSphereSubdivision_),v };
+			sphereVertexData[start + 1].position = { cos(lat + std::numbers::pi_v<float> / kSphereSubdivision_) * cos(lon),sin(lat + std::numbers::pi_v<float> / kSphereSubdivision_),cos(lat + std::numbers::pi_v<float> / kSphereSubdivision_) * sin(lon) ,1.0f };
+			sphereVertexData[start + 1].texcoord = { u - 1.0f / static_cast<float>(kSphereSubdivision_) ,v - 1.0f / static_cast<float>(kSphereSubdivision_) };
+			sphereVertexData[start + 2].position = { cos(lat) * cos(lon + std::numbers::pi_v<float> *2.0f / kSphereSubdivision_),sin(lat),cos(lat) * sin(lon + std::numbers::pi_v<float> *2.0f / kSphereSubdivision_) ,1.0f };
+			sphereVertexData[start + 2].texcoord = { u ,v };
+			sphereVertexData[start + 3].position = { cos(lat + std::numbers::pi_v<float> / kSphereSubdivision_) * cos(lon + std::numbers::pi_v<float> *2.0f / kSphereSubdivision_),sin(lat + std::numbers::pi_v<float> / kSphereSubdivision_),cos(lat + std::numbers::pi_v<float> / kSphereSubdivision_) * sin(lon + std::numbers::pi_v<float> *2.0f / kSphereSubdivision_),1.0f };
+			sphereVertexData[start + 3].texcoord = { u ,v - 1.0f / static_cast<float>(kSphereSubdivision_) };
 
-			indexData[indexStart] = start;
-			indexData[indexStart + 1] = start + 1;
-			indexData[indexStart + 2] = start + 2;
-			indexData[indexStart + 3] = start + 1;
-			indexData[indexStart + 4] = start + 3;
-			indexData[indexStart + 5] = start + 2;
+			sphereIndexData[indexStart] = start;
+			sphereIndexData[indexStart + 1] = start + 1;
+			sphereIndexData[indexStart + 2] = start + 2;
+			sphereIndexData[indexStart + 3] = start + 1;
+			sphereIndexData[indexStart + 4] = start + 3;
+			sphereIndexData[indexStart + 5] = start + 2;
 
 
 			for (uint32_t i = 0; i < 4; i++) {
-				vertexData[start + i].normal.x = vertexData[start + i].position.x;
-				vertexData[start + i].normal.y = vertexData[start + i].position.y;
-				vertexData[start + i].normal.z = vertexData[start + i].position.z;
+				sphereVertexData[start + i].normal.x = sphereVertexData[start + i].position.x;
+				sphereVertexData[start + i].normal.y = sphereVertexData[start + i].position.y;
+				sphereVertexData[start + i].normal.z = sphereVertexData[start + i].position.z;
 			}
+		}
+	}
+}
+
+void Renderer::CreateTorusResource() {
+	// 【Resourceにデータを書き込む】
+	for (auto& instance : torusInstances) {
+		instance = std::make_unique<TorusInstance>();
+		instance->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * (kTorusSubdivision_ + 1) * (kTorusSubdivision_ + 1));
+		instance->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&instance->vertexData));
+		instance->materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+		instance->wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+	}
+
+	torusIndexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * kTorusSubdivision_ * kTorusSubdivision_ * 6);
+
+	// 頂点リソースにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+
+	// インデックスリソースにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	torusIndexResource_->Map(0, nullptr, reinterpret_cast<void**>(&torusIndexData));
+
+	uint32_t stride = kTorusSubdivision_ + 1;
+
+	for (uint32_t y = 0; y < kTorusSubdivision_; y++)
+	{
+		for (uint32_t x = 0; x < kTorusSubdivision_; x++)
+		{
+			uint32_t index = (y * kTorusSubdivision_ + x) * 6;
+			uint32_t a = y * stride + x;
+			uint32_t b = a + 1;
+			uint32_t c = a + stride;
+			uint32_t d = c + 1;
+
+			torusIndexData[index] = a;
+			torusIndexData[index + 1] = b;
+			torusIndexData[index + 2] = c;
+
+			torusIndexData[index + 3] = b;
+			torusIndexData[index + 4] = d;
+			torusIndexData[index + 5] = c;
 		}
 	}
 }
@@ -783,7 +828,34 @@ void Renderer::DrawSphere(const Transform& transform, const TextureInfo& texture
 	/*=============================================================
 	三角形の描画のコマンド.
 	=============================================================*/
-	newElement->indexInstanceNum_ = kSubdivision_ * kSubdivision_ * 6;
+	newElement->indexInstanceNum_ = kSphereSubdivision_ * kSphereSubdivision_ * 6;
+	GameSystem::GetInstance()->DrawCommand(
+		newElement->blendMode_,
+		&newElement->vertexBufferView_,
+		&newElement->indexBufferView_,
+		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+		newElement->materialResource_,
+		newElement->wvpResource_,
+		newElement->modelData_.textureSrvHandlesGPU,
+		newElement->indexInstanceNum_
+	);
+}
+
+void Renderer::DrawTorus(const Transform& transform, float majorRadius, float minorRadius, const TextureInfo& textureInfo, const Vector4& color){
+	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+	std::unique_ptr<ModelElement> newElement;
+	newElement = std::make_unique<ModelElement>();
+	CreateTorus(newElement.get(),majorRadius,minorRadius );
+
+	newElement->modelData_.textureSrvHandlesGPU = textureInfo.textureSrvHandlesGPU;
+
+	newElement->wvpData_->World = worldMatrix;
+	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+	newElement->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+	/*=============================================================
+	三角形の描画のコマンド.
+	=============================================================*/
+	newElement->indexInstanceNum_ = kSphereSubdivision_ * kSphereSubdivision_ * 6;
 	GameSystem::GetInstance()->DrawCommand(
 		newElement->blendMode_,
 		&newElement->vertexBufferView_,
@@ -1060,7 +1132,7 @@ void Renderer::DrawSprite(const Transform& transform, const TextureInfo& texture
 	CreateNewSprite(newElement.get(), size.x, size.y);
 
 	// インデックスリソースにデータを書き込む.
-	
+
 	// 書き込むためのアドレスを取得.
 	newElement->indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->indexData));
 	// 1枚目の三角形.
@@ -1318,7 +1390,7 @@ void Renderer::CreateSphere(ModelElement* newElement) {
 	// リソースの先頭のアドレスから使う.
 	newElement->vertexBufferView_.BufferLocation = newElement->vertexResource_->GetGPUVirtualAddress();
 	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
-	newElement->vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * kSubdivision_ * kSubdivision_ * 4);
+	newElement->vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * kSphereSubdivision_ * kSphereSubdivision_ * 4);
 	// 1頂点あたりのサイズ.
 	newElement->vertexBufferView_.StrideInBytes = sizeof(VertexData);
 
@@ -1329,11 +1401,108 @@ void Renderer::CreateSphere(ModelElement* newElement) {
 	// リソースの先頭のアドレスから使う.
 	newElement->indexBufferView_.BufferLocation = newElement->indexResource_->GetGPUVirtualAddress();
 	// 使用するリソースのサイズはインデックス6つ分のサイズ.
-	newElement->indexBufferView_.SizeInBytes = sizeof(uint32_t) * kSubdivision_ * kSubdivision_ * 6;
+	newElement->indexBufferView_.SizeInBytes = sizeof(uint32_t) * kSphereSubdivision_ * kSphereSubdivision_ * 6;
 	// インデックスはuint32_tとする.
 	newElement->indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
 
 
+}
+
+void Renderer::CreateTorus(ModelElement* newElement, float majorRadius, float minorRadius) {
+	const float pi = std::numbers::pi_v<float>;
+
+	//newElement->vertexData[]
+	newElement->indexResource_ = torusIndexResource_;
+	newElement->vertexResource_ = torusInstances[currentDrawTorusIndex_]->vertexResource_;
+	newElement->vertexData = torusInstances[currentDrawTorusIndex_]->vertexData;
+	newElement->materialResource_ = torusInstances[currentDrawTorusIndex_]->materialResource_;
+	newElement->wvpResource_ = torusInstances[currentDrawTorusIndex_]->wvpResource_;
+	currentDrawTorusIndex_++;
+
+	newElement->blendMode_ = blendMode_;
+	newElement->uvTransform_.Initialize();
+	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
+	currentDrawModelIndex_++;
+	newElement->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->materialData_));
+	// 今回は赤を書き込んでみる
+	newElement->materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	newElement->materialData_->lightingType = static_cast<uint32_t>(lightingType_);;
+	newElement->materialData_->uvTransform = Matrix4x4::Identity();
+	newElement->materialData_->reflectionType = static_cast<uint32_t>(reflectionType_);
+	newElement->materialData_->shininess = 40.0f;
+
+	// 【TransformationMatrix】
+	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
+	// データを書き込む.
+	// 書き込むためのアドレスを取得.
+	newElement->wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->wvpData_));
+	// 単位行列を書き込んでおく.
+	newElement->wvpData_->WVP = Matrix4x4::Identity();
+	newElement->wvpData_->World = Matrix4x4::Identity();
+
+
+	newElement->vertexBufferView_.BufferLocation = newElement->vertexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
+	newElement->vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * (kTorusSubdivision_ + 1) * (kTorusSubdivision_ + 1));
+	// 1頂点あたりのサイズ.
+	newElement->vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+	// 【IndexResourceを生成する】
+	// 実際に頂点リソースを作る.
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	newElement->indexBufferView_.BufferLocation = newElement->indexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズはインデックス6つ分のサイズ.
+	newElement->indexBufferView_.SizeInBytes = sizeof(uint32_t) * kTorusSubdivision_ * kTorusSubdivision_ * 6;
+	// インデックスはuint32_tとする.
+	newElement->indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+
+	uint32_t vertexPerRow = kTorusSubdivision_ + 1;
+
+	for (uint32_t y = 0; y <= kTorusSubdivision_; y++){
+		float v = (float)y / kTorusSubdivision_;
+		float theta = v * pi * 2.0f;
+
+		float cosTheta = std::cos(theta);
+		float sinTheta = std::sin(theta);
+
+		for (uint32_t x = 0; x <= kTorusSubdivision_; x++){
+			uint32_t index = y * vertexPerRow + x;
+
+			float u = (float)x / kTorusSubdivision_;
+			float phi = u * pi * 2.0f;
+
+			float cosPhi = std::cos(phi);
+			float sinPhi = std::sin(phi);
+
+			//---------------------------------
+			// チューブ中心
+			//---------------------------------
+
+			Vector3 center = { majorRadius * cosTheta,0.0f,majorRadius * sinTheta };
+
+			//---------------------------------
+			// 法線
+			//---------------------------------
+
+			Vector3 normal = { cosTheta * cosPhi,sinPhi,sinTheta * cosPhi };
+
+			normal = normal.Normalize();
+
+			//---------------------------------
+			// 頂点座標
+			//---------------------------------
+
+			Vector3 position = center + normal * minorRadius;
+
+			newElement->vertexData[index].position = { position.x,position.y,position.z,1.0f };
+
+			newElement->vertexData[index].normal = normal;
+
+			newElement->vertexData[index].texcoord = { u,v };
+		}
+	}
 }
 
 void Renderer::CreateBox(ModelElement* newElement) {

@@ -26,5 +26,8 @@ private:
 
 	float testRotate_;
 
+	float majorRadius_;
+	float minorRadius_;
+
 	int32_t testNum_;
 };

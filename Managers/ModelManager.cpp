@@ -8,6 +8,7 @@
 #pragma comment(lib,"Dbghelp.lib")
 
 
+
 ModelManager* ModelManager::GetInstance() {
 	static ModelManager instance;
 	return &instance;
@@ -47,10 +48,10 @@ void ModelManager::RegisterObj(const std::string& name, const std::string& direc
 		// 【Resourceにデータを書き込む】
 
 		// 頂点リソースにデータを書き込む.
-		VertexData* vertexData = nullptr;
+		//VertexData* vertexData = nullptr;
 		// 書き込むためのアドレスを取得.
-		data.vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-		memcpy(vertexData, data.vertices.data(), sizeof(VertexData) * data.vertices.size());
+		data.vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&data.vertexData));
+		memcpy(data.vertexData, data.vertices.data(), sizeof(VertexData) * data.vertices.size());
 
 		for (VertexData& vertexData : data.vertices) {
 			if (vertexData.position.x > max.x) {

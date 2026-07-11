@@ -67,6 +67,13 @@ struct SpriteInstance{
 	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_ = nullptr; // 消すかも.
 };
 
+struct TorusInstance{
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_ = nullptr; // 消すかも.
+	VertexData* vertexData = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_ = nullptr; // 消すかも.
+	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_ = nullptr; // 消すかも.
+};
+
 using ModelElements = std::vector<ModelElement>;
 
 class Model {
@@ -226,6 +233,9 @@ public:
 	/// <param name="color">色</param>
 	void DrawSphere(const Transform& transform,const TextureInfo& textureInfo, const Vector4& color);
 
+	void DrawTorus(const Transform& transform, float majorRadius, float minorRadius, const std::string& name, const Vector4& color) { DrawTorus(transform,majorRadius,minorRadius, TextureManager::GetInstance()->GetTextureInfo(name), color); };
+	void DrawTorus(const Transform& transform, float majorRadius, float minorRadius,const TextureInfo& textureInfo, const Vector4& color);
+
 	/// <summary>
 	/// 球の描画.
 	/// </summary>
@@ -330,11 +340,13 @@ public:
 	void DrawLineAll();
 private:
 	void CreateSphereResource();
-
+	void CreateTorusResource();
 
 	void CreateLine(ModelElement* newElement);
 
 	void CreateSphere(ModelElement* newElement);
+
+	void CreateTorus(ModelElement* newElement,float majorRadius,float minorRadius);
 
 	void CreateBox(ModelElement* newElement);
 
@@ -346,24 +358,30 @@ private:
 
 	void CreateSprite(ModelElement* newElement, float width, float height);
 private:
-	const uint32_t kSubdivision_ = 16;
-
-	const uint32_t maxModelNum = 300;
-	const uint32_t maxSpriteNum = 300;
-	uint32_t currentDrawModelIndex_;
-	uint32_t currentDrawSpriteIndex_;
-
 	// SphereResource.
+	const uint32_t kSphereSubdivision_ = 16;
 	Microsoft::WRL::ComPtr<ID3D12Resource> sphereVertexResource_ = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12Resource> sphereIndexResource_ = nullptr;
+	VertexData* sphereVertexData = nullptr;
+	uint32_t* sphereIndexData = nullptr;
 
 	// TorusResource.
-	Microsoft::WRL::ComPtr<ID3D12Resource> torusVertexResource_ = nullptr;
+	const uint32_t kTorusSubdivision_ = 16;
+	std::vector<std::unique_ptr<TorusInstance>> torusInstances;
 	Microsoft::WRL::ComPtr<ID3D12Resource> torusIndexResource_ = nullptr;
+	uint32_t currentDrawTorusIndex_;
+	uint32_t* torusIndexData = nullptr;
+	const uint32_t maxTorusNum = 100;
 
 	std::vector<std::unique_ptr<ModelInstance>> modelInstances;
+	uint32_t currentDrawModelIndex_;
+	const uint32_t maxModelNum = 300;
 
 	std::vector<std::unique_ptr<SpriteInstance>> spriteInstances;
+	uint32_t currentDrawSpriteIndex_;
+	const uint32_t maxSpriteNum = 300;
+
+
 
 	ModelElement* lineElement_;
 
