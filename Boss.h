@@ -20,6 +20,9 @@ public:
 
 	void OnCollision([[maybe_unused]] Collider* other)override;
 private:
+	Vector3 GetMoveAnchorPointFindAll();
+	Vector3 GetMoveAnchorPointFind(float radius);
+private:
 	enum class Attacks {
 		kWarp,
 		kBulletShot,
@@ -60,6 +63,12 @@ private:
 
 	void BounsInitialize();
 	void BounsUpdate();
+
+	void DiffusionBulletInitialize();
+	void DiffusionBulletUpdate();
+
+	void MovingBulletInitialize();
+	void MovingBulletUpdate();
 private:
 	static void (Boss::* pInitializeFunc[])();
 	static void (Boss::* pUpdateFunc[])();
@@ -103,7 +112,7 @@ private:
 	Vector3 bulletShotDirectionTemp_;
 
 	// BounsShot.
-	float kBounsStartGapTimerMax = 1.0f;
+	float kBounsStartGapTimerMax = 0.7f;
 	float kBounsStayTimerMax = 0.1f;
 	float kBounsSpinTimerMax = 0.2f;
 	float kBounsFinishedGapTimerMax = 0.5f;
@@ -113,6 +122,29 @@ private:
 	static inline Vector3 kBounsHalberdStartRotate = { 0.0f,0.0f,0.0f };
 	static inline Vector3 kBounsHalberdSpinPos = { -2.0f,0.0f,0.0f };
 	static inline Vector3 kBounsHalberdSpinRotate = { 0.0f,0.0f,Radian(90.0f) };
+
+	// DiffusionShot.
+	float kDiffusionBulletStartGapTimerMax = 0.2f;
+	float kDiffusionBulletSpinTimerMax = 0.6f;
+	float kDiffusionBulletBackTimerMax = 0.2f;
+	float kDiffusionBulletFinishedGapTimerMax = 0.5f;
+
+	static inline Vector3 kDiffusionBulletHalberdStartPos = { 0.0f,0.0f,-1.5f };
+	static inline Vector3 kDiffusionBulletHalberdStartRotate = { 0.0f,0.0f,0.0f };
+	static inline Vector3 kDiffusionBulletHalberdSpinRotate = { 0.0f,0.0f,Radian(360.0f) * 3.0f };
+	static inline float kDiffusionBulletAnimPositionZ = 1.0f;
+
+	// MovingShot.
+	float kMovingBulletStartGapTimerMax = 0.2f;
+	float kMovingBulletStayTimerMax = 0.2f;
+	float kMovingBulletShotGapTimerMax = 0.2f;
+	float kMovingBulletFinishedGapTimerMax = 0.3f;
+	float kMovingBulletFinishedTimerMax = 2.0f;
+
+	static inline Vector3 kMovingBulletHalberdPos = { -1.0f,0.0f,-3.0f };
+	static inline float kMovingBulletAnchorRadius = 40.0f;
+	float movingBulletTimer_ = 0.0f;
+	Vector3 movingBulletTargetPos;
 
 };
 

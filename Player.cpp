@@ -2,11 +2,12 @@
 #include "GameCamera.h"
 void Player::Initialize() {
 	transform_.Initialize();
+	transform_.translate.y =kBodyBlankY;
 	targetRotateY = 0.0f;
 	models_["body"].Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
 
 	transformBody_.Initialize();
-	transformBody_.translate.y = kBodyBlankY;
+	transformBody_.translate.y;
 	transformBody_.SetParent(&transform_);
 
 	models_["head"].Initialize("player_head");
@@ -213,7 +214,6 @@ void Player::BehaviorDashUpdate() {
 }
 
 void Player::BehaviorJumpInitialize() {
-	transformBody_.translate.y = kBodyBlankY;
 	velocity_.y = kJumpFirstSpeed_;
 
 
@@ -226,8 +226,8 @@ void Player::BehaviorJumpUpdate() {
 
 	velocity_ += accelerationVector;
 
-	if (transform_.translate.y <= 0.0f) {
-		transform_.translate.y = 0.0f;
+	if (transform_.translate.y <= kBodyBlankY) {
+		transform_.translate.y = kBodyBlankY;
 		behaviorRequest_ = Behavior::kRoot;
 	}
 }
@@ -238,7 +238,7 @@ void Player::UpdateFloatingGimmick() {
 
 	floatingParameter = std::fmod(floatingParameter, 2.0f * std::numbers::pi_v<float>);
 
-	transformBody_.translate.y = (std::sin(floatingParameter) * kFloatingAmplitude) + kBodyBlankY;
+	transformBody_.translate.y = (std::sin(floatingParameter) * kFloatingAmplitude);
 }
 
 void Player::Draw() {

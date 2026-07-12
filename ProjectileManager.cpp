@@ -39,7 +39,7 @@ void ProjectileManager::CreateBullet(const Transform& transform, const Vector3& 
 
 void ProjectileManager::CreateDiffusionBullet(const Transform& transform, const Vector3& velocity, BulletType type, float diffusionRadian, uint32_t amount) {
 	float centerRadian = std::atan2(velocity.x, velocity.z);
-	float speedY = velocity.y * Vector3::Length(velocity);
+	float speedY = velocity.y * Vector3(0.0f,velocity.y,0.0f).Length();
 	float xzLenght = Vector3(velocity.x, 0.0f, velocity.z).Length();
 	Vector3 newVelocity = {0.0f,0.0f,1.0f};
 	float newRadian = 0.0f;
