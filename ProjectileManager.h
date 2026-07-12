@@ -3,8 +3,8 @@
 enum class BulletType {
 	kNormal,
 	kBounce,
-	kFire,
 	kSpike,
+	kFire,
 };
 
 class Bullet :Collider{
@@ -23,6 +23,9 @@ private:
 	void NormalInitialize();
 	void NormalUpdate();
 
+	void BounsInitialize();
+	void BounsUpdate();
+
 private:
 	Transform modelTransform_;
 	Model model_;
@@ -30,9 +33,15 @@ private:
 	BulletType type_;
 
 	float lifeTimer_ = 0.0f;
-	static inline float lifeTimeMax_ = 3.0f;
+	float lifeTimeMax_ = 3.0f;
+	static inline float kBasicLifeTimeMax_ = 3.0f;
 
 	bool isActive_;
+
+
+	// BounsData
+	float kBounsE_ = 0.7f;
+	float gravityAcceleration_ = 9.8f;
 };
 
 class Explode : Collider {
@@ -50,6 +59,16 @@ public:
 	void Draw();
 
 	void CreateBullet(const Transform& transform, const Vector3& velocity, BulletType type);
+
+	/// <summary>
+	///  Y軸基準で拡散するよ。別に他の軸ができないわけじゃないんですよ。ただ今回のゲームだとつかわないしいいかなって(震え).
+	/// </summary>
+	/// <param name="transform"></param>
+	/// <param name="velocity"></param>
+	/// <param name="type"></param>
+	/// <param name="diffusionRadian"></param>
+	/// <param name="amount"></param>
+	void CreateDiffusionBullet(const Transform& transform, const Vector3& velocity, BulletType type,float diffusionRadian,uint32_t amount);
 private:
 	std::vector<std::unique_ptr<Bullet>> bullets;
 };

@@ -203,3 +203,9 @@ Vector3 Vector3::GetPerpendicular(Vector3 vector) {
 
 	return{ 0.0f,-vector.z,vector.y };
 }
+
+Vector3 Vector3::Reflect(const Vector3& normal) {
+	Vector3 input = Vector3(x, y, z);
+	Vector3 result = input - ((static_cast<Vector3>(normal) * input.Dot(normal)) * 2.0f);
+	return result;
+}

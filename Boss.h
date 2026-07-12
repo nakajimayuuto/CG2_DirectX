@@ -23,12 +23,15 @@ private:
 	enum class Attacks {
 		kWarp,
 		kBulletShot,
-		kThreeWayShot,
-		kFireBulletShot,
+		kBounsShot,
+		kDiffusionShot,
+		kMovingShot,
 		kCountMax,
+		kFireBulletShot,
 
 	};
 	Model model_;
+	Model halberdModel_;
 
 	std::vector<Vector3> anchorPoints_; // それぞれのアンカーポイント.
 
@@ -38,23 +41,40 @@ private:
 
 	Transform* targetTransform_ = nullptr; // プレイヤーの位置.
 
-	Transform transformAxe_; // 武器のトランスフォーム.
+	Transform modelTransform_; // ボスモデルのトランスフォーム.
+	Transform halberdTransform_; // 武器のトランスフォーム.
 
 	float deltaTime_;
 private:
 	void AttackInitialize();
 	void AttackUpdate();
 	void AttackFinished();
+	void NextAttackPhase(float timerMax);
+	void SetCurrentDistanceHalberdTransform();
 
 	void WarpInitialize();
 	void WarpUpdate();
 
 	void BulletInitialize();
 	void BulletUpdate();
+
+	void BounsInitialize();
+	void BounsUpdate();
 private:
 	static void (Boss::* pInitializeFunc[])();
 	static void (Boss::* pUpdateFunc[])();
 private:
+	// Anim
+	Transform destinationHalberdTransform_;
+	static inline float kDestinationCompletionRate = 0.25f;
+	static inline float kBasicPositionY = 1.4f;
+
+	static inline Vector3 kBasicHalberdFarPos = {-1.0f,0.0f,0.0f};
+	static inline Vector3 kBasicHalberdFarRotate = { -Radian(90.0f) ,0.0f,0.0f };
+
+	static inline Vector3 kBasicHalberdMiddlePos = { 0.0f,1.0f,0.0f };
+
+
 	// 攻撃全般.
 	Attacks currentAttack_ = Attacks::kWarp; // 現在の攻撃.
 	std::optional<Attacks> attackRequest_ = std::nullopt; // 次の攻撃リクエスト.
@@ -65,11 +85,34 @@ private:
 	float difficultyMagnificationTime = 1.0f; // タイマーの難易度倍率.
 	float difficultyMagnificationDamage = 1.0f; // ダメージの難易度倍率.
 	float dopamineSpeed_ = 1.0f; // スーパードパガキモード.
+	Transform preTransform_;
 
 	// Warp
 	float kWarpEnterTimerMax = 0.5f;
 	float kWarpFinishedTimerMax = 0.5f;
 
+	// BulletShot.
+	float kBulletStartGapTimerMax = 0.2f;
+	float kBulletStayTimerMax = 0.2f;
+	float kBulletFinishedGapTimerMax = 0.3f;
+	static inline Vector3 kBulletHalberdPos = { -1.0f,0.0f,-3.0f };
+	
+	static inline float kBulletAnimRotateY = -45.0f;
+	
+
+	Vector3 bulletShotDirectionTemp_;
+
+	// BounsShot.
+	float kBounsStartGapTimerMax = 1.0f;
+	float kBounsStayTimerMax = 0.1f;
+	float kBounsSpinTimerMax = 0.2f;
+	float kBounsFinishedGapTimerMax = 0.5f;
+
+	static inline float kBounsAnimPositionY = 5.0f;
+	static inline Vector3 kBounsHalberdStartPos = { -0.5f,2.5f,0.0f };
+	static inline Vector3 kBounsHalberdStartRotate = { 0.0f,0.0f,0.0f };
+	static inline Vector3 kBounsHalberdSpinPos = { -2.0f,0.0f,0.0f };
+	static inline Vector3 kBounsHalberdSpinRotate = { 0.0f,0.0f,Radian(90.0f) };
 
 };
 

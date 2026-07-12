@@ -4,11 +4,13 @@
 void (Boss::* Boss::pInitializeFunc[])() = {
 		&Boss::WarpInitialize,
 		&Boss::BulletInitialize,
+		&Boss::BounsInitialize,
 };
 
 void (Boss::* Boss::pUpdateFunc[])() = {
 		&Boss::WarpUpdate,
 		&Boss::BulletUpdate,
+		&Boss::BounsUpdate,
 };
 
 Boss::~Boss() {
@@ -17,7 +19,8 @@ Boss::~Boss() {
 
 void Boss::Initialize() {
 	model_.Initialize("creeking");
-	anchorPointCenter_ = Vector3(0.0f, 0.5f, 0.0f);
+	halberdModel_.Initialize("halberd");
+	anchorPointCenter_ = Vector3(0.0f, kBasicPositionY, 0.0f);
 	anchorPoints_.push_back(anchorPointCenter_);
 
 	for (uint32_t i = 0; i < 8; i++) {
@@ -34,8 +37,18 @@ void Boss::Initialize() {
 		anchorPoints_.push_back(anchorPointCenter_ + pos);
 	}
 
-	currentAttack_ = Attacks::kWarp;
+	currentAttack_ = Attacks::kWarp;	
 
+	transform_.translate.y = kBasicPositionY;
+	modelTransform_.Initialize();
+	modelTransform_.SetParent(&transform_);
+	halberdTransform_.Initialize();
+	halberdTransform_.SetParent(&transform_);
+	destinationHalberdTransform_.Initialize();
+	destinationHalberdTransform_.SetParent(&transform_);
+	halberdTransform_.translate = kBasicHalberdFarPos;
+	halberdTransform_.rotate = kBasicHalberdFarRotate;
+	destinationHalberdTransform_ = halberdTransform_;
 	attackRequest_ = std::nullopt;
 }
 
@@ -70,12 +83,19 @@ void Boss::Update() {
 		transform_.rotate.y = LerpShortAngle(transform_.rotate.y, destinationAngleY_, 0.25f);
 	}
 
+	halberdTransform_.scale = Lerp(halberdTransform_.scale, destinationHalberdTransform_.scale, kDestinationCompletionRate);
+	halberdTransform_.rotate = LerpShortAngle(halberdTransform_.rotate, destinationHalberdTransform_.rotate, kDestinationCompletionRate);
+	halberdTransform_.translate = Lerp(halberdTransform_.translate, destinationHalberdTransform_.translate, kDestinationCompletionRate);
+
 }
 
 void Boss::Draw() {
 	Renderer* renderer = Renderer::GetInstance();
-	renderer->DrawModel(transform_, &model_, true);
-	renderer->DrawShadow(transform_, &model_, { 0.0f,0.0f,0.0f,1.0f });
+	renderer->DrawModel(modelTransform_, &model_, true);
+	renderer->DrawShadow(modelTransform_, &model_, { 0.0f,0.0f,0.0f,1.0f });
+
+	renderer->DrawModel(halberdTransform_, &halberdModel_, true);
+	renderer->DrawShadow(halberdTransform_, &halberdModel_, { 0.0f,0.0f,0.0f,1.0f });
 
 	for (Vector3& pos : anchorPoints_) {
 		renderer->DrawSphereWireFrame(Transform::GetInitialValue({ 0.1f,0.1f,0.1f }, { 0.0f,0.0f,0.0f }, pos), { 0.5f,0.5f,1.0f,1.0f });
@@ -117,6 +137,18 @@ void Boss::AttackFinished() {
 	currentAttackTimer_ = 0.0f; // 攻撃のタイマー.
 	kMaxAttackTimer = 0.0f; // 攻撃のタイマー最大値.
 	currentAttackPhase = 0; // 攻撃のフェーズ.
+	SetCurrentDistanceHalberdTransform();
+}
+
+void Boss::NextAttackPhase(float timerMax) {
+	currentAttackTimer_ = 0;
+	kMaxAttackTimer = timerMax;
+	currentAttackPhase++;
+}
+
+void Boss::SetCurrentDistanceHalberdTransform(){
+	destinationHalberdTransform_.translate = kBasicHalberdFarPos;
+	destinationHalberdTransform_.rotate = kBasicHalberdFarRotate;
 }
 
 void Boss::WarpInitialize() {
@@ -158,17 +190,93 @@ void Boss::WarpUpdate() {
 }
 
 void Boss::BulletInitialize() {
-	kMaxAttackTimer = kWarpEnterTimerMax;
+	kMaxAttackTimer = kBulletStartGapTimerMax;
+	preTransform_ = transform_;
+	bulletShotDirectionTemp_ = { 0.0f,0.0f,1.0f };
 }
 
 void Boss::BulletUpdate() {
-	Vector3 direction = { 0.0f,0.0f,1.0f };
-	
-	if ((targetTransform_->translate - transform_.translate).Length() != 0.0f) {
-		direction = (targetTransform_->translate - transform_.translate).Normalize();
+	switch (currentAttackPhase) {
+	case 0:
+		modelTransform_.rotate.y = Easing(0.0f, Radian(kBulletAnimRotateY), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.translate = Easing(kBasicHalberdFarPos, kBulletHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		transform_.rotate.y = atan2(transform_.translate.x - targetTransform_->translate.x, transform_.translate.z - targetTransform_->translate.z);
+
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kBulletStayTimerMax);
+			if ((targetTransform_->translate - transform_.translate).Length() != 0.0f) {
+				bulletShotDirectionTemp_ = (targetTransform_->translate - transform_.translate).Normalize();
+			}
+		}
+		break;
+	case 1:
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kBulletStayTimerMax);
+			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, bulletShotDirectionTemp_ * 30.0f, BulletType::kNormal);
+		}
+		break;
+	case 2:
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kBulletFinishedGapTimerMax);
+		}
+		break;
+	case 3:
+		modelTransform_.rotate.y = Easing(Radian(kBulletAnimRotateY),0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.translate = Easing(kBulletHalberdPos, kBasicHalberdFarPos,  currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			AttackFinished();
+		}
+		break;
+	}
+}
+
+void Boss::BounsInitialize() {
+	kMaxAttackTimer = kWarpEnterTimerMax;
+}
+
+void Boss::BounsUpdate() {
+	float randomRadian;
+	switch (currentAttackPhase) {
+	case 0:
+		transform_.translate.y = Easing(0.0f, kBounsAnimPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.translate = Easing(kBasicHalberdFarPos, kBounsHalberdStartPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+		destinationHalberdTransform_.rotate = Easing(kBasicHalberdFarRotate, kBounsHalberdStartRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kBounsStayTimerMax);
+		}
+		break;
+	case 1:
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kBounsSpinTimerMax); 
+			}
+		break;
+	case 2:
+		transform_.rotate.y = Easing(0.0f, Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.translate = Easing( kBounsHalberdStartPos,kBounsHalberdSpinPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+		destinationHalberdTransform_.rotate = Easing(kBounsHalberdStartRotate,kBounsHalberdSpinRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kBounsSpinTimerMax);
+			randomRadian = Radian(Random::GetInstance()->RandomFloat(0.0f, 359.0f));
+			ProjectileManager::GetInstance()->CreateDiffusionBullet(transform_, Vector3(RadianToVector(randomRadian).x, 0.0f, RadianToVector(randomRadian).y) * 10.0f, BulletType::kBounce, Radian(45.0f), 8);
+		}
+		break;
+	case 3:
+		transform_.rotate.y = Easing(0.0f, Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kBounsFinishedGapTimerMax);
+		}
+		break;
+	case 4:
+		transform_.translate.y = Easing(kBounsAnimPositionY, kBasicPositionY,  currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.translate = Easing( kBounsHalberdSpinPos, kBasicHalberdFarPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.rotate = Easing( kBounsHalberdSpinRotate, kBasicHalberdFarRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			AttackFinished();
+		}
+		break;
 	}
 
 
-	ProjectileManager::GetInstance()->CreateBullet(transform_, direction *30.0f, BulletType::kNormal);
-	AttackFinished();
+
 }

@@ -56,8 +56,8 @@ void GameCamera::FollowedUpdate(){
 			Reset();
 		}
 	} else {
-		input->SetIsCursorFixed(true);
-		input->SetIsCursorVisible(false);
+		//input->SetIsCursorFixed(true);
+		//input->SetIsCursorVisible(false);
 		destinationAngleY_ += input->GetMouse().GetMove().x * kMouseRotateSpeed;
 
 		if (input->TriggerKey(DIK_C)) {

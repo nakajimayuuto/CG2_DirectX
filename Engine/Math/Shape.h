@@ -42,6 +42,7 @@ struct AABB {
 class OBB {
 public:
 	OBB& operator=(const Matrix4x4 &matrix);
+	Matrix4x4& operator=(const OBB &obb);
 public:
 	Vector3 center; // 中心点.
 	Vector3 orientations[3]; //座標軸。正規化・直交必須.

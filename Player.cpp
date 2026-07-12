@@ -183,17 +183,19 @@ void Player::BehaviorDashUpdate() {
 		if (input->TriggerPadButton(PadButtons::INPUT_R1)) {
 			behaviorRequest_ = Behavior::kRoot;
 		}
+
+		transform_.rotate.y += input->GetLeftStickDirection().x * Radian(3.0f);
 	} else {
 		if (input->TriggerKey(DIK_LCONTROL)) {
 			behaviorRequest_ = Behavior::kRoot;
 		}
 
 		if (input->PressKey(DIK_A)) {
-			transform_.rotate.y -= Radian(10.0f);
+			transform_.rotate.y -= Radian(3.0f);
 		}
 
 		if (input->PressKey(DIK_D)) {
-			transform_.rotate.y += Radian(10.0f);
+			transform_.rotate.y += Radian(3.0f);
 		}
 	}
 

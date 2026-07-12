@@ -55,5 +55,7 @@ public:
 	Vector3 Perpendicular();
 
 	static Vector3 GetPerpendicular(Vector3 vector);
+
+	Vector3 Reflect(const Vector3& normal);
 };
 

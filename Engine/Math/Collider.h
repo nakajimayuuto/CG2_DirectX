@@ -4,6 +4,12 @@
 #include "CollisionConfig.h"
 #include "Transform.h"
 #include "../../ContactRecord.h"
+
+enum class ColliderType {
+	kSphere,
+	kBox,
+};
+
 class Collider {
 public:
 	Collider() = default;
@@ -27,11 +33,19 @@ public:
 
 	virtual Vector3 GetWorldPosition() { return transform_.GetAffineMatrix().GetMatrixToTranslate(); };
 protected:
+	void CreateObbCollider();
+protected:
 	void (*pOnCollision_)([[maybe_unused]] Collider* other) = nullptr;
 
 	Transform transform_ = Transform::GetInitialValue();
 
 	float radius_ = 1.0f;
+
+	Vector2 size_;
+
+	OBB obb_;
+
+	ColliderType colliderType_ = ColliderType::kSphere;
 
 	// 自分の属性(後々ここはstd::vectorにする)
 	uint32_t collisionAttribute_ = 0xFFFFFFFF;

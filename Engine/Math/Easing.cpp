@@ -97,6 +97,15 @@ float LerpShortAngle(float before, float after, float time){
 	return before + (diff * time);
 }
 
+Vector3 LerpShortAngle(Vector3 before, Vector3 after, float time){
+	Vector3 result;
+	result.x = LerpShortAngle(before.x,after.x,time);
+	result.y = LerpShortAngle(before.y,after.y,time);
+	result.z = LerpShortAngle(before.z,after.z,time);
+
+	return result;
+}
+
 Vector3 Slerp(Vector3 before, Vector3 after, float time){
 	Vector3 result = before;
 	

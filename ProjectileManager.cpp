@@ -14,10 +14,10 @@ void ProjectileManager::Update() {
 		bullet->Update();
 	}
 
-	for (auto it = bullets.begin(); it != bullets.end(); ){
-		if (!(*it)->GetIsActive()){
+	for (auto it = bullets.begin(); it != bullets.end(); ) {
+		if (!(*it)->GetIsActive()) {
 			it = bullets.erase(it);
-		} else{
+		} else {
 			++it;
 		}
 	}
@@ -37,21 +37,55 @@ void ProjectileManager::CreateBullet(const Transform& transform, const Vector3& 
 	bullets.push_back(std::move(bullet));
 }
 
+void ProjectileManager::CreateDiffusionBullet(const Transform& transform, const Vector3& velocity, BulletType type, float diffusionRadian, uint32_t amount) {
+	float centerRadian = std::atan2(velocity.x, velocity.z);
+	float speedY = velocity.y * Vector3::Length(velocity);
+	float xzLenght = Vector3(velocity.x, 0.0f, velocity.z).Length();
+	Vector3 newVelocity = {0.0f,0.0f,1.0f};
+	float newRadian = 0.0f;
+	float startRadian = 0.0f;
+
+	if (amount % 2 == 0) {
+		startRadian = centerRadian - (diffusionRadian * (amount / 2)) + (diffusionRadian / 2.0f) + Radian(90.0f);
+		for (uint32_t i = 0; i < amount; i++) {
+			newRadian = startRadian + (diffusionRadian * i);
+			newVelocity.x = -RadianToVector(newRadian).x * xzLenght;
+			newVelocity.y = speedY;
+			newVelocity.z = RadianToVector(newRadian).y * xzLenght;
+			CreateBullet(transform,newVelocity,type);
+		}
+	} else {
+		startRadian = centerRadian - (diffusionRadian * ((amount - 1) / 2)) + Radian(90.0f);
+		for (uint32_t i = 0; i < amount; i++) {
+			newRadian = startRadian + (diffusionRadian * i);
+			newVelocity.x = -RadianToVector(newRadian).x * xzLenght;
+			newVelocity.y = speedY;
+			newVelocity.z = RadianToVector(newRadian).y * xzLenght;
+			CreateBullet(transform, newVelocity, type);
+		}
+	}
+}
+
 void (Bullet::* Bullet::pInitializeFunc[])() = {
 		&Bullet::NormalInitialize,
+		&Bullet::BounsInitialize,
 };
 
 void (Bullet::* Bullet::pUpdateFunc[])() = {
 		&Bullet::NormalUpdate,
+		&Bullet::BounsUpdate,
 };
 
 void Bullet::Initialize(const Transform& transform, const Vector3& velocity, BulletType type) {
-	transform_ = transform;
+	transform_.scale = transform.scale;
+	transform_.rotate = transform.rotate;
+	transform_.translate = transform.GetWorldPosition();
 	modelTransform_.Initialize();
 	modelTransform_.SetParent(&transform_);
 	velocity_ = velocity;
 	type_ = type;
 	lifeTimer_ = 0.0f;
+	lifeTimeMax_ = kBasicLifeTimeMax_;
 	isActive_ = true;
 
 	(this->*pInitializeFunc[static_cast<size_t>(type_)])();
@@ -76,4 +110,24 @@ void Bullet::NormalInitialize() {
 
 void Bullet::NormalUpdate() {
 	transform_.translate += velocity_ * DeltaTime::GetInstance()->GetDeltaTime();
+}
+
+void Bullet::BounsInitialize() {
+	velocity_.y = 1.0f;
+
+	lifeTimeMax_ = 5.0f;
+}
+
+void Bullet::BounsUpdate() {
+	velocity_.y -= gravityAcceleration_ * DeltaTime::GetInstance()->GetDeltaTime();
+	transform_.translate += velocity_ * DeltaTime::GetInstance()->GetDeltaTime();
+
+	if (transform_.GetWorldPosition().y - (radius_ / 2.0f) <= 0.0f) {
+		transform_.translate.y = (radius_ / 2.0f);
+
+		Vector3 reflected = velocity_.Reflect({ 0.0f,1.0f,0.0f });
+		Vector3 projectToNormal = Vector3::Project(reflected, { 0.0f,1.0f,0.0f });
+		Vector3 movingDirection = reflected - projectToNormal;
+		velocity_ = projectToNormal * kBounsE_ + movingDirection;
+	}
 }

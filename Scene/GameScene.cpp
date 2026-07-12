@@ -11,6 +11,7 @@ void GameScene::Initialize() {
 	TextureManager::GetInstance()->RegisterTexture("effect_plane", "Resource/EffectPlane/effect_plane.png");
 	ModelManager::GetInstance()->RegisterObj("skydome", "Resource/skydome", "skydome.obj");
 	ModelManager::GetInstance()->RegisterObj("creeking", "Resource/creeking", "creeking.obj");
+	ModelManager::GetInstance()->RegisterObj("halberd", "Resource/Halberd", "halubaad.obj");
 	ModelManager::GetInstance()->RegisterObj("ground", "Resource/Ground", "ground.obj");
 	ModelManager::GetInstance()->RegisterObj("player", "Resource/player_hovering_mode", "player.obj");
 	ModelManager::GetInstance()->RegisterObj("player_right_arm", "Resource/player_hovering_mode/right_arm", "right_arm.obj");
@@ -100,7 +101,7 @@ void GameScene::Draw() {
 
 	//Renderer::GetInstance()->DrawSprite(Transform2D::GetTransformValue({ 1.0f,1.0f }, testRotate_, { 150.0f,50.0f },0.0f), "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
 	//Renderer::GetInstance()->DrawSphere(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
-	Renderer::GetInstance()->DrawTorus(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }),majorRadius_,minorRadius_, "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
+	//Renderer::GetInstance()->DrawTorus(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }),majorRadius_,minorRadius_, "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
 
 	ProjectileManager::GetInstance()->Draw();
 
