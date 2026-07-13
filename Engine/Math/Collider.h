@@ -32,6 +32,8 @@ public:
 	void SetOnCollisionFunc(void (*func)([[maybe_unused]] Collider* other));
 
 	virtual Vector3 GetWorldPosition() { return transform_.GetAffineMatrix().GetMatrixToTranslate(); };
+
+	void DrawCollider();
 protected:
 	void CreateObbCollider();
 protected:
@@ -44,6 +46,8 @@ protected:
 	Vector2 size_;
 
 	OBB obb_;
+
+	Vector4 colliderColor_ = {1.0f,1.0f,1.0f,1.0f};
 
 	ColliderType colliderType_ = ColliderType::kSphere;
 

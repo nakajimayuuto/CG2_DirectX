@@ -96,7 +96,8 @@ void Player::Update() {
 	}
 	//particles_->Update();
 
-
+	colliderColor_ = { 0.5f,0.5f,1.0f,1.0f };
+	
 	transform_.rotate.y = std::fmod(transform_.rotate.y, Radian(360.0f));
 
 	GameCamera::GetInstance()->SetTargetIsMove(isMoving_);
@@ -255,6 +256,8 @@ void Player::Draw() {
 	Renderer::GetInstance()->DrawShadow(transformRArm_, &models_["RArm"], { 0.0f,0.0f,0.0f,1.0f });
 
 	//particles_->Draw();
+
+	DrawCollider();
 }
 
 void Player::RegisterGlobalVariables() {
@@ -299,6 +302,7 @@ void Player::ApplyGlobalVariables() {
 
 void Player::OnCollision([[maybe_unused]] Collider* other) {
 	//behaviorRequest_ = Behavior::kJump;
+	colliderColor_ = { 1.0f,0.0f,0.0f,1.0f };
 }
 
 float Player::GetSumComboTime(uint32_t index) {
