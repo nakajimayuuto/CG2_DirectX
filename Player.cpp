@@ -323,10 +323,10 @@ void Player::UpdateFloatingGimmick() {
 }
 
 void Player::Draw() {
-	Renderer::GetInstance()->DrawModel(transformBody_, &models_["body"]);
-	Renderer::GetInstance()->DrawModel(transformHead_, &models_["head"]);
-	Renderer::GetInstance()->DrawModel(transformLArm_, &models_["LArm"]);
-	Renderer::GetInstance()->DrawModel(transformRArm_, &models_["RArm"]);
+	Renderer::GetInstance()->DrawModel(transformBody_.GetAffineMatrix(), &models_["body"]);
+	Renderer::GetInstance()->DrawModel(transformHead_.GetAffineMatrix(), &models_["head"]);
+	Renderer::GetInstance()->DrawModel(transformLArm_.GetAffineMatrix(), &models_["LArm"]);
+	Renderer::GetInstance()->DrawModel(transformRArm_.GetAffineMatrix(), &models_["RArm"]);
 
 	shadowHead_->Draw();
 	shadowBody_->Draw();
@@ -334,7 +334,7 @@ void Player::Draw() {
 	shadowLArm_->Draw();
 
 	if (behavior_ == Behavior::kAttack) {
-		Renderer::GetInstance()->DrawModel(transformHammer_, &models_["hammer_of_justice"]);
+		Renderer::GetInstance()->DrawModel(transformHammer_.GetAffineMatrix(), &models_["hammer_of_justice"]);
 		shadowHammer->Draw();
 	}
 }

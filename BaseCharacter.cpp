@@ -10,6 +10,6 @@ void BaseCharacter::Update() {
 
 void BaseCharacter::Draw() {
 	for (std::pair<std::string, Model> model : models_) {
-		Renderer::GetInstance()->DrawModel(transform_, &model.second);
+		Renderer::GetInstance()->DrawModel(transform_.GetAffineMatrix(), &model.second);
 	}
 }

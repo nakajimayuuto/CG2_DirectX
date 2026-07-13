@@ -276,7 +276,7 @@ public:
 	/// </summary>
 	/// <param name="transform">トランスフォーム</param>
 	/// <param name="model">モデル</param>
-	void DrawModel(const Transform& transform, const Model* model);
+	void DrawModel(const Matrix4x4& matrix, const Model* model);
 
 	/// <summary>
 	/// スプライトの描画.

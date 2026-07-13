@@ -10,7 +10,7 @@ void PlaneProjectionShadow::Initialize(Transform* casterWorldTransform, Model* m
 	shadowMatrix_ = Matrix4x4::Identity();
 
 	// 【ShadowMatrixの要素[1][1]に0.0fを代入】
-	shadowMatrix_.matrix[1][1] = 0.0f;
+	shadowMatrix_.matrix[1][1] = 0.01f;
 
 }
 
@@ -20,11 +20,11 @@ void PlaneProjectionShadow::Update() {
 	Camera* camera = Camera::GetInstance();
 
 	if (casterTransform_) {
-		worldMatrix_ = worldMatrix_ * shadowMatrix_ * camera->GetViewMatrix() * camera->GetProjectionMatrix();
+		worldMatrix_ = worldMatrix_ * shadowMatrix_;
 	}
 }
 
 void PlaneProjectionShadow::Draw() {
-	Renderer::GetInstance()->DrawModel(worldMatrix_.GetMatrixToTransform(), model_);
+	Renderer::GetInstance()->DrawModel(worldMatrix_, model_);
 
 }

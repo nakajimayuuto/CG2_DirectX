@@ -26,5 +26,5 @@ void Skydome::Update() {
 }
 
 void Skydome::Draw() {
-	Renderer::GetInstance()->DrawModel(transform_, &model_);
+	Renderer::GetInstance()->DrawModel(transform_.GetAffineMatrix(), &model_);
 }

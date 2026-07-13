@@ -921,7 +921,7 @@ void Renderer::DrawModel(const Transform& transform, const ModelInfo& modelInfo,
 	}
 }
 
-void Renderer::DrawModel(const Transform& transform, const Model* model) {
+void Renderer::DrawModel(const Matrix4x4& matrix, const Model* model) {
 	uint32_t modelMax_ = static_cast<uint32_t>(model->GetModelCountMax());
 	std::vector<ModelElement*> newElements;
 	newElements.resize(modelMax_);
@@ -930,7 +930,7 @@ void Renderer::DrawModel(const Transform& transform, const Model* model) {
 	CreateModel(newElements, modelMax_);
 
 	for (uint32_t i = 0; i < modelMax_; i++) {
-		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+		Matrix4x4 worldMatrix = matrix;
 
 		newElements[i]->wvpData_->World = worldMatrix;
 		newElements[i]->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
