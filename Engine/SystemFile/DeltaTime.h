@@ -13,6 +13,7 @@ public:
 	void Update();
 
 	float GetDeltaTime() const { return deltaTime; };
+	float GetGameTime() const { return gameTime; };
 
 	float GetDeltaTimePerFrame() const { return deltaTime * 60.0f; };
 
@@ -31,5 +32,9 @@ private:
 
 	float deltaTime;
 	float debugDeltaTime;
+
+	float gameTime; // プレイヤーや弾の動き等を司る.ヒットストップで止まる値.
+	float particleTime; // パーティクルや一部演出に使用.ヒットストップで止まらない.
+	float applicationTime; // Pauseメニューやらのパーティクルが止まっても止まらない値に利用.
 };
 

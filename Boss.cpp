@@ -66,7 +66,7 @@ void Boss::Initialize() {
 }
 
 void Boss::Update() {
-	deltaTime_ = DeltaTime::GetInstance()->GetDeltaTime();
+	deltaTime_ = DeltaTime::GetInstance()->GetGameTime();
 
 	ImGui::Begin("BossDebug");
 	Vector3 imRotate = Degree(transform_.rotate);
@@ -462,6 +462,7 @@ void Boss::WaveUpdate(){
 		destinationHalberdTransform_.translate = Easing(kWaveHalberdSpinPos, kWaveHalberdAttackPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kWaveAttackGapTimerMax);
+			ProjectileManager::GetInstance()->CreateWave(transform_,25.0f,1.0f, kCollisionEnemyAttack);
 		}
 		break;
 	case 4:

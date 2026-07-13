@@ -251,8 +251,8 @@ void Particles::MakeNewParticle(const Transform& transform) {
 
 void Particles::Update() {
 	for (ParticleData& particle : particleData_) {
-		particle.transform.translate += particle.velocity * DeltaTime::GetInstance()->GetDeltaTime();
-		particle.currentTime += DeltaTime::GetInstance()->GetDeltaTime();
+		particle.transform.translate += particle.velocity * DeltaTime::GetInstance()->GetGameTime();
+		particle.currentTime += DeltaTime::GetInstance()->GetGameTime();
 		particle.color.w = Easing(1.0f, 0.0f, particle.currentTime, particle.lifeTime, EaseType::kConstant);
 	}
 
@@ -276,7 +276,7 @@ void Particles::Update() {
 void Particles::CheckCollision(const Field& field) {
 	for (std::list<ParticleData>::iterator particleIterator = particleData_.begin(); particleIterator != particleData_.end();++particleIterator) {
 		if (Collision::AABBToPoint(field.GetArea(), (*particleIterator).transform.translate)) {
-			(*particleIterator).velocity += field.GetAcceleration() * DeltaTime::GetInstance()->GetDeltaTime();
+			(*particleIterator).velocity += field.GetAcceleration() * DeltaTime::GetInstance()->GetGameTime();
 		}
 	}
 }
@@ -391,7 +391,7 @@ void Emitter::CreateParticle() {
 }
 
 void Emitter::Update() {
-	frequencyTime_ += DeltaTime::GetInstance()->GetDeltaTime();
+	frequencyTime_ += DeltaTime::GetInstance()->GetGameTime();
 
 	if (frequency_ <= frequencyTime_) {
 	//s	CreateParticle();

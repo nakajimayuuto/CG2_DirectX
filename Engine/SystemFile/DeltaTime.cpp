@@ -18,6 +18,13 @@ void DeltaTime::Update() {
 	frameTime = clock();
 
 	deltaTime = static_cast<float>(frameTime - preFrameTime) * 0.001f;
+
+
+	gameTime = deltaTime;
+	particleTime = deltaTime;
+	applicationTime = deltaTime;
+
+
 	DebugUpdate();
 }
 

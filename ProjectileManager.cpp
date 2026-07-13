@@ -6,6 +6,7 @@ ProjectileManager* ProjectileManager::GetInstance() {
 
 void ProjectileManager::Initialize() {
 	bullets.clear();
+	waves.clear();
 
 }
 
@@ -25,11 +26,31 @@ void ProjectileManager::Update() {
 	for (auto& bullet : bullets) {
 		CollisionManager::GetInstance()->AddColliderList(reinterpret_cast<Collider*>(bullet.get()));
 	}
+
+	for (auto& wave : waves) {
+		wave->Update();
+	}
+
+	for (auto it = waves.begin(); it != waves.end(); ) {
+		if (!(*it)->GetIsActive()) {
+			it = waves.erase(it);
+		} else {
+			++it;
+		}
+	}
+
+	for (auto& wave : waves) {
+		CollisionManager::GetInstance()->AddColliderList(reinterpret_cast<Collider*>(wave.get()));
+	}
 }
 
 void ProjectileManager::Draw() {
 	for (auto& bullet : bullets) {
 		bullet->Draw();
+	}
+
+	for (auto& wave : waves) {
+		wave->Draw();
 	}
 
 }
@@ -70,6 +91,13 @@ void ProjectileManager::CreateDiffusionBullet(const Transform& transform, const 
 	}
 }
 
+void ProjectileManager::CreateWave(const Transform& transform, float speed, float height, CollisionAttributeName colliderName){
+	std::unique_ptr<Wave> wave;
+	wave = std::make_unique<Wave>();
+	wave->Initialize(transform, speed,height, colliderName);
+	waves.push_back(std::move(wave));
+}
+
 void (Bullet::* Bullet::pInitializeFunc[])() = {
 		&Bullet::NormalInitialize,
 		&Bullet::BounsInitialize,
@@ -99,7 +127,7 @@ void Bullet::Initialize(const Transform& transform, const Vector3& velocity, Bul
 }
 
 void Bullet::Update() {
-	lifeTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
+	lifeTimer_ += DeltaTime::GetInstance()->GetGameTime();
 	(this->*pUpdateFunc[static_cast<size_t>(type_)])();
 
 	if (lifeTimer_ >= lifeTimeMax_) {
@@ -117,7 +145,7 @@ void Bullet::NormalInitialize() {
 }
 
 void Bullet::NormalUpdate() {
-	transform_.translate += velocity_ * DeltaTime::GetInstance()->GetDeltaTime();
+	transform_.translate += velocity_ * DeltaTime::GetInstance()->GetGameTime();
 }
 
 void Bullet::BounsInitialize() {
@@ -127,8 +155,8 @@ void Bullet::BounsInitialize() {
 }
 
 void Bullet::BounsUpdate() {
-	velocity_.y -= gravityAcceleration_ * DeltaTime::GetInstance()->GetDeltaTime();
-	transform_.translate += velocity_ * DeltaTime::GetInstance()->GetDeltaTime();
+	velocity_.y -= gravityAcceleration_ * DeltaTime::GetInstance()->GetGameTime();
+	transform_.translate += velocity_ * DeltaTime::GetInstance()->GetGameTime();
 
 	if (transform_.GetWorldPosition().y - (colliderRadius_ / 2.0f) <= 0.0f) {
 		transform_.translate.y = (colliderRadius_ / 2.0f);
@@ -138,4 +166,32 @@ void Bullet::BounsUpdate() {
 		Vector3 movingDirection = reflected - projectToNormal;
 		velocity_ = projectToNormal * kBounsE_ + movingDirection;
 	}
+}
+
+void Wave::Initialize(const Transform& transform, float speed, float height, CollisionAttributeName colliderName){
+	transform_.scale = { 1.0f,1000.0f/height,1.0f };
+	transform_.rotate = { 0.0f,0.0f,0.0f };
+	transform_.translate = transform.GetWorldPosition();
+	transform_.translate.y = 0.0f;
+	colliderRadius_ = 0.0f;
+	colliderMinorRadius_ = height * 0.001f;
+	collisionAttribute_ = colliderName;
+	speed_ = speed;
+	isActive_ = true;
+	lifeTimer_ = 0.0f;
+	colliderType_ = ColliderType::kTorus;
+	lifeTimeMax_ = kBasicLifeTimeMax_;
+}	
+
+void Wave::Update() {
+	lifeTimer_ += DeltaTime::GetInstance()->GetGameTime();
+	colliderRadius_ += speed_ * DeltaTime::GetInstance()->GetGameTime();
+
+	if (lifeTimer_ >= lifeTimeMax_) {
+		isActive_ = false;
+	}
+}
+
+void Wave::Draw() {
+	Renderer::GetInstance()->DrawTorus(transform_, colliderRadius_, colliderMinorRadius_, "white_template", {1.0f,0.0f,0.0f,1.0f});
 }

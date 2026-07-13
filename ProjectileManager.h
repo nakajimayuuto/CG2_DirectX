@@ -48,8 +48,24 @@ class Explode : Collider {
 
 };
 
-class Wave {
+class Wave :Collider{
+public:
+	void Initialize(const Transform& transform, float speed,float height, CollisionAttributeName colliderName);
 
+	void Update();
+
+	void Draw();
+
+	bool GetIsActive() { return isActive_; };
+private:
+	Model model_;
+	float speed_;
+
+	float lifeTimer_ = 0.0f;
+	float lifeTimeMax_ = 7.0f;
+	static inline float kBasicLifeTimeMax_ = 7.0f;
+
+	bool isActive_;
 };
 
 class ProjectileManager {
@@ -73,6 +89,9 @@ public:
 	/// <param name="diffusionRadian"></param>
 	/// <param name="amount"></param>
 	void CreateDiffusionBullet(const Transform& transform, const Vector3& velocity, BulletType type, CollisionAttributeName colliderName,float diffusionRadian,uint32_t amount);
+
+	void CreateWave(const Transform& transform, float speed, float height, CollisionAttributeName colliderName);
 private:
 	std::vector<std::unique_ptr<Bullet>> bullets;
+	std::vector<std::unique_ptr<Wave>> waves;
 };
