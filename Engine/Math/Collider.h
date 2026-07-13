@@ -16,8 +16,8 @@ public:
 	virtual ~Collider() = default;
 	virtual void OnCollision([[maybe_unused]] Collider* other);
 
-	void SetRadius(float radius) { radius_ = radius; };
-	float GetRadius() const { return radius_; };
+	void SetRadius(float radius) { colliderRadius_ = radius; };
+	float GetRadius() const { return colliderRadius_; };
 
 	void SetTransform(Transform transform) { transform_ = transform; };
 	Transform GetTransform() { return transform_; };
@@ -32,6 +32,10 @@ public:
 	void SetOnCollisionFunc(void (*func)([[maybe_unused]] Collider* other));
 
 	virtual Vector3 GetWorldPosition() { return transform_.GetAffineMatrix().GetMatrixToTranslate(); };
+	
+	ColliderType GetColliderType() { return colliderType_; };
+
+	OBB GetOBB() { CreateObbCollider(); return colliderObb_; };
 
 	void DrawCollider();
 protected:
@@ -41,11 +45,11 @@ protected:
 
 	Transform transform_ = Transform::GetInitialValue();
 
-	float radius_ = 1.0f;
+	float colliderRadius_ = 1.0f;
 
-	Vector2 size_;
+	Vector3 colliderSize_ = {2.0f,2.0f,2.0f};
 
-	OBB obb_;
+	OBB colliderObb_;
 
 	Vector4 colliderColor_ = {1.0f,1.0f,1.0f,1.0f};
 

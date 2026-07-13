@@ -491,9 +491,6 @@
     <ClInclude Include="Engine\Math\Collider.h">
       <Filter>Engine\Math\Collider</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Math\CollisionConfig.h">
-      <Filter>Engine\Math\Collider</Filter>
-    </ClInclude>
     <ClInclude Include="Managers\CollisionManager.h">
       <Filter>Managers\CollisionManager</Filter>
     </ClInclude>
@@ -544,6 +541,9 @@
     </ClInclude>
     <ClInclude Include="externals\magic_enum\magic_enum.hpp">
       <Filter>Engine\SystemFile\externals</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Math\CollisionConfig.h">
+      <Filter>Managers\CollisionManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

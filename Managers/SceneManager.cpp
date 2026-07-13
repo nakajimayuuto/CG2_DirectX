@@ -4,6 +4,7 @@
 #include "InputManager.h"
 #include "../Environment.h"
 #include "../Engine/SystemFile/Debug.h"
+#include "CollisionManager.h"
 
 SceneManager::~SceneManager() {
 }
@@ -14,6 +15,7 @@ SceneManager* SceneManager::GetInstance() {
 };
 
 void SceneManager::Initialize() {
+	CollisionManager::GetInstance()->CollisionAttributeInitialize();
 	//#ifdef _DEBUG
 	Debug::GetInstance()->LoadDebugSettings();
 	currentScene_ = std::make_unique<GameScene>();

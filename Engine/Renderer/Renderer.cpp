@@ -855,7 +855,7 @@ void Renderer::DrawTorus(const Transform& transform, float majorRadius, float mi
 	/*=============================================================
 	三角形の描画のコマンド.
 	=============================================================*/
-	newElement->indexInstanceNum_ = kSphereSubdivision_ * kSphereSubdivision_ * 6;
+	newElement->indexInstanceNum_ = kTorusSubdivision_ * kTorusSubdivision_ * 6;
 	GameSystem::GetInstance()->DrawCommand(
 		newElement->blendMode_,
 		&newElement->vertexBufferView_,
@@ -1013,6 +1013,47 @@ void Renderer::DrawBoxWireFrame(const AABB& aabb, const Vector4& color) {
 	vertices.push_back(Vector3(aabb.min.x, aabb.max.y, aabb.max.z));
 	vertices.push_back(Vector3(aabb.max.x, aabb.min.y, aabb.max.z));
 	vertices.push_back(aabb.max);
+
+	DrawLine(vertices[0], vertices[1], color);
+	DrawLine(vertices[0], vertices[2], color);
+	DrawLine(vertices[1], vertices[3], color);
+	DrawLine(vertices[2], vertices[3], color);
+
+	DrawLine(vertices[4], vertices[5], color);
+	DrawLine(vertices[4], vertices[6], color);
+	DrawLine(vertices[5], vertices[7], color);
+	DrawLine(vertices[6], vertices[7], color);
+
+	DrawLine(vertices[0], vertices[4], color);
+	DrawLine(vertices[1], vertices[5], color);
+	DrawLine(vertices[2], vertices[6], color);
+	DrawLine(vertices[3], vertices[7], color);
+}
+
+void Renderer::DrawBoxWireFrame(const OBB& obb, const Vector4& color) {
+	Matrix4x4 matrix;
+	Matrix4x4 rotateMatrix;
+	rotateMatrix = rotateMatrix.Identity();
+
+	for (uint32_t i = 0; i < 3; i++) {
+		rotateMatrix.matrix[i][0] = obb.orientations[i].x;
+		rotateMatrix.matrix[i][1] = obb.orientations[i].y;
+		rotateMatrix.matrix[i][2] = obb.orientations[i].z;
+	}
+
+	matrix = rotateMatrix;
+	matrix = matrix * Matrix4x4::MakeTranslateMatrix(obb.center);
+
+	std::vector<Vector3> vertices;
+	vertices.push_back(matrix.MatrixTransform({ -obb.size.x,-obb.size.y,-obb.size.z }));
+	vertices.push_back(matrix.MatrixTransform({ -obb.size.x,obb.size.y,-obb.size.z }));
+	vertices.push_back(matrix.MatrixTransform({ obb.size.x,-obb.size.y,-obb.size.z }));
+	vertices.push_back(matrix.MatrixTransform({ obb.size.x,obb.size.y,-obb.size.z }));
+
+	vertices.push_back(matrix.MatrixTransform({ -obb.size.x,-obb.size.y,obb.size.z }));
+	vertices.push_back(matrix.MatrixTransform({ -obb.size.x,obb.size.y,obb.size.z }));
+	vertices.push_back(matrix.MatrixTransform({ obb.size.x,-obb.size.y,obb.size.z }));
+	vertices.push_back(matrix.MatrixTransform({ obb.size.x,obb.size.y,obb.size.z }));
 
 	DrawLine(vertices[0], vertices[1], color);
 	DrawLine(vertices[0], vertices[2], color);

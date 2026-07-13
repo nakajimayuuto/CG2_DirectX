@@ -124,14 +124,14 @@ void GameCamera::FollowedUpdate(){
 			}
 		}
 
-		GameSystem::Log(std::format("before:{},{}\n", transform_.rotate.y, destinationAngleY_, transform_.translate.z));
+		//GameSystem::Log(std::format("before:{},{}\n", transform_.rotate.y, destinationAngleY_, transform_.translate.z));
 		// ここ二つの値をうまくやると何とかなりそう。バグるときは大体-6.??から0.??に変換するとき
 		destinationAngleY_ = LerpShortAngle(destinationAngleY_, wallDirection, 0.1f);
 		//transform_.rotate.y = Lerp(transform_.rotate.y, wallDirection, 1.0f);
-		GameSystem::Log(std::format("after :{},{}\n", transform_.rotate.y, destinationAngleY_, transform_.translate.z));
+		//GameSystem::Log(std::format("after :{},{}\n", transform_.rotate.y, destinationAngleY_, transform_.translate.z));
 	} else {
 		transform_.translate = Lerp(interOffsetTarget_, wallOffsetPos, 0.25f);
-		GameSystem::Log(std::format("none  :{},{}\n", transform_.rotate.y, destinationAngleY_, transform_.translate.z));
+		//GameSystem::Log(std::format("none  :{},{}\n", transform_.rotate.y, destinationAngleY_, transform_.translate.z));
 	}
 
 

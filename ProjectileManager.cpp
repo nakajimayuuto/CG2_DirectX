@@ -21,6 +21,10 @@ void ProjectileManager::Update() {
 			++it;
 		}
 	}
+
+	for (auto& bullet : bullets) {
+		CollisionManager::GetInstance()->AddColliderList(reinterpret_cast<Collider*>(bullet.get()));
+	}
 }
 
 void ProjectileManager::Draw() {
@@ -30,14 +34,14 @@ void ProjectileManager::Draw() {
 
 }
 
-void ProjectileManager::CreateBullet(const Transform& transform, const Vector3& velocity, BulletType type) {
+void ProjectileManager::CreateBullet(const Transform& transform, const Vector3& velocity, BulletType type, CollisionAttributeName colliderName) {
 	std::unique_ptr<Bullet> bullet;
 	bullet = std::make_unique<Bullet>();
-	bullet->Initialize(transform, velocity, type);
+	bullet->Initialize(transform, velocity, type,colliderName);
 	bullets.push_back(std::move(bullet));
 }
 
-void ProjectileManager::CreateDiffusionBullet(const Transform& transform, const Vector3& velocity, BulletType type, float diffusionRadian, uint32_t amount) {
+void ProjectileManager::CreateDiffusionBullet(const Transform& transform, const Vector3& velocity, BulletType type, CollisionAttributeName colliderName, float diffusionRadian, uint32_t amount) {
 	float centerRadian = std::atan2(velocity.x, velocity.z);
 	float speedY = velocity.y * Vector3(0.0f,velocity.y,0.0f).Length();
 	float xzLenght = Vector3(velocity.x, 0.0f, velocity.z).Length();
@@ -52,7 +56,7 @@ void ProjectileManager::CreateDiffusionBullet(const Transform& transform, const 
 			newVelocity.x = -RadianToVector(newRadian).x * xzLenght;
 			newVelocity.y = speedY;
 			newVelocity.z = RadianToVector(newRadian).y * xzLenght;
-			CreateBullet(transform,newVelocity,type);
+			CreateBullet(transform,newVelocity,type,colliderName);
 		}
 	} else {
 		startRadian = centerRadian - (diffusionRadian * ((amount - 1) / 2)) + Radian(90.0f);
@@ -61,7 +65,7 @@ void ProjectileManager::CreateDiffusionBullet(const Transform& transform, const 
 			newVelocity.x = -RadianToVector(newRadian).x * xzLenght;
 			newVelocity.y = speedY;
 			newVelocity.z = RadianToVector(newRadian).y * xzLenght;
-			CreateBullet(transform, newVelocity, type);
+			CreateBullet(transform, newVelocity, type,colliderName);
 		}
 	}
 }
@@ -76,7 +80,7 @@ void (Bullet::* Bullet::pUpdateFunc[])() = {
 		&Bullet::BounsUpdate,
 };
 
-void Bullet::Initialize(const Transform& transform, const Vector3& velocity, BulletType type) {
+void Bullet::Initialize(const Transform& transform, const Vector3& velocity, BulletType type, CollisionAttributeName colliderName) {
 	transform_.scale = transform.scale;
 	transform_.rotate = transform.rotate;
 	transform_.translate = transform.GetWorldPosition();
@@ -87,6 +91,9 @@ void Bullet::Initialize(const Transform& transform, const Vector3& velocity, Bul
 	lifeTimer_ = 0.0f;
 	lifeTimeMax_ = kBasicLifeTimeMax_;
 	isActive_ = true;
+	colliderRadius_ = 0.4f;
+	colliderColor_ = { 1.0f,0.0f,0.0f,1.0f };
+	collisionAttribute_ =colliderName;
 
 	(this->*pInitializeFunc[static_cast<size_t>(type_)])();
 }
@@ -101,7 +108,8 @@ void Bullet::Update() {
 }
 
 void Bullet::Draw() {
-	Renderer::GetInstance()->DrawSphereWireFrame(modelTransform_, { 1.0f,0.0f,0.0f,1.0f });
+	DrawCollider();
+	//Renderer::GetInstance()->DrawSphereWireFrame(modelTransform_, { 1.0f,0.0f,0.0f,1.0f });
 }
 
 void Bullet::NormalInitialize() {
@@ -122,8 +130,8 @@ void Bullet::BounsUpdate() {
 	velocity_.y -= gravityAcceleration_ * DeltaTime::GetInstance()->GetDeltaTime();
 	transform_.translate += velocity_ * DeltaTime::GetInstance()->GetDeltaTime();
 
-	if (transform_.GetWorldPosition().y - (radius_ / 2.0f) <= 0.0f) {
-		transform_.translate.y = (radius_ / 2.0f);
+	if (transform_.GetWorldPosition().y - (colliderRadius_ / 2.0f) <= 0.0f) {
+		transform_.translate.y = (colliderRadius_ / 2.0f);
 
 		Vector3 reflected = velocity_.Reflect({ 0.0f,1.0f,0.0f });
 		Vector3 projectToNormal = Vector3::Project(reflected, { 0.0f,1.0f,0.0f });

@@ -2,7 +2,7 @@
 #include "GameCamera.h"
 void Player::Initialize() {
 	transform_.Initialize();
-	transform_.translate.y =kBodyBlankY;
+	transform_.translate.y = kBodyBlankY;
 	targetRotateY = 0.0f;
 	models_["body"].Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
 
@@ -35,8 +35,11 @@ void Player::Initialize() {
 
 	InitializeFloatingGimmick();
 
-	collisionAttribute_ = kCollisionAttributePlayer;
-	collisionMask_ = kCollisionAttributeEnemy;
+	collisionAttribute_ = CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayer);
+	collisionMask_ = (
+		CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy) |
+		CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemyAttack)
+		);
 
 	BehaviorAttackInitialize();
 
@@ -46,6 +49,11 @@ void Player::Initialize() {
 	//particles_->SetBillboardType(BillboardType::kAllAxis);
 	//emitter_->SetParticle(particles_.get());
 	//emitter_->Initialize(transform_, 3, 0.5f);
+
+	//colliderRadius_ = 0.3f;
+	colliderSize_ = { 0.6f,0.8f,0.6f };
+	colliderType_ = ColliderType::kBox;
+
 
 	GameCamera::GetInstance()->SetTarget(&transform_);
 }
@@ -81,15 +89,21 @@ void Player::Update() {
 	switch (behavior_) {
 	case Player::Behavior::kRoot:
 		BehaviorRootUpdate();
+
+		CollisionManager::GetInstance()->AddColliderList(this);
 		break;
 	case Player::Behavior::kAttack:
 		BehaviorAttackUpdate();
+
+		CollisionManager::GetInstance()->AddColliderList(this);
 		break;
 	case Player::Behavior::kDash:
 		BehaviorDashUpdate();
 		break;
 	case Player::Behavior::kJump:
 		BehaviorJumpUpdate();
+
+		CollisionManager::GetInstance()->AddColliderList(this);
 		break;
 	default:
 		break;
@@ -97,7 +111,7 @@ void Player::Update() {
 	//particles_->Update();
 
 	colliderColor_ = { 0.5f,0.5f,1.0f,1.0f };
-	
+
 	transform_.rotate.y = std::fmod(transform_.rotate.y, Radian(360.0f));
 
 	GameCamera::GetInstance()->SetTargetIsMove(isMoving_);
@@ -208,7 +222,7 @@ void Player::BehaviorDashUpdate() {
 	transform_.rotate.y;//Camera::GetInstance()->GetTransform().rotate.y;
 
 	Matrix4x4 rotateMatrix = Matrix4x4::MakeRotateMatrix(transform_.rotate);
-	
+
 	move = rotateMatrix.TransformNomal(move);
 
 	transform_.translate += move * DeltaTime::GetInstance()->GetDeltaTime();

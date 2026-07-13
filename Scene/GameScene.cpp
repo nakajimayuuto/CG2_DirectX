@@ -47,6 +47,7 @@ void GameScene::Initialize() {
 }
 
 void GameScene::Update() {
+	CollisionManager::GetInstance()->ClearColliderList();
 	Player::ApplyGlobalVariables();
 
 	skydome_->Update();
@@ -101,7 +102,8 @@ void GameScene::Draw() {
 
 	//Renderer::GetInstance()->DrawSprite(Transform2D::GetTransformValue({ 1.0f,1.0f }, testRotate_, { 150.0f,50.0f },0.0f), "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
 	//Renderer::GetInstance()->DrawSphere(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
-	//Renderer::GetInstance()->DrawTorus(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }),majorRadius_,minorRadius_, "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
+	
+	Renderer::GetInstance()->DrawTorus(Transform::GetInitialValue({ 1.0f,500.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }),50.0f,0.002f, "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
 
 	ProjectileManager::GetInstance()->Draw();
 
@@ -121,4 +123,5 @@ void GameScene::Draw() {
 }
 
 void GameScene::CheckAllCollisions() {
+	CollisionManager::GetInstance()->CheckAllCollision();
 }

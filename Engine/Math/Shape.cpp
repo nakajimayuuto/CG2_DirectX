@@ -11,17 +11,17 @@ OBB& OBB::operator=(const Matrix4x4& matrix) {
 	return *this;
 }
 
-Matrix4x4& OBB::operator=(const OBB& obb) {
-	Matrix4x4 result;
-	result.Identity();
-	for (uint32_t i = 0; i < 3; i++) {
-		result.matrix[i][0] = obb.orientations[i].x;
-		result.matrix[i][1] = obb.orientations[i].y;
-		result.matrix[i][2] = obb.orientations[i].z;
-	}
-
-	return result;
-}
+//Matrix4x4& OBB::operator=(const OBB& obb) {
+//	Matrix4x4 result;
+//	result.Identity();
+//	for (uint32_t i = 0; i < 3; i++) {
+//		result.matrix[i][0] = obb.orientations[i].x;
+//		result.matrix[i][1] = obb.orientations[i].y;
+//		result.matrix[i][2] = obb.orientations[i].z;
+//	}
+//
+//	return result;
+//}
 
 void Plane::SetPlane(const Vector3& p0, const Vector3& p1, const Vector3& p2) {
 	Vector3 v1 = static_cast<Vector3>(p1) - p0;

@@ -54,6 +54,13 @@ void Boss::Initialize() {
 	halberdTransform_.rotate = kBasicHalberdFarRotate;
 	destinationHalberdTransform_ = halberdTransform_;
 	attackRequest_ = std::nullopt;
+
+	colliderType_ = ColliderType::kBox;
+	colliderSize_ = { 0.5f,1.2f,0.3f };
+	collisionAttribute_ = CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy);
+	//collisionMask_ = kCollisionAttribute[kCollisionPlayer];
+
+	colliderColor_ = { 0.6f,0.3f,1.0f,1.0f };
 }
 
 void Boss::Update() {
@@ -91,6 +98,7 @@ void Boss::Update() {
 	halberdTransform_.rotate = LerpShortAngle(halberdTransform_.rotate, destinationHalberdTransform_.rotate, kDestinationCompletionRate);
 	halberdTransform_.translate = Lerp(halberdTransform_.translate, destinationHalberdTransform_.translate, kDestinationCompletionRate);
 
+	CollisionManager::GetInstance()->AddColliderList(this);
 }
 
 void Boss::Draw() {
@@ -104,6 +112,8 @@ void Boss::Draw() {
 	for (Vector3& pos : anchorPoints_) {
 		renderer->DrawSphereWireFrame(Transform::GetInitialValue({ 0.1f,0.1f,0.1f }, { 0.0f,0.0f,0.0f }, pos), { 0.5f,0.5f,1.0f,1.0f });
 	}
+
+	DrawCollider();
 }
 
 void Boss::OnCollision(Collider* other) {
@@ -228,15 +238,15 @@ void Boss::BulletUpdate() {
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kBulletStayTimerMax);
-			if ((targetTransform_->translate - transform_.translate).Length() != 0.0f) {
-				bulletShotDirectionTemp_ = (targetTransform_->translate - transform_.translate).Normalize();
+			if ((targetTransform_->translate - halberdTransform_.GetWorldPosition()).Length() != 0.0f) {
+				bulletShotDirectionTemp_ = (targetTransform_->translate - halberdTransform_.GetWorldPosition()).Normalize();
 			}
 		}
 		break;
 	case 1:
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kBulletStayTimerMax);
-			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, bulletShotDirectionTemp_ * 30.0f, BulletType::kNormal);
+			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, bulletShotDirectionTemp_ * 30.0f, BulletType::kNormal,kCollisionEnemyAttack);
 		}
 		break;
 	case 2:
@@ -282,7 +292,7 @@ void Boss::BounsUpdate() {
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kBounsSpinTimerMax);
 			randomRadian = Radian(Random::GetInstance()->RandomFloat(0.0f, 359.0f));
-			ProjectileManager::GetInstance()->CreateDiffusionBullet(transform_, Vector3(RadianToVector(randomRadian).x, 0.0f, RadianToVector(randomRadian).y) * 10.0f, BulletType::kBounce, Radian(45.0f), 8);
+			ProjectileManager::GetInstance()->CreateDiffusionBullet(transform_, Vector3(RadianToVector(randomRadian).x, 0.0f, RadianToVector(randomRadian).y) * 10.0f, BulletType::kBounce, kCollisionEnemyAttack, Radian(45.0f), 8);
 		}
 		break;
 	case 3:
@@ -325,7 +335,7 @@ void Boss::DiffusionBulletUpdate() {
 			if ((targetTransform_->translate - transform_.translate).Length() != 0.0f) {
 				direction = (targetTransform_->translate - transform_.translate).Normalize();
 			}
-			ProjectileManager::GetInstance()->CreateDiffusionBullet(halberdTransform_, direction * 30.0f, BulletType::kNormal, Radian(30.0f), 3);
+			ProjectileManager::GetInstance()->CreateDiffusionBullet(halberdTransform_, direction * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, Radian(30.0f), 3);
 
 		}
 		break;
@@ -377,19 +387,19 @@ void Boss::MovingBulletUpdate(){
 	case 2:
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kMovingBulletShotGapTimerMax);
-			if ((targetTransform_->translate - transform_.translate).Length() != 0.0f) {
-				direction = (targetTransform_->translate - transform_.translate).Normalize();
+			if ((targetTransform_->translate - destinationHalberdTransform_.GetWorldPosition()).Length() != 0.0f) {
+				direction = (targetTransform_->translate - destinationHalberdTransform_.GetWorldPosition()).Normalize();
 			}
-			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, direction * 30.0f, BulletType::kNormal);
+			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, direction * 30.0f, BulletType::kNormal, kCollisionEnemyAttack);
 		}
 		break;
 	case 3:
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kMovingBulletFinishedGapTimerMax);
-			if ((targetTransform_->translate - transform_.translate).Length() != 0.0f) {
-				direction = (targetTransform_->translate - transform_.translate).Normalize();
+			if ((targetTransform_->translate - destinationHalberdTransform_.GetWorldPosition()).Length() != 0.0f) {
+				direction = (targetTransform_->translate - destinationHalberdTransform_.GetWorldPosition()).Normalize();
 			}
-			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, direction * 30.0f, BulletType::kNormal);
+			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, direction * 30.0f, BulletType::kNormal, kCollisionEnemyAttack);
 		}
 		break;
 	case 4:

@@ -9,7 +9,7 @@ enum class BulletType {
 
 class Bullet :Collider{
 public:
-	void Initialize(const Transform& transform,const Vector3& velocity, BulletType type);
+	void Initialize(const Transform& transform,const Vector3& velocity, BulletType type, CollisionAttributeName colliderName);
 
 	void Update();
 
@@ -48,6 +48,10 @@ class Explode : Collider {
 
 };
 
+class Wave {
+
+};
+
 class ProjectileManager {
 public:
 	static ProjectileManager* GetInstance();
@@ -58,7 +62,7 @@ public:
 
 	void Draw();
 
-	void CreateBullet(const Transform& transform, const Vector3& velocity, BulletType type);
+	void CreateBullet(const Transform& transform, const Vector3& velocity, BulletType type, CollisionAttributeName colliderName);
 
 	/// <summary>
 	///  Y軸基準で拡散するよ。別に他の軸ができないわけじゃないんですよ。ただ今回のゲームだとつかわないしいいかなって(震え).
@@ -68,7 +72,7 @@ public:
 	/// <param name="type"></param>
 	/// <param name="diffusionRadian"></param>
 	/// <param name="amount"></param>
-	void CreateDiffusionBullet(const Transform& transform, const Vector3& velocity, BulletType type,float diffusionRadian,uint32_t amount);
+	void CreateDiffusionBullet(const Transform& transform, const Vector3& velocity, BulletType type, CollisionAttributeName colliderName,float diffusionRadian,uint32_t amount);
 private:
 	std::vector<std::unique_ptr<Bullet>> bullets;
 };

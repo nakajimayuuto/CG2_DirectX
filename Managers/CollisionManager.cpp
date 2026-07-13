@@ -31,19 +31,49 @@ void CollisionManager::CheckCollisionPair(Collider* colliderA, Collider* collide
 		) {
 		return;
 	}
-
+	ColliderType temp = colliderA->GetColliderType();
 	Sphere sphereA;
 	Sphere sphereB;
-	sphereA.center = colliderA->GetWorldPosition();
-	sphereA.radius = colliderA->GetRadius();
+	OBB obbA;
+	OBB obbB;
 
-	sphereB.center = colliderB->GetWorldPosition();
-	sphereB.radius = colliderB->GetRadius();
+	if (colliderA->GetColliderType() == colliderB->GetColliderType()) {
+		if (temp == ColliderType::kSphere) {
+			sphereA.center = colliderA->GetWorldPosition();
+			sphereA.radius = colliderA->GetRadius();
 
-	if (Collision::SphereToSphere(sphereA, sphereB)) {
-		colliderA->OnCollision(colliderB);
-		colliderB->OnCollision(colliderA);
-	}
+			sphereB.center = colliderB->GetWorldPosition();
+			sphereB.radius = colliderB->GetRadius();
+
+			if (Collision::SphereToSphere(sphereA, sphereB)) {
+				colliderA->OnCollision(colliderB);
+				colliderB->OnCollision(colliderA);
+			}
+		} else {
+			obbA = colliderA->GetOBB();
+			obbB = colliderB->GetOBB();
+
+			if (Collision::OBBToOBB(obbA, obbB)) {
+				colliderA->OnCollision(colliderB);
+				colliderB->OnCollision(colliderA);
+			}
+		}
+	} else {
+		if (temp == ColliderType::kSphere) {
+			sphereA.center = colliderA->GetWorldPosition();
+			sphereA.radius = colliderA->GetRadius();
+			obbB = colliderB->GetOBB();
+		} else {
+			sphereA.center = colliderB->GetWorldPosition();
+			sphereA.radius = colliderB->GetRadius();
+			obbB = colliderA->GetOBB();
+		}
+
+		if (Collision::OBBToSphere(obbB, sphereA)) {
+			colliderA->OnCollision(colliderB);
+			colliderB->OnCollision(colliderA);
+		}
+	}	
 }
 
 void CollisionManager::DebugDraw() {

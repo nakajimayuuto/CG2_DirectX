@@ -283,6 +283,13 @@ public:
 	/// <param name="color">色</param>
 	void DrawBoxWireFrame(const AABB& aabb, const Vector4& color);
 
+	/// <summary>
+	/// ワイヤーフレームのボックスの描画.
+	/// </summary>
+	/// <param name="aao">AABB</param>
+	/// <param name="color">色</param>
+	void DrawBoxWireFrame(const OBB& obb, const Vector4& color);
+
 
 
 	/// <summary>
@@ -366,7 +373,7 @@ private:
 	uint32_t* sphereIndexData = nullptr;
 
 	// TorusResource.
-	const uint32_t kTorusSubdivision_ = 16;
+	const uint32_t kTorusSubdivision_ = 32;
 	std::vector<std::unique_ptr<TorusInstance>> torusInstances;
 	Microsoft::WRL::ComPtr<ID3D12Resource> torusIndexResource_ = nullptr;
 	uint32_t currentDrawTorusIndex_;
