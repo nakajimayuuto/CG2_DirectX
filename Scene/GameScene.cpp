@@ -88,6 +88,10 @@ void GameScene::Update() {
 
 	Camera::GetInstance()->Update();
 
+	Collider collider;
+	collider.SetColliderType(ColliderType::kTorus);
+	CollisionManager::GetInstance()->AddColliderList(&collider);
+
 	CheckAllCollisions();
 }
 

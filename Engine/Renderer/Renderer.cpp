@@ -876,7 +876,8 @@ void Renderer::DrawSphereWireFrame(const Transform& transform, const Vector4& co
 	const uint32_t kSubdivision = 8;
 	const float kLonEvery = std::numbers::pi_v<float> *2.0f / kSubdivision;
 	const float kLatEvery = std::numbers::pi_v<float> / kSubdivision;
-
+	Transform sphereTransform = transform;
+	sphereTransform.scale = sphereTransform.scale * 0.5f;
 
 	for (uint32_t latIndex = 0; latIndex < kSubdivision; latIndex++) {
 		float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;
@@ -888,7 +889,7 @@ void Renderer::DrawSphereWireFrame(const Transform& transform, const Vector4& co
 			Vector3 b = { cos(lat + std::numbers::pi_v<float> / kSubdivision) * cos(lon),sin(lat + std::numbers::pi_v<float> / kSubdivision),cos(lat + std::numbers::pi_v<float> / kSubdivision) * sin(lon) };
 			Vector3 c = { cos(lat) * cos(lon + std::numbers::pi_v<float> *2.0f / kSubdivision),sin(lat),cos(lat) * sin(lon + std::numbers::pi_v<float> *2.0f / kSubdivision) };
 
-			Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+			Matrix4x4 worldMatrix = sphereTransform.GetAffineMatrix();
 			Vector3 startPosition = worldMatrix.MatrixTransform(a);
 			Vector3 endPosition = worldMatrix.MatrixTransform(b);
 

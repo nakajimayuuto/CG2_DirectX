@@ -8,6 +8,7 @@
 enum class ColliderType {
 	kSphere,
 	kBox,
+	kTorus,
 };
 
 class Collider {
@@ -36,6 +37,8 @@ public:
 	ColliderType GetColliderType() { return colliderType_; };
 
 	OBB GetOBB() { CreateObbCollider(); return colliderObb_; };
+
+	void SetColliderType(ColliderType type) { colliderType_ = type; };
 
 	void DrawCollider();
 protected:

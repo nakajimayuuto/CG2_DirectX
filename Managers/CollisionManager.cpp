@@ -59,7 +59,12 @@ void CollisionManager::CheckCollisionPair(Collider* colliderA, Collider* collide
 			}
 		}
 	} else {
-		if (temp == ColliderType::kSphere) {
+		if (temp == ColliderType::kTorus) {
+			if (Collision::SimpleOBBToTorus(obbB, sphereA)) {
+				colliderA->OnCollision(colliderB);
+				colliderB->OnCollision(colliderA);
+			}
+		}else if(temp == ColliderType::kSphere) {
 			sphereA.center = colliderA->GetWorldPosition();
 			sphereA.radius = colliderA->GetRadius();
 			obbB = colliderB->GetOBB();

@@ -97,7 +97,7 @@ bool Collision::SegmentToTriangle(const Segment& segment, const Triangle& triang
 	return true;
 }
 
-bool Collision::AABBToPoint(const AABB& aabb, const Vector3& point){
+bool Collision::AABBToPoint(const AABB& aabb, const Vector3& point) {
 	return (
 		aabb.min.x <= point.x && aabb.max.x >= point.x &&
 		aabb.min.y <= point.y && aabb.max.y >= point.y &&
@@ -117,6 +117,44 @@ bool Collision::AABBToSphere(const AABB& aabb, const Sphere sphere) {
 	float distance = Vector3::Length(closestPoint - sphere.center);
 
 	return (distance <= sphere.radius);
+}
+
+bool Collision::AABBToSphereFarthest(const AABB& aabb, const Sphere sphere) {
+	Vector3 farthestPoint;
+
+	// X軸
+	if (std::abs(sphere.center.x - aabb.min.x) >
+		std::abs(sphere.center.x - aabb.max.x))
+	{
+		farthestPoint.x = aabb.min.x;
+	} else
+	{
+		farthestPoint.x = aabb.max.x;
+	}
+
+	// Y軸
+	if (std::abs(sphere.center.y - aabb.min.y) >
+		std::abs(sphere.center.y - aabb.max.y))
+	{
+		farthestPoint.y = aabb.min.y;
+	} else
+	{
+		farthestPoint.y = aabb.max.y;
+	}
+
+	// Z軸
+	if (std::abs(sphere.center.z - aabb.min.z) >
+		std::abs(sphere.center.z - aabb.max.z))
+	{
+		farthestPoint.z = aabb.min.z;
+	} else
+	{
+		farthestPoint.z = aabb.max.z;
+	}
+
+	float distance = Vector3::Length(farthestPoint - sphere.center);
+
+	return distance <= sphere.radius;
 }
 
 bool Collision::AABBToSegment(const AABB& aabb, const Segment& segment) {
@@ -256,6 +294,36 @@ bool Collision::OBBToSphere(const OBB& obb, const Sphere& sphere) {
 	sphereOBBLocal.radius = sphere.radius;
 
 	if (AABBToSphere(aabbOBBLocal, sphereOBBLocal)) {
+		return true;
+	}
+
+	return false;
+}
+
+bool Collision::OBBToSphereFarthest(const OBB& obb, const Sphere& sphere) {
+	Matrix4x4 matrix;
+	Matrix4x4 rotateMatrix;
+
+	rotateMatrix = rotateMatrix.Identity();
+	for (uint32_t i = 0; i < 3; i++) {
+		rotateMatrix.matrix[i][0] = obb.orientations[i].x;
+		rotateMatrix.matrix[i][1] = obb.orientations[i].y;
+		rotateMatrix.matrix[i][2] = obb.orientations[i].z;
+	}
+
+	matrix = rotateMatrix;
+	matrix = matrix * Matrix4x4::MakeTranslateMatrix(obb.center);
+
+	matrix = matrix.Inverse();
+
+	AABB aabbOBBLocal;
+	aabbOBBLocal.min = static_cast<Vector3>(obb.size) * -1.0f;
+	aabbOBBLocal.max = obb.size;
+	Sphere sphereOBBLocal;
+	sphereOBBLocal.center = matrix.MatrixTransform(sphere.center);
+	sphereOBBLocal.radius = sphere.radius;
+
+	if (AABBToSphereFarthest(aabbOBBLocal, sphereOBBLocal)) {
 		return true;
 	}
 
@@ -436,4 +504,55 @@ bool Collision::OBBToOBB(const OBB& obb1, const OBB& obb2) {
 		}
 	}
 	return true;
+}
+
+bool Collision::OBBToPositionY(const OBB& obb, float posY, bool isUp) {
+	Matrix4x4 matrix;
+	Matrix4x4 rotateMatrix;
+	rotateMatrix = rotateMatrix.Identity();
+
+	for (uint32_t i = 0; i < 3; i++) {
+		rotateMatrix.matrix[i][0] = obb.orientations[i].x;
+		rotateMatrix.matrix[i][1] = obb.orientations[i].y;
+		rotateMatrix.matrix[i][2] = obb.orientations[i].z;
+	}
+
+	matrix = rotateMatrix;
+	matrix = matrix * Matrix4x4::MakeTranslateMatrix(obb.center);
+	std::vector<Vector3> vertices;
+	vertices.push_back(matrix.MatrixTransform({ -obb.size.x,-obb.size.y,-obb.size.z }));
+	vertices.push_back(matrix.MatrixTransform({ -obb.size.x,obb.size.y,-obb.size.z }));
+	vertices.push_back(matrix.MatrixTransform({ obb.size.x,-obb.size.y,-obb.size.z }));
+	vertices.push_back(matrix.MatrixTransform({ obb.size.x,obb.size.y,-obb.size.z }));
+
+	vertices.push_back(matrix.MatrixTransform({ -obb.size.x,-obb.size.y,obb.size.z }));
+	vertices.push_back(matrix.MatrixTransform({ -obb.size.x,obb.size.y,obb.size.z }));
+	vertices.push_back(matrix.MatrixTransform({ obb.size.x,-obb.size.y,obb.size.z }));
+	vertices.push_back(matrix.MatrixTransform({ obb.size.x,obb.size.y,obb.size.z }));
+	for (Vector3 vertex : vertices) {
+		if (vertex.x >= posY) {
+			if (isUp) {
+				return true;
+			}
+		} else {
+			if (!isUp) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool Collision::SimpleOBBToTorus(const OBB& obb, const Transform& transform, float majorRadius, float minorRadius) {
+	if (OBBToSphere(obb, { transform.GetWorldPosition(),(majorRadius / 2.0f) + (minorRadius / 2.0f) })) {
+		if (OBBToSphereFarthest(obb, { transform.GetWorldPosition(),(majorRadius / 2.0f) - (minorRadius / 2.0f) })) {
+			return false;
+		} else {
+			if (OBBToPositionY(obb,transform.GetWorldPosition().y + minorRadius,false) && OBBToPositionY(obb, transform.GetWorldPosition().y - minorRadius,true)) {
+				return true;
+			}
+		}
+	}
+	return false;
 }

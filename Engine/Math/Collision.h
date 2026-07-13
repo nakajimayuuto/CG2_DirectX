@@ -1,6 +1,7 @@
 #pragma once
 #include "Shape.h"
 #include "Matrix4x4.h"
+#include "Transform.h"
 
 class Collision{
 public:
@@ -22,6 +23,8 @@ public:
 
 	static bool AABBToSphere(const AABB& aabb, const Sphere sphere);
 
+	static bool AABBToSphereFarthest(const AABB& aabb, const Sphere sphere);
+
 	static bool AABBToSegment(const AABB& aabb, const Segment& segment);
 
 	static bool AABBToLine(const AABB& aabb, const Line& line);
@@ -29,6 +32,7 @@ public:
 	static bool AABBToRay(const AABB& aabb, const Ray& ray);
 
 	static bool OBBToSphere(const OBB& obb, const Sphere& sphere);
+	static bool OBBToSphereFarthest(const OBB& obb, const Sphere& sphere);
 
 	static bool OBBToLine(const OBB& obb, const Line& line);
 
@@ -38,4 +42,8 @@ public:
 
 	// ムズすぎ未完成.
 	static bool OBBToOBB(const OBB& obb1,const OBB& obb2);
+
+	static bool OBBToPositionY(const OBB& obb, float posY,bool isUp);
+
+	static bool SimpleOBBToTorus(const OBB& obb, const Transform& transform,float majorRadius,float minorRadius);
 };
