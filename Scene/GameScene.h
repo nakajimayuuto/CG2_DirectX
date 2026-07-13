@@ -21,13 +21,14 @@ private:
 
 	Renderer::Sprite sprite_;
 	Transform transformSprite_;
+	Transform transformSpriteTest2_;
 
 	Skydome* skydome_ = nullptr;
 
 	RECT windowRect;
 	RECT windowFirstRect;
 
-	Renderer::Sprite frameSpriteLeft_;
+	Renderer::Sprite spriteTest2;
 	Renderer::Sprite frameSpriteRight_;
 	Renderer::Sprite backGroundSprite_;
 };

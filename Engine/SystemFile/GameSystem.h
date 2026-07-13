@@ -65,6 +65,7 @@ enum class BlendMode {
 	kNormalCullNone, // 通常ブレンド。背面カリング無し.
 	kLine, // 線の描画に使用.
 	kStencil, // StencilBufferをいじるやつ.
+	kStencilNoneNormal, // StencilBufferの影響を受けない.
 	kCount, // ブレンドモードの最大数.
 }; struct WindowData {
 	WNDCLASS wc{};

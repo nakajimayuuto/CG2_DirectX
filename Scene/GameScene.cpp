@@ -25,15 +25,18 @@ void GameScene::Initialize() {
 	transformSprite_.Initialize();
 	transformSprite_.translate.x = (sprite_.GetSize().x / 2.0f);
 	transformSprite_.translate.y = (sprite_.GetSize().y / 2.0f);
+	transformSprite_.translate.z = 200.0f;
 
 	transform_.rotate.y = Radian(-30.0f);
 	DirectionalLight::GetInstance()->GetDirectionalLightData()->direction = { 0.0f,0.0f,1.0f };
 	GetWindowRect(GameSystem::GetInstance()->GetHWND(), &windowRect);
 	windowFirstRect = windowRect;
 
-	frameSpriteLeft_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
-	frameSpriteLeft_.SetSize(Environment::GetInstance()->GetWindowSize());
-	frameSpriteLeft_.SetColor({0.0f,0.0f,0.0f,1.0f});
+	spriteTest2.Initialize(TextureManager::GetInstance()->GetTextureInfo("uvChecker"));
+	transformSpriteTest2_.Initialize();
+	transformSpriteTest2_.translate.x = (spriteTest2.GetSize().x / 2.0f);
+	transformSpriteTest2_.translate.y = (spriteTest2.GetSize().y / 2.0f);
+	transformSpriteTest2_.translate.z = 0.0f;
 
 	frameSpriteRight_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
 	frameSpriteRight_.SetSize(Environment::GetInstance()->GetWindowSize());
@@ -121,21 +124,31 @@ void GameScene::Update() {
 	transformSprite_.rotate.x = Radian(imRotateX);
 	sprite_.SetIsVisible(imBool);
 
+	imBool = spriteTest2.GetIsVisible();
+	imRotateX = Degree(transformSpriteTest2_.rotate.x);
+	ImGui::Checkbox("SpriteVisible2", &imBool);
+	ImGui::DragFloat2("SpriteScale2", reinterpret_cast<float*>(&transformSpriteTest2_.scale), 0.1f, 0.0f, 10.0f);
+	ImGui::DragFloat3("SpriteRotate2", reinterpret_cast<float*>(&imRotateX), 0.1f, -20.0f, 20.0f);
+	ImGui::DragFloat2("SpriteTranslate2", reinterpret_cast<float*>(&transformSpriteTest2_.translate), 10.0f, 0.0f, 1280.0f);
+	transformSpriteTest2_.rotate.x = Radian(imRotateX);
+	spriteTest2.SetIsVisible(imBool);
+
 	ImGui::End();
 
 	Camera::GetInstance()->Update();
 }
 
 void GameScene::Draw() {
-	sprite_.SetBlendMode(BlendMode::kStencil);
+	sprite_.SetBlendMode(BlendMode::kStencilNoneNormal);
 	sprite_.Draw(transformSprite_);
+	spriteTest2.SetBlendMode(BlendMode::kStencil);
+	spriteTest2.Draw(transformSpriteTest2_);
 	backGroundSprite_.Draw(Transform::GetInitialValue({ 100.0f,100.0f,100.0f }, { 0.0f ,0.0f,0.0f}, { -backGroundSprite_.GetSize().x / 2.0f * 50.0f,-backGroundSprite_.GetSize().y / 2.0f * 50.0f ,100.0f}));
 
-	//skydome_->Draw();
 
 
 	model_.Draw(transform_);
 
-	//frameSpriteLeft_.Draw({ {1.0f,1.0f},0.0f, {-frameSpriteLeft_.GetSize().x / 2.0f,frameSpriteLeft_.GetSize().y / 2.0f} });
+	//skydome_->Draw();
 	//frameSpriteRight_.Draw({ {1.0f,1.0f},0.0f, {Environment::GetInstance()->GetWindowSize().width + (frameSpriteRight_.GetSize().x / 2.0f),frameSpriteRight_.GetSize().y / 2.0f } });
 }

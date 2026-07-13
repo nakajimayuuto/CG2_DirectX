@@ -478,7 +478,7 @@ void GameSystem::CreatePipeline(BlendMode blendMode) {
 	DepthStencilTextureをつくる
 	=============================================================*/
 	depthStencilResource = CreateDepthStencilTextureResource(
-		device, 
+		device,
 		windowDatas_[0].monitorRect.right - windowDatas_[0].monitorRect.left,
 		windowDatas_[0].monitorRect.bottom - windowDatas_[0].monitorRect.top
 	);
@@ -511,21 +511,29 @@ void GameSystem::CreatePipeline(BlendMode blendMode) {
 
 		depthStencilDesc.BackFace = depthStencilDesc.FrontFace;
 	} else {
-		depthStencilDesc.DepthEnable = true;
-		depthStencilDesc.StencilEnable = true;
+		if (blendMode == BlendMode::kStencilNoneNormal) {
+			depthStencilDesc.DepthEnable = false;
+			depthStencilDesc.StencilEnable = false;
 
-		depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-		depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+			depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+			depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+		} else {
+			depthStencilDesc.DepthEnable = false;
+			depthStencilDesc.StencilEnable = true;
 
-		depthStencilDesc.StencilReadMask = 0xFF;
-		depthStencilDesc.StencilWriteMask = 0x00;    // ←ここを変更
+			depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+			depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
-		depthStencilDesc.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_EQUAL;
-		depthStencilDesc.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
-		depthStencilDesc.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
-		depthStencilDesc.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+			depthStencilDesc.StencilReadMask = 0xFF;
+			depthStencilDesc.StencilWriteMask = 0x00;    // ←ここを変更
 
-		depthStencilDesc.BackFace = depthStencilDesc.FrontFace;
+			depthStencilDesc.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_EQUAL;
+			depthStencilDesc.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+			depthStencilDesc.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+			depthStencilDesc.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+
+			depthStencilDesc.BackFace = depthStencilDesc.FrontFace;
+		}
 
 	}
 
@@ -609,8 +617,8 @@ void GameSystem::CreatePipeline(BlendMode blendMode) {
 	// 全ての色要素を書き込む.
 	// AL3_05_10にて透明度が反映さえる変更を加えた.
 	if (blendMode == BlendMode::kStencil) {
-		blendDesc.RenderTarget[0].RenderTargetWriteMask =
-			D3D12_COLOR_WRITE_ENABLE_ALL; // 0
+		blendDesc.RenderTarget[0].RenderTargetWriteMask = 0;
+			//D3D12_COLOR_WRITE_ENABLE_ALL; // 0
 		blendDesc.RenderTarget[0].BlendEnable = false;
 	} else {
 		blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
@@ -750,7 +758,10 @@ void GameSystem::DrawCommand(
 			data.commandList->IASetIndexBuffer(indexBufferView); // IBVを設定.
 		}
 
-		data.commandList->OMSetStencilRef(1);
+		if (blendMode != BlendMode::kStencilNoneNormal) {
+			data.commandList->OMSetStencilRef(1);
+		}
+
 		// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
 		data.commandList->IASetPrimitiveTopology(topology);
 		// マテリアル用のCBufferの場所.
