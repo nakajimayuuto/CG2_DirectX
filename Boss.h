@@ -29,6 +29,7 @@ private:
 		kBounsShot,
 		kDiffusionShot,
 		kMovingShot,
+		kWaveShot,
 		kCountMax,
 		kFireBulletShot,
 
@@ -69,6 +70,9 @@ private:
 
 	void MovingBulletInitialize();
 	void MovingBulletUpdate();
+
+	void WaveInitialize();
+	void WaveUpdate();
 private:
 	static void (Boss::* pInitializeFunc[])();
 	static void (Boss::* pUpdateFunc[])();
@@ -145,6 +149,22 @@ private:
 	static inline float kMovingBulletAnchorRadius = 40.0f;
 	float movingBulletTimer_ = 0.0f;
 	Vector3 movingBulletTargetPos;
+
+	// MovingShot.
+	float kWaveStartGapTimerMax = 0.3f;
+	float kWaveSpinTimerMax = 0.3f;
+	float kWaveAttackTimerMax = 0.3f;
+	float kWaveAttackGapTimerMax = 0.7f;
+	float kWaveFinishedGapTimerMax = 0.3f;
+
+	Transform halberdModelTransform;
+	static inline float kWaveAnimPositionY = 8.0f;
+	static inline Vector3 kWaveHalberdPos = { -0.5f,2.5f,0.0f };
+	static inline Vector3 kWaveHalberdStartRotate = { 0.0f,0.0f,0.0f };
+	static inline Vector3 kWaveHalberdSpinPos = { 0.0f,2.5f,0.0f };
+	static inline float kWaveAttackPositionY = 2.5f;
+	static inline Vector3 kWaveHalberdAttackPos = { 0.0f,1.0f,-0.6f };
+	static inline float kWaveAttackRotateX = -Radian(150.0f);
 
 };
 

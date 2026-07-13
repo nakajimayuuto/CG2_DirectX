@@ -530,7 +530,7 @@ bool Collision::OBBToPositionY(const OBB& obb, float posY, bool isUp) {
 	vertices.push_back(matrix.MatrixTransform({ obb.size.x,-obb.size.y,obb.size.z }));
 	vertices.push_back(matrix.MatrixTransform({ obb.size.x,obb.size.y,obb.size.z }));
 	for (Vector3 vertex : vertices) {
-		if (vertex.x >= posY) {
+		if (vertex.y >= posY) {
 			if (isUp) {
 				return true;
 			}
@@ -545,11 +545,11 @@ bool Collision::OBBToPositionY(const OBB& obb, float posY, bool isUp) {
 }
 
 bool Collision::SimpleOBBToTorus(const OBB& obb, const Transform& transform, float majorRadius, float minorRadius) {
-	if (OBBToSphere(obb, { transform.GetWorldPosition(),(majorRadius / 2.0f) + (minorRadius / 2.0f) })) {
-		if (OBBToSphereFarthest(obb, { transform.GetWorldPosition(),(majorRadius / 2.0f) - (minorRadius / 2.0f) })) {
+	if (OBBToSphere(obb, { transform.GetWorldPosition(),(majorRadius) + (minorRadius / 2.0f) })) {
+		if (OBBToSphereFarthest(obb, { transform.GetWorldPosition(),(majorRadius) - (minorRadius / 2.0f) })) {
 			return false;
 		} else {
-			if (OBBToPositionY(obb,transform.GetWorldPosition().y + minorRadius,false) && OBBToPositionY(obb, transform.GetWorldPosition().y - minorRadius,true)) {
+			if (OBBToPositionY(obb,transform.GetWorldPosition().y + (minorRadius * transform.scale.y),false) && OBBToPositionY(obb, transform.GetWorldPosition().y - (minorRadius * transform.scale.y),true)) {
 				return true;
 			}
 		}

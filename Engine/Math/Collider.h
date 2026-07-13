@@ -41,6 +41,9 @@ public:
 	void SetColliderType(ColliderType type) { colliderType_ = type; };
 
 	void DrawCollider();
+
+	float GetMinorRadius() const { return colliderMinorRadius_; };
+	void SetMinorRadius(float radius) { colliderMinorRadius_ = radius; };
 protected:
 	void CreateObbCollider();
 protected:
@@ -49,6 +52,7 @@ protected:
 	Transform transform_ = Transform::GetInitialValue();
 
 	float colliderRadius_ = 1.0f;
+	float colliderMinorRadius_ = 1.0f;
 
 	Vector3 colliderSize_ = {2.0f,2.0f,2.0f};
 

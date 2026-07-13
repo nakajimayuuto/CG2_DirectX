@@ -88,9 +88,13 @@ void GameScene::Update() {
 
 	Camera::GetInstance()->Update();
 
-	Collider collider;
-	collider.SetColliderType(ColliderType::kTorus);
-	CollisionManager::GetInstance()->AddColliderList(&collider);
+	//Collider collider;
+	//collider.SetColliderType(ColliderType::kTorus);
+	//collider.SetTransform(Transform::GetInitialValue({ 1.0f,500.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }));
+	//collider.SetRadius(50.0f);
+	//collider.SetMinorRadius(0.002f);
+	//collider.SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemyAttack));
+	//CollisionManager::GetInstance()->AddColliderList(&collider);
 
 	CheckAllCollisions();
 }
@@ -107,7 +111,7 @@ void GameScene::Draw() {
 	//Renderer::GetInstance()->DrawSprite(Transform2D::GetTransformValue({ 1.0f,1.0f }, testRotate_, { 150.0f,50.0f },0.0f), "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
 	//Renderer::GetInstance()->DrawSphere(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
 	
-	Renderer::GetInstance()->DrawTorus(Transform::GetInitialValue({ 1.0f,500.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }),50.0f,0.002f, "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
+	//Renderer::GetInstance()->DrawTorus(Transform::GetInitialValue({ 1.0f,500.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }),50.0f,0.002f, "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
 
 	ProjectileManager::GetInstance()->Draw();
 

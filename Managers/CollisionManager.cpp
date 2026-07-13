@@ -60,7 +60,8 @@ void CollisionManager::CheckCollisionPair(Collider* colliderA, Collider* collide
 		}
 	} else {
 		if (temp == ColliderType::kTorus) {
-			if (Collision::SimpleOBBToTorus(obbB, sphereA)) {
+			obbB = colliderB->GetOBB();
+			if (Collision::SimpleOBBToTorus(obbB,colliderA->GetTransform(),colliderA->GetRadius(),colliderA->GetMinorRadius())) {
 				colliderA->OnCollision(colliderB);
 				colliderB->OnCollision(colliderA);
 			}
@@ -69,9 +70,17 @@ void CollisionManager::CheckCollisionPair(Collider* colliderA, Collider* collide
 			sphereA.radius = colliderA->GetRadius();
 			obbB = colliderB->GetOBB();
 		} else {
-			sphereA.center = colliderB->GetWorldPosition();
-			sphereA.radius = colliderB->GetRadius();
-			obbB = colliderA->GetOBB();
+			if (colliderB->GetColliderType() == ColliderType::kTorus) {
+				obbB = colliderA->GetOBB();
+				if (Collision::SimpleOBBToTorus(obbB, colliderB->GetTransform(), colliderB->GetRadius(), colliderB->GetMinorRadius())) {
+					colliderA->OnCollision(colliderB);
+					colliderB->OnCollision(colliderA);
+				}
+			} else {
+				sphereA.center = colliderB->GetWorldPosition();
+				sphereA.radius = colliderB->GetRadius();
+				obbB = colliderA->GetOBB();
+			}
 		}
 
 		if (Collision::OBBToSphere(obbB, sphereA)) {
