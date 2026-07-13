@@ -32,6 +32,8 @@
 #include "../../externals/DirectXTex/d3dx12.h"
 #include "dwmapi.h"
 
+#include <dcomp.h>
+
 #ifdef USE_IMGUI
 #include "../../externals/imgui/imgui.h"
 #include "../../externals/imgui/imgui_impl_dx12.h"
@@ -93,6 +95,14 @@ enum class BlendMode {
 	uint64_t fenceValue = 0;
 
 	HANDLE fenceEvent;
+
+	Microsoft::WRL::ComPtr<IDCompositionDevice> dcompDevice;
+	Microsoft::WRL::ComPtr<IDCompositionTarget> dcompTarget;
+	Microsoft::WRL::ComPtr<IDCompositionVisual> dcompVisual; 
+	Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
+	RECT monitorRect;
+
+	uint32_t index;
 };
 
 class GameSystem {

@@ -4,6 +4,9 @@
 #pragma comment(lib,"dxcompiler.lib")
 #pragma comment(lib,"Dbghelp.lib")
 
+#pragma comment(lib, "dcomp.lib")
+
+
 #include "GameSystem.h"
 #include "../../Managers/SoundManager.h"
 #include "../../Managers/InputManager.h"
@@ -73,6 +76,7 @@ void GameSystem::Initialize() {
 		RECT wrc{ 0,0,kClientWidth,kClientHeight };
 		WindowData winData;
 
+
 		// ウィンドウプロシージャ
 		winData.wc.lpfnWndProc = WindowProc;
 
@@ -92,7 +96,21 @@ void GameSystem::Initialize() {
 		AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
 
 		// ウィンドウの生成.
-		winData.hwnd = CreateWindow(
+		//winData.hwnd = CreateWindow(
+		//	winData.wc.lpszClassName,		// 利用するクラス名.
+		//	Environment::GetInstance()->GetWindowTitle(),					// タイトルバーの文字.
+		//	WS_OVERLAPPEDWINDOW,	// よく見るウィンドウスタイル.
+		//	CW_USEDEFAULT,			// 表示X座標(Windowsに任せる).
+		//	CW_USEDEFAULT,			// 表示Y座標(WindowsOSに任せる).
+		//	wrc.right - wrc.left,	// ウィンドウ横幅.
+		//	wrc.bottom - wrc.top,	// ウィンドウ縦幅.
+		//	nullptr,				// 親ウィンドウハンドル.
+		//	nullptr,				// メニューウィンドウハンドル.
+		//	winData.wc.hInstance,			// インスタンスハンドル.
+		//	nullptr);				// オプション.
+
+		winData.hwnd = CreateWindowEx(
+			WS_EX_NOREDIRECTIONBITMAP,
 			winData.wc.lpszClassName,		// 利用するクラス名.
 			Environment::GetInstance()->GetWindowTitle(),					// タイトルバーの文字.
 			WS_OVERLAPPEDWINDOW,	// よく見るウィンドウスタイル.
@@ -103,14 +121,38 @@ void GameSystem::Initialize() {
 			nullptr,				// 親ウィンドウハンドル.
 			nullptr,				// メニューウィンドウハンドル.
 			winData.wc.hInstance,			// インスタンスハンドル.
-			nullptr);				// オプション.
+			nullptr
+		);
 
+		MONITORINFO mi{};
+		mi.cbSize = sizeof(mi);
+
+		GetMonitorInfo(
+			MonitorFromWindow(winData.hwnd, MONITOR_DEFAULTTONEAREST),
+			&mi);
+
+		winData.monitorRect = mi.rcMonitor;
+
+		if (i == 0) {
+			SetWindowLongPtr(winData.hwnd, GWL_STYLE, WS_POPUP);
+
+			SetWindowPos(
+				winData.hwnd,
+				HWND_TOP,
+				winData.monitorRect.left,
+				winData.monitorRect.top,
+				winData.monitorRect.right - winData.monitorRect.left,
+				winData.monitorRect.bottom - winData.monitorRect.top,
+				SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+		}
 
 		//const DWMNCRENDERINGPOLICY policy = DWMNCRP_DISABLED;
 		//DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &policy, sizeof(DWM_WINDOW_CORNER_PREFERENCE));
 		//
 		//// ウィンドウを表示する.
 		ShowWindow(winData.hwnd, SW_SHOW);
+		winData.index = i;
+
 		windowDatas_.push_back(winData);
 	}
 
@@ -255,12 +297,17 @@ void GameSystem::Initialize() {
 		data.swapChainDesc.Width = kClientWidth; //画面の幅。ウィンドウのクライアント領域を同じものにする.
 		data.swapChainDesc.Height = kClientHeight; //画面の高さ。ウィンドウのクライアント領域を同じものにする.
 		data.swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; //色の形式.
+		data.swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED; //アルファ値の形式.
 		data.swapChainDesc.SampleDesc.Count = 1; // マルチサンプルしない.
 		data.swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // 描画のターゲットとして利用する.
 		data.swapChainDesc.BufferCount = 2; // ダブルバッファ.
 		data.swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD; //モニタに移したら中身を破棄.
 		// コマンドキュー、ウィンドウハンドル、設定を渡して生成する.
-		hr = dxgiFactory->CreateSwapChainForHwnd(data.commandQueue.Get(), data.hwnd, &data.swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(data.swapChain.GetAddressOf()));
+		hr = dxgiFactory->CreateSwapChainForComposition(
+			data.commandQueue.Get(),
+			&data.swapChainDesc,
+			nullptr,
+			reinterpret_cast<IDXGISwapChain1**>(data.swapChain.GetAddressOf()));
 		assert(SUCCEEDED(hr));
 
 
@@ -270,6 +317,17 @@ void GameSystem::Initialize() {
 		// RTV用のヒープでディスクリプタの数は2。RTVはShader内で触るものではないので、ShaderVisibleはfalse.
 		data.rtvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
 		const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
+		data.swapChainResource[0].Reset();
+		data.swapChainResource[1].Reset();
+
+		hr = data.swapChain->ResizeBuffers(
+			2,
+			data.monitorRect.right - data.monitorRect.left,
+			data.monitorRect.bottom - data.monitorRect.top,
+			DXGI_FORMAT_R8G8B8A8_UNORM,
+			0);
+		assert(SUCCEEDED(hr));
 
 		// SwapChainからResourceを引っ張ってくる.
 		hr = data.swapChain->GetBuffer(0, IID_PPV_ARGS(&data.swapChainResource[0]));
@@ -292,6 +350,25 @@ void GameSystem::Initialize() {
 
 		// 2つ目を作る.
 		device->CreateRenderTargetView(data.swapChainResource[1].Get(), &data.rtvDesc, data.rtvHandles[1]);
+
+		device.As(&data.dxgiDevice);
+		hr = DCompositionCreateDevice(data.dxgiDevice.Get(), IID_PPV_ARGS(&data.dcompDevice));
+		assert(SUCCEEDED(hr));
+
+		hr = data.dcompDevice->CreateTargetForHwnd(data.hwnd, TRUE, &data.dcompTarget);
+		assert(SUCCEEDED(hr));
+
+		hr = data.dcompDevice->CreateVisual(&data.dcompVisual);
+		assert(SUCCEEDED(hr));
+
+		hr = data.dcompVisual->SetContent(data.swapChain.Get());
+		assert(SUCCEEDED(hr));
+
+		hr = data.dcompTarget->SetRoot(data.dcompVisual.Get());
+		assert(SUCCEEDED(hr));
+
+		hr = data.dcompDevice->Commit();
+		assert(SUCCEEDED(hr));
 	}
 
 	// SRV用のヒープでディスクリプタの数は128。SRVはShader内で触るものなので、ShaderVisibleはtrue.
@@ -339,8 +416,8 @@ void GameSystem::Initialize() {
 
 	// 【ビューポート】
 	// クライアント領域のサイズと一緒にして画面全体に表示.
-	viewport.Width = static_cast<FLOAT>(Environment::GetInstance()->GetWindowSize().width);
-	viewport.Height = static_cast<FLOAT>(Environment::GetInstance()->GetWindowSize().height);
+	viewport.Width = windowDatas_[0].monitorRect.right - windowDatas_[0].monitorRect.left;//static_cast<FLOAT>(Environment::GetInstance()->GetWindowSize().width);
+	viewport.Height = windowDatas_[0].monitorRect.bottom - windowDatas_[0].monitorRect.top;//static_cast<FLOAT>(Environment::GetInstance()->GetWindowSize().height);
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
 	viewport.MinDepth = 0.0f;
@@ -349,9 +426,9 @@ void GameSystem::Initialize() {
 	// 【シザー矩形】
 	// 基本的にビューポートと同じ矩形が構成されるようにする.
 	scissorRect.left = 0;
-	scissorRect.right = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().width);
+	scissorRect.right = windowDatas_[0].monitorRect.right - windowDatas_[0].monitorRect.left; //static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().width);
 	scissorRect.top = 0;
-	scissorRect.bottom = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().height);
+	scissorRect.bottom = windowDatas_[0].monitorRect.bottom - windowDatas_[0].monitorRect.top; //static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().height);
 
 	for (uint32_t i = 0; i < static_cast<uint32_t>(BlendMode::kCount); i++) {
 		CreatePipeline(static_cast<BlendMode>(i));
@@ -400,7 +477,11 @@ void GameSystem::CreatePipeline(BlendMode blendMode) {
 	/*=============================================================
 	DepthStencilTextureをつくる
 	=============================================================*/
-	depthStencilResource = CreateDepthStencilTextureResource(device, static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().width), static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().height));
+	depthStencilResource = CreateDepthStencilTextureResource(
+		device, 
+		windowDatas_[0].monitorRect.right - windowDatas_[0].monitorRect.left,
+		windowDatas_[0].monitorRect.bottom - windowDatas_[0].monitorRect.top
+	);
 
 	// DSV用のヒープでディスクリプタ数は1。DSVはShader内で触れるものではないので、ShaderVisibleはfalse.
 	dsvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
@@ -768,7 +849,7 @@ void GameSystem::DrawSetup() {
 		data.commandList->OMSetRenderTargets(1, &data.rtvHandles[backBufferIndex], false, &dsvHandle);
 		// 指定した色で画面全体をクリアする.
 		//float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };// 青っぽい色。RGBAの順.
-		float clearColor[] = { 0.0f,0.0f,0.0f,1.0f };// 青っぽい色。RGBAの順.
+		float clearColor[] = { 0.0f,0.0f,0.0f,0.0f };// 青っぽい色。RGBAの順.
 		data.commandList->ClearRenderTargetView(data.rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 
 		data.commandList->ClearDepthStencilView(
