@@ -31,6 +31,8 @@ private:
 		kMovingShot,
 		kWaveShot,
 		kSpinningHalberd,
+		kPowerSlasher,
+		kFangAttack,
 		kCountMax,
 		kFireBulletShot,
 
@@ -77,6 +79,12 @@ private:
 
 	void SpinningInitialize();
 	void SpinningUpdate();
+
+	void PowerSlasherInitialize();
+	void PowerSlasherUpdate();
+
+	void FangAttackInitialize();
+	void FangAttackUpdate();
 private:
 	static void (Boss::* pInitializeFunc[])();
 	static void (Boss::* pUpdateFunc[])();
@@ -85,6 +93,9 @@ private:
 	Transform destinationHalberdTransform_;
 	static inline float kDestinationCompletionRate = 0.25f;
 	static inline float kBasicPositionY = 1.4f;
+
+	Vector3 basicHalberdPos = {-1.0f,0.0f,0.0f};
+	Vector3 basicHalberdRotate = { -Radian(90.0f) ,0.0f,0.0f };
 
 	static inline Vector3 kBasicHalberdFarPos = {-1.0f,0.0f,0.0f};
 	static inline Vector3 kBasicHalberdFarRotate = { -Radian(90.0f) ,0.0f,0.0f };
@@ -110,25 +121,24 @@ private:
 	Transform preTransform_;
 
 	// Warp
-	float kWarpEnterTimerMax = 0.5f;
-	float kWarpFinishedTimerMax = 0.5f;
+	static inline float kWarpEnterTimerMax = 0.5f;
+	static inline float kWarpFinishedTimerMax = 0.5f;
 
 	// BulletShot.
-	float kBulletStartGapTimerMax = 0.2f;
-	float kBulletStayTimerMax = 0.2f;
-	float kBulletFinishedGapTimerMax = 0.3f;
+	static inline float kBulletStartGapTimerMax = 0.2f;
+	static inline float kBulletStayTimerMax = 0.2f;
+	static inline float kBulletFinishedGapTimerMax = 0.3f;
+
 	static inline Vector3 kBulletHalberdPos = { -1.0f,0.0f,-3.0f };
-	
 	static inline float kBulletAnimRotateY = -45.0f;
-	
 
 	Vector3 bulletShotDirectionTemp_;
 
 	// BounsShot.
-	float kBounsStartGapTimerMax = 0.7f;
-	float kBounsStayTimerMax = 0.1f;
-	float kBounsSpinTimerMax = 0.2f;
-	float kBounsFinishedGapTimerMax = 0.5f;
+	static inline float kBounsStartGapTimerMax = 0.7f;
+	static inline float kBounsStayTimerMax = 0.1f;
+	static inline float kBounsSpinTimerMax = 0.2f;
+	static inline float kBounsFinishedGapTimerMax = 0.5f;
 
 	static inline float kBounsAnimPositionY = 5.0f;
 	static inline Vector3 kBounsHalberdStartPos = { -0.5f,2.5f,0.0f };
@@ -137,10 +147,10 @@ private:
 	static inline Vector3 kBounsHalberdSpinRotate = { 0.0f,0.0f,Radian(90.0f) };
 
 	// DiffusionShot.
-	float kDiffusionBulletStartGapTimerMax = 0.2f;
-	float kDiffusionBulletSpinTimerMax = 0.6f;
-	float kDiffusionBulletBackTimerMax = 0.2f;
-	float kDiffusionBulletFinishedGapTimerMax = 0.5f;
+	static inline float kDiffusionBulletStartGapTimerMax = 0.2f;
+	static inline float kDiffusionBulletSpinTimerMax = 0.6f;
+	static inline float kDiffusionBulletBackTimerMax = 0.2f;
+	static inline float kDiffusionBulletFinishedGapTimerMax = 0.5f;
 
 	static inline Vector3 kDiffusionBulletHalberdStartPos = { 0.0f,0.0f,-1.5f };
 	static inline Vector3 kDiffusionBulletHalberdStartRotate = { 0.0f,0.0f,0.0f };
@@ -148,25 +158,25 @@ private:
 	static inline float kDiffusionBulletAnimPositionZ = 1.0f;
 
 	// MovingShot.
-	float kMovingBulletStartGapTimerMax = 0.2f;
-	float kMovingBulletStayTimerMax = 0.2f;
-	float kMovingBulletShotGapTimerMax = 0.2f;
-	float kMovingBulletFinishedGapTimerMax = 0.3f;
-	float kMovingBulletFinishedTimerMax = 2.0f;
+	static inline float kMovingBulletStartGapTimerMax = 0.2f;
+	static inline float kMovingBulletStayTimerMax = 0.2f;
+	static inline float kMovingBulletShotGapTimerMax = 0.2f;
+	static inline float kMovingBulletFinishedGapTimerMax = 0.3f;
+	static inline float kMovingBulletFinishedTimerMax = 2.0f;
 
 	static inline Vector3 kMovingBulletHalberdPos = { -1.0f,0.0f,-3.0f };
 	static inline float kMovingBulletAnchorRadius = 40.0f;
+
 	float movingBulletTimer_ = 0.0f;
 	Vector3 movingBulletTargetPos;
 
 	// MovingShot.
-	float kWaveStartGapTimerMax = 0.3f;
-	float kWaveSpinTimerMax = 0.3f;
-	float kWaveAttackTimerMax = 0.3f;
-	float kWaveAttackGapTimerMax = 0.7f;
-	float kWaveFinishedGapTimerMax = 0.3f;
+	static inline float kWaveStartGapTimerMax = 0.3f;
+	static inline float kWaveSpinTimerMax = 0.3f;
+	static inline float kWaveAttackTimerMax = 0.3f;
+	static inline float kWaveAttackGapTimerMax = 0.7f;
+	static inline float kWaveFinishedGapTimerMax = 0.3f;
 
-	Transform halberdModelTransform;
 	static inline float kWaveAnimPositionY = 8.0f;
 	static inline Vector3 kWaveHalberdPos = { -0.5f,2.5f,0.0f };
 	static inline Vector3 kWaveHalberdStartRotate = { 0.0f,0.0f,0.0f };
@@ -175,16 +185,17 @@ private:
 	static inline Vector3 kWaveHalberdAttackPos = { 0.0f,1.0f,-0.6f };
 	static inline float kWaveAttackRotateX = -Radian(150.0f);
 
-	// SpiningHalberd.
-	float kSpinningStartGapTimerMax = 0.2f;
-	float kSpinningStayTimerMax = 0.3f;
-	float kSpinningSpinStartTimerMax = 0.2f;
-	float kSpinningSpinTimerMax = 1.6f;
-	float kSpinningSpinFinnishedTimerMax = 0.2f;
-	float kSpinningSpinGapTimerMax = 0.7f;
-	float kSpinningFinishedGapTimerMax = 0.3f;
+	Transform halberdModelTransform;
 
-	float spinningRotateY = 0.0f;
+	// SpiningHalberd.
+	static inline float kSpinningStartGapTimerMax = 0.2f;
+	static inline float kSpinningStayTimerMax = 0.3f;
+	static inline float kSpinningSpinStartTimerMax = 0.2f;
+	static inline float kSpinningSpinTimerMax = 1.6f;
+	static inline float kSpinningSpinFinnishedTimerMax = 0.2f;
+	static inline float kSpinningSpinGapTimerMax = 0.7f;
+	static inline float kSpinningFinishedGapTimerMax = 0.3f;
+
 	static inline float kSpinningComplateRate = 0.25f;
 	static inline float kSpinningSpeed = 15.0f;
 	static inline Vector3 kSpinningHalberdStartPos = { -2.0f,0.0f,0.0f };
@@ -193,5 +204,47 @@ private:
 	static inline Vector3 kSpinningHalberdSpinGapPos = { 1.0f,0.0f,-1.0f };
 	static inline Vector3 kSpinningHalberdSpinGapRotate = { -Radian(180.0f),0.0f,Radian(90.0f) };
 	static inline  float kSpinningSpinGapRotateY = -Radian(30.0f);
+
+	float spinningRotateY = 0.0f;
+
+	// PowerSlasher.
+	static inline float kPowerSlasherStartGapTimerMax = 0.2f;
+	static inline float kPowerSlasherStayTimerMax = 0.3f;
+	static inline float kPowerSlasherDashTimerMax = 1.0f;
+	static inline float kPowerSlasherDashToSlashTimerMax = 0.3f;
+	static inline float kPowerSlasherSlashStayTimerMax = 0.5f;
+	static inline float kPowerSlasherFinishedGapTimerMax = 0.3f;
+
+	Transform powerSlasherHalberdCenter_;
+
+	static inline float kPowerSlasherSpeed = 40.0f;
+	static inline Vector3 kPowerSlasherHalberdStartPos = { 1.0f,0.0f,-1.0f };
+	static inline Vector3 kPowerSlasherHalberdStartRotate = { 0.0f,0.0f,-Radian(60.0f) };
+	static inline float kPowerSlasherModelStartRotateY = -Radian(30.0f);
+	static inline Vector3 kPowerSlasherHalberdAttackPos = { 2.0f,0.0f,0.0f };
+	static inline Vector3 kPowerSlasherHalberdAttackRotate = { 0.0f,0.0f,-Radian(90.0f) };
+	static inline Vector3 kPowerSlasherHalberdFinishedPos = { 2.0f,0.0f,0.0f };
+	static inline Vector3 kPowerSlasherHalberdFinishedRotate = { 0.0f,0.0f,-Radian(90.0f) };
+	static inline float kPowerSlasherModelFinishedRotateY = Radian(30.0f);
+
+	static inline float kPowerSlasherNearSlashRadius = 3.0f;
+	static inline float kPowerSlasherSlashRadius = (kPowerSlasherSpeed * kPowerSlasherDashToSlashTimerMax);
+
+	// FangAttack(なんか攻撃作っていくうちにアニメーションのコスト高くなってくな).
+	// ハルバード上投げ.
+	static inline float kFangAttackStartGapTimerMax = 0.3f;
+	// ジャンプする.
+	static inline float kFangAttackJumpTimerMax = 0.3f;
+	// 回収.
+	static inline float kFangAttackStayTimerMax = 0.3f;
+	// 急降下.
+	static inline float kFangAttackFallingTimerMax = 0.3f;
+	// 攻撃の隙.
+	static inline float kFangAttackAttackGapTimerMax = 0.3f;
+	// 元の見た目に戻る.
+	static inline float kFangAttackFinishedGapTimerMax = 0.3f;
+
+
+
 };
 

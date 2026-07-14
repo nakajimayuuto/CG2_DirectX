@@ -9,6 +9,7 @@ void (Boss::* Boss::pInitializeFunc[])() = {
 		&Boss::MovingBulletInitialize,
 		&Boss::WaveInitialize,
 		&Boss::SpinningInitialize,
+		&Boss::PowerSlasherInitialize,
 };
 
 void (Boss::* Boss::pUpdateFunc[])() = {
@@ -19,6 +20,7 @@ void (Boss::* Boss::pUpdateFunc[])() = {
 		&Boss::MovingBulletUpdate,
 		&Boss::WaveUpdate,
 		&Boss::SpinningUpdate,
+		&Boss::PowerSlasherUpdate,
 };
 
 Boss::~Boss() {
@@ -54,8 +56,8 @@ void Boss::Initialize() {
 	halberdTransform_.SetParent(&transform_);
 	destinationHalberdTransform_.Initialize();
 	destinationHalberdTransform_.SetParent(&transform_);
-	halberdTransform_.translate = kBasicHalberdFarPos;
-	halberdTransform_.rotate = kBasicHalberdFarRotate;
+	halberdTransform_.translate = basicHalberdPos;
+	halberdTransform_.rotate = basicHalberdRotate;
 	destinationHalberdTransform_ = halberdTransform_;
 	attackRequest_ = std::nullopt;
 
@@ -194,6 +196,7 @@ void Boss::AttackFinished() {
 	currentAttackTimer_ = 0.0f; // 攻撃のタイマー.
 	kMaxAttackTimer = 0.0f; // 攻撃のタイマー最大値.
 	currentAttackPhase = 0; // 攻撃のフェーズ.
+	halberdTransform_.SetParent(&transform_);
 	SetCurrentDistanceHalberdTransform();
 }
 
@@ -204,8 +207,8 @@ void Boss::NextAttackPhase(float timerMax) {
 }
 
 void Boss::SetCurrentDistanceHalberdTransform() {
-	destinationHalberdTransform_.translate = kBasicHalberdFarPos;
-	destinationHalberdTransform_.rotate = kBasicHalberdFarRotate;
+	destinationHalberdTransform_.translate = basicHalberdPos;
+	destinationHalberdTransform_.rotate = basicHalberdRotate;
 }
 
 void Boss::WarpInitialize() {
@@ -214,7 +217,7 @@ void Boss::WarpInitialize() {
 
 void Boss::WarpUpdate() {
 	switch (currentAttackPhase) {
-	case 0:
+	case 0: // ワープの始まり.
 		transform_.scale = Easing({ 1.0f,1.0f,1.0f }, { 2.0f,0.0f,2.0f }, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
@@ -226,7 +229,7 @@ void Boss::WarpUpdate() {
 		}
 
 		break;
-	case 1:
+	case 1: // ワープの終わり.
 		transform_.scale = Easing({ 0.0f,2.0f,0.0f }, { 1.0f,1.0f,1.0f }, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
@@ -243,9 +246,9 @@ void Boss::BulletInitialize() {
 
 void Boss::BulletUpdate() {
 	switch (currentAttackPhase) {
-	case 0:
+	case 0: // ハルバードを前に向ける.
 		modelTransform_.rotate.y = Easing(0.0f, Radian(kBulletAnimRotateY), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-		destinationHalberdTransform_.translate = Easing(kBasicHalberdFarPos, kBulletHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.translate = Easing(basicHalberdPos, kBulletHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		transform_.rotate.y = atan2(transform_.translate.x - targetTransform_->translate.x, transform_.translate.z - targetTransform_->translate.z);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
@@ -255,20 +258,20 @@ void Boss::BulletUpdate() {
 			}
 		}
 		break;
-	case 1:
+	case 1: // 攻撃の前隙.
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kBulletStayTimerMax);
 			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, bulletShotDirectionTemp_ * 30.0f, BulletType::kNormal, kCollisionEnemyAttack);
 		}
 		break;
-	case 2:
+	case 2: // 攻撃の後隙.
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kBulletFinishedGapTimerMax);
 		}
 		break;
-	case 3:
+	case 3: // 見た目を戻す.
 		modelTransform_.rotate.y = Easing(Radian(kBulletAnimRotateY), 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-		destinationHalberdTransform_.translate = Easing(kBulletHalberdPos, kBasicHalberdFarPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.translate = Easing(kBulletHalberdPos, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			AttackFinished();
 		}
@@ -283,21 +286,21 @@ void Boss::BounsInitialize() {
 void Boss::BounsUpdate() {
 	float randomRadian;
 	switch (currentAttackPhase) {
-	case 0:
+	case 0: // 上昇.
 		transform_.translate.y = Easing(kBasicPositionY, kBounsAnimPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
-		destinationHalberdTransform_.translate = Easing(kBasicHalberdFarPos, kBounsHalberdStartPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
-		destinationHalberdTransform_.rotate = Easing(kBasicHalberdFarRotate, kBounsHalberdStartRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+		destinationHalberdTransform_.translate = Easing(basicHalberdPos, kBounsHalberdStartPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+		destinationHalberdTransform_.rotate = Easing(basicHalberdRotate, kBounsHalberdStartRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kBounsStayTimerMax);
 		}
 		break;
-	case 1:
+	case 1: // 上空で間を開ける.
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kBounsSpinTimerMax);
 		}
 		break;
-	case 2:
+	case 2: // 回転し初め、遷移時に攻撃を発射.
 		transform_.rotate.y = Easing(preTransform_.rotate.y, preTransform_.rotate.y + Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		destinationHalberdTransform_.translate = Easing(kBounsHalberdStartPos, kBounsHalberdSpinPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		destinationHalberdTransform_.rotate = Easing(kBounsHalberdStartRotate, kBounsHalberdSpinRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
@@ -307,17 +310,17 @@ void Boss::BounsUpdate() {
 			ProjectileManager::GetInstance()->CreateDiffusionBullet(transform_, Vector3(RadianToVector(randomRadian).x, 0.0f, RadianToVector(randomRadian).y) * 10.0f, BulletType::kBounce, kCollisionEnemyAttack, Radian(45.0f), 8);
 		}
 		break;
-	case 3:
+	case 3: // 回転を終了する.
 		transform_.rotate.y = Easing(preTransform_.rotate.y, preTransform_.rotate.y + Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kBounsFinishedGapTimerMax);
 			transform_.rotate.y = preTransform_.rotate.y;
 		}
 		break;
-	case 4:
+	case 4: // 降下.
 		transform_.translate.y = Easing(kBounsAnimPositionY, kBasicPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-		destinationHalberdTransform_.translate = Easing(kBounsHalberdSpinPos, kBasicHalberdFarPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-		destinationHalberdTransform_.rotate = Easing(kBounsHalberdSpinRotate, kBasicHalberdFarRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.translate = Easing(kBounsHalberdSpinPos, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.rotate = Easing(kBounsHalberdSpinRotate, basicHalberdRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			AttackFinished();
 		}
@@ -331,15 +334,15 @@ void Boss::DiffusionBulletInitialize() {
 
 void Boss::DiffusionBulletUpdate() {
 	switch (currentAttackPhase) {
-	case 0:
-		destinationHalberdTransform_.translate = Easing(kBasicHalberdFarPos, kDiffusionBulletHalberdStartPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
-		destinationHalberdTransform_.rotate = Easing(kBasicHalberdFarRotate, kDiffusionBulletHalberdStartRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+	case 0: // ハルバードを前に構える.
+		destinationHalberdTransform_.translate = Easing(basicHalberdPos, kDiffusionBulletHalberdStartPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+		destinationHalberdTransform_.rotate = Easing(basicHalberdRotate, kDiffusionBulletHalberdStartRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kDiffusionBulletSpinTimerMax);
 		}
 		break;
-	case 1:
+	case 1: // ハルバードを高速回転させる.
 		destinationHalberdTransform_.rotate = Easing(kDiffusionBulletHalberdStartRotate, kDiffusionBulletHalberdSpinRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kDiffusionBulletBackTimerMax);
@@ -351,21 +354,21 @@ void Boss::DiffusionBulletUpdate() {
 
 		}
 		break;
-	case 2:
+	case 2: // 少し後退
 		modelTransform_.translate.z = Easing(0.0f, kDiffusionBulletAnimPositionZ, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kDiffusionBulletBackTimerMax);
 		}
 		break;
-	case 3:
+	case 3: // 元の位置に戻る.
 		modelTransform_.translate.z = Easing(kDiffusionBulletAnimPositionZ, 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kDiffusionBulletFinishedGapTimerMax);
 		}
 		break;
-	case 4:
-		destinationHalberdTransform_.translate = Easing(kDiffusionBulletHalberdStartPos, kBasicHalberdFarPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
-		destinationHalberdTransform_.rotate = Easing(kDiffusionBulletHalberdStartRotate, kBasicHalberdFarRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+	case 4: // 見た目を戻す.
+		destinationHalberdTransform_.translate = Easing(kDiffusionBulletHalberdStartPos, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+		destinationHalberdTransform_.rotate = Easing(kDiffusionBulletHalberdStartRotate, basicHalberdRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			AttackFinished();
@@ -387,15 +390,15 @@ void Boss::MovingBulletUpdate() {
 	transform_.translate = Easing(preTransform_.translate, movingBulletTargetPos, movingBulletTimer_, kMovingBulletFinishedTimerMax, EaseType::kEaseOut);
 
 	switch (currentAttackPhase) {
-	case 0:
+	case 0:// ハルバードを構える.
 		modelTransform_.rotate.y = Easing(0.0f, Radian(kBulletAnimRotateY), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-		destinationHalberdTransform_.translate = Easing(kBasicHalberdFarPos, kBulletHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.translate = Easing(basicHalberdPos, kBulletHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kMovingBulletStayTimerMax);
 		}
 		break;
-	case 1:
+	case 1:// 攻撃を発射させる間.
 	case 2:
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kMovingBulletShotGapTimerMax);
@@ -405,7 +408,7 @@ void Boss::MovingBulletUpdate() {
 			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, direction * 30.0f, BulletType::kNormal, kCollisionEnemyAttack);
 		}
 		break;
-	case 3:
+	case 3: // 攻撃を発射させる間(3回目).
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kMovingBulletFinishedGapTimerMax);
 			if ((targetTransform_->translate - destinationHalberdTransform_.GetWorldPosition()).Length() != 0.0f) {
@@ -414,9 +417,9 @@ void Boss::MovingBulletUpdate() {
 			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, direction * 30.0f, BulletType::kNormal, kCollisionEnemyAttack);
 		}
 		break;
-	case 4:
+	case 4: // 見た目を戻す.
 		modelTransform_.rotate.y = Easing(Radian(kBulletAnimRotateY), 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-		destinationHalberdTransform_.translate = Easing(kBulletHalberdPos, kBasicHalberdFarPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.translate = Easing(kBulletHalberdPos, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kMovingBulletFinishedGapTimerMax);
 		}
@@ -426,6 +429,7 @@ void Boss::MovingBulletUpdate() {
 	}
 
 	if (movingBulletTimer_ >= kMovingBulletFinishedTimerMax) {
+		// 一定の時間経過後攻撃終了.
 		AttackFinished();
 	}
 }
@@ -434,23 +438,22 @@ void Boss::WaveInitialize() {
 	kMaxAttackTimer = kMovingBulletStartGapTimerMax;
 	movingBulletTimer_ = 0.0f;
 	movingBulletTargetPos = GetMoveAnchorPointFind(kMovingBulletAnchorRadius);
-	halberdTransform_.SetParent(&transform_);
 }
 
 void Boss::WaveUpdate() {
 
 	switch (currentAttackPhase) {
-	case 0:
+	case 0: // 上昇しながらハルバードを前に構える.
 		transform_.translate.y = Easing(kBasicPositionY, kWaveAnimPositionY / 2.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-		destinationHalberdTransform_.translate = Easing(kBasicHalberdFarPos, kWaveHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-		destinationHalberdTransform_.rotate = Easing(kBasicHalberdFarRotate, kWaveHalberdStartRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.translate = Easing(basicHalberdPos, kWaveHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.rotate = Easing(basicHalberdRotate, kWaveHalberdStartRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kWaveStartGapTimerMax);
 			halberdTransform_.SetParent(&modelTransform_);
 		}
 		break;
-	case 1:
+	case 1: // 残りの上昇.
 		transform_.translate.y = Easing(kWaveAnimPositionY / 2.0f, kWaveAnimPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		modelTransform_.rotate.x = Easing(kWaveHalberdStartRotate.x, preTransform_.rotate.x - Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		destinationHalberdTransform_.translate = Easing(kWaveHalberdPos, kWaveHalberdSpinPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
@@ -460,13 +463,13 @@ void Boss::WaveUpdate() {
 			preTransform_ = transform_;
 		}
 		break;
-	case 2:
+	case 2: // その場で回転.
 		transform_.rotate.x = Easing(preTransform_.rotate.x, preTransform_.rotate.x - Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kWaveAttackTimerMax);
 		}
 		break;
-	case 3:
+	case 3: // 攻撃態勢に入りながら急降下.
 		transform_.translate.y = Easing(kWaveAnimPositionY, kWaveAttackPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		transform_.rotate.x = Easing(preTransform_.rotate.x, kWaveAttackRotateX, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		destinationHalberdTransform_.translate = Easing(kWaveHalberdSpinPos, kWaveHalberdAttackPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
@@ -475,15 +478,15 @@ void Boss::WaveUpdate() {
 			ProjectileManager::GetInstance()->CreateWave(transform_, 25.0f, 1.0f, kCollisionEnemyAttack);
 		}
 		break;
-	case 4:
+	case 4: // 攻撃後の後隙.
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kWaveFinishedGapTimerMax);
 		}
 		break;
-	case 5:
+	case 5: // 見た目を戻す.
 		transform_.translate.y = Easing(kWaveAttackPositionY, kBasicPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		transform_.rotate.x = Easing(kWaveAttackRotateX, preTransform_.rotate.x, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
-		destinationHalberdTransform_.translate = Easing(kWaveHalberdAttackPos, kBasicHalberdFarPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+		destinationHalberdTransform_.translate = Easing(kWaveHalberdAttackPos, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			AttackFinished();
 			halberdTransform_.SetParent(&transform_);
@@ -509,41 +512,41 @@ void Boss::SpinningUpdate() {
 
 	Vector3 move = { 0.0f,0.0f,kSpinningSpeed };
 
-	spinningRotateY = LerpShortAngle(spinningRotateY, std::atan2(targetTransform_->translate.x - transform_.translate.x, targetTransform_->translate.z - transform_.translate.z) , kSpinningComplateRate);
+	spinningRotateY = LerpShortAngle(spinningRotateY, std::atan2(targetTransform_->translate.x - transform_.translate.x, targetTransform_->translate.z - transform_.translate.z), kSpinningComplateRate);
 
 	Matrix4x4 rotateMatrix = Matrix4x4::MakeRotateMatrix({ 0.0f,spinningRotateY,0.0f });
 
 	move = rotateMatrix.TransformNomal(move);
 
 	switch (currentAttackPhase) {
-	case 0:
-		destinationHalberdTransform_.translate = Easing(kBasicHalberdFarPos, kSpinningHalberdStartPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
-		destinationHalberdTransform_.rotate = Easing(kBasicHalberdFarRotate, kSpinningHalberdStartRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+	case 0: // ハルバードを構える.
+		destinationHalberdTransform_.translate = Easing(basicHalberdPos, kSpinningHalberdStartPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.rotate = Easing(basicHalberdRotate, kSpinningHalberdStartRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		transform_.rotate.y = Easing(preTransform_.rotate.y, preTransform_.rotate.y + kSpinningStartRotateY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kSpinningStayTimerMax);
 		}
 		break;
-	case 1:
+	case 1: // 前隙.
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kSpinningSpinStartTimerMax);
 		}
 		break;
-	case 2:
+	case 2: // 回転し初め.
 		transform_.rotate.y = Easing(preTransform_.rotate.y + kSpinningStartRotateY, preTransform_.rotate.y + kSpinningStartRotateY - Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kSpinningSpinTimerMax);
 			transform_.rotate.y = preTransform_.rotate.y + kSpinningStartRotateY;
 		}
 		break;
-	case 3:
+	case 3: // 回転の最中.
 		transform_.rotate.y = Easing(preTransform_.rotate.y + kSpinningStartRotateY, preTransform_.rotate.y + kSpinningSpinGapRotateY - (Radian(360.0f) * 10.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kConstant);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kSpinningSpinFinnishedTimerMax);
 			transform_.rotate.y = preTransform_.rotate.y + kSpinningSpinGapRotateY;
 		}
 		break;
-	case 4:
+	case 4: // 回転し終わり.
 		transform_.rotate.y = Easing(preTransform_.rotate.y + kSpinningSpinGapRotateY, preTransform_.rotate.y + kSpinningSpinGapRotateY - Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		destinationHalberdTransform_.translate = Easing(kSpinningHalberdStartPos, kSpinningHalberdSpinGapPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		destinationHalberdTransform_.rotate = Easing(kSpinningHalberdStartRotate, kSpinningHalberdSpinGapRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
@@ -552,14 +555,14 @@ void Boss::SpinningUpdate() {
 			transform_.rotate.y = preTransform_.rotate.y + kSpinningSpinGapRotateY;
 		}
 		break;
-	case 5:
+	case 5: // 後隙.
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kWaveFinishedGapTimerMax);
 		}
 		break;
-	case 6:
-		destinationHalberdTransform_.translate = Easing(kSpinningHalberdSpinGapPos, kBasicHalberdFarPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
-		destinationHalberdTransform_.rotate = Easing(kSpinningHalberdSpinGapRotate, kBasicHalberdFarRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+	case 6: // 見た目を戻す.
+		destinationHalberdTransform_.translate = Easing(kSpinningHalberdSpinGapPos, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.rotate = Easing(kSpinningHalberdSpinGapRotate, basicHalberdRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		transform_.rotate.y = Easing(preTransform_.rotate.y + kSpinningSpinGapRotateY, preTransform_.rotate.y, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			AttackFinished();
@@ -570,6 +573,7 @@ void Boss::SpinningUpdate() {
 
 	attackTempTransform_ = destinationHalberdTransform_;
 	if (currentAttackPhase <= 4 && currentAttackPhase >= 2) {
+		// 回転時ハルバードに当たり判定を出す.
 		transform_.translate += move * deltaTime_ * difficultyMagnificationTime * dopamineSpeed_;
 		attackTempCollider_->SetSize({ 2.0f,1.4f,0.4f });
 		attackTempTransform_.translate.y = -1.8f;
@@ -579,4 +583,132 @@ void Boss::SpinningUpdate() {
 
 	attackTempCollider_->SetTransform(attackTempTransform_);
 	attackTempCollider_->DrawCollider();
+}
+
+void Boss::PowerSlasherInitialize() {
+	kMaxAttackTimer = kPowerSlasherStartGapTimerMax;
+	attackTempTransform_.translate = { 1.0f,0.0f,0.0f };
+	attackTempCollider_->SetSize({ 0.3f,1.4f,0.4f });
+	attackTempCollider_->SetColliderType(ColliderType::kBox);
+	attackTempCollider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy));
+	attackTempCollider_->SetDebugColor({ 1.0f,1.0f,1.0f,1.0f });
+	halberdTransform_.SetParent(&transform_);
+	powerSlasherHalberdCenter_.Initialize();
+	powerSlasherHalberdCenter_.SetParent(&transform_);
+	halberdTransform_.SetParent(&powerSlasherHalberdCenter_);
+	attackTempTransform_.SetParent(&powerSlasherHalberdCenter_);
+}
+
+void Boss::PowerSlasherUpdate() {
+	Vector3 lenght;
+	attackTempTransform_ = halberdTransform_;
+	attackTempCollider_->SetDebugColor({ 1.0f,1.0f,1.0f,1.0f });
+	attackTempCollider_->SetSize({ 0.3f,1.4f,0.4f });
+
+	Vector3 move = { 0.0f,0.0f,-kPowerSlasherSpeed};
+
+	Matrix4x4 rotateMatrix = Matrix4x4::MakeRotateMatrix({ 0.0f,transform_.rotate.y,0.0f });
+
+	move = rotateMatrix.TransformNomal(move);
+
+	switch (currentAttackPhase) {
+	case 0: // ハルバードを構える.
+		destinationHalberdTransform_.translate = Easing(basicHalberdPos, kPowerSlasherHalberdStartPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.rotate = Easing(basicHalberdRotate, kPowerSlasherHalberdStartRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		modelTransform_.rotate.y = Easing(0.0f, kPowerSlasherModelStartRotateY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		transform_.rotate.y = atan2(transform_.translate.x - targetTransform_->translate.x, transform_.translate.z - targetTransform_->translate.z);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kPowerSlasherStayTimerMax);
+		}
+		break;
+	case 1: // 前隙.
+		transform_.rotate.y = atan2(transform_.translate.x - targetTransform_->translate.x, transform_.translate.z - targetTransform_->translate.z);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			lenght = targetTransform_->translate - transform_.translate;
+			// プレイヤーの位置によって攻撃が変わる.
+			if (lenght.Length() < kPowerSlasherNearSlashRadius) {
+				// 敵に近い位置なら2に遷移.
+				NextAttackPhase(kPowerSlasherDashToSlashTimerMax);
+			} else {
+				// 敵から離れた位置なら3に遷移.
+				currentAttackPhase++;
+				NextAttackPhase(kPowerSlasherDashTimerMax);
+			}
+		}
+		break;
+	case 2: // 攻撃しながら構えなおす.
+		destinationHalberdTransform_.translate = Easing(kPowerSlasherHalberdStartPos, kPowerSlasherHalberdAttackPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.rotate = Easing(kPowerSlasherHalberdStartRotate,kPowerSlasherHalberdAttackRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		powerSlasherHalberdCenter_.rotate.y = Easing(0.0f,Radian(180.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		modelTransform_.rotate.y = Easing( kPowerSlasherModelStartRotateY, kPowerSlasherModelFinishedRotateY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			// 6(後隙)に遷移.
+			currentAttackPhase++;
+			currentAttackPhase++;
+			currentAttackPhase++;
+			NextAttackPhase(kPowerSlasherStayTimerMax);
+		}
+		break;
+	case 3:  // 突進をする.
+		transform_.translate += move * deltaTime_ * difficultyMagnificationTime * dopamineSpeed_;
+		lenght = targetTransform_->translate - transform_.translate;
+		// プレイヤーの位置によって攻撃の終わるタイミングが変わる.
+		if (lenght.Length() < kPowerSlasherSlashRadius) {
+			// 射程圏内に入ったら4に遷移.
+			NextAttackPhase(kPowerSlasherDashToSlashTimerMax);
+		}
+		
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			// 突進時間が終了したら4に遷移.
+			NextAttackPhase(kPowerSlasherDashToSlashTimerMax);
+		}
+		break;
+	case 4: // 突進しながら構えなおす.
+		transform_.translate += move * deltaTime_ * difficultyMagnificationTime * dopamineSpeed_;
+		destinationHalberdTransform_.translate = Easing(kPowerSlasherHalberdStartPos, kPowerSlasherHalberdAttackPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.rotate = Easing(kPowerSlasherHalberdStartRotate,kPowerSlasherHalberdAttackRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kPowerSlasherDashToSlashTimerMax);
+		}
+		break;
+	case 5: // 攻撃を行う.
+		powerSlasherHalberdCenter_.rotate.y = Easing(0.0f, Radian(180.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut); 
+		modelTransform_.rotate.y = Easing(kPowerSlasherModelStartRotateY, kPowerSlasherModelFinishedRotateY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kPowerSlasherSlashStayTimerMax);
+		}
+		break;
+	case 6: // 後隙(2または5から遷移される).
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kPowerSlasherFinishedGapTimerMax);
+		}
+		break;
+	case 7: // 見た目を戻す.
+		powerSlasherHalberdCenter_.rotate.y = Easing(Radian(180.0f), 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		modelTransform_.rotate.y = Easing(kPowerSlasherModelFinishedRotateY, 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.translate = Easing(kPowerSlasherHalberdAttackPos, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.rotate = Easing(kPowerSlasherHalberdAttackRotate, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			AttackFinished();
+			halberdTransform_.SetParent(&transform_);
+		}
+		break;
+	}
+
+	if (currentAttackPhase <= 5 && currentAttackPhase >= 2) {
+		// 突進時や攻撃時にはハルバードに当たり判定を作る.
+		attackTempCollider_->SetSize({ 2.0f,1.4f,0.4f });
+		attackTempTransform_.translate.y = -1.8f;
+		CollisionManager::GetInstance()->AddColliderList(attackTempCollider_.get());
+		attackTempCollider_->SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
+	}
+
+	attackTempCollider_->SetTransform(attackTempTransform_);
+	attackTempCollider_->DrawCollider();
+}
+
+void Boss::FangAttackInitialize(){
+}
+
+void Boss::FangAttackUpdate(){
 }
