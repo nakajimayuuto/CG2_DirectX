@@ -900,15 +900,6 @@ bool GameSystem::BeginFrame() {
 
 	DeltaTime::GetInstance()->Update();
 
-	return true;
-}
-
-void GameSystem::DrawSetup() {
-	WindowSizeUpdate();
-
-	LightManager::GetInstance()->Update();
-
-
 	/*=============================================================
 	コマンドを積む
 	=============================================================*/
@@ -950,9 +941,19 @@ void GameSystem::DrawSetup() {
 	// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
 	commandList->SetGraphicsRootSignature(pipeline_[static_cast<uint32_t>(BlendMode::kNormal)].rootSignature.Get());
 	commandList->SetPipelineState(pipeline_[static_cast<uint32_t>(BlendMode::kNormal)].graphicsPipelineState.Get()); // PS0を設定.
+
+	return true;
+}
+
+void GameSystem::DrawSetup() {
+
 }
 
 void GameSystem::EndFrame() {
+	WindowSizeUpdate();
+
+	LightManager::GetInstance()->Update();
+
 	Camera::GetInstance()->Draw();
 
 	Renderer::GetInstance()->DrawLineAll();

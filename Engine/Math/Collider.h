@@ -19,6 +19,7 @@ public:
 
 	void SetRadius(float radius) { colliderRadius_ = radius; };
 	float GetRadius() const { return colliderRadius_; };
+	void SetSize(const Vector3& size) { colliderSize_ = size; };
 
 	void SetTransform(Transform transform) { transform_ = transform; };
 	Transform GetTransform() { return transform_; };
@@ -41,6 +42,8 @@ public:
 	void SetColliderType(ColliderType type) { colliderType_ = type; };
 
 	void DrawCollider();
+
+	void SetDebugColor(const Vector4& color) { colliderColor_ = color; };
 
 	float GetMinorRadius() const { return colliderMinorRadius_; };
 	void SetMinorRadius(float radius) { colliderMinorRadius_ = radius; };

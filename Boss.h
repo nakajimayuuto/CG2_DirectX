@@ -30,6 +30,7 @@ private:
 		kDiffusionShot,
 		kMovingShot,
 		kWaveShot,
+		kSpinningHalberd,
 		kCountMax,
 		kFireBulletShot,
 
@@ -73,6 +74,9 @@ private:
 
 	void WaveInitialize();
 	void WaveUpdate();
+
+	void SpinningInitialize();
+	void SpinningUpdate();
 private:
 	static void (Boss::* pInitializeFunc[])();
 	static void (Boss::* pUpdateFunc[])();
@@ -87,6 +91,11 @@ private:
 
 	static inline Vector3 kBasicHalberdMiddlePos = { 0.0f,1.0f,0.0f };
 
+
+	static inline Vector3 kBasicColliderSize = { 0.5f,1.2f,0.3f };
+	static inline float kBasicColliderRadius = 0.5f; 
+	std::unique_ptr<Collider> attackTempCollider_;
+	Transform attackTempTransform_;
 
 	// 攻撃全般.
 	Attacks currentAttack_ = Attacks::kWarp; // 現在の攻撃.
@@ -166,5 +175,23 @@ private:
 	static inline Vector3 kWaveHalberdAttackPos = { 0.0f,1.0f,-0.6f };
 	static inline float kWaveAttackRotateX = -Radian(150.0f);
 
+	// SpiningHalberd.
+	float kSpinningStartGapTimerMax = 0.2f;
+	float kSpinningStayTimerMax = 0.3f;
+	float kSpinningSpinStartTimerMax = 0.2f;
+	float kSpinningSpinTimerMax = 1.6f;
+	float kSpinningSpinFinnishedTimerMax = 0.2f;
+	float kSpinningSpinGapTimerMax = 0.7f;
+	float kSpinningFinishedGapTimerMax = 0.3f;
+
+	float spinningRotateY = 0.0f;
+	static inline float kSpinningComplateRate = 0.25f;
+	static inline float kSpinningSpeed = 15.0f;
+	static inline Vector3 kSpinningHalberdStartPos = { -2.0f,0.0f,0.0f };
+	static inline Vector3 kSpinningHalberdStartRotate = { 0.0f,0.0f,Radian(90.0f) };
+	static inline float kSpinningStartRotateY = Radian(30.0f);
+	static inline Vector3 kSpinningHalberdSpinGapPos = { 1.0f,0.0f,-1.0f };
+	static inline Vector3 kSpinningHalberdSpinGapRotate = { -Radian(180.0f),0.0f,Radian(90.0f) };
+	static inline  float kSpinningSpinGapRotateY = -Radian(30.0f);
 };
 

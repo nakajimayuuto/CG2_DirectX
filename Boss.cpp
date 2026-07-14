@@ -8,6 +8,7 @@ void (Boss::* Boss::pInitializeFunc[])() = {
 		&Boss::DiffusionBulletInitialize,
 		&Boss::MovingBulletInitialize,
 		&Boss::WaveInitialize,
+		&Boss::SpinningInitialize,
 };
 
 void (Boss::* Boss::pUpdateFunc[])() = {
@@ -17,6 +18,7 @@ void (Boss::* Boss::pUpdateFunc[])() = {
 		&Boss::DiffusionBulletUpdate,
 		&Boss::MovingBulletUpdate,
 		&Boss::WaveUpdate,
+		&Boss::SpinningUpdate,
 };
 
 Boss::~Boss() {
@@ -63,6 +65,14 @@ void Boss::Initialize() {
 	//collisionMask_ = kCollisionAttribute[kCollisionPlayer];
 
 	colliderColor_ = { 0.6f,0.3f,1.0f,1.0f };
+
+	attackTempTransform_.Initialize();
+	attackTempCollider_ = std::make_unique<Collider>();
+	attackTempTransform_.SetParent(&transform_);
+	attackTempCollider_->SetRadius(2.0f);
+	attackTempCollider_->SetColliderType(ColliderType::kSphere);
+	attackTempCollider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy));
+	attackTempCollider_->SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
 }
 
 void Boss::Update() {
@@ -121,7 +131,7 @@ void Boss::Draw() {
 void Boss::OnCollision(Collider* other) {
 }
 
-Vector3 Boss::GetMoveAnchorPointFindAll(){
+Vector3 Boss::GetMoveAnchorPointFindAll() {
 	float maxLength = 0.0f;
 	Vector3 newPos = { 0.0f,0.0f,0.0f };
 	for (Vector3& pos : anchorPoints_) {
@@ -134,7 +144,7 @@ Vector3 Boss::GetMoveAnchorPointFindAll(){
 	return newPos;
 }
 
-Vector3 Boss::GetMoveAnchorPointFind(float radius){
+Vector3 Boss::GetMoveAnchorPointFind(float radius) {
 	float maxLength = 0.0f;
 	Vector3 newPos = transform_.translate;
 	for (Vector3& pos : anchorPoints_) {
@@ -248,7 +258,7 @@ void Boss::BulletUpdate() {
 	case 1:
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kBulletStayTimerMax);
-			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, bulletShotDirectionTemp_ * 30.0f, BulletType::kNormal,kCollisionEnemyAttack);
+			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, bulletShotDirectionTemp_ * 30.0f, BulletType::kNormal, kCollisionEnemyAttack);
 		}
 		break;
 	case 2:
@@ -288,7 +298,7 @@ void Boss::BounsUpdate() {
 		}
 		break;
 	case 2:
-		transform_.rotate.y = Easing(preTransform_.rotate.y, preTransform_.rotate.y +  Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		transform_.rotate.y = Easing(preTransform_.rotate.y, preTransform_.rotate.y + Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		destinationHalberdTransform_.translate = Easing(kBounsHalberdStartPos, kBounsHalberdSpinPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		destinationHalberdTransform_.rotate = Easing(kBounsHalberdStartRotate, kBounsHalberdSpinRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
@@ -342,7 +352,7 @@ void Boss::DiffusionBulletUpdate() {
 		}
 		break;
 	case 2:
-		modelTransform_.translate.z = Easing(0.0f,kDiffusionBulletAnimPositionZ, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+		modelTransform_.translate.z = Easing(0.0f, kDiffusionBulletAnimPositionZ, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kDiffusionBulletBackTimerMax);
 		}
@@ -354,7 +364,7 @@ void Boss::DiffusionBulletUpdate() {
 		}
 		break;
 	case 4:
-		destinationHalberdTransform_.translate = Easing(kDiffusionBulletHalberdStartPos, kBasicHalberdFarPos,  currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+		destinationHalberdTransform_.translate = Easing(kDiffusionBulletHalberdStartPos, kBasicHalberdFarPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		destinationHalberdTransform_.rotate = Easing(kDiffusionBulletHalberdStartRotate, kBasicHalberdFarRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
@@ -364,13 +374,13 @@ void Boss::DiffusionBulletUpdate() {
 	}
 }
 
-void Boss::MovingBulletInitialize(){
+void Boss::MovingBulletInitialize() {
 	kMaxAttackTimer = kMovingBulletStartGapTimerMax;
 	movingBulletTimer_ = 0.0f;
 	movingBulletTargetPos = GetMoveAnchorPointFind(kMovingBulletAnchorRadius);
 }
 
-void Boss::MovingBulletUpdate(){
+void Boss::MovingBulletUpdate() {
 	movingBulletTimer_ += deltaTime_ * difficultyMagnificationTime * dopamineSpeed_;
 	transform_.rotate.y = atan2(transform_.translate.x - targetTransform_->translate.x, transform_.translate.z - targetTransform_->translate.z);
 	Vector3 direction = { 0.0f,0.0f,-1.0f };
@@ -420,14 +430,14 @@ void Boss::MovingBulletUpdate(){
 	}
 }
 
-void Boss::WaveInitialize(){
+void Boss::WaveInitialize() {
 	kMaxAttackTimer = kMovingBulletStartGapTimerMax;
 	movingBulletTimer_ = 0.0f;
 	movingBulletTargetPos = GetMoveAnchorPointFind(kMovingBulletAnchorRadius);
 	halberdTransform_.SetParent(&transform_);
 }
 
-void Boss::WaveUpdate(){
+void Boss::WaveUpdate() {
 
 	switch (currentAttackPhase) {
 	case 0:
@@ -441,7 +451,7 @@ void Boss::WaveUpdate(){
 		}
 		break;
 	case 1:
-		transform_.translate.y = Easing( kWaveAnimPositionY / 2.0f, kWaveAnimPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		transform_.translate.y = Easing(kWaveAnimPositionY / 2.0f, kWaveAnimPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		modelTransform_.rotate.x = Easing(kWaveHalberdStartRotate.x, preTransform_.rotate.x - Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		destinationHalberdTransform_.translate = Easing(kWaveHalberdPos, kWaveHalberdSpinPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 
@@ -462,7 +472,7 @@ void Boss::WaveUpdate(){
 		destinationHalberdTransform_.translate = Easing(kWaveHalberdSpinPos, kWaveHalberdAttackPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kWaveAttackGapTimerMax);
-			ProjectileManager::GetInstance()->CreateWave(transform_,25.0f,1.0f, kCollisionEnemyAttack);
+			ProjectileManager::GetInstance()->CreateWave(transform_, 25.0f, 1.0f, kCollisionEnemyAttack);
 		}
 		break;
 	case 4:
@@ -471,13 +481,102 @@ void Boss::WaveUpdate(){
 		}
 		break;
 	case 5:
-		transform_.translate.y = Easing(kWaveAttackPositionY,kBasicPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+		transform_.translate.y = Easing(kWaveAttackPositionY, kBasicPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		transform_.rotate.x = Easing(kWaveAttackRotateX, preTransform_.rotate.x, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
-		destinationHalberdTransform_.translate = Easing(kWaveHalberdAttackPos,kBasicHalberdFarPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+		destinationHalberdTransform_.translate = Easing(kWaveHalberdAttackPos, kBasicHalberdFarPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			AttackFinished();
 			halberdTransform_.SetParent(&transform_);
 		}
 		break;
 	}
+}
+
+void Boss::SpinningInitialize() {
+	kMaxAttackTimer = kSpinningStartGapTimerMax;
+	attackTempTransform_.translate = { 1.0f,0.0f,0.0f };
+	attackTempTransform_.SetParent(&transform_);
+	attackTempCollider_->SetSize({ 0.3f,1.4f,0.4f });
+	attackTempCollider_->SetColliderType(ColliderType::kBox);
+	attackTempCollider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy));
+	attackTempCollider_->SetDebugColor({ 1.0f,1.0f,1.0f,1.0f });
+	spinningRotateY = 0.0f;
+}
+
+void Boss::SpinningUpdate() {
+	attackTempCollider_->SetDebugColor({ 1.0f,1.0f,1.0f,1.0f });
+	attackTempCollider_->SetSize({ 0.3f,1.4f,0.4f });
+
+	Vector3 move = { 0.0f,0.0f,kSpinningSpeed };
+
+	spinningRotateY = LerpShortAngle(spinningRotateY, std::atan2(targetTransform_->translate.x - transform_.translate.x, targetTransform_->translate.z - transform_.translate.z) , kSpinningComplateRate);
+
+	Matrix4x4 rotateMatrix = Matrix4x4::MakeRotateMatrix({ 0.0f,spinningRotateY,0.0f });
+
+	move = rotateMatrix.TransformNomal(move);
+
+	switch (currentAttackPhase) {
+	case 0:
+		destinationHalberdTransform_.translate = Easing(kBasicHalberdFarPos, kSpinningHalberdStartPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.rotate = Easing(kBasicHalberdFarRotate, kSpinningHalberdStartRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		transform_.rotate.y = Easing(preTransform_.rotate.y, preTransform_.rotate.y + kSpinningStartRotateY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kSpinningStayTimerMax);
+		}
+		break;
+	case 1:
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kSpinningSpinStartTimerMax);
+		}
+		break;
+	case 2:
+		transform_.rotate.y = Easing(preTransform_.rotate.y + kSpinningStartRotateY, preTransform_.rotate.y + kSpinningStartRotateY - Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kSpinningSpinTimerMax);
+			transform_.rotate.y = preTransform_.rotate.y + kSpinningStartRotateY;
+		}
+		break;
+	case 3:
+		transform_.rotate.y = Easing(preTransform_.rotate.y + kSpinningStartRotateY, preTransform_.rotate.y + kSpinningSpinGapRotateY - (Radian(360.0f) * 10.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kConstant);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kSpinningSpinFinnishedTimerMax);
+			transform_.rotate.y = preTransform_.rotate.y + kSpinningSpinGapRotateY;
+		}
+		break;
+	case 4:
+		transform_.rotate.y = Easing(preTransform_.rotate.y + kSpinningSpinGapRotateY, preTransform_.rotate.y + kSpinningSpinGapRotateY - Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.translate = Easing(kSpinningHalberdStartPos, kSpinningHalberdSpinGapPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.rotate = Easing(kSpinningHalberdStartRotate, kSpinningHalberdSpinGapRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kSpinningStayTimerMax);
+			transform_.rotate.y = preTransform_.rotate.y + kSpinningSpinGapRotateY;
+		}
+		break;
+	case 5:
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kWaveFinishedGapTimerMax);
+		}
+		break;
+	case 6:
+		destinationHalberdTransform_.translate = Easing(kSpinningHalberdSpinGapPos, kBasicHalberdFarPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.rotate = Easing(kSpinningHalberdSpinGapRotate, kBasicHalberdFarRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		transform_.rotate.y = Easing(preTransform_.rotate.y + kSpinningSpinGapRotateY, preTransform_.rotate.y, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			AttackFinished();
+		}
+		break;
+	}
+
+
+	attackTempTransform_ = destinationHalberdTransform_;
+	if (currentAttackPhase <= 4 && currentAttackPhase >= 2) {
+		transform_.translate += move * deltaTime_ * difficultyMagnificationTime * dopamineSpeed_;
+		attackTempCollider_->SetSize({ 2.0f,1.4f,0.4f });
+		attackTempTransform_.translate.y = -1.8f;
+		CollisionManager::GetInstance()->AddColliderList(attackTempCollider_.get());
+		attackTempCollider_->SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
+	}
+
+	attackTempCollider_->SetTransform(attackTempTransform_);
+	attackTempCollider_->DrawCollider();
 }
