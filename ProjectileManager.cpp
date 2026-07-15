@@ -195,3 +195,70 @@ void Wave::Update() {
 void Wave::Draw() {
 	Renderer::GetInstance()->DrawTorus(transform_, colliderRadius_, colliderMinorRadius_, "white_template", {1.0f,0.0f,0.0f,1.0f});
 }
+
+void Spike::Initialize(const Transform& transform, uint32_t size, CollisionAttributeName colliderName){
+	uint32_t sizeIndex;
+	sizeIndex = size;
+	if (size == 0) {
+		sizeIndex = static_cast<uint32_t>(Random::GetInstance()->RandomFloat(1.0f,3.0f));
+	}
+
+	switch (sizeIndex){
+	case 1:
+		colliderSize_ = kBasicSpikeSize;
+		break;
+	case 2:
+		colliderSize_ = kBasicSpikeSize * 1.5f;
+		break;
+	case 3:
+		colliderSize_ = kBasicSpikeSize * 2.0f;
+		break;
+	}
+
+	transform_ = transform;
+	transform_.translate.y = -(colliderSize_.y / 2.0f);
+	collisionAttribute_ = colliderName;
+	isActive_ = true;
+	lifeTimer_ = 0.0f;
+	colliderType_ = ColliderType::kBox;
+	spikePhase_ = 0;
+	lifeTimeMax_ = kStartTimeMax;
+	colliderColor_ = { 1.0f,0.0f,0.0f,1.0f };
+}
+
+void Spike::Update() {
+	lifeTimer_ += DeltaTime::GetInstance()->GetGameTime();
+	switch (spikePhase_){
+	case 0:
+		transform_.translate.y = Easing(-(colliderSize_.y / 2.0f),colliderSize_.y / 2.0f,lifeTimer_, lifeTimeMax_,EaseType::kEaseIn);
+		if (lifeTimer_ >= lifeTimeMax_) {
+			lifeTimer_ = 0;
+			spikePhase_++;
+			lifeTimeMax_ = kStayTimeMax;
+		}
+		break;
+	case 1:
+
+		if (lifeTimer_ >= lifeTimeMax_) {
+			lifeTimer_ = 0;
+			spikePhase_++;
+			lifeTimeMax_ = kEndTimeMax;
+		}
+		break;
+	case 2:
+		transform_.translate.y = Easing(colliderSize_.y / 2.0f, -(colliderSize_.y / 2.0f), lifeTimer_, lifeTimeMax_,EaseType::kEaseOut);
+
+		if (lifeTimer_ >= lifeTimeMax_) {
+			lifeTimer_ = 0;
+			spikePhase_++;
+			isActive_ = false;
+		}
+		break;
+	}
+
+	DrawCollider();
+}
+
+void Spike::Draw() {
+
+}

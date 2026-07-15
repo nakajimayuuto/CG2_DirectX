@@ -48,6 +48,34 @@ class Explode : Collider {
 
 };
 
+class Spike : Collider {
+public:
+	/// <summary>
+	/// 初期化.
+	/// </summary>
+	/// <param name="transform">トランスフォーム</param>
+	/// <param name="size">サイズ(0で乱数1~3で大きさも決められる)</param>
+	/// <param name="colliderName"></param>
+	void Initialize(const Transform& transform, uint32_t size, CollisionAttributeName colliderName);
+
+	void Update();
+
+	void Draw();
+private:
+	Model model_;
+
+	uint32_t spikePhase_;
+	float lifeTimer_ = 0.0f;
+	float lifeTimeMax_ = 0.0f;
+	static inline float kStartTimeMax = 0.3f;
+	static inline float kStayTimeMax = 0.4f;
+	static inline float kEndTimeMax = 0.3f;
+
+	bool isActive_;
+
+	static inline Vector3 kBasicSpikeSize = {0.2f, 0.5f, 0.2f};
+};
+
 class Wave :Collider{
 public:
 	void Initialize(const Transform& transform, float speed,float height, CollisionAttributeName colliderName);
