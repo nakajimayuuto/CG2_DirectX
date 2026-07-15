@@ -7,10 +7,13 @@ void GameScene::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("player", "Resource/player", "player.obj");
 	ModelManager::GetInstance()->RegisterObj("plane", "Resource", "plane.obj");
 
+
 	// 使用するテクスチャの読み込み.
 	TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resource/uvChecker.png");
 	TextureManager::GetInstance()->RegisterTexture("monsterBall", "Resource/monsterBall.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_triangle", "Resource/effect_triangle.png");
+	TextureManager::GetInstance()->RegisterTexture("window_back", "Resource/Window/window_back.png");
+	TextureManager::GetInstance()->RegisterTexture("window_mask", "Resource/Window/window_mask.png");
 
 	// カメラ位置の調整
 	Camera::GetInstance()->SetPosition({ 0.0f,0.0f,-10.0f });
@@ -21,7 +24,7 @@ void GameScene::Initialize() {
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
 	transform_.Initialize();
 
-	sprite_.Initialize(TextureManager::GetInstance()->GetTextureInfo("uvChecker"));
+	sprite_.Initialize(TextureManager::GetInstance()->GetTextureInfo("window_back"));
 	transformSprite_.Initialize();
 	transformSprite_.translate.x = (sprite_.GetSize().x / 2.0f);
 	transformSprite_.translate.y = (sprite_.GetSize().y / 2.0f);
@@ -32,7 +35,7 @@ void GameScene::Initialize() {
 	GetWindowRect(GameSystem::GetInstance()->GetHWND(), &windowRect);
 	windowFirstRect = windowRect;
 
-	spriteTest2.Initialize(TextureManager::GetInstance()->GetTextureInfo("uvChecker"));
+	spriteTest2.Initialize(TextureManager::GetInstance()->GetTextureInfo("window_mask"));
 	transformSpriteTest2_.Initialize();
 	transformSpriteTest2_.translate.x = (spriteTest2.GetSize().x / 2.0f);
 	transformSpriteTest2_.translate.y = (spriteTest2.GetSize().y / 2.0f);
