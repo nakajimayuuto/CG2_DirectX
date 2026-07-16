@@ -178,7 +178,7 @@ namespace Renderer {
 
 		bool GetIsVisible() { return isVisible_; };
 
-		void ChangeTexture(const TextureInfo& info) { textureInfo_.textureSrvHandlesGPU = info.textureSrvHandlesGPU; };
+		void ChangeTexture(const TextureInfo& info) { textureInfo_.textureSrvHandlesGPU = info.textureSrvHandlesGPU; textureInfo_.width = info.width; textureInfo_.height = info.height; size_ = { static_cast<float>(textureInfo_.width),static_cast<float>(textureInfo_.height) }; AdaptationSize(); };
 
 		void SetColor(Vector4 color) { materialData_->color = color; };
 

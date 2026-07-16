@@ -1,5 +1,13 @@
 #pragma once
 #include "Satlib.h"
+
+enum WindowType {
+	kWindowTypeNormal,
+	kWindowTypeSquareL,
+	kWindowTypeSquareS,
+	kWindowTypeCount,
+};
+
 class FakeWindow{
 public:
 	void Initialize();
@@ -22,11 +30,16 @@ public:
 	void SetIsActive(bool isActive) { isActive_ = isActive; }
 
 	Vector2 GetWindowSize() { return back_.GetSize(); };
+
+	void SetType(WindowType type);
+
+	WindowType GetType() { return type_; };
 private:
 	Transform2D transform_;
 	Renderer::Sprite back_;
 	Renderer::Sprite mask_;
 
+	WindowType type_;
 	bool isActive_;
 };
 

@@ -21,3 +21,23 @@ void FakeWindow::DrawBack() {
 void FakeWindow::DrawMask(){
 	mask_.Draw(transform_);
 }
+
+void FakeWindow::SetType(WindowType type){
+	type_ = type;
+	switch (type){
+	case kWindowTypeNormal:
+		back_.ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("window_back"));
+		mask_.ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("window_mask"));
+		break;				
+	case kWindowTypeSquareL:
+		back_.ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("window_s_l_back"));
+		mask_.ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("window_s_l_mask"));
+		break;
+	case kWindowTypeSquareS:
+		back_.ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("window_s_s_back"));
+		mask_.ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("window_s_s_mask"));
+		break;
+	default:
+		break;
+	}
+}

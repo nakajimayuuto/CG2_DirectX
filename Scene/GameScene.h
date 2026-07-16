@@ -27,12 +27,12 @@ private:
 
 	Skydome* skydome_ = nullptr;
 
-	RECT windowRect;
-	RECT windowFirstRect;
-
-	Renderer::Sprite spriteTest2;
-	Renderer::Sprite frameSpriteRight_;
 	Renderer::Sprite backGroundSprite_;
 
 	std::vector<std::unique_ptr<FakeWindow>> fakeWindows_;
+
+	bool isRotate_;
+
+	Transform cameraRotateCenter_;
+	Transform newCameraTransform_;
 };

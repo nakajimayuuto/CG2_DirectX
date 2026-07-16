@@ -14,6 +14,10 @@ void GameScene::Initialize() {
 	TextureManager::GetInstance()->RegisterTexture("effect_triangle", "Resource/effect_triangle.png");
 	TextureManager::GetInstance()->RegisterTexture("window_back", "Resource/Window/window_back.png");
 	TextureManager::GetInstance()->RegisterTexture("window_mask", "Resource/Window/window_mask.png");
+	TextureManager::GetInstance()->RegisterTexture("window_s_l_back", "Resource/Window/window_square_large_back.png");
+	TextureManager::GetInstance()->RegisterTexture("window_s_l_mask", "Resource/Window/window_square_large_mask.png");
+	TextureManager::GetInstance()->RegisterTexture("window_s_s_back", "Resource/Window/window_square_small_back.png");
+	TextureManager::GetInstance()->RegisterTexture("window_s_s_mask", "Resource/Window/window_square_small_mask.png");
 
 	// カメラ位置の調整
 	Camera::GetInstance()->SetPosition({ 0.0f,0.0f,-10.0f });
@@ -32,19 +36,6 @@ void GameScene::Initialize() {
 
 	transform_.rotate.y = Radian(-30.0f);
 	DirectionalLight::GetInstance()->GetDirectionalLightData()->direction = { 0.0f,0.0f,1.0f };
-	GetWindowRect(GameSystem::GetInstance()->GetHWND(), &windowRect);
-	windowFirstRect = windowRect;
-
-	spriteTest2.Initialize(TextureManager::GetInstance()->GetTextureInfo("window_mask"));
-	transformSpriteTest2_.Initialize();
-	transformSpriteTest2_.translate.x = (spriteTest2.GetSize().x / 2.0f);
-	transformSpriteTest2_.translate.y = (spriteTest2.GetSize().y / 2.0f);
-	transformSpriteTest2_.translate.z = 0.0f;
-
-	frameSpriteRight_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
-	frameSpriteRight_.SetSize(Environment::GetInstance()->GetWindowSize());
-	frameSpriteRight_.SetColor({0.0f,0.0f,0.0f,1.0f});
-
 	backGroundSprite_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
 	backGroundSprite_.SetSize(Environment::GetInstance()->GetWindowSize());
 	backGroundSprite_.SetColor({ 0.1f,0.25f,0.5f,1.0f });
@@ -52,7 +43,10 @@ void GameScene::Initialize() {
 
 	CreateFakeWindow();
 
-	//Environment::GetInstance()->SetWindowMode(kFullscreen);
+	cameraRotateCenter_.Initialize();
+	newCameraTransform_.Initialize();
+	newCameraTransform_.SetParent(&cameraRotateCenter_);
+	newCameraTransform_.translate.z = -10.0f;
 }
 
 void GameScene::Update() {
@@ -105,6 +99,20 @@ void GameScene::Update() {
 	Environment* environment = Environment::GetInstance();
 
 	ImGui::Begin("ObjectMove");
+	std::string buttonName;
+	if (isRotate_) {
+		buttonName = "RotateStop";
+	}else{
+		buttonName = "RotatePlay";
+	}
+
+	if (ImGui::Button(buttonName.c_str())) {
+		if (isRotate_) {
+			isRotate_ = false;
+		} else {
+			isRotate_ = true;
+		}
+	}
 
 	bool imBool = model_.GetIsVisible();
 	ImGui::Checkbox("ModelVisible", &imBool);
@@ -114,24 +122,7 @@ void GameScene::Update() {
 	ImGui::DragFloat3("ModelTranslate", reinterpret_cast<float*>(&transform_.translate), 0.1f, -20.0f, 20.0f);
 	transform_.rotate = Radian(imRotate);
 	model_.SetIsVisible(imBool);
-	
-	//imBool = sprite_.GetIsVisible();
-	//float imRotateX = Degree(transformSprite_.rotate.x);
-	//ImGui::Checkbox("SpriteVisible", &imBool);
-	//ImGui::DragFloat2("SpriteScale", reinterpret_cast<float*>(&transformSprite_.scale), 0.1f, 0.0f, 10.0f);
-	//ImGui::DragFloat3("SpriteRotate", reinterpret_cast<float*>(&imRotateX), 0.1f, -20.0f, 20.0f);
-	//ImGui::DragFloat2("SpriteTranslate", reinterpret_cast<float*>(&transformSprite_.translate), 10.0f, 0.0f, 1280.0f);
-	//transformSprite_.rotate.x = Radian(imRotateX);
-	//sprite_.SetIsVisible(imBool);
-	//
-	//imBool = spriteTest2.GetIsVisible();
-	//imRotateX = Degree(transformSpriteTest2_.rotate.x);
-	//ImGui::Checkbox("SpriteVisible2", &imBool);
-	//ImGui::DragFloat2("SpriteScale2", reinterpret_cast<float*>(&transformSpriteTest2_.scale), 0.1f, 0.0f, 10.0f);
-	//ImGui::DragFloat3("SpriteRotate2", reinterpret_cast<float*>(&imRotateX), 0.1f, -20.0f, 20.0f);
-	//ImGui::DragFloat2("SpriteTranslate2", reinterpret_cast<float*>(&transformSpriteTest2_.translate), 10.0f, 0.0f, 1280.0f);
-	//transformSpriteTest2_.rotate.x = Radian(imRotateX);
-	//spriteTest2.SetIsVisible(imBool);
+
 	
 	for (auto it = fakeWindows_.begin(); it != fakeWindows_.end(); ) {
 		if (!(*it)->GetIsActive()) {
@@ -158,6 +149,12 @@ void GameScene::Update() {
 		ImGui::DragFloat("rotate", &imRotateZ,1.0f,-360.0f,360.0f);
 		ImGui::DragFloat2("translate", reinterpret_cast<float*>(&imVector2),10.0f,-(window->GetWindowSize().x / 2.0f),1920.0f + (window->GetWindowSize().x / 2.0f));
 		window->SetTransform({imScale2,Radian(imRotateZ),imVector2});
+		int type = static_cast<int>(window->GetType());
+		ImGui::SliderInt("Type",&type,0,kWindowTypeCount - 1);
+		if (type != static_cast<int>(window->GetType())){ 
+			window->SetType(static_cast<WindowType>(type));
+		}
+
 		if (ImGui::Button("Delete")) {
 			window->SetIsActive(false);
 		}
@@ -167,18 +164,20 @@ void GameScene::Update() {
 
 	ImGui::End();
 
+	cameraRotateCenter_.rotate.y += Radian(1.0f);
+
+	Camera::GetInstance()->SetPosition(newCameraTransform_.GetAffineMatrix().GetMatrixToTranslate());
+	Camera::GetInstance()->SetRotate(cameraRotateCenter_.rotate);
 	Camera::GetInstance()->Update();
 }
 
 void GameScene::Draw() {
-	//sprite_.Draw(transformSprite_);
-	//spriteTest2.Draw(transformSpriteTest2_);
-
 	for (auto& window : fakeWindows_) {
 		window->DrawBack();
+	}
+	for (auto& window : fakeWindows_) {
 		window->DrawMask();
 	}
-
 
 	backGroundSprite_.Draw(Transform::GetInitialValue({ 100.0f,100.0f,100.0f }, { 0.0f ,0.0f,0.0f}, { -backGroundSprite_.GetSize().x / 2.0f * 50.0f,-backGroundSprite_.GetSize().y / 2.0f * 50.0f ,100.0f}));
 	model_.Draw(transform_);
