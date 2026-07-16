@@ -15,6 +15,7 @@ void PlaneProjectionShadow::Initialize(Transform* casterWorldTransform, Model* m
 }
 
 void PlaneProjectionShadow::Update() {
+	transform_ = *casterTransform_;
 	worldMatrix_ = transform_.GetAffineMatrix();
 
 	Camera* camera = Camera::GetInstance();

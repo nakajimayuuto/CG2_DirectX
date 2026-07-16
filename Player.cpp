@@ -105,6 +105,12 @@ void Player::Update() {
 	default:
 		break;
 	}
+
+	shadowBody_->Update();
+	shadowHead_->Update();
+	shadowLArm_->Update();
+	shadowRArm_->Update();
+	shadowHammer->Update();
 }
 
 void Player::BehaviorRootInitialize() {
