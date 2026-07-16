@@ -144,6 +144,24 @@ void GameSystem::Initialize() {
 				winData.monitorRect.right - winData.monitorRect.left,
 				winData.monitorRect.bottom - winData.monitorRect.top,
 				SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+		} else {
+			RECT currentRect = { 0,0,0,0, };
+			GetWindowRect(winData.hwnd, &currentRect);
+			LONG currentStyle = GetWindowLongPtr(winData.hwnd, GWL_STYLE);
+			currentStyle = WS_OVERLAPPED |
+				WS_CAPTION |
+				WS_SYSMENU;
+
+			SetWindowLongW(winData.hwnd, GWL_STYLE, currentStyle);
+			SetWindowPos(
+				winData.hwnd,
+				HWND_TOP,
+				currentRect.left,
+				currentRect.top,
+				currentRect.right - currentRect.left,
+				currentRect.bottom - currentRect.top,
+				SWP_FRAMECHANGED | SWP_SHOWWINDOW
+			);
 		}
 
 		//const DWMNCRENDERINGPOLICY policy = DWMNCRP_DISABLED;

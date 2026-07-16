@@ -52,67 +52,57 @@ void GameScene::Initialize() {
 
 	CreateFakeWindow();
 
-	model_.SetIsVisible(false);
-
-	Environment::GetInstance()->SetWindowMode(kFullscreen);
+	//Environment::GetInstance()->SetWindowMode(kFullscreen);
 }
 
 void GameScene::Update() {
-	if (InputManager::GetInstance()->TriggerKey(DIK_R) && InputManager::GetInstance()->PressKey(DIK_LSHIFT)) {
-		SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, WS_OVERLAPPEDWINDOW);
-
-		SetWindowPos(
-			GameSystem::GetInstance()->GetHWND(),
-			HWND_TOP,
-			windowFirstRect.left,
-			windowFirstRect.top,
-			windowFirstRect.right - windowFirstRect.left,
-			windowFirstRect.bottom - windowFirstRect.top,
-			SWP_FRAMECHANGED | SWP_SHOWWINDOW
-		);
-
-	}
-
-	if (InputManager::GetInstance()->TriggerKey(DIK_R) && !InputManager::GetInstance()->PressKey(DIK_LSHIFT)) {
-		SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, WS_OVERLAPPEDWINDOW);
-
-		SetWindowPos(
-			GameSystem::GetInstance()->GetHWND(),
-			HWND_TOP,
-			windowRect.left,
-			windowRect.top,
-			windowRect.right - windowRect.left,
-			windowRect.bottom - windowRect.top,
-			SWP_FRAMECHANGED | SWP_SHOWWINDOW
-		);
-
-	}
-	
-	if (InputManager::GetInstance()->TriggerKey(DIK_S)) {
-		GetWindowRect(GameSystem::GetInstance()->GetHWND(), &windowRect);
-	}
-
-	if (InputManager::GetInstance()->TriggerKey(DIK_F11)) {
-		if (Environment::GetInstance()->GetWindowMode() == kFullscreen) {
-			Environment::GetInstance()->SetWindowMode(kWindowed);
-		} else {
-			Environment::GetInstance()->SetWindowMode(kFullscreen);
-		}
-	}
+	//if (InputManager::GetInstance()->TriggerKey(DIK_R) && InputManager::GetInstance()->PressKey(DIK_LSHIFT)) {
+	//	SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, WS_OVERLAPPEDWINDOW);
+	//
+	//	SetWindowPos(
+	//		GameSystem::GetInstance()->GetHWND(),
+	//		HWND_TOP,
+	//		windowFirstRect.left,
+	//		windowFirstRect.top,
+	//		windowFirstRect.right - windowFirstRect.left,
+	//		windowFirstRect.bottom - windowFirstRect.top,
+	//		SWP_FRAMECHANGED | SWP_SHOWWINDOW
+	//	);
+	//
+	//}
+	//
+	//if (InputManager::GetInstance()->TriggerKey(DIK_R) && !InputManager::GetInstance()->PressKey(DIK_LSHIFT)) {
+	//	SetWindowLongW(GameSystem::GetInstance()->GetHWND(), GWL_STYLE, WS_OVERLAPPEDWINDOW);
+	//
+	//	SetWindowPos(
+	//		GameSystem::GetInstance()->GetHWND(),
+	//		HWND_TOP,
+	//		windowRect.left,
+	//		windowRect.top,
+	//		windowRect.right - windowRect.left,
+	//		windowRect.bottom - windowRect.top,
+	//		SWP_FRAMECHANGED | SWP_SHOWWINDOW
+	//	);
+	//
+	//}
+	//
+	//if (InputManager::GetInstance()->TriggerKey(DIK_S)) {
+	//	GetWindowRect(GameSystem::GetInstance()->GetHWND(), &windowRect);
+	//}
+	//
+	//if (InputManager::GetInstance()->TriggerKey(DIK_F11)) {
+	//	if (Environment::GetInstance()->GetWindowMode() == kFullscreen) {
+	//		Environment::GetInstance()->SetWindowMode(kWindowed);
+	//	} else {
+	//		Environment::GetInstance()->SetWindowMode(kFullscreen);
+	//	}
+	//}
 
 	if (InputManager::GetInstance()->TriggerKey(DIK_C)) {
 		CreateFakeWindow();
 	}
 
 	Environment* environment = Environment::GetInstance();
-
-	ImGui::Begin("AspectMode");
-
-	int imInt = static_cast<int>(environment->GetAspectMode());
-	ImGui::SliderInt("mode",&imInt,0,kAspectCountMax - 1);
-	environment->SetAspectMode(static_cast<AspectMode>(imInt));
-
-	ImGui::End();
 
 	ImGui::Begin("ObjectMove");
 
@@ -163,11 +153,11 @@ void GameScene::Update() {
 		ImGui::PushID(index);
 		imVector2 = window->GetTransform().translate;
 		imScale2 = window->GetTransform().scale;
-		imRotateZ = window->GetTransform().rotate;
-		ImGui::DragFloat2("scale", reinterpret_cast<float*>(&imScale2));
-		ImGui::DragFloat("rotate", &imRotateZ);
-		ImGui::DragFloat2("translate", reinterpret_cast<float*>(&imVector2));
-		window->SetTransform({imScale2,imRotateZ,imVector2});
+		imRotateZ = Degree(window->GetTransform().rotate);
+		ImGui::DragFloat2("scale", reinterpret_cast<float*>(&imScale2),0.1f,0.0f,100.0f);
+		ImGui::DragFloat("rotate", &imRotateZ,1.0f,-360.0f,360.0f);
+		ImGui::DragFloat2("translate", reinterpret_cast<float*>(&imVector2),10.0f,-(window->GetWindowSize().x / 2.0f),1920.0f + (window->GetWindowSize().x / 2.0f));
+		window->SetTransform({imScale2,Radian(imRotateZ),imVector2});
 		if (ImGui::Button("Delete")) {
 			window->SetIsActive(false);
 		}

@@ -20,6 +20,8 @@ public:
 	bool GetIsActive() { return isActive_; }
 
 	void SetIsActive(bool isActive) { isActive_ = isActive; }
+
+	Vector2 GetWindowSize() { return back_.GetSize(); };
 private:
 	Transform2D transform_;
 	Renderer::Sprite back_;
