@@ -48,6 +48,9 @@ void GameScene::Initialize() {
 	backGroundSprite_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
 	backGroundSprite_.SetSize(Environment::GetInstance()->GetWindowSize());
 	backGroundSprite_.SetColor({ 0.1f,0.25f,0.5f,1.0f });
+	//backGroundSprite_.SetColor({ 0.0f,0.0f,0.0f,1.0f });
+
+	CreateFakeWindow();
 
 	model_.SetIsVisible(false);
 
@@ -117,24 +120,31 @@ void GameScene::Update() {
 	ImGui::DragFloat3("ModelTranslate", reinterpret_cast<float*>(&transform_.translate), 0.1f, -20.0f, 20.0f);
 	transform_.rotate = Radian(imRotate);
 	model_.SetIsVisible(imBool);
-
-	imBool = sprite_.GetIsVisible();
-	float imRotateX = Degree(transformSprite_.rotate.x);
-	ImGui::Checkbox("SpriteVisible", &imBool);
-	ImGui::DragFloat2("SpriteScale", reinterpret_cast<float*>(&transformSprite_.scale), 0.1f, 0.0f, 10.0f);
-	ImGui::DragFloat3("SpriteRotate", reinterpret_cast<float*>(&imRotateX), 0.1f, -20.0f, 20.0f);
-	ImGui::DragFloat2("SpriteTranslate", reinterpret_cast<float*>(&transformSprite_.translate), 10.0f, 0.0f, 1280.0f);
-	transformSprite_.rotate.x = Radian(imRotateX);
-	sprite_.SetIsVisible(imBool);
-
-	imBool = spriteTest2.GetIsVisible();
-	imRotateX = Degree(transformSpriteTest2_.rotate.x);
-	ImGui::Checkbox("SpriteVisible2", &imBool);
-	ImGui::DragFloat2("SpriteScale2", reinterpret_cast<float*>(&transformSpriteTest2_.scale), 0.1f, 0.0f, 10.0f);
-	ImGui::DragFloat3("SpriteRotate2", reinterpret_cast<float*>(&imRotateX), 0.1f, -20.0f, 20.0f);
-	ImGui::DragFloat2("SpriteTranslate2", reinterpret_cast<float*>(&transformSpriteTest2_.translate), 10.0f, 0.0f, 1280.0f);
-	transformSpriteTest2_.rotate.x = Radian(imRotateX);
-	spriteTest2.SetIsVisible(imBool);
+	
+	//imBool = sprite_.GetIsVisible();
+	//float imRotateX = Degree(transformSprite_.rotate.x);
+	//ImGui::Checkbox("SpriteVisible", &imBool);
+	//ImGui::DragFloat2("SpriteScale", reinterpret_cast<float*>(&transformSprite_.scale), 0.1f, 0.0f, 10.0f);
+	//ImGui::DragFloat3("SpriteRotate", reinterpret_cast<float*>(&imRotateX), 0.1f, -20.0f, 20.0f);
+	//ImGui::DragFloat2("SpriteTranslate", reinterpret_cast<float*>(&transformSprite_.translate), 10.0f, 0.0f, 1280.0f);
+	//transformSprite_.rotate.x = Radian(imRotateX);
+	//sprite_.SetIsVisible(imBool);
+	//
+	//imBool = spriteTest2.GetIsVisible();
+	//imRotateX = Degree(transformSpriteTest2_.rotate.x);
+	//ImGui::Checkbox("SpriteVisible2", &imBool);
+	//ImGui::DragFloat2("SpriteScale2", reinterpret_cast<float*>(&transformSpriteTest2_.scale), 0.1f, 0.0f, 10.0f);
+	//ImGui::DragFloat3("SpriteRotate2", reinterpret_cast<float*>(&imRotateX), 0.1f, -20.0f, 20.0f);
+	//ImGui::DragFloat2("SpriteTranslate2", reinterpret_cast<float*>(&transformSpriteTest2_.translate), 10.0f, 0.0f, 1280.0f);
+	//transformSpriteTest2_.rotate.x = Radian(imRotateX);
+	//spriteTest2.SetIsVisible(imBool);
+	
+	Vector2 imVector2;
+	for (auto& window : fakeWindows_) {
+		imVector2 = window->GetPosition();
+		ImGui::DragFloat2("translate", reinterpret_cast<float*>(&imVector2));
+		window->SetPosition(imVector2);
+	}
 
 	ImGui::End();
 
@@ -142,16 +152,23 @@ void GameScene::Update() {
 }
 
 void GameScene::Draw() {
-	sprite_.SetBlendMode(BlendMode::kStencilNoneNormal);
-	sprite_.Draw(transformSprite_);
-	spriteTest2.SetBlendMode(BlendMode::kStencil);
-	spriteTest2.Draw(transformSpriteTest2_);
+	//sprite_.Draw(transformSprite_);
+	//spriteTest2.Draw(transformSpriteTest2_);
+
+	fakeWindowTest_.DrawBack();
+	fakeWindowTest_.DrawMask();
+
+
 	backGroundSprite_.Draw(Transform::GetInitialValue({ 100.0f,100.0f,100.0f }, { 0.0f ,0.0f,0.0f}, { -backGroundSprite_.GetSize().x / 2.0f * 50.0f,-backGroundSprite_.GetSize().y / 2.0f * 50.0f ,100.0f}));
-
-
-
 	model_.Draw(transform_);
 
 	//skydome_->Draw();
 	//frameSpriteRight_.Draw({ {1.0f,1.0f},0.0f, {Environment::GetInstance()->GetWindowSize().width + (frameSpriteRight_.GetSize().x / 2.0f),frameSpriteRight_.GetSize().y / 2.0f } });
+}
+
+void GameScene::CreateFakeWindow(){
+	std::unique_ptr<FakeWindow> newWindow;
+	newWindow = std::make_unique<FakeWindow>();
+	newWindow->Initialize();
+	fakeWindows_.push_back(std::move(newWindow));
 }

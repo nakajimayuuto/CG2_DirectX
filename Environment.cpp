@@ -14,7 +14,7 @@ void Environment::Initialize() {
 
 	currentWindowMode_ = kWindowed;
 
-	aspectMode_ = kAspectNone;
+	aspectMode_ = kAspectNoChange;
 
 	GetWindowRect(GameSystem::GetInstance()->GetHWND(), &windowRect);
 	currentStyle = GetWindowLongPtr(GameSystem::GetInstance()->GetHWND(), GWL_STYLE);

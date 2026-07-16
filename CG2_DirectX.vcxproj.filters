@@ -130,6 +130,9 @@
     <Filter Include="ソース ファイル\Skydome">
       <UniqueIdentifier>{3c17d3d0-3b88-4e69-adb3-22aedd773e33}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\FakeWindow">
+      <UniqueIdentifier>{9bad79b3-5fcc-432e-a8b7-2b8f57ff921a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -257,6 +260,9 @@
     </ClCompile>
     <ClCompile Include="Skydome.cpp">
       <Filter>ソース ファイル\Skydome</Filter>
+    </ClCompile>
+    <ClCompile Include="FakeWindow.cpp">
+      <Filter>ソース ファイル\FakeWindow</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -397,6 +403,9 @@
     </ClInclude>
     <ClInclude Include="Skydome.h">
       <Filter>ソース ファイル\Skydome</Filter>
+    </ClInclude>
+    <ClInclude Include="FakeWindow.h">
+      <Filter>ソース ファイル\FakeWindow</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

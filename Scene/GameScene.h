@@ -5,6 +5,7 @@
 #include "IScene.h"
 #include <list>
 #include "../Skydome.h"
+#include "../FakeWindow.h"
 
 class GameScene : public IScene {
 public:
@@ -15,6 +16,7 @@ public:
 
 	void Draw() override;
 private:
+	void CreateFakeWindow();
 private:
 	Renderer::Model model_;
 	Transform transform_;
@@ -31,4 +33,6 @@ private:
 	Renderer::Sprite spriteTest2;
 	Renderer::Sprite frameSpriteRight_;
 	Renderer::Sprite backGroundSprite_;
+
+	std::vector<std::unique_ptr<FakeWindow>> fakeWindows_;
 };
