@@ -100,6 +100,10 @@ void GameScene::Update() {
 		}
 	}
 
+	if (InputManager::GetInstance()->TriggerKey(DIK_C)) {
+		CreateFakeWindow();
+	}
+
 	Environment* environment = Environment::GetInstance();
 
 	ImGui::Begin("AspectMode");
@@ -139,13 +143,31 @@ void GameScene::Update() {
 	//transformSpriteTest2_.rotate.x = Radian(imRotateX);
 	//spriteTest2.SetIsVisible(imBool);
 	
+	for (auto it = fakeWindows_.begin(); it != fakeWindows_.end(); ) {
+		if (!(*it)->GetIsActive()) {
+			it = fakeWindows_.erase(it);
+		} else {
+			++it;
+		}
+	}
+
+	if (ImGui::Button("Create")) {
+		CreateFakeWindow();
+	}
+
 	Vector2 imVector2;
+	Vector2 imScale2;
+	float imRotateZ;
 	uint32_t index = 0;;
 	for (auto& window : fakeWindows_) {
 		ImGui::PushID(index);
-		imVector2 = window->GetPosition();
+		imVector2 = window->GetTransform().translate;
+		imScale2 = window->GetTransform().scale;
+		imRotateZ = window->GetTransform().rotate;
+		ImGui::DragFloat2("scale", reinterpret_cast<float*>(&imScale2));
+		ImGui::DragFloat("rotate", &imRotateZ);
 		ImGui::DragFloat2("translate", reinterpret_cast<float*>(&imVector2));
-		window->SetPosition(imVector2);
+		window->SetTransform({imScale2,imRotateZ,imVector2});
 		if (ImGui::Button("Delete")) {
 			window->SetIsActive(false);
 		}

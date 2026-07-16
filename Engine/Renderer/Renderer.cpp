@@ -799,9 +799,9 @@ void Renderer::Sprite::Draw(const Transform2D& transform) {
 	transform3D.scale.x = transform.scale.x;
 	transform3D.scale.y = transform.scale.y;
 	transform3D.scale.z = 1.0f;
-	transform3D.rotate.x = transform.rotate;
+	transform3D.rotate.x = 0.0f;
 	transform3D.rotate.y = 0.0f;
-	transform3D.rotate.z = 0.0f;
+	transform3D.rotate.z = transform.rotate;
 	transform3D.translate.x = transform.translate.x;
 	transform3D.translate.y = transform.translate.y;
 	transform3D.translate.z = 0.0f;
