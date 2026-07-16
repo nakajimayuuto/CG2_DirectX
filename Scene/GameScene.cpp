@@ -140,10 +140,17 @@ void GameScene::Update() {
 	//spriteTest2.SetIsVisible(imBool);
 	
 	Vector2 imVector2;
+	uint32_t index = 0;;
 	for (auto& window : fakeWindows_) {
+		ImGui::PushID(index);
 		imVector2 = window->GetPosition();
 		ImGui::DragFloat2("translate", reinterpret_cast<float*>(&imVector2));
 		window->SetPosition(imVector2);
+		if (ImGui::Button("Delete")) {
+			window->SetIsActive(false);
+		}
+		ImGui::PopID();
+		index++;
 	}
 
 	ImGui::End();
@@ -155,8 +162,10 @@ void GameScene::Draw() {
 	//sprite_.Draw(transformSprite_);
 	//spriteTest2.Draw(transformSpriteTest2_);
 
-	fakeWindowTest_.DrawBack();
-	fakeWindowTest_.DrawMask();
+	for (auto& window : fakeWindows_) {
+		window->DrawBack();
+		window->DrawMask();
+	}
 
 
 	backGroundSprite_.Draw(Transform::GetInitialValue({ 100.0f,100.0f,100.0f }, { 0.0f ,0.0f,0.0f}, { -backGroundSprite_.GetSize().x / 2.0f * 50.0f,-backGroundSprite_.GetSize().y / 2.0f * 50.0f ,100.0f}));

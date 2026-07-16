@@ -16,6 +16,10 @@ public:
 	Vector2 GetPosition() {return transform_.translate;};
 
 	void SetPosition(Vector2 position) { transform_.translate = position; };
+
+	bool GetIsActive() { return isActive_; }
+
+	void SetIsActive(bool isActive) { isActive_ = isActive; }
 private:
 	Transform2D transform_;
 	Renderer::Sprite back_;
