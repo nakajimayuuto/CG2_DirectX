@@ -26,6 +26,9 @@ private:
 	void BounsInitialize();
 	void BounsUpdate();
 
+	void SpikeInitialize();
+	void SpikeUpdate();
+
 private:
 	Transform modelTransform_;
 	Model model_;
@@ -42,6 +45,11 @@ private:
 	// BounsData
 	float kBounsE_ = 0.7f;
 	float gravityAcceleration_ = 9.8f;
+
+	// SpikeData
+	float spikeCreateTimer_;
+	static inline float kSpikeCreateRate = 0.1f;
+	static inline Vector3 kRadnomsize_ = { 2.0f,0.0f,2.0f };
 };
 
 class Explode : Collider {
@@ -61,15 +69,16 @@ public:
 	void Update();
 
 	void Draw();
+
+	bool GetIsActive() { return isActive_; };
 private:
-	Model model_;
 
 	uint32_t spikePhase_;
 	float lifeTimer_ = 0.0f;
 	float lifeTimeMax_ = 0.0f;
-	static inline float kStartTimeMax = 0.3f;
-	static inline float kStayTimeMax = 0.4f;
-	static inline float kEndTimeMax = 0.3f;
+	static inline float kStartTimeMax = 0.15f;
+	static inline float kStayTimeMax = 0.2f;
+	static inline float kEndTimeMax = 0.15f;
 
 	bool isActive_;
 
@@ -119,7 +128,10 @@ public:
 	void CreateDiffusionBullet(const Transform& transform, const Vector3& velocity, BulletType type, CollisionAttributeName colliderName,float diffusionRadian,uint32_t amount);
 
 	void CreateWave(const Transform& transform, float speed, float height, CollisionAttributeName colliderName);
+
+	void CreateSpike(const Transform& transform, uint32_t size, CollisionAttributeName colliderName);
 private:
 	std::vector<std::unique_ptr<Bullet>> bullets;
 	std::vector<std::unique_ptr<Wave>> waves;
+	std::vector<std::unique_ptr<Spike>> spikes;
 };

@@ -170,13 +170,13 @@ private:
 	float movingBulletTimer_ = 0.0f;
 	Vector3 movingBulletTargetPos;
 
-	// MovingShot.
+	// Wave.
 	static inline float kWaveStartGapTimerMax = 0.3f;
 	static inline float kWaveSpinTimerMax = 0.3f;
 	static inline float kWaveAttackTimerMax = 0.3f;
 	static inline float kWaveAttackGapTimerMax = 0.7f;
 	static inline float kWaveFinishedGapTimerMax = 0.3f;
-
+	
 	static inline float kWaveAnimPositionY = 8.0f;
 	static inline Vector3 kWaveHalberdPos = { -0.5f,2.5f,0.0f };
 	static inline Vector3 kWaveHalberdStartRotate = { 0.0f,0.0f,0.0f };
@@ -184,8 +184,16 @@ private:
 	static inline float kWaveAttackPositionY = 2.5f;
 	static inline Vector3 kWaveHalberdAttackPos = { 0.0f,1.0f,-0.6f };
 	static inline float kWaveAttackRotateX = -Radian(150.0f);
+	
+	// 目の前でハルバード回転
+	// 
+	// 上に飛ばす
+	// 地面に突き刺す
+	// 後隙
+	//みたいな感じ
 
-	Transform halberdModelTransform;
+
+	//Transform halberdModelTransform;
 
 	// SpiningHalberd.
 	static inline float kSpinningStartGapTimerMax = 0.2f;
@@ -230,20 +238,39 @@ private:
 	static inline float kPowerSlasherNearSlashRadius = 3.0f;
 	static inline float kPowerSlasherSlashRadius = (kPowerSlasherSpeed * kPowerSlasherDashToSlashTimerMax);
 
-	// FangAttack(なんか攻撃作っていくうちにアニメーションのコスト高くなってくな).
-	// ハルバード上投げ.
+	//// FangAttack(なんか攻撃作っていくうちにアニメーションのコスト高くなってくな).
+	//// ハルバード上投げ.
+	//static inline float kFangAttackStartGapTimerMax = 0.3f;
+	//// ジャンプする.
+	//static inline float kFangAttackJumpTimerMax = 0.3f;
+	//// 回収.
+	//static inline float kFangAttackStayTimerMax = 0.3f;
+	//// 急降下.
+	//static inline float kFangAttackFallingTimerMax = 0.3f;
+	//// 攻撃の隙.
+	//static inline float kFangAttackAttackGapTimerMax = 0.3f;
+	//// 元の見た目に戻る.
+	//static inline float kFangAttackFinishedGapTimerMax = 0.3f;
+
+	// FangAttack(Waveの奴を上手く改変してWaveを全く新しいアニメーションにする)
 	static inline float kFangAttackStartGapTimerMax = 0.3f;
-	// ジャンプする.
-	static inline float kFangAttackJumpTimerMax = 0.3f;
-	// 回収.
-	static inline float kFangAttackStayTimerMax = 0.3f;
-	// 急降下.
-	static inline float kFangAttackFallingTimerMax = 0.3f;
-	// 攻撃の隙.
-	static inline float kFangAttackAttackGapTimerMax = 0.3f;
-	// 元の見た目に戻る.
+	static inline float kFangAttackSpinTimerMax = 0.3f;
+	static inline float kFangAttackAttackTimerMax = 0.3f;
+	static inline float kFangAttackAttackGapTimerMax = 0.7f;
 	static inline float kFangAttackFinishedGapTimerMax = 0.3f;
 
+	static inline float kFangAttackAnimPositionY = 8.0f;
+	static inline Vector3 kFangAttackHalberdPos = { -0.5f,2.5f,0.0f };
+	static inline Vector3 kFangAttackHalberdStartRotate = { 0.0f,0.0f,0.0f };
+	static inline Vector3 kFangAttackHalberdSpinPos = { 0.0f,2.5f,0.0f };
+	static inline float kFangAttackAttackPositionY = 2.5f;
+	static inline Vector3 kFangAttackHalberdAttackPos = { 0.0f,1.0f,-0.6f };
+	static inline float kFangAttackAttackRotateX = -Radian(150.0f);
+
+	static inline float kFangAttackRadius = 30.0f;
+	static inline uint32_t kFangAttackRadiusNum = 100;
+
+	Transform halberdModelTransform;
 
 
 };

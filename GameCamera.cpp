@@ -147,10 +147,10 @@ void GameCamera::FollowedUpdate(){
 		}
 		//transform_.rotate.y = std::fmod(transform_.rotate.y, Radian(360.0f));
 	}
-	ImGui::Begin("aa");
-	ImGui::Text("%f,%f,%f", transform_.rotate.y, destinationAngleY_, wallDirection);
-	ImGui::End();
-
+	//ImGui::Begin("aa");
+	//ImGui::Text("%f,%f,%f", transform_.rotate.y, destinationAngleY_, wallDirection);
+	//ImGui::End();
+	//
 	//GameSystem::Log(std::format("rotate:{},{},{}\n", transform_.rotate.x, transform_.rotate.y, transform_.rotate.z));
 
 	// ここまで地獄
