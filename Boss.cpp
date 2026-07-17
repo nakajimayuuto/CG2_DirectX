@@ -286,7 +286,7 @@ void Boss::BulletUpdate() {
 	case 1: // 攻撃の前隙.
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kBulletStayTimerMax);
-			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, bulletShotDirectionTemp_ * 30.0f, BulletType::kNormal, kCollisionEnemyAttack);
+			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, bulletShotDirectionTemp_ * 30.0f, BulletType::kNormal, kCollisionEnemyAttack,10.0f,3.0f);
 		}
 		break;
 	case 2: // 攻撃の後隙.
@@ -332,7 +332,7 @@ void Boss::BounsUpdate() {
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kBounsSpinTimerMax);
 			randomRadian = Radian(Random::GetInstance()->RandomFloat(0.0f, 359.0f));
-			ProjectileManager::GetInstance()->CreateDiffusionBullet(transform_, Vector3(RadianToVector(randomRadian).x, 0.0f, RadianToVector(randomRadian).y) * 10.0f, BulletType::kBounce, kCollisionEnemyAttack, Radian(45.0f), 8);
+			ProjectileManager::GetInstance()->CreateDiffusionBullet(transform_, Vector3(RadianToVector(randomRadian).x, 0.0f, RadianToVector(randomRadian).y) * 10.0f, BulletType::kBounce, kCollisionEnemyAttack, 10.0f, 3.0f, Radian(45.0f), 8);
 		}
 		break;
 	case 3: // 回転を終了する.
@@ -375,7 +375,7 @@ void Boss::DiffusionBulletUpdate() {
 			if ((targetTransform_->translate - transform_.translate).Length() != 0.0f) {
 				direction = (targetTransform_->translate - transform_.translate).Normalize();
 			}
-			ProjectileManager::GetInstance()->CreateDiffusionBullet(halberdTransform_, direction * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, Radian(30.0f), 3);
+			ProjectileManager::GetInstance()->CreateDiffusionBullet(halberdTransform_, direction * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, Radian(30.0f), 3, 10.0f, 3.0f);
 
 		}
 		break;
@@ -430,7 +430,7 @@ void Boss::MovingBulletUpdate() {
 			if ((targetTransform_->translate - destinationHalberdTransform_.GetWorldPosition()).Length() != 0.0f) {
 				direction = (targetTransform_->translate - destinationHalberdTransform_.GetWorldPosition()).Normalize();
 			}
-			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, direction * 30.0f, BulletType::kNormal, kCollisionEnemyAttack);
+			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, direction * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, 10.0f, 0.5f);
 		}
 		break;
 	case 3: // 攻撃を発射させる間(3回目).
@@ -439,7 +439,7 @@ void Boss::MovingBulletUpdate() {
 			if ((targetTransform_->translate - destinationHalberdTransform_.GetWorldPosition()).Length() != 0.0f) {
 				direction = (targetTransform_->translate - destinationHalberdTransform_.GetWorldPosition()).Normalize();
 			}
-			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, direction * 30.0f, BulletType::kNormal, kCollisionEnemyAttack);
+			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, direction * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, 10.0f, 0.5f);
 		}
 		break;
 	case 4: // 見た目を戻す.
@@ -500,7 +500,7 @@ void Boss::WaveUpdate() {
 		destinationHalberdTransform_.translate = Easing(kWaveHalberdSpinPos, kWaveHalberdAttackPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kWaveAttackGapTimerMax);
-			ProjectileManager::GetInstance()->CreateWave(transform_, 25.0f, 1.0f, kCollisionEnemyAttack);
+			ProjectileManager::GetInstance()->CreateWave(transform_, 25.0f, 1.0f, kCollisionEnemyAttack, 15.0f, 3.0f);
 		}
 		break;
 	case 4: // 攻撃後の後隙.
@@ -782,10 +782,10 @@ void Boss::FangAttackUpdate() {
 				for (uint32_t i = 0; i < kFangAttackRadiusNum;i++) {
 					newTransform = halberdTransform_;
 					newTransform.translate += Random::GetInstance()->RandomCircleVector3({ kFangAttackRadius ,kFangAttackRadius ,kFangAttackRadius });
-					ProjectileManager::GetInstance()->CreateSpike(newTransform, 0, kCollisionEnemyAttack);
+					ProjectileManager::GetInstance()->CreateSpike(newTransform, 0, kCollisionEnemyAttack, 10.0f, 3.0f);
 				}
 			} else {
-				ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, Vector3(-RadianToVector(rotateY).x, 0.0f, RadianToVector(rotateY).y) * 20.0f, BulletType::kSpike, kCollisionEnemyAttack);
+				ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, Vector3(-RadianToVector(rotateY).x, 0.0f, RadianToVector(rotateY).y) * 20.0f, BulletType::kSpike, kCollisionEnemyAttack, 10.0f, 3.0f);
 			}
 
 		}

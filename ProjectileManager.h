@@ -9,7 +9,7 @@ enum class BulletType {
 
 class Bullet :Collider{
 public:
-	void Initialize(const Transform& transform,const Vector3& velocity, BulletType type, CollisionAttributeName colliderName);
+	void Initialize(const Transform& transform,const Vector3& velocity, BulletType type, CollisionAttributeName colliderName, float damage, float damageCoolTime);
 
 	void Update();
 
@@ -64,7 +64,7 @@ public:
 	/// <param name="transform">トランスフォーム</param>
 	/// <param name="size">サイズ(0で乱数1~3で大きさも決められる)</param>
 	/// <param name="colliderName"></param>
-	void Initialize(const Transform& transform, uint32_t size, CollisionAttributeName colliderName);
+	void Initialize(const Transform& transform, uint32_t size, CollisionAttributeName colliderName, float damage, float damageCoolTime);
 
 	void Update();
 
@@ -87,7 +87,7 @@ private:
 
 class Wave :Collider{
 public:
-	void Initialize(const Transform& transform, float speed,float height, CollisionAttributeName colliderName);
+	void Initialize(const Transform& transform, float speed,float height, CollisionAttributeName colliderName, float damage, float damageCoolTime);
 
 	void Update();
 
@@ -115,7 +115,7 @@ public:
 
 	void Draw();
 
-	void CreateBullet(const Transform& transform, const Vector3& velocity, BulletType type, CollisionAttributeName colliderName);
+	void CreateBullet(const Transform& transform, const Vector3& velocity, BulletType type, CollisionAttributeName colliderName,float damage,float damageCoolTime);
 
 	/// <summary>
 	///  Y軸基準で拡散するよ。別に他の軸ができないわけじゃないんですよ。ただ今回のゲームだとつかわないしいいかなって(震え).
@@ -125,11 +125,11 @@ public:
 	/// <param name="type"></param>
 	/// <param name="diffusionRadian"></param>
 	/// <param name="amount"></param>
-	void CreateDiffusionBullet(const Transform& transform, const Vector3& velocity, BulletType type, CollisionAttributeName colliderName,float diffusionRadian,uint32_t amount);
+	void CreateDiffusionBullet(const Transform& transform, const Vector3& velocity, BulletType type, CollisionAttributeName colliderName, float damage, float damageCoolTime,float diffusionRadian,uint32_t amount);
 
-	void CreateWave(const Transform& transform, float speed, float height, CollisionAttributeName colliderName);
+	void CreateWave(const Transform& transform, float speed, float height, CollisionAttributeName colliderName, float damage, float damageCoolTime);
 
-	void CreateSpike(const Transform& transform, uint32_t size, CollisionAttributeName colliderName);
+	void CreateSpike(const Transform& transform, uint32_t size, CollisionAttributeName colliderName, float damage, float damageCoolTime);
 private:
 	std::vector<std::unique_ptr<Bullet>> bullets;
 	std::vector<std::unique_ptr<Wave>> waves;
