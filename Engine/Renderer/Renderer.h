@@ -192,6 +192,8 @@ namespace Renderer {
 		void SetBlendMode(BlendMode blendMode) { blendMode_ = blendMode; };
 
 		Vector2 GetSize() { return size_; };
+
+		void SetTranslateZ(float z) { translateZ_ = z; };
 	private:
 		void AdaptationSize();
 	private:
@@ -224,6 +226,8 @@ namespace Renderer {
 		D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
 
 		BlendMode blendMode_;
+
+		float translateZ_;
 	};
 
 	class Line {

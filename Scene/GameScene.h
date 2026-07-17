@@ -21,10 +21,6 @@ private:
 	Renderer::Model model_;
 	Transform transform_;
 
-	Renderer::Sprite sprite_;
-	Transform transformSprite_;
-	Transform transformSpriteTest2_;
-
 	Skydome* skydome_ = nullptr;
 
 	Renderer::Sprite backGroundSprite_;
@@ -35,4 +31,11 @@ private:
 
 	Transform cameraRotateCenter_;
 	Transform newCameraTransform_;
+
+
+	Renderer::ModelSphere sphereModel_;
+	Transform sphereTransform_;
+
+	Renderer::ModelBox boxModel_;
+	Transform boxTransform_;
 };

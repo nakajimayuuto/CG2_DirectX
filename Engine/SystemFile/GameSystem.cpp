@@ -536,7 +536,7 @@ void GameSystem::CreatePipeline(BlendMode blendMode) {
 			depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
 			depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 		} else {
-			depthStencilDesc.DepthEnable = false;
+			depthStencilDesc.DepthEnable = true;
 			depthStencilDesc.StencilEnable = true;
 
 			depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;

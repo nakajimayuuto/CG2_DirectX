@@ -804,7 +804,7 @@ void Renderer::Sprite::Draw(const Transform2D& transform) {
 	transform3D.rotate.z = transform.rotate;
 	transform3D.translate.x = transform.translate.x;
 	transform3D.translate.y = transform.translate.y;
-	transform3D.translate.z = 0.0f;
+	transform3D.translate.z = translateZ_;
 	;
 	Draw(transform3D);
 }

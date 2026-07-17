@@ -28,12 +28,6 @@ void GameScene::Initialize() {
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
 	transform_.Initialize();
 
-	sprite_.Initialize(TextureManager::GetInstance()->GetTextureInfo("window_back"));
-	transformSprite_.Initialize();
-	transformSprite_.translate.x = (sprite_.GetSize().x / 2.0f);
-	transformSprite_.translate.y = (sprite_.GetSize().y / 2.0f);
-	transformSprite_.translate.z = 200.0f;
-
 	transform_.rotate.y = Radian(-30.0f);
 	DirectionalLight::GetInstance()->GetDirectionalLightData()->direction = { 0.0f,0.0f,1.0f };
 	backGroundSprite_.Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
@@ -46,7 +40,15 @@ void GameScene::Initialize() {
 	cameraRotateCenter_.Initialize();
 	newCameraTransform_.Initialize();
 	newCameraTransform_.SetParent(&cameraRotateCenter_);
-	newCameraTransform_.translate.z = -10.0f;
+	newCameraTransform_.translate.z = -20.0f;
+
+	sphereModel_.Initialize(TextureManager::GetInstance()->GetTextureInfo("monsterBall"));
+	sphereTransform_.Initialize();
+	sphereTransform_.translate.x = -5.0f;
+
+	boxModel_.Initialize(TextureManager::GetInstance()->GetTextureInfo("uvChecker"));
+	boxTransform_.Initialize();
+	boxTransform_.translate.x = 5.0f;
 }
 
 void GameScene::Update() {
@@ -123,6 +125,24 @@ void GameScene::Update() {
 	transform_.rotate = Radian(imRotate);
 	model_.SetIsVisible(imBool);
 
+	imBool = sphereModel_.GetIsVisible();
+	ImGui::Checkbox("SphereVisible", &imBool);
+	imRotate = Degree(sphereTransform_.rotate);
+	ImGui::DragFloat3("SphereScale", reinterpret_cast<float*>(&sphereTransform_.scale), 0.1f, 0.0f, 5.0f);
+	ImGui::DragFloat3("SphereRotate", reinterpret_cast<float*>(&imRotate), 0.1f, -20.0f, 20.0f);
+	ImGui::DragFloat3("SphereTranslate", reinterpret_cast<float*>(&sphereTransform_.translate), 0.1f, -20.0f, 20.0f);
+	sphereTransform_.rotate = Radian(imRotate);
+	sphereModel_.SetIsVisible(imBool);
+
+	imBool = boxModel_.GetIsVisible();
+	ImGui::Checkbox("BoxVisible", &imBool);
+	imRotate = Degree(boxTransform_.rotate);
+	ImGui::DragFloat3("BoxScale", reinterpret_cast<float*>(&boxTransform_.scale), 0.1f, 0.0f, 5.0f);
+	ImGui::DragFloat3("BoxRotate", reinterpret_cast<float*>(&imRotate), 0.1f, -20.0f, 20.0f);
+	ImGui::DragFloat3("BoxTranslate", reinterpret_cast<float*>(&boxTransform_.translate), 0.1f, -20.0f, 20.0f);
+	boxTransform_.rotate = Radian(imRotate);
+	boxModel_.SetIsVisible(imBool);
+
 	
 	for (auto it = fakeWindows_.begin(); it != fakeWindows_.end(); ) {
 		if (!(*it)->GetIsActive()) {
@@ -181,9 +201,8 @@ void GameScene::Draw() {
 
 	backGroundSprite_.Draw(Transform::GetInitialValue({ 100.0f,100.0f,100.0f }, { 0.0f ,0.0f,0.0f}, { -backGroundSprite_.GetSize().x / 2.0f * 50.0f,-backGroundSprite_.GetSize().y / 2.0f * 50.0f ,100.0f}));
 	model_.Draw(transform_);
-
-	//skydome_->Draw();
-	//frameSpriteRight_.Draw({ {1.0f,1.0f},0.0f, {Environment::GetInstance()->GetWindowSize().width + (frameSpriteRight_.GetSize().x / 2.0f),frameSpriteRight_.GetSize().y / 2.0f } });
+	sphereModel_.Draw(sphereTransform_);
+	boxModel_.Draw(boxTransform_);
 }
 
 void GameScene::CreateFakeWindow(){
