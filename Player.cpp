@@ -346,6 +346,8 @@ void Player::OnCollision([[maybe_unused]] Collider* other) {
 
 	if (damageCoolTimer_ <= 0.0f) {
 		currentHP_ -= other->GetDamage();
+
+		DeltaTime::GetInstance()->SetHitStop(other->GetDamage() * 0.01f);
 		if (other->GetDamageCoolTime() == -1.0f) {
 			damageCoolTimer_ = 3.0f;
 		} else {
