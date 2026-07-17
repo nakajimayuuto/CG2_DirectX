@@ -77,6 +77,12 @@ void Boss::Initialize() {
 	attackTempCollider_->SetColliderType(ColliderType::kSphere);
 	attackTempCollider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy));
 	attackTempCollider_->SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
+
+	maxHP_ = 500.0f;
+	currentHP_ = maxHP_;
+
+	hpGauge = std::make_unique<HPGauge>();
+	hpGauge->Initialize(&currentHP_, maxHP_, {400.0f,40.0f});
 }
 
 void Boss::Update() {
@@ -89,6 +95,7 @@ void Boss::Update() {
 	ImGui::DragFloat3("scale", reinterpret_cast<float*>(&transform_.scale), 0.05f, 0.0f, 5.0f);
 	ImGui::DragFloat3("rotate", reinterpret_cast<float*>(&imRotate), 1.0f, -360.0f, 360.0f);
 	ImGui::DragFloat3("translate", reinterpret_cast<float*>(&transform_.translate), 0.25f, -100.0f, 100.0f);
+	ImGui::DragFloat("HP", &currentHP_, 1.0f, 0.0f, maxHP_);
 	for (Attacks attack : magic_enum::enum_values<Attacks>()) {
 		if (static_cast<size_t>(attack) == std::size(pUpdateFunc)) {
 			break;
@@ -136,6 +143,8 @@ void Boss::Draw() {
 	}
 
 	DrawCollider();
+
+	hpGauge->Draw();
 }
 
 void Boss::OnCollision(Collider* other) {

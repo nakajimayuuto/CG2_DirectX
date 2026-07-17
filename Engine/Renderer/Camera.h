@@ -81,6 +81,8 @@ private:
 	Vector3 translate_;
 	Matrix4x4 matrix_;
 
+	Transform2D spriteTransform;
+
 	float windowWidth_;
 	float windowHeight_;
 

@@ -335,6 +335,22 @@ public:
 	/// スプライトの描画.
 	/// </summary>
 	/// <param name="transform">トランスフォーム</param>
+	/// <param name="textureInfo">テクスチャインフォ</param>
+	/// <param name="color">色</param>
+	void DrawSprite(const Transform& transform,const Vector2& size,const TextureInfo& textureInfo, const Vector4& color);
+
+	/// <summary>
+	/// スプライトの描画.
+	/// </summary>
+	/// <param name="transform">トランスフォーム</param>
+	/// <param name="name">モデルネーム</param>
+	/// <param name="color">色</param>
+	void DrawSprite(const Transform& transform, const Vector2& size, const std::string& name, const Vector4& color) { DrawSprite(transform,size, TextureManager::GetInstance()->GetTextureInfo(name), color); };
+
+	/// <summary>
+	/// スプライトの描画.
+	/// </summary>
+	/// <param name="transform">トランスフォーム</param>
 	/// <param name="sprite">スプライト</param>
 	void DrawSprite(const Transform& transform,const Sprite& sprite);
 

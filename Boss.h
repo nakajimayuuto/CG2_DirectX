@@ -1,5 +1,6 @@
 #pragma once
 #include "Satlib.h"
+#include "HPGauge.h"
 class Boss : public Collider {
 public:
 	~Boss();
@@ -40,6 +41,8 @@ private:
 	Model model_;
 	Model halberdModel_;
 
+	std::unique_ptr<HPGauge> hpGauge;
+
 	std::vector<Vector3> anchorPoints_; // それぞれのアンカーポイント.
 
 	float destinationAngleY_ = 0.0f;
@@ -52,6 +55,10 @@ private:
 	Transform halberdTransform_; // 武器のトランスフォーム.
 
 	float deltaTime_;
+
+
+	float currentHP_;
+	float maxHP_;
 private:
 	void AttackInitialize();
 	void AttackUpdate();

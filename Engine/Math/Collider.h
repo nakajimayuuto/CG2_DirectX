@@ -47,6 +47,14 @@ public:
 
 	float GetMinorRadius() const { return colliderMinorRadius_; };
 	void SetMinorRadius(float radius) { colliderMinorRadius_ = radius; };
+
+	void SetDamage(float damage) { damage_ = damage; };
+
+	float GetDamage() { return damage_; };
+
+	void SetDamageCoolTime(float damageCoolTime) { damageCoolTime_ = damageCoolTime; };
+
+	float GetDamageCoolTime() { return damageCoolTime_; };
 protected:
 	void CreateObbCollider();
 protected:
@@ -70,5 +78,9 @@ protected:
 
 	// どの属性と当たるか(後々ここはstd::vectorにする)
 	uint32_t collisionMask_ = 0xFFFFFFFF;
+
+	float damage_ = 10.0f;
+
+	float damageCoolTime_ = -1.0f;
 };
 

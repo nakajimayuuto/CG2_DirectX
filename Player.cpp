@@ -6,6 +6,13 @@ void Player::Initialize() {
 	targetRotateY = 0.0f;
 	models_["body"].Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
 
+	maxHP = 200.0f;
+	currentHP = maxHP;
+
+	hpGauge_ = std::make_unique<HPGauge>();
+	hpGauge_->Initialize(&currentHP, maxHP, {200.0f,30.0f});
+	hpGauge_->SetPosition({-500.0f,300.0f});
+
 	transformBody_.Initialize();
 	transformBody_.translate.y;
 	transformBody_.SetParent(&transform_);
@@ -270,6 +277,8 @@ void Player::Draw() {
 	Renderer::GetInstance()->DrawShadow(transformRArm_, &models_["RArm"], { 0.0f,0.0f,0.0f,1.0f });
 
 	//particles_->Draw();
+
+	hpGauge_->Draw();
 
 	DrawCollider();
 }

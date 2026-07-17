@@ -108,7 +108,7 @@ void GameScene::Draw() {
 	Renderer::GetInstance()->DrawBox(Transform::GetInitialValue({ 150.0f,50.0f,150.0f }, { 0.0f,Radian(45.0f),0.0f }, { 0.0f,0.0f,0.0f }), "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
 	Renderer::GetInstance()->SetBlendMode(BlendMode::kNormal);
 
-	//Renderer::GetInstance()->DrawSprite(Transform2D::GetTransformValue({ 1.0f,1.0f }, testRotate_, { 150.0f,50.0f },0.0f), "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
+	//Renderer::GetInstance()->DrawSprite(Transform2D::GetTransformValue({ 1.0f,1.0f }, testRotate_, { 0.0f,0.0f },0.0f), "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
 	//Renderer::GetInstance()->DrawSphere(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
 	
 	//Renderer::GetInstance()->DrawTorus(Transform::GetInitialValue({ 1.0f,500.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }),50.0f,0.002f, "uvChecker", { 1.0f,1.0f,1.0f,1.0f });

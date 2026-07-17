@@ -1,5 +1,6 @@
 #pragma once
 #include "Satlib.h"
+#include "HPGauge.h"
 #include <string>
 
 /// <summary>
@@ -82,6 +83,16 @@ private:
 		uint32_t inComboPhase = 0;
 		bool comboNext = false;
 	};
+
+	std::unique_ptr<HPGauge> hpGauge_;
+
+	float currentHP;
+	float maxHP;
+
+	float damageCoolTimer_;
+	float damageCoolTimeMax_;
+
+
 
 	static inline float kSpeed = 10.0f;
 	static inline float kDashSpeed = 25.0f;

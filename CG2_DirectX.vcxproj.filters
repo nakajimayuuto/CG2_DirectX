@@ -190,6 +190,9 @@
     <Filter Include="Engine\SystemFile\externals\imgui\ImGuiLibrary">
       <UniqueIdentifier>{58b25aba-c5fb-4a4c-9377-9f8c3a31634c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\HPGauge">
+      <UniqueIdentifier>{0aea4edf-9a9e-4ec6-96ea-b73a16137429}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -360,6 +363,9 @@
     <ClCompile Include="ProjectileManager.cpp">
       <Filter>ソース ファイル\Bullet</Filter>
     </ClCompile>
+    <ClCompile Include="HPGauge.cpp">
+      <Filter>ソース ファイル\HPGauge</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -527,9 +533,6 @@
     <ClInclude Include="GameCamera.h">
       <Filter>ソース ファイル\GameCamera</Filter>
     </ClInclude>
-    <ClInclude Include="Boss.h">
-      <Filter>ソース ファイル\Boss</Filter>
-    </ClInclude>
     <ClInclude Include="IBossAttack.h">
       <Filter>ソース ファイル\Boss\Attacks</Filter>
     </ClInclude>
@@ -544,6 +547,12 @@
     </ClInclude>
     <ClInclude Include="Engine\Math\CollisionConfig.h">
       <Filter>Managers\CollisionManager</Filter>
+    </ClInclude>
+    <ClInclude Include="HPGauge.h">
+      <Filter>ソース ファイル\HPGauge</Filter>
+    </ClInclude>
+    <ClInclude Include="Boss.h">
+      <Filter>ソース ファイル\ContactRecord</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

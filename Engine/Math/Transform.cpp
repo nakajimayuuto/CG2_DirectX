@@ -132,3 +132,11 @@ Transform Transform2D::GetTransformValue(const Vector2& scale, const float rotat
 	transform.translate = { translate.x,translate.y,depth };
 	return transform;
 }
+
+Transform Transform2D::GetTransformValue(){
+	Transform transform;
+	transform.scale = { scale.x,scale.y,1.0f};
+	transform.rotate = { 0.0f,0.0f,rotate };
+	transform.translate = {translate.x,translate.y, 0.0f};
+	return transform;
+}

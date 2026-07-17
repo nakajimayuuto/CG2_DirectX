@@ -15,33 +15,10 @@ Camera* Camera::GetInstance() {
 }
 
 void Camera::Initialize(float windowWidth, float windowHeight) {
-	scale_ = { 1.0f,1.0f,1.0f };
-	rotate_ = { 0.0f,0.0f,0.0f };
-	translate_ = { 0.0f,0.0f,-50.0f };
-
 	windowWidth_ = windowWidth;
 	windowHeight_ = windowHeight;
 
-	fovY_ = 0.45f;
-	viewportLeftTop_ = { 0.0f,0.0f,0.0f };
-	nearClip_ = 0.1f;
-	farClip_ = 100.0f;
-	minDepth_ = 0.0f;
-	maxDepth_ = 1.0f;
-
-	// 【デバッグカメラ用】
-	useDebugCamera_ = false;
-
-	debugScale_ = { 1.0f,1.0f,1.0f };
-	debugTranslate_ = { 0.0f,0.0f,-10.0f };
-
-	aspectScale_ = { 1.0f,1.0f,1.0f };
-
-	transparentRadiusMax_ = 9.0f;
-	transparentRadiusMin_ = 2.0f;
-	transparentAlphaMin_ = 0.0f;
-
-	debugMatRot_ = Matrix4x4::MakeAffineMatrix(debugScale_, rotate_, debugTranslate_);
+	Initialize();
 }
 
 void Camera::Initialize() {
@@ -67,6 +44,10 @@ void Camera::Initialize() {
 	transparentAlphaMin_ = 0.0f;
 
 	debugMatRot_ = Matrix4x4::MakeAffineMatrix(debugScale_, rotate_, debugTranslate_);
+
+	spriteTransform.Initialize();
+	spriteTransform.translate.x = 640.0f;
+	spriteTransform.translate.y = 360.0f;
 }
 
 void Camera::CreateResource() {
@@ -313,7 +294,7 @@ Matrix4x4 Camera::GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix) {
 	Matrix4x4 viewMatrix;
 	Matrix4x4 projectionMatrix;
 	Matrix4x4 worldViewProjectionMatrix;
-	viewMatrix = matrix_.Identity();
+	viewMatrix = spriteTransform.GetTransformValue().GetAffineMatrix();// + Matrix4x4::Identity;
 	projectionMatrix = Matrix4x4::MakeOrthographicMatrix({ viewportLeftTop_,{0.0f,0.0f},{0.0f,0.0f},{windowWidth_,windowHeight_} }, 0.0f, 100.0f);
 	worldViewProjectionMatrix = matrix * viewMatrix * projectionMatrix;
 

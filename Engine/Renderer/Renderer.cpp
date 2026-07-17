@@ -1207,6 +1207,54 @@ void Renderer::DrawSprite(const Transform& transform, const TextureInfo& texture
 	);
 }
 
+void Renderer::DrawSprite(const Transform& transform, const Vector2& size, const TextureInfo& textureInfo, const Vector4& color){
+	Transform worldTransform = transform;
+
+	//Vector2 size;
+	//size.x = static_cast<float>(textureInfo.width);
+	//size.y = static_cast<float>(textureInfo.height);
+
+	std::unique_ptr<ModelElement> newElement;
+	newElement = std::make_unique<ModelElement>();
+	newElement->modelData_.textureSrvHandlesGPU = textureInfo.textureSrvHandlesGPU;
+
+	CreateNewSprite(newElement.get(), size.x, size.y);
+
+	// インデックスリソースにデータを書き込む.
+
+	newElement->materialData_->color = color;
+	// 書き込むためのアドレスを取得.
+	newElement->indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->indexData));
+	// 1枚目の三角形.
+	newElement->indexData[0] = 0;
+	newElement->indexData[1] = 1;
+	newElement->indexData[2] = 2;
+	newElement->indexData[3] = 1;
+	newElement->indexData[4] = 3;
+	newElement->indexData[5] = 2;
+
+	Matrix4x4 worldMatrix = worldTransform.GetAffineMatrix();
+
+	newElement->wvpData_->World = worldMatrix;
+	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
+	newElement->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+
+	newElement->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(newElement->uvTransform_);
+	/*=============================================================
+	三角形のSpriteの描画のコマンド.
+	=============================================================*/
+	GameSystem::GetInstance()->DrawCommand(
+		blendMode_,
+		&newElement->vertexBufferView_,
+		&newElement->indexBufferView_,
+		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+		newElement->materialResource_,
+		newElement->wvpResource_,
+		newElement->modelData_.textureSrvHandlesGPU,
+		6
+	);
+}
+
 void Renderer::DrawSprite(const Transform& transform, const Sprite& sprite) {
 	Transform worldTransform = transform;
 
