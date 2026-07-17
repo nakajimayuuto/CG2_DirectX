@@ -78,14 +78,19 @@ void Boss::Initialize() {
 	attackTempCollider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy));
 	attackTempCollider_->SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
 
-	maxHP_ = 500.0f;
+	maxHP_ = 1000.0f;
 	currentHP_ = maxHP_;
 
 	hpGauge = std::make_unique<HPGauge>();
-	hpGauge->Initialize(&currentHP_, maxHP_, {400.0f,40.0f});
+	hpGauge->Initialize(&currentHP_, maxHP_, {800.0f,60.0f});
+	hpGauge->SetPosition({ 0.0f,-300.0f });
+
+	DifficultyManager::GetInstance()->SetBossHPData(&currentHP_,maxHP_);
 }
 
 void Boss::Update() {
+	dopamineSpeed_ = DifficultyManager::GetInstance()->GetDopamineSpeed();
+
 	deltaTime_ = DeltaTime::GetInstance()->GetGameTime();
 
 #ifdef _DEBUG
@@ -209,10 +214,13 @@ void Boss::AttackUpdate() {
 
 void Boss::AttackFinished() {
 	isPlayAttack_ = false;
+	isColliderActive_ = true;
 	attackRequest_ = std::nullopt;
 	currentAttackTimer_ = 0.0f; // 攻撃のタイマー.
 	kMaxAttackTimer = 0.0f; // 攻撃のタイマー最大値.
 	currentAttackPhase = 0; // 攻撃のフェーズ.
+	attackTempCollider_->SetDamageCoolTime(-1.0f);
+	attackTempCollider_->SetDamage(10.0f);
 	halberdTransform_.SetParent(&transform_);
 	SetCurrentDistanceHalberdTransform();
 }
@@ -521,6 +529,9 @@ void Boss::SpinningInitialize() {
 	attackTempCollider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy));
 	attackTempCollider_->SetDebugColor({ 1.0f,1.0f,1.0f,1.0f });
 	spinningRotateY = 0.0f;
+	attackTempCollider_->SetDamage(5.0f);
+	attackTempCollider_->SetDamageCoolTime(0.1f);
+	isColliderActive_ = false;
 }
 
 void Boss::SpinningUpdate() {

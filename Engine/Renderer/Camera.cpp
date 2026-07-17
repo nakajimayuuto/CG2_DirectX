@@ -294,7 +294,7 @@ Matrix4x4 Camera::GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix) {
 	Matrix4x4 viewMatrix;
 	Matrix4x4 projectionMatrix;
 	Matrix4x4 worldViewProjectionMatrix;
-	viewMatrix = spriteTransform.GetTransformValue().GetAffineMatrix();// + Matrix4x4::Identity;
+	viewMatrix = spriteTransform.GetTransformValue().GetAffineMatrix();
 	projectionMatrix = Matrix4x4::MakeOrthographicMatrix({ viewportLeftTop_,{0.0f,0.0f},{0.0f,0.0f},{windowWidth_,windowHeight_} }, 0.0f, 100.0f);
 	worldViewProjectionMatrix = matrix * viewMatrix * projectionMatrix;
 

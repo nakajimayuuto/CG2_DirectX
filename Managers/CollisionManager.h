@@ -16,7 +16,9 @@ public:
 	void ClearColliderList();
 
 	void AddColliderList(Collider* collider) {
-		colliders_.push_back(collider);
+		if (collider->GetActive()) {
+			colliders_.push_back(collider);
+		}
 	};
 
 	void CheckAllCollision();

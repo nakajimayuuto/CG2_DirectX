@@ -86,8 +86,8 @@ private:
 
 	std::unique_ptr<HPGauge> hpGauge_;
 
-	float currentHP;
-	float maxHP;
+	float currentHP_;
+	float maxHP_;
 
 	float damageCoolTimer_;
 	float damageCoolTimeMax_;

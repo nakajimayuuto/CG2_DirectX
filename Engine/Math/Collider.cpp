@@ -11,14 +11,19 @@ void Collider::SetOnCollisionFunc(void(*func)([[maybe_unused]] Collider* other))
 }
 
 void Collider::DrawCollider(){
+	Vector4 color = {0.3f,0.3f,0.3f,1.0f};
+	if (isColliderActive_) {
+		color = colliderColor_;
+	}
+
 #ifdef _DEBUG
 	if (colliderType_ == ColliderType::kBox) {
 		CreateObbCollider();
-		Renderer::GetInstance()->DrawBoxWireFrame(colliderObb_, colliderColor_);
+		Renderer::GetInstance()->DrawBoxWireFrame(colliderObb_, color);
 	} else {
 		Transform colliderTransform = transform_;
 		colliderTransform.scale = { colliderRadius_ * 2.0f,colliderRadius_ * 2.0f ,colliderRadius_ * 2.0f };
-		Renderer::GetInstance()->DrawSphereWireFrame(colliderTransform, colliderColor_);
+		Renderer::GetInstance()->DrawSphereWireFrame(colliderTransform, color);
 	}
 #endif // _DEBUG
 }

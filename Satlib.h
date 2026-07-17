@@ -22,6 +22,7 @@
 #include "./Engine/Renderer/Camera.h"
 
 #include "./Managers/CollisionManager.h"
+#include "./Managers/DifficultyManager.h"
 #include "./Managers/ParticleManager.h"
 #include "./Managers/LightManager.h"
 #include "./Managers/ModelManager.h"

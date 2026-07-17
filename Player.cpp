@@ -2,17 +2,20 @@
 #include "GameCamera.h"
 void Player::Initialize() {
 	transform_.Initialize();
-	transform_.translate.y = kBodyBlankY;
 	targetRotateY = 0.0f;
 	models_["body"].Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
 
-	maxHP = 200.0f;
-	currentHP = maxHP;
+	transform_.translate = {0.0f, kBodyBlankY,-30.0f };
+
+	/// HPGauge.
+	maxHP_ = 200.0f;
+	currentHP_ = maxHP_;
 
 	hpGauge_ = std::make_unique<HPGauge>();
-	hpGauge_->Initialize(&currentHP, maxHP, {200.0f,30.0f});
+	hpGauge_->Initialize(&currentHP_, maxHP_, {200.0f,30.0f});
 	hpGauge_->SetPosition({-500.0f,300.0f});
 
+	// 後々削除
 	transformBody_.Initialize();
 	transformBody_.translate.y;
 	transformBody_.SetParent(&transform_);
@@ -50,6 +53,8 @@ void Player::Initialize() {
 
 	BehaviorAttackInitialize();
 
+	DifficultyManager::GetInstance()->SetPlayerHPData(&currentHP_,maxHP_);
+
 	//emitter_ = std::make_unique<Emitter>();
 	//particles_ = std::make_unique<Particles>();
 	//particles_->Initialize(TextureManager::GetInstance()->GetTextureInfo("effect_plane"));
@@ -70,6 +75,11 @@ void Player::InitializeFloatingGimmick() {
 }
 
 void Player::Update() {
+	ImGui::Begin("player");
+	ImGui::DragFloat("HP", &currentHP_, 1.0f, 0.0f, maxHP_);
+	ImGui::End();
+
+
 	if (behaviorRequest_) {
 		behavior_ = behaviorRequest_.value();
 
@@ -118,6 +128,13 @@ void Player::Update() {
 	//particles_->Update();
 
 	colliderColor_ = { 0.5f,0.5f,1.0f,1.0f };
+
+	if (damageCoolTimer_ > 0.0f) {
+		damageCoolTimer_ -= DeltaTime::GetInstance()->GetGameTime();
+		if (damageCoolTimer_ <= 0.0f) {
+			damageCoolTimer_ = 0.0f;
+		}
+	}
 
 	transform_.rotate.y = std::fmod(transform_.rotate.y, Radian(360.0f));
 
@@ -326,6 +343,19 @@ void Player::ApplyGlobalVariables() {
 void Player::OnCollision([[maybe_unused]] Collider* other) {
 	//behaviorRequest_ = Behavior::kJump;
 	colliderColor_ = { 1.0f,0.0f,0.0f,1.0f };
+
+	if (damageCoolTimer_ <= 0.0f) {
+		currentHP_ -= other->GetDamage();
+		if (other->GetDamageCoolTime() == -1.0f) {
+			damageCoolTimer_ = 3.0f;
+		} else {
+			damageCoolTimer_ = other->GetDamageCoolTime();
+		}
+		
+		if (currentHP_ < 0.0f) {
+			currentHP_ = 0.0f;
+		}
+	}
 }
 
 float Player::GetSumComboTime(uint32_t index) {

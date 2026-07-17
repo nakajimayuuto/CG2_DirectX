@@ -18,6 +18,7 @@
     <ClCompile Include="Boss.cpp" />
     <ClCompile Include="BossWarp.cpp" />
     <ClCompile Include="HPGauge.cpp" />
+    <ClCompile Include="Managers\DifficultyManager.cpp" />
     <ClCompile Include="ProjectileManager.cpp" />
     <ClCompile Include="ContactRecord.cpp" />
     <ClCompile Include="Engine\Math\Beats.cpp" />
@@ -104,6 +105,7 @@
     <ClInclude Include="BossWarp.h" />
     <ClInclude Include="externals\magic_enum\magic_enum.hpp" />
     <ClInclude Include="HPGauge.h" />
+    <ClInclude Include="Managers\DifficultyManager.h" />
     <ClInclude Include="ProjectileManager.h" />
     <ClInclude Include="ContactRecord.h" />
     <ClInclude Include="Engine\Math\Beats.h" />

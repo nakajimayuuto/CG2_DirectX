@@ -55,6 +55,9 @@ public:
 	void SetDamageCoolTime(float damageCoolTime) { damageCoolTime_ = damageCoolTime; };
 
 	float GetDamageCoolTime() { return damageCoolTime_; };
+
+	bool GetActive() { return isColliderActive_; };
+	void SetActive(bool isActive) {isColliderActive_ = isActive; };
 protected:
 	void CreateObbCollider();
 protected:
@@ -82,5 +85,8 @@ protected:
 	float damage_ = 10.0f;
 
 	float damageCoolTime_ = -1.0f;
+
+
+	bool isColliderActive_ = true;
 };
 

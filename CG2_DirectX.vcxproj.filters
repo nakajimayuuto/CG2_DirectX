@@ -193,6 +193,9 @@
     <Filter Include="ソース ファイル\HPGauge">
       <UniqueIdentifier>{0aea4edf-9a9e-4ec6-96ea-b73a16137429}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Managers\DifficultyManager">
+      <UniqueIdentifier>{a46b1c6e-4237-48a7-a6db-26c516211610}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -365,6 +368,9 @@
     </ClCompile>
     <ClCompile Include="HPGauge.cpp">
       <Filter>ソース ファイル\HPGauge</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\DifficultyManager.cpp">
+      <Filter>Managers\DifficultyManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -553,6 +559,9 @@
     </ClInclude>
     <ClInclude Include="Boss.h">
       <Filter>ソース ファイル\ContactRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\DifficultyManager.h">
+      <Filter>Managers\DifficultyManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

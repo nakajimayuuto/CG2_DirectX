@@ -47,6 +47,8 @@ void GameScene::Initialize() {
 }
 
 void GameScene::Update() {
+	DifficultyManager::GetInstance()->Update();
+
 	CollisionManager::GetInstance()->ClearColliderList();
 	Player::ApplyGlobalVariables();
 
