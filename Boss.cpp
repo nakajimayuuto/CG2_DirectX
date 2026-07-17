@@ -11,6 +11,7 @@ void (Boss::* Boss::pInitializeFunc[])() = {
 		&Boss::SpinningInitialize,
 		&Boss::PowerSlasherInitialize,
 		&Boss::FangAttackInitialize,
+		&Boss::NearAttackInitialize,
 };
 
 void (Boss::* Boss::pUpdateFunc[])() = {
@@ -23,6 +24,7 @@ void (Boss::* Boss::pUpdateFunc[])() = {
 		&Boss::SpinningUpdate,
 		&Boss::PowerSlasherUpdate,
 		&Boss::FangAttackUpdate,
+		&Boss::NearAttackUpdate,
 };
 
 Boss::~Boss() {
@@ -82,10 +84,10 @@ void Boss::Initialize() {
 	currentHP_ = maxHP_;
 
 	hpGauge = std::make_unique<HPGauge>();
-	hpGauge->Initialize(&currentHP_, maxHP_, {800.0f,60.0f});
+	hpGauge->Initialize(&currentHP_, maxHP_, { 800.0f,60.0f });
 	hpGauge->SetPosition({ 0.0f,-300.0f });
 
-	DifficultyManager::GetInstance()->SetBossHPData(&currentHP_,maxHP_);
+	DifficultyManager::GetInstance()->SetBossHPData(&currentHP_, maxHP_);
 }
 
 void Boss::Update() {
@@ -286,7 +288,7 @@ void Boss::BulletUpdate() {
 	case 1: // 攻撃の前隙.
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kBulletStayTimerMax);
-			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, bulletShotDirectionTemp_ * 30.0f, BulletType::kNormal, kCollisionEnemyAttack,10.0f,3.0f);
+			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, bulletShotDirectionTemp_ * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, 10.0f, 3.0f);
 		}
 		break;
 	case 2: // 攻撃の後隙.
@@ -375,7 +377,7 @@ void Boss::DiffusionBulletUpdate() {
 			if ((targetTransform_->translate - transform_.translate).Length() != 0.0f) {
 				direction = (targetTransform_->translate - transform_.translate).Normalize();
 			}
-			ProjectileManager::GetInstance()->CreateDiffusionBullet(halberdTransform_, direction * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, Radian(30.0f), 3, 10.0f, 3.0f);
+			ProjectileManager::GetInstance()->CreateDiffusionBullet(halberdTransform_, direction * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, 10.0f, 3.0f, Radian(30.0f), 3);
 
 		}
 		break;
@@ -779,9 +781,9 @@ void Boss::FangAttackUpdate() {
 			float lenght = Vector3(targetTransform_->translate - transform_.translate).Length();
 			Transform newTransform = halberdTransform_;
 			if (lenght <= (kFangAttackRadius / 3.0f) * 2.0f) {
-				for (uint32_t i = 0; i < kFangAttackRadiusNum;i++) {
+				for (uint32_t i = 0; i < kFangAttackRadiusNum; i++) {
 					newTransform = halberdTransform_;
-					newTransform.translate += Random::GetInstance()->RandomCircleVector3({ kFangAttackRadius ,kFangAttackRadius ,kFangAttackRadius });
+					newTransform.translate += newTransform.GetWorldPosition() + Random::GetInstance()->RandomCircleVector3({ kFangAttackRadius ,kFangAttackRadius ,kFangAttackRadius });
 					ProjectileManager::GetInstance()->CreateSpike(newTransform, 0, kCollisionEnemyAttack, 10.0f, 3.0f);
 				}
 			} else {
@@ -805,4 +807,118 @@ void Boss::FangAttackUpdate() {
 		}
 		break;
 	}
+}
+
+void Boss::NearAttackInitialize() {
+	kMaxAttackTimer = kNearFirstStartGapTimerMax;
+
+	randomYFlip = 1.0f;
+	//if (Random::GetInstance()->Probability(50.0f)) {
+	//	randomYFlip = 1.0f;
+	//} else {
+	//	randomYFlip = -1.0f;
+	//}
+
+}
+
+void Boss::NearAttackUpdate() {
+	switch (currentAttackPhase) {
+	case -2:
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kNearAttackFinishedGapTimerMax);
+		}
+
+		break;
+	case -1:
+		destinationHalberdTransform_.translate = Easing(nearAttackHalPos, kBasicHalberdFarPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.rotate = Easing(nearAttackHalRotate, kBasicHalberdFarRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		modelTransform_.rotate.y = Easing(nearAttackModelRotateY, 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			AttackFinished();
+		}
+		break;
+	case 0: // ハルバードを構える.
+		destinationHalberdTransform_.translate = Easing(basicHalberdPos, kNearFirstHalberdStartPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.rotate = Easing(basicHalberdRotate, kNearFirstHalberdStartRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		modelTransform_.rotate.y = Easing(0.0f, kNearFirstModelStartRotateY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		transform_.rotate.y = atan2(transform_.translate.x - targetTransform_->translate.x, transform_.translate.z - targetTransform_->translate.z);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kNearFirstStayTimerMax);
+		}
+		break;
+	case 1: // 前隙.
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kNearFirstAttackTimerMax);
+		}
+		break;
+	case 2: // 攻撃.
+		destinationHalberdTransform_.translate = Easing(kNearFirstHalberdStartPos, kNearFirstHalberdAttackPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.rotate = Easing(kNearFirstHalberdStartRotate, kNearFirstHalberdAttackRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		modelTransform_.rotate.y = Easing(kNearFirstModelStartRotateY, kNearFirstModelAttackRotateY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			if (true) {
+				NextAttackPhase(kNearFirstAttackGapTimerMax);
+			} else {
+				NextAttackPhase(kNearAttackGapTimerMax);
+				currentAttackPhase = -2;
+				nearAttackHalPos = destinationHalberdTransform_.translate;
+				nearAttackHalRotate = destinationHalberdTransform_.rotate;
+				nearAttackModelRotateY = modelTransform_.rotate.y;
+			}
+		}
+		break;
+	case 3: // 攻撃隙.
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kNearSecondStartGapTimerMax);
+		}
+		break;
+	case 4: // 2段目構え.
+		destinationHalberdTransform_.translate= Easing( kNearFirstHalberdAttackPos, kNearSecondHalberdStartPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.rotate = Easing( kNearFirstHalberdAttackRotate, kNearSecondHalberdStartRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kNearSecondStayTimerMax);
+		}
+		break;
+	case 5: // 2段目前隙.
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kNearSecondAttackTimerMax);
+		}
+		break;
+	case 6: // 2段目攻撃.
+		destinationHalberdTransform_.translate = Easing( kNearFirstHalberdAttackPos,kNearSecondHalberdAttackPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.rotate = Easing(kNearSecondHalberdStartRotate, kNearSecondHalberdAttackRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		modelTransform_.rotate.y = Easing(kNearFirstModelAttackRotateY,kNearSecondModelAttackRotateY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			if (true) {
+				NextAttackPhase(kNearSecondAttackGapTimerMax);
+			} else {
+				NextAttackPhase(kNearAttackGapTimerMax);
+				currentAttackPhase = -2;
+				nearAttackHalPos = destinationHalberdTransform_.translate;
+				nearAttackHalRotate = destinationHalberdTransform_.rotate;
+				nearAttackModelRotateY = modelTransform_.rotate.y;
+			}
+		}
+		break;
+	case 7: // 攻撃隙.
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kNearSecondStartGapTimerMax);
+		}
+
+		break;
+	case 8: // 3段目構え.
+		destinationHalberdTransform_.translate = Easing(kNearSecondHalberdAttackPos, kNearThirdHalberdStartPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.rotate = Easing(kNearSecondHalberdAttackRotate, kNearThirdHalberdStartRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		modelTransform_.rotate.y = Easing(kNearSecondModelAttackRotateY, kNearThirdModelStartRotateY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kNearThirdStayTimerMax);
+		}
+		break;
+	}
+
 }

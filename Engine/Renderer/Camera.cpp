@@ -98,7 +98,7 @@ void Camera::Update() {
 
 	cameraData_->worldPosition = translate_;
 	matrix_ = Matrix4x4::MakeAffineMatrix(scale_, rotate_, translate_);
-	
+
 	gameCameraMatrix_ = Matrix4x4::MakeAffineMatrix(scale_, -rotate_, translate_);
 	FrustumUpdate();
 }

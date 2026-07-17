@@ -80,6 +80,7 @@ private:
 	Vector3 rotate_;
 	Vector3 translate_;
 	Matrix4x4 matrix_;
+	Matrix4x4 worldMatrix;
 
 	Transform2D spriteTransform;
 

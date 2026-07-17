@@ -34,6 +34,7 @@ private:
 		kSpinningHalberd,
 		kPowerSlasher,
 		kFangAttack,
+		kNearAttack,
 		kCountMax,
 		kFireBulletShot,
 
@@ -92,6 +93,9 @@ private:
 
 	void FangAttackInitialize();
 	void FangAttackUpdate();
+
+	void NearAttackInitialize();
+	void NearAttackUpdate();
 private:
 	static void (Boss::* pInitializeFunc[])();
 	static void (Boss::* pUpdateFunc[])();
@@ -278,6 +282,49 @@ private:
 	static inline uint32_t kFangAttackRadiusNum = 100;
 
 	Transform halberdModelTransform;
+
+	// NearAttack.
+	static inline float kNearAttackGapTimerMax = 0.7f;
+	static inline float kNearAttackFinishedGapTimerMax = 0.2f;
+	
+	static inline float kNearFirstStartGapTimerMax = 0.2f;
+	static inline float kNearFirstStayTimerMax = 0.5f;
+	static inline float kNearFirstAttackTimerMax = 0.25f;
+	static inline float kNearFirstAttackGapTimerMax = 0.3f;
+
+	static inline float kNearSecondStartGapTimerMax = 0.2f;
+	static inline float kNearSecondStayTimerMax = 0.5f;
+	static inline float kNearSecondAttackTimerMax = 0.25f;
+	static inline float kNearSecondAttackGapTimerMax = 0.3f;
+
+	static inline float kNearThirdStartGapTimerMax = 0.3f;
+	static inline float kNearThirdStayTimerMax = 0.5f;
+	static inline float kNearThirdAttackTimerMax = 0.25f;
+	static inline float kNearThirdAttackGapTimerMax = 0.3f;
+
+	float randomYFlip = 1.0f;
+
+	Vector3 nearAttackHalPos;
+	Vector3 nearAttackHalRotate;
+	float nearAttackModelRotateY;
+
+
+	static inline Vector3 kNearFirstHalberdStartPos = { -1.0f,0.0f,-1.0f };
+	static inline Vector3 kNearFirstHalberdStartRotate = { 0.0f,0.0f,Radian(60.0f) };
+	static inline float kNearFirstModelStartRotateY = Radian(30.0f);
+	static inline Vector3 kNearFirstHalberdAttackPos = { 1.0f,-0.5f,-1.0f };
+	static inline Vector3 kNearFirstHalberdAttackRotate = { -Radian(180.0f), 0.0f,Radian(60.0f) };
+	static inline float kNearFirstModelAttackRotateY = -Radian(30.0f);
+
+	static inline Vector3 kNearSecondHalberdStartPos = { 1.0f,0.5f,-1.0f };
+	static inline Vector3 kNearSecondHalberdStartRotate = {0.0f,0.0f,Radian(270.0f)};
+	static inline Vector3 kNearSecondHalberdAttackPos = { -1.0f,0.5f,-1.0f };
+	static inline Vector3 kNearSecondHalberdAttackRotate = { -Radian(180.0f), 0.0f,Radian(270.0f) };
+	static inline float kNearSecondModelAttackRotateY = Radian(30.0f);
+
+	static inline Vector3 kNearThirdHalberdStartPos = { 0.0f,1.5f,-1.0f };
+	static inline Vector3 kNearThirdHalberdStartRotate = {0.0f,0.0f,0.0f};
+	static inline float kNearThirdModelStartRotateY = 0.0f;
 
 
 };

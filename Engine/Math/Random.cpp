@@ -34,7 +34,7 @@ Vector3 Random::RandomCircleVector3(Vector3 radius){
 }
 
 bool Random::Probability(float percent) {
-	float probability = RandomFloat(0.0f, 100.0f);
+	float probability = RandomFloat(1.0f, 100.0f);
 	if (probability < percent) {
 		return true;
 	}
