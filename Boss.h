@@ -105,7 +105,7 @@ private:
 	// Anim
 	Transform destinationHalberdTransform_;
 	static inline float kDestinationCompletionRate = 0.25f;
-	static inline float kBasicPositionY = 1.4f;
+	static inline float kBasicPositionY = 2.5f;
 
 	Vector3 basicHalberdPos = {-1.0f,0.0f,0.0f};
 	Vector3 basicHalberdRotate = { -Radian(90.0f) ,0.0f,0.0f };
@@ -123,6 +123,7 @@ private:
 
 
 	static inline Vector3 kBasicColliderSize = { 0.5f,1.2f,0.3f };
+	static inline Vector3 kBasicHalberdColliderSize = { 0.6f,2.8f,0.8f };
 	static inline float kBasicColliderRadius = 0.5f; 
 	std::unique_ptr<Collider> attackTempCollider_;
 	Transform attackTempTransform_;

@@ -549,7 +549,7 @@ void Boss::SpinningInitialize() {
 	kMaxAttackTimer = kSpinningStartGapTimerMax;
 	attackTempTransform_.translate = { 1.0f,0.0f,0.0f };
 	attackTempTransform_.SetParent(&transform_);
-	attackTempCollider_->SetSize({ 0.3f,1.4f,0.4f });
+	attackTempCollider_->SetSize(kBasicHalberdColliderSize);
 	attackTempCollider_->SetColliderType(ColliderType::kBox);
 	attackTempCollider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy));
 	attackTempCollider_->SetDebugColor({ 1.0f,1.0f,1.0f,1.0f });
@@ -561,7 +561,7 @@ void Boss::SpinningInitialize() {
 
 void Boss::SpinningUpdate() {
 	attackTempCollider_->SetDebugColor({ 1.0f,1.0f,1.0f,1.0f });
-	attackTempCollider_->SetSize({ 0.3f,1.4f,0.4f });
+	attackTempCollider_->SetSize(kBasicHalberdColliderSize);
 
 	Vector3 move = { 0.0f,0.0f,kSpinningSpeed };
 
@@ -628,7 +628,7 @@ void Boss::SpinningUpdate() {
 	if (currentAttackPhase <= 4 && currentAttackPhase >= 2) {
 		// 回転時ハルバードに当たり判定を出す.
 		transform_.translate += move * deltaTime_ * difficultyMagnificationTime * dopamineSpeed_;
-		attackTempCollider_->SetSize({ 2.0f,1.4f,0.4f });
+		attackTempCollider_->SetSize({ kBasicHalberdColliderSize.x + 2.0f,kBasicHalberdColliderSize.y,kBasicHalberdColliderSize.z });
 		attackTempTransform_.translate.y = -1.8f;
 		CollisionManager::GetInstance()->AddColliderList(attackTempCollider_.get());
 		attackTempCollider_->SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
@@ -641,7 +641,7 @@ void Boss::SpinningUpdate() {
 void Boss::PowerSlasherInitialize() {
 	kMaxAttackTimer = kPowerSlasherStartGapTimerMax;
 	attackTempTransform_.translate = { 1.0f,0.0f,0.0f };
-	attackTempCollider_->SetSize({ 0.3f,1.4f,0.4f });
+	attackTempCollider_->SetSize(kBasicHalberdColliderSize);
 	attackTempCollider_->SetColliderType(ColliderType::kBox);
 	attackTempCollider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy));
 	attackTempCollider_->SetDebugColor({ 1.0f,1.0f,1.0f,1.0f });
@@ -658,7 +658,7 @@ void Boss::PowerSlasherUpdate() {
 	Vector3 lenght;
 	attackTempTransform_ = halberdTransform_;
 	attackTempCollider_->SetDebugColor({ 1.0f,1.0f,1.0f,1.0f });
-	attackTempCollider_->SetSize({ 0.3f,1.4f,0.4f });
+	attackTempCollider_->SetSize(kBasicHalberdColliderSize);
 
 	Vector3 move = { 0.0f,0.0f,-kPowerSlasherSpeed };
 
@@ -752,7 +752,7 @@ void Boss::PowerSlasherUpdate() {
 
 	if (currentAttackPhase <= 5 && currentAttackPhase >= 2) {
 		// 突進時や攻撃時にはハルバードに当たり判定を作る.
-		attackTempCollider_->SetSize({ 2.0f,1.4f,0.4f });
+		attackTempCollider_->SetSize({ kBasicHalberdColliderSize.x + 2.0f,kBasicHalberdColliderSize.y,kBasicHalberdColliderSize.z });
 		attackTempTransform_.translate.y = -1.8f;
 		CollisionManager::GetInstance()->AddColliderList(attackTempCollider_.get());
 		attackTempCollider_->SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
@@ -841,7 +841,7 @@ void Boss::NearAttackInitialize() {
 	nearAttackThirdProbability_ = Easing(50.0f, 0.0f, currentHP_, maxHP_, EaseType::kConstant);
 	attackTempTransform_.translate = { 0.0f,0.0f,0.0f };
 	attackTempTransform_.SetParent(&halberdTransform_);
-	attackTempCollider_->SetSize({ 0.3f,1.4f,0.4f });
+	attackTempCollider_->SetSize(kBasicHalberdColliderSize);
 	attackTempCollider_->SetColliderType(ColliderType::kBox);
 	attackTempCollider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy));
 	attackTempCollider_->SetDebugColor({ 1.0f,1.0f,1.0f,1.0f });
