@@ -157,7 +157,7 @@ PixelShaderOutput main(VertexShaderOutput input){
         float32_t3 distance = length(gPointLight[i].position - input.worldPosition);
         factor = pow(saturate(-distance / gPointLight[i].radius + 1.0f), gPointLight[i].decay);
     
-        output.color.rgb = output.color.rgb + (GetOutputRGB(input.worldPosition, input.normal, textureColor.rgb, gPointLight[i].color.rgb, pointLightDirection, gPointLight[i].intensity) * factor);
+        output.color.rgb = output.color.rgb  +(GetOutputRGB(input.worldPosition, input.normal, textureColor.rgb, gPointLight[i].color.rgb, pointLightDirection, gPointLight[i].intensity) * factor);
     }
         
     // SpotLight
@@ -168,9 +168,7 @@ PixelShaderOutput main(VertexShaderOutput input){
         float32_t falloffFactor = saturate((cosAngle - gSpotLight[j].cosAngle) / (gSpotLight[j].cosFalloffStart - gSpotLight[j].cosAngle));
         factor = 1.0f / (gSpotLight[j].distance * gSpotLight[j].distance); //pow(saturate(-gSpotLight.distance /1.0f), gSpotLight.decay);
     
-        output.color.rgb = output.color.rgb +
-    (GetOutputRGB(input.worldPosition, input.normal, textureColor.rgb, gSpotLight[j].color.rgb, spotLightDirectionOnSurface, gSpotLight[j].intensity) *
-    factor * falloffFactor);
+        output.color.rgb = output.color.rgb +(GetOutputRGB(input.worldPosition, input.normal, textureColor.rgb, gSpotLight[j].color.rgb, spotLightDirectionOnSurface, gSpotLight[j].intensity) * factor * falloffFactor);
     
     }
     

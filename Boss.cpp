@@ -95,6 +95,8 @@ void Boss::Update() {
 
 	deltaTime_ = DeltaTime::GetInstance()->GetGameTime();
 
+	HalberdStanceUpdate();
+
 #ifdef _DEBUG
 
 	ImGui::Begin("BossDebug");
@@ -128,6 +130,9 @@ void Boss::Update() {
 	if (!isPlayAttack_) {
 		destinationAngleY_ = atan2(transform_.translate.x - targetTransform_->translate.x, transform_.translate.z - targetTransform_->translate.z);
 		transform_.rotate.y = LerpShortAngle(transform_.rotate.y, destinationAngleY_, 0.25f);
+	
+		destinationHalberdTransform_.rotate = basicHalberdRotate;
+		destinationHalberdTransform_.translate = basicHalberdPos;
 	}
 
 	halberdTransform_.scale = Lerp(halberdTransform_.scale, destinationHalberdTransform_.scale, kDestinationCompletionRate);
@@ -135,6 +140,20 @@ void Boss::Update() {
 	halberdTransform_.translate = Lerp(halberdTransform_.translate, destinationHalberdTransform_.translate, kDestinationCompletionRate);
 
 	CollisionManager::GetInstance()->AddColliderList(this);
+}
+
+void Boss::HalberdStanceUpdate() {
+	Vector3 lenght = targetTransform_->translate - transform_.translate;
+	if (lenght.Length() <= kNearRadius) {
+		basicHalberdPos = kBasicHalberdNearPos;
+		basicHalberdRotate = kBasicHalberdNearRotate;
+	} else if (lenght.Length() <= kMiddleRadius) {
+		basicHalberdPos = kBasicHalberdMiddlePos;
+		basicHalberdRotate = kBasicHalberdMiddleRotate;
+	} else {
+		basicHalberdPos = kBasicHalberdFarPos;
+		basicHalberdRotate = kBasicHalberdFarRotate;
+	}
 }
 
 void Boss::Draw() {
@@ -276,6 +295,7 @@ void Boss::BulletUpdate() {
 	case 0: // ハルバードを前に向ける.
 		modelTransform_.rotate.y = Easing(0.0f, Radian(kBulletAnimRotateY), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		destinationHalberdTransform_.translate = Easing(basicHalberdPos, kBulletHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.rotate = Easing(basicHalberdRotate, kBasicHalberdFarRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		transform_.rotate.y = atan2(transform_.translate.x - targetTransform_->translate.x, transform_.translate.z - targetTransform_->translate.z);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
@@ -299,6 +319,7 @@ void Boss::BulletUpdate() {
 	case 3: // 見た目を戻す.
 		modelTransform_.rotate.y = Easing(Radian(kBulletAnimRotateY), 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		destinationHalberdTransform_.translate = Easing(kBulletHalberdPos, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.rotate = Easing( kBasicHalberdFarRotate, basicHalberdRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			AttackFinished();
 		}
@@ -420,6 +441,7 @@ void Boss::MovingBulletUpdate() {
 	case 0:// ハルバードを構える.
 		modelTransform_.rotate.y = Easing(0.0f, Radian(kBulletAnimRotateY), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		destinationHalberdTransform_.translate = Easing(basicHalberdPos, kBulletHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.rotate = Easing(basicHalberdRotate, kBasicHalberdFarRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kMovingBulletStayTimerMax);
@@ -447,6 +469,7 @@ void Boss::MovingBulletUpdate() {
 	case 4: // 見た目を戻す.
 		modelTransform_.rotate.y = Easing(Radian(kBulletAnimRotateY), 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		destinationHalberdTransform_.translate = Easing(kBulletHalberdPos, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.rotate = Easing(kBasicHalberdFarRotate, basicHalberdRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kMovingBulletFinishedGapTimerMax);
 		}
@@ -502,7 +525,7 @@ void Boss::WaveUpdate() {
 		destinationHalberdTransform_.translate = Easing(kWaveHalberdSpinPos, kWaveHalberdAttackPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kWaveAttackGapTimerMax);
-			ProjectileManager::GetInstance()->CreateWave(transform_, 25.0f, 1.0f, kCollisionEnemyAttack, 15.0f, 3.0f);
+			ProjectileManager::GetInstance()->CreateWave(transform_, 25.0f, 1.0f, -1.0f, kCollisionEnemyAttack, 15.0f, 3.0f);
 		}
 		break;
 	case 4: // 攻撃後の後隙.
@@ -530,9 +553,9 @@ void Boss::SpinningInitialize() {
 	attackTempCollider_->SetColliderType(ColliderType::kBox);
 	attackTempCollider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy));
 	attackTempCollider_->SetDebugColor({ 1.0f,1.0f,1.0f,1.0f });
-	spinningRotateY = 0.0f;
 	attackTempCollider_->SetDamage(5.0f);
 	attackTempCollider_->SetDamageCoolTime(0.1f);
+	spinningRotateY = 0.0f;
 	isColliderActive_ = false;
 }
 
@@ -627,6 +650,8 @@ void Boss::PowerSlasherInitialize() {
 	powerSlasherHalberdCenter_.SetParent(&transform_);
 	halberdTransform_.SetParent(&powerSlasherHalberdCenter_);
 	attackTempTransform_.SetParent(&powerSlasherHalberdCenter_);
+	attackTempCollider_->SetDamage(25.0f);
+	attackTempCollider_->SetDamageCoolTime(3.0f);
 }
 
 void Boss::PowerSlasherUpdate() {
@@ -784,10 +809,10 @@ void Boss::FangAttackUpdate() {
 				for (uint32_t i = 0; i < kFangAttackRadiusNum; i++) {
 					newTransform = halberdTransform_;
 					newTransform.translate += newTransform.GetWorldPosition() + Random::GetInstance()->RandomCircleVector3({ kFangAttackRadius ,kFangAttackRadius ,kFangAttackRadius });
-					ProjectileManager::GetInstance()->CreateSpike(newTransform, 0, kCollisionEnemyAttack, 10.0f, 3.0f);
+					ProjectileManager::GetInstance()->CreateSpike(newTransform, 0, kCollisionEnemyAttack, 15.0f, 3.0f);
 				}
 			} else {
-				ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, Vector3(-RadianToVector(rotateY).x, 0.0f, RadianToVector(rotateY).y) * 20.0f, BulletType::kSpike, kCollisionEnemyAttack, 10.0f, 3.0f);
+				ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, Vector3(-RadianToVector(rotateY).x, 0.0f, RadianToVector(rotateY).y) * 20.0f, BulletType::kSpike, kCollisionEnemyAttack, 15.0f, 3.0f);
 			}
 
 		}
@@ -811,17 +836,22 @@ void Boss::FangAttackUpdate() {
 
 void Boss::NearAttackInitialize() {
 	kMaxAttackTimer = kNearFirstStartGapTimerMax;
-
 	randomYFlip = 1.0f;
-	//if (Random::GetInstance()->Probability(50.0f)) {
-	//	randomYFlip = 1.0f;
-	//} else {
-	//	randomYFlip = -1.0f;
-	//}
-
+	nearAttackSecondProbability_ = Easing(100.0f, 0.0f, currentHP_, maxHP_, EaseType::kConstant);
+	nearAttackThirdProbability_ = Easing(50.0f, 0.0f, currentHP_, maxHP_, EaseType::kConstant);
+	attackTempTransform_.translate = { 0.0f,0.0f,0.0f };
+	attackTempTransform_.SetParent(&halberdTransform_);
+	attackTempCollider_->SetSize({ 0.3f,1.4f,0.4f });
+	attackTempCollider_->SetColliderType(ColliderType::kBox);
+	attackTempCollider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy));
+	attackTempCollider_->SetDebugColor({ 1.0f,1.0f,1.0f,1.0f });
+	attackTempCollider_->SetDamage(10.0f);
+	attackTempCollider_->SetDamageCoolTime(3.0f);
 }
 
 void Boss::NearAttackUpdate() {
+	attackTempCollider_->SetDamage(10.0f);
+	attackTempCollider_->SetTransform(attackTempTransform_);
 	switch (currentAttackPhase) {
 	case -2:
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
@@ -830,8 +860,8 @@ void Boss::NearAttackUpdate() {
 
 		break;
 	case -1:
-		destinationHalberdTransform_.translate = Easing(nearAttackHalPos, kBasicHalberdFarPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
-		destinationHalberdTransform_.rotate = Easing(nearAttackHalRotate, kBasicHalberdFarRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.translate = Easing(nearAttackHalPos, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.rotate = Easing(nearAttackHalRotate, basicHalberdRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		modelTransform_.rotate.y = Easing(nearAttackModelRotateY, 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
@@ -856,9 +886,11 @@ void Boss::NearAttackUpdate() {
 		destinationHalberdTransform_.translate = Easing(kNearFirstHalberdStartPos, kNearFirstHalberdAttackPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		destinationHalberdTransform_.rotate = Easing(kNearFirstHalberdStartRotate, kNearFirstHalberdAttackRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		modelTransform_.rotate.y = Easing(kNearFirstModelStartRotateY, kNearFirstModelAttackRotateY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		attackTempCollider_->SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
+		CollisionManager::GetInstance()->AddColliderList(attackTempCollider_.get());
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
-			if (true) {
+			if (Random::GetInstance()->Probability(nearAttackSecondProbability_)) {
 				NextAttackPhase(kNearFirstAttackGapTimerMax);
 			} else {
 				NextAttackPhase(kNearAttackGapTimerMax);
@@ -872,11 +904,14 @@ void Boss::NearAttackUpdate() {
 	case 3: // 攻撃隙.
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kNearSecondStartGapTimerMax);
+			preTransform_ = transform_;
+			nearAttackPreTransform_ = atan2(transform_.translate.x - targetTransform_->translate.x, transform_.translate.z - targetTransform_->translate.z);
 		}
 		break;
 	case 4: // 2段目構え.
-		destinationHalberdTransform_.translate= Easing( kNearFirstHalberdAttackPos, kNearSecondHalberdStartPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
-		destinationHalberdTransform_.rotate = Easing( kNearFirstHalberdAttackRotate, kNearSecondHalberdStartRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.translate = Easing(kNearFirstHalberdAttackPos, kNearSecondHalberdStartPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.rotate = Easing(kNearFirstHalberdAttackRotate, kNearSecondHalberdStartRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		transform_.rotate.y = Easing(preTransform_.rotate.y, nearAttackPreTransform_, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kNearSecondStayTimerMax);
@@ -888,12 +923,14 @@ void Boss::NearAttackUpdate() {
 		}
 		break;
 	case 6: // 2段目攻撃.
-		destinationHalberdTransform_.translate = Easing( kNearFirstHalberdAttackPos,kNearSecondHalberdAttackPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.translate = Easing(kNearFirstHalberdAttackPos, kNearSecondHalberdAttackPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		destinationHalberdTransform_.rotate = Easing(kNearSecondHalberdStartRotate, kNearSecondHalberdAttackRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
-		modelTransform_.rotate.y = Easing(kNearFirstModelAttackRotateY,kNearSecondModelAttackRotateY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		modelTransform_.rotate.y = Easing(kNearFirstModelAttackRotateY, kNearSecondModelAttackRotateY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		attackTempCollider_->SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
+		CollisionManager::GetInstance()->AddColliderList(attackTempCollider_.get());
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
-			if (true) {
+			if (Random::GetInstance()->Probability(nearAttackThirdProbability_)) {
 				NextAttackPhase(kNearSecondAttackGapTimerMax);
 			} else {
 				NextAttackPhase(kNearAttackGapTimerMax);
@@ -907,6 +944,9 @@ void Boss::NearAttackUpdate() {
 	case 7: // 攻撃隙.
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kNearSecondStartGapTimerMax);
+			halberdTransform_.SetParent(&modelTransform_);
+			preTransform_ = transform_;
+			nearAttackPreTransform_ = atan2(transform_.translate.x - targetTransform_->translate.x, transform_.translate.z - targetTransform_->translate.z);
 		}
 
 		break;
@@ -914,11 +954,53 @@ void Boss::NearAttackUpdate() {
 		destinationHalberdTransform_.translate = Easing(kNearSecondHalberdAttackPos, kNearThirdHalberdStartPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		destinationHalberdTransform_.rotate = Easing(kNearSecondHalberdAttackRotate, kNearThirdHalberdStartRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		modelTransform_.rotate.y = Easing(kNearSecondModelAttackRotateY, kNearThirdModelStartRotateY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		transform_.translate.y = Easing(kBasicPositionY, kNearThirdStartPosisionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		transform_.rotate.y = Easing(preTransform_.rotate.y, nearAttackPreTransform_, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kNearThirdStayTimerMax);
 		}
 		break;
+	case 9: // 3段目前隙.
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kNearThirdAttackTimerMax);
+		}
+		break;
+	case 10: // 3段目攻撃.
+		transform_.translate.y = Easing(kNearThirdStartPosisionY, kNearThirdAttackPosisionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		modelTransform_.rotate.x = Easing(0.0f, kNearThirdModelAttackRotateX, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		attackTempCollider_->SetDamage(30.0f);
+		attackTempCollider_->SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
+		CollisionManager::GetInstance()->AddColliderList(attackTempCollider_.get());
+
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kNearThirdAttackGapTimerMax);
+			ProjectileManager::GetInstance()->CreateWave(transform_, 25.0f, 1.0f, 1.0f, kCollisionEnemyAttack, 20.0f, 3.0f);
+			Transform newTransform = halberdTransform_;
+			for (uint32_t i = 0; i < kNearThirdAttackRadiusNum; i++) {
+				newTransform = halberdTransform_;
+				newTransform.translate += newTransform.GetWorldPosition() + Random::GetInstance()->RandomCircleVector3({ kNearThirdAttackRadius ,kNearThirdAttackRadius ,kNearThirdAttackRadius });
+				ProjectileManager::GetInstance()->CreateSpike(newTransform, 0, kCollisionEnemyAttack, 20.0f, 3.0f);
+			}
+		}
+		break;
+	case 11: // 3段目後隙.
+
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kNearAttackFinishedGapTimerMax);
+		}
+		break;
+	case 12:
+		destinationHalberdTransform_.translate = Easing(kNearThirdHalberdStartPos, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+		destinationHalberdTransform_.rotate = Easing(kNearThirdHalberdStartRotate, basicHalberdRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+		modelTransform_.rotate.x = Easing(kNearThirdModelAttackRotateX, 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+		transform_.translate.y = Easing(kNearThirdAttackPosisionY, kBasicPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			AttackFinished();
+		}
+		break;
 	}
+	attackTempCollider_->DrawCollider();
 
 }

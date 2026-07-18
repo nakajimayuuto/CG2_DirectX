@@ -111,10 +111,10 @@ void ProjectileManager::CreateDiffusionBullet(const Transform& transform, const 
 	}
 }
 
-void ProjectileManager::CreateWave(const Transform& transform, float speed, float height, CollisionAttributeName colliderName, float damage, float damageCoolTime) {
+void ProjectileManager::CreateWave(const Transform& transform, float speed, float height, float time, CollisionAttributeName colliderName, float damage, float damageCoolTime) {
 	std::unique_ptr<Wave> wave;
 	wave = std::make_unique<Wave>();
-	wave->Initialize(transform, speed, height, colliderName, damage, damageCoolTime);
+	wave->Initialize(transform, speed, height, time, colliderName, damage, damageCoolTime);
 	waves.push_back(std::move(wave));
 }
 
@@ -218,24 +218,37 @@ void Bullet::SpikeUpdate() {
 	}
 }
 
-void Wave::Initialize(const Transform& transform, float speed, float height, CollisionAttributeName colliderName, float damage, float damageCoolTime) {
-	transform_.scale = { 1.0f,1000.0f / height,1.0f };
+void Wave::Initialize(const Transform& transform, float speed, float height, float time, CollisionAttributeName colliderName, float damage, float damageCoolTime) {
+	heightMax_ = height;
+	height_ = heightMax_;
+	transform_.scale = { 1.0f,1000.0f / heightMax_,1.0f };
+	colliderMinorRadius_ = heightMax_ * 0.001f;
 	transform_.rotate = { 0.0f,0.0f,0.0f };
 	transform_.translate = transform.GetWorldPosition();
 	transform_.translate.y = 0.0f;
 	colliderRadius_ = 0.0f;
-	colliderMinorRadius_ = height * 0.001f;
 	collisionAttribute_ = colliderName;
 	speed_ = speed;
 	isActive_ = true;
 	lifeTimer_ = 0.0f;
 	colliderType_ = ColliderType::kTorus;
-	lifeTimeMax_ = kBasicLifeTimeMax_;
+	if (time == -1.0f) {
+		lifeTimeMax_ = kBasicLifeTimeMax_;
+		isTimeInf_ = true;
+	} else {
+		lifeTimeMax_ = time;
+		isTimeInf_ = false;
+	}
 }
 
 void Wave::Update() {
 	lifeTimer_ += DeltaTime::GetInstance()->GetGameTime();
 	colliderRadius_ += speed_ * DeltaTime::GetInstance()->GetGameTime();
+
+	if (!isTimeInf_) {
+		height_ = Easing(heightMax_,0.0f,lifeTimer_,lifeTimeMax_,EaseType::kEaseIn);
+		colliderMinorRadius_ = height_ * 0.001f;
+	}
 
 	if (lifeTimer_ >= lifeTimeMax_) {
 		isActive_ = false;

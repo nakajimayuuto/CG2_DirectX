@@ -26,8 +26,9 @@ public:
 	static TextureManager* GetInstance();
 
 	TextureInfo RegisterTexture(const std::string& name, const std::string& filePath);
+	TextureInfo RegisterTexture(const std::string& name, const std::string& filePath,bool useMipMap);
 
-	TextureInfo RegisterParticleTexture(const std::string& name, const std::string& filePath);
+	//TextureInfo RegisterParticleTexture(const std::string& name, const std::string& filePath);
 
 	TextureInfo GetTextureInfo(const std::string& name);
 private:

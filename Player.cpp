@@ -3,9 +3,10 @@
 void Player::Initialize() {
 	transform_.Initialize();
 	targetRotateY = 0.0f;
+	models_["drill_ghost"].Initialize(ModelManager::GetInstance()->GetModelInfo("drill_ghost"));
 	models_["body"].Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
-
-	transform_.translate = {0.0f, kBodyBlankY,-30.0f };
+	models_["drill_ghost"].SetBlendMode(BlendMode::kNormalCullNone);
+	transform_.translate = {0.0f, kTranslateBlankY,-30.0f };
 
 	/// HPGauge.
 	maxHP_ = 200.0f;
@@ -17,7 +18,7 @@ void Player::Initialize() {
 
 	// 後々削除
 	transformBody_.Initialize();
-	transformBody_.translate.y;
+	transformBody_.translate.y = kBodyBlankY;
 	transformBody_.SetParent(&transform_);
 
 	models_["head"].Initialize("player_head");
@@ -63,7 +64,7 @@ void Player::Initialize() {
 	//emitter_->Initialize(transform_, 3, 0.5f);
 
 	//colliderRadius_ = 0.3f;
-	colliderSize_ = { 0.6f,0.8f,0.6f };
+	colliderSize_ = { 0.5f,1.0f,0.5f };
 	colliderType_ = ColliderType::kBox;
 
 
@@ -265,8 +266,8 @@ void Player::BehaviorJumpUpdate() {
 
 	velocity_ += accelerationVector;
 
-	if (transform_.translate.y <= kBodyBlankY) {
-		transform_.translate.y = kBodyBlankY;
+	if (transform_.translate.y <= kTranslateBlankY) {
+		transform_.translate.y = kTranslateBlankY;
 		behaviorRequest_ = Behavior::kRoot;
 	}
 }
@@ -277,21 +278,21 @@ void Player::UpdateFloatingGimmick() {
 
 	floatingParameter = std::fmod(floatingParameter, 2.0f * std::numbers::pi_v<float>);
 
-	transformBody_.translate.y = (std::sin(floatingParameter) * kFloatingAmplitude);
+	transformBody_.translate.y = (std::sin(floatingParameter) * kFloatingAmplitude) + kBodyBlankY;
 }
 
 void Player::Draw() {
-	Renderer::GetInstance()->DrawModel(transformBody_, &models_["body"], false);
-	Renderer::GetInstance()->DrawModel(transformHead_, &models_["head"], false);
-	Renderer::GetInstance()->DrawModel(transformLArm_, &models_["LArm"], false);
-	Renderer::GetInstance()->DrawModel(transformRArm_, &models_["RArm"], false);
+	Renderer::GetInstance()->DrawModel(transformBody_, &models_["drill_ghost"], false);
+	//Renderer::GetInstance()->DrawModel(transformHead_, &models_["head"], false);
+	//Renderer::GetInstance()->DrawModel(transformLArm_, &models_["LArm"], false);
+	//Renderer::GetInstance()->DrawModel(transformRArm_, &models_["RArm"], false);
 
 	//models_["RArm"].GetColor();
 
-	Renderer::GetInstance()->DrawShadow(transformBody_, &models_["body"], { 0.0f,0.0f,0.0f,1.0f });
-	Renderer::GetInstance()->DrawShadow(transformHead_, &models_["head"], { 0.0f,0.0f,0.0f,1.0f });
-	Renderer::GetInstance()->DrawShadow(transformLArm_, &models_["LArm"], { 0.0f,0.0f,0.0f,1.0f });
-	Renderer::GetInstance()->DrawShadow(transformRArm_, &models_["RArm"], { 0.0f,0.0f,0.0f,1.0f });
+	Renderer::GetInstance()->DrawShadow(transformBody_, &models_["drill_ghost"], { 0.0f,0.0f,0.0f,1.0f });
+	//Renderer::GetInstance()->DrawShadow(transformHead_, &models_["head"], { 0.0f,0.0f,0.0f,1.0f });
+	//Renderer::GetInstance()->DrawShadow(transformLArm_, &models_["LArm"], { 0.0f,0.0f,0.0f,1.0f });
+	//Renderer::GetInstance()->DrawShadow(transformRArm_, &models_["RArm"], { 0.0f,0.0f,0.0f,1.0f });
 
 	//particles_->Draw();
 

@@ -61,6 +61,8 @@ private:
 	float currentHP_;
 	float maxHP_;
 private:
+	void HalberdStanceUpdate();
+
 	void AttackInitialize();
 	void AttackUpdate();
 	void AttackFinished();
@@ -111,7 +113,13 @@ private:
 	static inline Vector3 kBasicHalberdFarPos = {-1.0f,0.0f,0.0f};
 	static inline Vector3 kBasicHalberdFarRotate = { -Radian(90.0f) ,0.0f,0.0f };
 
-	static inline Vector3 kBasicHalberdMiddlePos = { 0.0f,1.0f,0.0f };
+	static inline float kMiddleRadius = 40.0f;
+	static inline Vector3 kBasicHalberdMiddlePos = { 0.0f,0.0f,-1.0f };
+	static inline Vector3 kBasicHalberdMiddleRotate = { 0.0f ,0.0f,0.0f };
+
+	static inline float kNearRadius = 20.0f;
+	static inline Vector3 kBasicHalberdNearPos = { -1.0f,0.0f,0.0f };
+	static inline Vector3 kBasicHalberdNearRotate = { -Radian(90.0f) ,0.0f,0.0f };
 
 
 	static inline Vector3 kBasicColliderSize = { 0.5f,1.2f,0.3f };
@@ -130,6 +138,16 @@ private:
 	float difficultyMagnificationDamage = 1.0f; // ダメージの難易度倍率.
 	float dopamineSpeed_ = 1.0f; // スーパードパガキモード.
 	Transform preTransform_;
+
+	static inline float kBulletDamage = 10.0f;
+	static inline float kFireBulletDamage = 50.0f;
+	static inline float kFireTrajectoryDamage = 15.0f;
+	static inline float kSlasherDamage = 25.0f;
+	static inline float kSpinDamage = 5.0f;
+	static inline float kFangDamage = 15.0f;
+	static inline float kWaveDamage = 15.0f;
+	static inline float kNearDamage = 10.0f;
+	static inline float kNearThirdDamage = 30.0f;
 
 	// Warp
 	static inline float kWarpEnterTimerMax = 0.5f;
@@ -300,7 +318,7 @@ private:
 	static inline float kNearThirdStartGapTimerMax = 0.3f;
 	static inline float kNearThirdStayTimerMax = 0.5f;
 	static inline float kNearThirdAttackTimerMax = 0.25f;
-	static inline float kNearThirdAttackGapTimerMax = 0.3f;
+	static inline float kNearThirdAttackGapTimerMax = 5.0f;
 
 	float randomYFlip = 1.0f;
 
@@ -308,6 +326,10 @@ private:
 	Vector3 nearAttackHalRotate;
 	float nearAttackModelRotateY;
 
+	float nearAttackSecondProbability_;
+	float nearAttackThirdProbability_;
+
+	float nearAttackPreTransform_;
 
 	static inline Vector3 kNearFirstHalberdStartPos = { -1.0f,0.0f,-1.0f };
 	static inline Vector3 kNearFirstHalberdStartRotate = { 0.0f,0.0f,Radian(60.0f) };
@@ -324,7 +346,14 @@ private:
 
 	static inline Vector3 kNearThirdHalberdStartPos = { 0.0f,1.5f,-1.0f };
 	static inline Vector3 kNearThirdHalberdStartRotate = {0.0f,0.0f,0.0f};
+	static inline float kNearThirdModelStartRotateX = -Radian(360.0f);
+	static inline float kNearThirdStartPosisionY = 5.0f;
 	static inline float kNearThirdModelStartRotateY = 0.0f;
+	static inline float kNearThirdModelAttackRotateX = -Radian(150.0f);
+	static inline float kNearThirdAttackPosisionY = 3.0f;
+
+	static inline float kNearThirdAttackRadiusNum = 30;
+	static inline float kNearThirdAttackRadius = 20.0f;
 
 
 };

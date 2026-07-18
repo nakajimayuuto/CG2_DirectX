@@ -611,7 +611,7 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 	// Samplerの設定.
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
 	if (blendMode != BlendMode::kLine && shaderType != ShaderType::kNoTexture) {
-		staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR; // バイリニアフィルタ.
+		staticSamplers[0].Filter = kUsingFillter_; // バイリニアフィルタ.(重要!ゲーム的にここをLINEARからPOINTに切り替えています)
 		staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP; // 0~1の範囲外をリピート.
 		staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 		staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;

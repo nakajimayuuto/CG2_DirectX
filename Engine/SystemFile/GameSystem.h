@@ -78,6 +78,10 @@ enum class ShaderType {
 struct ModelElement;
 
 class GameSystem {
+private:
+	static inline const D3D12_FILTER kUsingFillter_ = D3D12_FILTER_MIN_MAG_MIP_POINT; // D3D12_FILTER_MIN_MAG_MIP_LINEAR.
+
+	static inline const uint32_t kSrvDescriptorHeapNumMax = 128;
 public:
 	static GameSystem* GetInstance();
 
@@ -234,8 +238,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvDescriptorHeap = nullptr;
 
 	uint32_t srvDescriptorHeapNum_;
-
-	static inline const uint32_t kSrvDescriptorHeapNumMax = 128;
 
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
 

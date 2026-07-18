@@ -87,7 +87,7 @@ private:
 
 class Wave :Collider{
 public:
-	void Initialize(const Transform& transform, float speed,float height, CollisionAttributeName colliderName, float damage, float damageCoolTime);
+	void Initialize(const Transform& transform, float speed,float height, float time, CollisionAttributeName colliderName, float damage, float damageCoolTime);
 
 	void Update();
 
@@ -98,10 +98,13 @@ private:
 	Model model_;
 	float speed_;
 
+	float heightMax_;
+	float height_;
 	float lifeTimer_ = 0.0f;
 	float lifeTimeMax_ = 7.0f;
 	static inline float kBasicLifeTimeMax_ = 7.0f;
 
+	bool isTimeInf_;
 	bool isActive_;
 };
 
@@ -127,7 +130,7 @@ public:
 	/// <param name="amount"></param>
 	void CreateDiffusionBullet(const Transform& transform, const Vector3& velocity, BulletType type, CollisionAttributeName colliderName, float damage, float damageCoolTime,float diffusionRadian,uint32_t amount);
 
-	void CreateWave(const Transform& transform, float speed, float height, CollisionAttributeName colliderName, float damage, float damageCoolTime);
+	void CreateWave(const Transform& transform, float speed, float height,float time, CollisionAttributeName colliderName, float damage, float damageCoolTime);
 
 	void CreateSpike(const Transform& transform, uint32_t size, CollisionAttributeName colliderName, float damage, float damageCoolTime);
 private:

@@ -15,19 +15,23 @@ ModelManager* ModelManager::GetInstance() {
 }
 
 void ModelManager::RegisterObj(const std::string& name, const std::string& directoryPath, const std::string& fileName) {
+	RegisterObj(name,directoryPath,fileName,true);
+}
+
+void ModelManager::RegisterObj(const std::string& name, const std::string& directoryPath, const std::string& fileName, bool useMipMap){
 	if (models_.find(name) != models_.end()) {
 		return;
 	}
 
 	models_[name].modelData = LoadObjFile(directoryPath, fileName);
-	Vector3 min={ 0.0f,0.0f,0.0f };
+	Vector3 min = { 0.0f,0.0f,0.0f };
 	Vector3 max = { 0.0f,0.0f,0.0f };
 	for (ModelData& data : models_[name].modelData) {
 		if (data.materialData.textureFilePath == "") {
 			continue;
 		}
 
-		TextureManager::GetInstance()->RegisterTexture(name + "_" + data.meshName, data.materialData.textureFilePath);
+		TextureManager::GetInstance()->RegisterTexture(name + "_" + data.meshName, data.materialData.textureFilePath,useMipMap);
 
 		data.textureSrvHandlesCPU = TextureManager::GetInstance()->GetTextureInfo(name + "_" + data.meshName).textureSrvHandlesCPU;
 		data.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo(name + "_" + data.meshName).textureSrvHandlesGPU;
@@ -56,29 +60,29 @@ void ModelManager::RegisterObj(const std::string& name, const std::string& direc
 		for (VertexData& vertexData : data.vertices) {
 			if (vertexData.position.x > max.x) {
 				max.x = vertexData.position.x;
-			} else if(vertexData.position.x < min.x){
+			} else if (vertexData.position.x < min.x) {
 				min.x = vertexData.position.x;
 			}
 
 			if (vertexData.position.y > max.y) {
 				max.y = vertexData.position.y;
-			} else if(vertexData.position.y < min.y){
+			} else if (vertexData.position.y < min.y) {
 				min.y = vertexData.position.y;
 			}
 
 			if (vertexData.position.z > max.z) {
 				max.z = vertexData.position.z;
-			} else if(vertexData.position.z < min.z){
+			} else if (vertexData.position.z < min.z) {
 				min.z = vertexData.position.z;
 			}
 		}
 	}
 
 	float maxSize = max.x - min.x;
-	if(max.y - min.y > maxSize){
+	if (max.y - min.y > maxSize) {
 		maxSize = max.y - min.y;
 	}
-	if(max.z - min.z > maxSize){
+	if (max.z - min.z > maxSize) {
 		maxSize = max.z - min.z;
 	}
 

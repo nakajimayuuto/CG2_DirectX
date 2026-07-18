@@ -6,6 +6,10 @@ TextureManager* TextureManager::GetInstance() {
 }
 
 TextureInfo TextureManager::RegisterTexture(const std::string& name, const std::string& filePath){
+	return RegisterTexture(name,filePath,true);
+}
+
+TextureInfo TextureManager::RegisterTexture(const std::string& name, const std::string& filePath, bool useMipMap){
 	if (textures_.find(name) != textures_.end()) {
 		return TextureInfo();
 	}
@@ -59,7 +63,11 @@ TextureInfo TextureManager::RegisterTexture(const std::string& name, const std::
 	srvDesc.Format = metadata.format;
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; // 2Dテクスチャ.
-	srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
+	if (useMipMap) {
+		srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
+	} else {
+		srvDesc.Texture2D.MipLevels = 1;
+	}
 
 	// SRVを生成するDescriptorHeapを決める.
 	textures_[name].textureSrvHandlesCPU = GameSystem::GetCPUDescriptorHandle(GameSystem::GetInstance()->GetSrvDescriptorHeap(), GameSystem::GetInstance()->GetDescriptorSizeSRV(), GameSystem::GetInstance()->GetSrvDescriptorHeapNum());

@@ -100,7 +100,7 @@ private:
 
 	static inline uint16_t kFloatingAnimationPeriod = 120;
 
-	static inline float kFloatingAmplitude = 0.3f;
+	static inline float kFloatingAmplitude = 0.2f;
 
 	float floatingParameter = 0.0f;
 
@@ -158,7 +158,8 @@ private:
 
 	std::map<std::string, Model> models_;
 
-	static inline float kBodyBlankY = 1.2f;
+	static inline float kTranslateBlankY = 1.2f;
+	static inline float kBodyBlankY = 0.3f;
 
 	static inline float kThreshold = 0.2f;
 };

@@ -52,12 +52,14 @@ private:
 
 	void SetWindowed();
 private:
+	// 定数.
 	const LPCWSTR kWindowTitle_ = L"AL3_03_3Dレールアクション";
 
 	const WindowSize kWindowSize_ = { 1280,720 };//{1280,720};
 
-	float aspect_;
 
+	float aspect_;
+	
 	bool isGameFinished_ = false;
 
 	WindowSize monitorSize_;

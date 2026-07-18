@@ -11,9 +11,11 @@ void GameScene::Initialize() {
 	TextureManager::GetInstance()->RegisterTexture("effect_plane", "Resource/EffectPlane/effect_plane.png");
 	ModelManager::GetInstance()->RegisterObj("skydome", "Resource/skydome", "skydome.obj");
 	ModelManager::GetInstance()->RegisterObj("creeking", "Resource/creeking", "creeking.obj");
-	ModelManager::GetInstance()->RegisterObj("halberd", "Resource/Halberd", "halubaad.obj");
+	//ModelManager::GetInstance()->RegisterObj("halberd", "Resource/Halberd", "halubaad.obj");
 	ModelManager::GetInstance()->RegisterObj("ground", "Resource/Ground", "ground.obj");
 	ModelManager::GetInstance()->RegisterObj("player", "Resource/player_hovering_mode", "player.obj");
+	ModelManager::GetInstance()->RegisterObj("drill_ghost", "Resource/drill_ghost", "drill_ghost.obj",false);
+	ModelManager::GetInstance()->RegisterObj("halberd", "Resource/halberd", "halberd.obj",false);
 	ModelManager::GetInstance()->RegisterObj("player_right_arm", "Resource/player_hovering_mode/right_arm", "right_arm.obj");
 	ModelManager::GetInstance()->RegisterObj("player_left_arm", "Resource/player_hovering_mode/left_arm", "left_arm.obj");
 	ModelManager::GetInstance()->RegisterObj("player_head", "Resource/player_hovering_mode/head", "head.obj");
