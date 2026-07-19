@@ -32,7 +32,7 @@ Boss::~Boss() {
 }
 
 void Boss::Initialize() {
-	model_.Initialize("creeking");
+	model_.Initialize("boss");
 	halberdModel_.Initialize("halberd");
 	anchorPointCenter_ = Vector3(0.0f, kBasicPositionY, 0.0f);
 	anchorPoints_.push_back(anchorPointCenter_);
