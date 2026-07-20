@@ -66,7 +66,7 @@ void Boss::Initialize() {
 	attackRequest_ = std::nullopt;
 
 	colliderType_ = ColliderType::kBox;
-	colliderSize_ = { 0.5f,1.2f,0.3f };
+	colliderSize_ = kBasicColliderSize;
 	collisionAttribute_ = CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy);
 	//collisionMask_ = kCollisionAttribute[kCollisionPlayer];
 
@@ -130,7 +130,7 @@ void Boss::Update() {
 	if (!isPlayAttack_) {
 		destinationAngleY_ = atan2(transform_.translate.x - targetTransform_->translate.x, transform_.translate.z - targetTransform_->translate.z);
 		transform_.rotate.y = LerpShortAngle(transform_.rotate.y, destinationAngleY_, 0.25f);
-	
+
 		destinationHalberdTransform_.rotate = basicHalberdRotate;
 		destinationHalberdTransform_.translate = basicHalberdPos;
 	}
@@ -319,7 +319,7 @@ void Boss::BulletUpdate() {
 	case 3: // 見た目を戻す.
 		modelTransform_.rotate.y = Easing(Radian(kBulletAnimRotateY), 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		destinationHalberdTransform_.translate = Easing(kBulletHalberdPos, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-		destinationHalberdTransform_.rotate = Easing( kBasicHalberdFarRotate, basicHalberdRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.rotate = Easing(kBasicHalberdFarRotate, basicHalberdRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			AttackFinished();
 		}
@@ -805,11 +805,15 @@ void Boss::FangAttackUpdate() {
 			float rotateY = transform_.rotate.y - Radian(90.0f);
 			float lenght = Vector3(targetTransform_->translate - transform_.translate).Length();
 			Transform newTransform = halberdTransform_;
+			std::vector<Vector3> spikePos_;
+			bool isShot_;
 			if (lenght <= (kFangAttackRadius / 3.0f) * 2.0f) {
 				for (uint32_t i = 0; i < kFangAttackRadiusNum; i++) {
 					newTransform = halberdTransform_;
-					newTransform.translate += newTransform.GetWorldPosition() + Random::GetInstance()->RandomCircleVector3({ kFangAttackRadius ,kFangAttackRadius ,kFangAttackRadius });
+					newTransform.translate = newTransform.translate + Random::GetInstance()->RandomCircleVector3({ kFangAttackRadius ,kFangAttackRadius ,kFangAttackRadius });
+
 					ProjectileManager::GetInstance()->CreateSpike(newTransform, 0, kCollisionEnemyAttack, 15.0f, 3.0f);
+					spikePos_.push_back(newTransform.GetWorldPosition());
 				}
 			} else {
 				ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, Vector3(-RadianToVector(rotateY).x, 0.0f, RadianToVector(rotateY).y) * 20.0f, BulletType::kSpike, kCollisionEnemyAttack, 15.0f, 3.0f);
@@ -846,7 +850,8 @@ void Boss::NearAttackInitialize() {
 	attackTempCollider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy));
 	attackTempCollider_->SetDebugColor({ 1.0f,1.0f,1.0f,1.0f });
 	attackTempCollider_->SetDamage(10.0f);
-	attackTempCollider_->SetDamageCoolTime(3.0f);
+	attackTempCollider_->SetDamageCoolTime(0.4f);
+	attackTempCollider_->SetActive(true);
 }
 
 void Boss::NearAttackUpdate() {
@@ -985,7 +990,6 @@ void Boss::NearAttackUpdate() {
 		}
 		break;
 	case 11: // 3段目後隙.
-
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kNearAttackFinishedGapTimerMax);
 		}

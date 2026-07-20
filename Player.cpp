@@ -76,9 +76,11 @@ void Player::InitializeFloatingGimmick() {
 }
 
 void Player::Update() {
+#ifdef _DEBUG
 	ImGui::Begin("player");
 	ImGui::DragFloat("HP", &currentHP_, 1.0f, 0.0f, maxHP_);
 	ImGui::End();
+#endif // _DEBUG
 
 
 	if (behaviorRequest_) {

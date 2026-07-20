@@ -82,7 +82,7 @@ private:
 
 	bool isActive_;
 
-	static inline Vector3 kBasicSpikeSize = {0.2f, 0.5f, 0.2f};
+	static inline Vector3 kBasicSpikeSize = {0.4f, 1.0f, 0.4f};
 };
 
 class Wave :Collider{

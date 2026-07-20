@@ -152,6 +152,9 @@ void Bullet::Initialize(const Transform& transform, const Vector3& velocity, Bul
 	colliderColor_ = { 1.0f,0.0f,0.0f,1.0f };
 	collisionAttribute_ = CollisionManager::GetInstance()->GetCollisionAttribute(colliderName);
 
+
+	damage_ = damage;
+	damageCoolTime_ = damageCoolTime;
 	(this->*pInitializeFunc[static_cast<size_t>(type_)])();
 }
 
@@ -239,6 +242,9 @@ void Wave::Initialize(const Transform& transform, float speed, float height, flo
 		lifeTimeMax_ = time;
 		isTimeInf_ = false;
 	}
+
+	damage_ = damage;
+	damageCoolTime_ = damageCoolTime;
 }
 
 void Wave::Update() {
@@ -288,6 +294,9 @@ void Spike::Initialize(const Transform& transform, uint32_t size, CollisionAttri
 	spikePhase_ = 0;
 	lifeTimeMax_ = kStartTimeMax;
 	colliderColor_ = { 1.0f,0.0f,0.0f,1.0f };
+
+	damage_ = damage;
+	damageCoolTime_ = damageCoolTime;
 }
 
 void Spike::Update() {

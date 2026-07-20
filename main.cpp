@@ -22,7 +22,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	SoundManager::GetInstance()->RegisterSound("test", "Resource/free_k.wav");
 	SoundData data = SoundManager::GetInstance()->GetSoundData("test");
 
-	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 1.0f;
+	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.5f;
 	// ウィンドウのxボタンが押されるまでループ.
 	while (system->ProcessMessage()) {
 		if (system->BeginFrame()) {

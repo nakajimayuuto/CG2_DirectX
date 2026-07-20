@@ -557,11 +557,11 @@
     <ClInclude Include="HPGauge.h">
       <Filter>ソース ファイル\HPGauge</Filter>
     </ClInclude>
-    <ClInclude Include="Boss.h">
-      <Filter>ソース ファイル\ContactRecord</Filter>
-    </ClInclude>
     <ClInclude Include="Managers\DifficultyManager.h">
       <Filter>Managers\DifficultyManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Boss.h">
+      <Filter>ソース ファイル\Boss</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

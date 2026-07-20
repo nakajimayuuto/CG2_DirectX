@@ -122,7 +122,7 @@ private:
 	static inline Vector3 kBasicHalberdNearRotate = { -Radian(90.0f) ,0.0f,0.0f };
 
 
-	static inline Vector3 kBasicColliderSize = { 0.5f,1.2f,0.3f };
+	static inline Vector3 kBasicColliderSize = { 1.0f,1.6f,1.0f };
 	static inline Vector3 kBasicHalberdColliderSize = { 0.6f,2.8f,0.8f };
 	static inline float kBasicColliderRadius = 0.5f; 
 	std::unique_ptr<Collider> attackTempCollider_;
@@ -159,7 +159,7 @@ private:
 	static inline float kBulletStayTimerMax = 0.2f;
 	static inline float kBulletFinishedGapTimerMax = 0.3f;
 
-	static inline Vector3 kBulletHalberdPos = { -1.0f,0.0f,-3.0f };
+	static inline Vector3 kBulletHalberdPos = { -2.0f,0.0f,-3.0f };
 	static inline float kBulletAnimRotateY = -45.0f;
 
 	Vector3 bulletShotDirectionTemp_;
@@ -171,9 +171,9 @@ private:
 	static inline float kBounsFinishedGapTimerMax = 0.5f;
 
 	static inline float kBounsAnimPositionY = 5.0f;
-	static inline Vector3 kBounsHalberdStartPos = { -0.5f,2.5f,0.0f };
+	static inline Vector3 kBounsHalberdStartPos = { -0.5f,3.5f,0.0f };
 	static inline Vector3 kBounsHalberdStartRotate = { 0.0f,0.0f,0.0f };
-	static inline Vector3 kBounsHalberdSpinPos = { -2.0f,0.0f,0.0f };
+	static inline Vector3 kBounsHalberdSpinPos = { -3.0f,0.0f,0.0f };
 	static inline Vector3 kBounsHalberdSpinRotate = { 0.0f,0.0f,Radian(90.0f) };
 
 	// DiffusionShot.
@@ -182,7 +182,7 @@ private:
 	static inline float kDiffusionBulletBackTimerMax = 0.2f;
 	static inline float kDiffusionBulletFinishedGapTimerMax = 0.5f;
 
-	static inline Vector3 kDiffusionBulletHalberdStartPos = { 0.0f,0.0f,-1.5f };
+	static inline Vector3 kDiffusionBulletHalberdStartPos = { 0.0f,0.0f,-2.0f };
 	static inline Vector3 kDiffusionBulletHalberdStartRotate = { 0.0f,0.0f,0.0f };
 	static inline Vector3 kDiffusionBulletHalberdSpinRotate = { 0.0f,0.0f,Radian(360.0f) * 3.0f };
 	static inline float kDiffusionBulletAnimPositionZ = 1.0f;
@@ -194,7 +194,7 @@ private:
 	static inline float kMovingBulletFinishedGapTimerMax = 0.3f;
 	static inline float kMovingBulletFinishedTimerMax = 2.0f;
 
-	static inline Vector3 kMovingBulletHalberdPos = { -1.0f,0.0f,-3.0f };
+	static inline Vector3 kMovingBulletHalberdPos = { -2.0f,0.0f,-3.0f };
 	static inline float kMovingBulletAnchorRadius = 40.0f;
 
 	float movingBulletTimer_ = 0.0f;
@@ -208,11 +208,11 @@ private:
 	static inline float kWaveFinishedGapTimerMax = 0.3f;
 	
 	static inline float kWaveAnimPositionY = 8.0f;
-	static inline Vector3 kWaveHalberdPos = { -0.5f,2.5f,0.0f };
+	static inline Vector3 kWaveHalberdPos = { -0.5f,3.5f,0.0f };
 	static inline Vector3 kWaveHalberdStartRotate = { 0.0f,0.0f,0.0f };
-	static inline Vector3 kWaveHalberdSpinPos = { 0.0f,2.5f,0.0f };
+	static inline Vector3 kWaveHalberdSpinPos = { 0.0f,3.5f,0.0f };
 	static inline float kWaveAttackPositionY = 2.5f;
-	static inline Vector3 kWaveHalberdAttackPos = { 0.0f,1.0f,-0.6f };
+	static inline Vector3 kWaveHalberdAttackPos = { 0.0f,1.0f,-1.0f };
 	static inline float kWaveAttackRotateX = -Radian(150.0f);
 	
 	// 目の前でハルバード回転
@@ -236,10 +236,10 @@ private:
 
 	static inline float kSpinningComplateRate = 0.25f;
 	static inline float kSpinningSpeed = 15.0f;
-	static inline Vector3 kSpinningHalberdStartPos = { -2.0f,0.0f,0.0f };
+	static inline Vector3 kSpinningHalberdStartPos = { -3.0f,0.0f,0.0f };
 	static inline Vector3 kSpinningHalberdStartRotate = { 0.0f,0.0f,Radian(90.0f) };
 	static inline float kSpinningStartRotateY = Radian(30.0f);
-	static inline Vector3 kSpinningHalberdSpinGapPos = { 1.0f,0.0f,-1.0f };
+	static inline Vector3 kSpinningHalberdSpinGapPos = { 2.0f,0.0f,-2.0f };
 	static inline Vector3 kSpinningHalberdSpinGapRotate = { -Radian(180.0f),0.0f,Radian(90.0f) };
 	static inline  float kSpinningSpinGapRotateY = -Radian(30.0f);
 
@@ -297,7 +297,7 @@ private:
 	static inline Vector3 kFangAttackHalberdAttackPos = { 0.0f,1.0f,-0.6f };
 	static inline float kFangAttackAttackRotateX = -Radian(150.0f);
 
-	static inline float kFangAttackRadius = 30.0f;
+	static inline float kFangAttackRadius = 20.0f;
 	static inline uint32_t kFangAttackRadiusNum = 100;
 
 	Transform halberdModelTransform;
@@ -332,26 +332,26 @@ private:
 
 	float nearAttackPreTransform_;
 
-	static inline Vector3 kNearFirstHalberdStartPos = { -1.0f,0.0f,-1.0f };
+	static inline Vector3 kNearFirstHalberdStartPos = { -3.0f,1.5f,-2.0f };
 	static inline Vector3 kNearFirstHalberdStartRotate = { 0.0f,0.0f,Radian(60.0f) };
 	static inline float kNearFirstModelStartRotateY = Radian(30.0f);
-	static inline Vector3 kNearFirstHalberdAttackPos = { 1.0f,-0.5f,-1.0f };
+	static inline Vector3 kNearFirstHalberdAttackPos = { 3.0f,-1.5f,-2.0f };
 	static inline Vector3 kNearFirstHalberdAttackRotate = { -Radian(180.0f), 0.0f,Radian(60.0f) };
 	static inline float kNearFirstModelAttackRotateY = -Radian(30.0f);
 
-	static inline Vector3 kNearSecondHalberdStartPos = { 1.0f,0.5f,-1.0f };
+	static inline Vector3 kNearSecondHalberdStartPos = { 3.0f,-0.5f,-2.0f };
 	static inline Vector3 kNearSecondHalberdStartRotate = {0.0f,0.0f,Radian(270.0f)};
-	static inline Vector3 kNearSecondHalberdAttackPos = { -1.0f,0.5f,-1.0f };
+	static inline Vector3 kNearSecondHalberdAttackPos = { -3.0f,-0.5f,-2.0f };
 	static inline Vector3 kNearSecondHalberdAttackRotate = { -Radian(180.0f), 0.0f,Radian(270.0f) };
 	static inline float kNearSecondModelAttackRotateY = Radian(30.0f);
 
-	static inline Vector3 kNearThirdHalberdStartPos = { 0.0f,1.5f,-1.0f };
+	static inline Vector3 kNearThirdHalberdStartPos = { 0.0f,4.5f,-1.0f };
 	static inline Vector3 kNearThirdHalberdStartRotate = {0.0f,0.0f,0.0f};
 	static inline float kNearThirdModelStartRotateX = -Radian(360.0f);
-	static inline float kNearThirdStartPosisionY = 5.0f;
+	static inline float kNearThirdStartPosisionY = 7.0f;
 	static inline float kNearThirdModelStartRotateY = 0.0f;
 	static inline float kNearThirdModelAttackRotateX = -Radian(150.0f);
-	static inline float kNearThirdAttackPosisionY = 3.0f;
+	static inline float kNearThirdAttackPosisionY = 4.0f;
 
 	static inline float kNearThirdAttackRadiusNum = 30;
 	static inline float kNearThirdAttackRadius = 20.0f;
