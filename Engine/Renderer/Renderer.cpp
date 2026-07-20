@@ -413,23 +413,8 @@ void Renderer::ModelSphere::Draw(const Transform& transform) {
 	/*=============================================================
 	三角形の描画のコマンド.
 	=============================================================*/
-	GameSystem::GetInstance()->SetPipeline(blendMode_);
+	GameSystem::GetInstance()->DrawCommand(blendMode_, &vertexBufferView_, &indexBufferView_, D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, materialResource_, wvpResource_, textureInfo_.textureSrvHandlesGPU, kSubdivision_ * kSubdivision_ * 6);
 
-	GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_); // VBVを設定.
-	GameSystem::GetInstance()->GetCommandList()->IASetIndexBuffer(&indexBufferView_); // IBVを設定.
-	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
-	GameSystem::GetInstance()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	// CBufferの場所を設定.
-	// マテリアル用のCBufferの場所.
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
-	// WVP用のCBufferの場所.
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource_->GetGPUVirtualAddress());
-	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureInfo_.textureSrvHandlesGPU);
-	// DirectionalLight用のCBufferの場所.
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-	GameSystem::GetInstance()->GetCommandList()->DrawIndexedInstanced(kSubdivision_ * kSubdivision_ * 6, 1, 0, 0, 0);
 }
 
 void Renderer::ModelBox::Initialize(const TextureInfo& info) {
@@ -540,23 +525,8 @@ void Renderer::ModelBox::Draw(const Transform& transform) {
 	/*=============================================================
 	三角形の描画のコマンド.
 	=============================================================*/
-	GameSystem::GetInstance()->SetPipeline(blendMode_);
 
-	GameSystem::GetInstance()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_); // VBVを設定.
-	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
-	GameSystem::GetInstance()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	// CBufferの場所を設定.
-	// マテリアル用のCBufferの場所.
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
-	// WVP用のCBufferの場所.
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource_->GetGPUVirtualAddress());
-	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootDescriptorTable(2, modelData_.textureSrvHandlesGPU);
-	// DirectionalLight用のCBufferの場所.
-	GameSystem::GetInstance()->GetCommandList()->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-	GameSystem::GetInstance()->GetCommandList()->DrawInstanced(UINT(modelData_.vertices.size()), 1, 0, 0);
-
+	GameSystem::GetInstance()->DrawCommand(blendMode_,&vertexBufferView_,nullptr, D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,materialResource_,wvpResource_,modelData_.textureSrvHandlesGPU, UINT(modelData_.vertices.size()));
 }
 
 void Renderer::Sprite::Initialize(TextureInfo info) {
@@ -749,11 +719,9 @@ void Renderer::Sprite::Draw(const Transform& transform) {
 	}
 
 	Transform worldTransform = transform;
+	worldTransform.translate.y *= -1.0f;
 
-	worldTransform.translate.x = transform .translate.x - (size_.x / 2.0f);
-	worldTransform.translate.y = transform .translate.y - (size_.y / 2.0f);
-
-	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+	Matrix4x4 worldMatrix = worldTransform.GetAffineMatrix();
 
 	transformationMatrixData_->World = worldMatrix;
 	transformationMatrixData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);

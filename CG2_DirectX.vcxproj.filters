@@ -133,6 +133,12 @@
     <Filter Include="ソース ファイル\FakeWindow">
       <UniqueIdentifier>{9bad79b3-5fcc-432e-a8b7-2b8f57ff921a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\MovingWindow">
+      <UniqueIdentifier>{0380fd6c-5d43-4feb-97a2-6a6418dcacfb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Player">
+      <UniqueIdentifier>{31278a75-0a28-453f-9c59-2d5e505eacc5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -263,6 +269,12 @@
     </ClCompile>
     <ClCompile Include="FakeWindow.cpp">
       <Filter>ソース ファイル\FakeWindow</Filter>
+    </ClCompile>
+    <ClCompile Include="MovingWindow.cpp">
+      <Filter>ソース ファイル\MovingWindow</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -406,6 +418,12 @@
     </ClInclude>
     <ClInclude Include="FakeWindow.h">
       <Filter>ソース ファイル\FakeWindow</Filter>
+    </ClInclude>
+    <ClInclude Include="MovingWindow.h">
+      <Filter>ソース ファイル\MovingWindow</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

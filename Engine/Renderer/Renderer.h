@@ -194,6 +194,8 @@ namespace Renderer {
 		Vector2 GetSize() { return size_; };
 
 		void SetTranslateZ(float z) { translateZ_ = z; };
+
+		TextureInfo GetTextureInfo() { return textureInfo_; };
 	private:
 		void AdaptationSize();
 	private:

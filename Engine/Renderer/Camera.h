@@ -32,6 +32,8 @@ class Camera {
 	bool useDebugCamera_;
 
 	Vector3 aspectScale_;
+
+	Transform transformSprite_;
 public:
 
 	static Camera* GetInstance();

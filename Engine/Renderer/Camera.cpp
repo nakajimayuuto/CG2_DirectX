@@ -35,6 +35,10 @@ void Camera::Initialize(float windowWidth, float windowHeight) {
 	aspectScale_ = { 1.0f,1.0f,1.0f };
 
 	debugMatRot_ = Matrix4x4::MakeAffineMatrix(debugScale_, rotate_, debugTranslate_);
+
+	transformSprite_.Initialize();
+	transformSprite_.translate.x = 1920.0f / 2.0f;
+	transformSprite_.translate.y = 1080.0f / 2.0f;
 }
 
 void Camera::Initialize() {
@@ -56,6 +60,9 @@ void Camera::Initialize() {
 	debugTranslate_ = { 0.0f,0.0f,-10.0f };
 
 	debugMatRot_ = Matrix4x4::MakeAffineMatrix(debugScale_, rotate_, debugTranslate_);
+	transformSprite_.Initialize();
+	transformSprite_.translate.x = 1920.0f / 2.0f;
+	transformSprite_.translate.y = 1080.0f / 2.0f;
 }
 
 void Camera::Update() {
@@ -154,7 +161,7 @@ Matrix4x4 Camera::GetWorldViewProjectionMatrixSprite(Matrix4x4 matrix) {
 	Matrix4x4 viewMatrix;
 	Matrix4x4 projectionMatrix;
 	Matrix4x4 worldViewProjectionMatrix;
-	viewMatrix = matrix_.Identity();
+	viewMatrix = transformSprite_.GetAffineMatrix();
 	projectionMatrix = Matrix4x4::MakeOrthographicMatrix({ viewportLeftTop_,{0.0f,0.0f},{0.0f,0.0f},{windowWidth_,windowHeight_} }, 0.0f, 100.0f);
 
 	// 旧式の式(ガハハwww).

@@ -34,6 +34,8 @@ public:
 	void SetType(WindowType type);
 
 	WindowType GetType() { return type_; };
+
+	Vector2 GetWindowClientSize() { return {mask_.GetTextureInfo().width - 2.0f,mask_.GetTextureInfo().height - 32.0f}; };
 private:
 	Transform2D transform_;
 	Renderer::Sprite back_;
