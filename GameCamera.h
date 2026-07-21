@@ -11,6 +11,8 @@ public:
 
 	void SetTarget(const Transform* target) { target_ = target; Reset(); };
 
+	void SetEnemyTransform(const Transform* target) { targetEnemy_ = target; };
+
 	void SetTargetIsMove(bool isMove) { isMove_ = isMove; };
 
 	void Reset();
@@ -41,6 +43,7 @@ private:
 	Transform transform_;
 
 	const Transform* target_ = nullptr;
+	const Transform* targetEnemy_ = nullptr;
 
 	bool isMove_;
 

@@ -135,6 +135,8 @@ void GameCamera::FollowedUpdate(){
 	}
 
 
+	destinationAngleY_ = std::atan2(targetEnemy_->translate.x - transform_.translate.x,targetEnemy_->translate.z - transform_.translate.z);
+
 	transform_.rotate.y = LerpShortAngle(transform_.rotate.y, destinationAngleY_, kCompletionRate);
 
 	if (std::fabs(transform_.rotate.y) >= Radian(360.0f)) {

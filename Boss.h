@@ -23,6 +23,10 @@ public:
 private:
 	Vector3 GetMoveAnchorPointFindAll();
 	Vector3 GetMoveAnchorPointFind(float radius);
+
+	void DistanceCheckUpdate();
+
+	void RootUpdate();
 private:
 	enum class Attacks {
 		kWarp,
@@ -39,6 +43,20 @@ private:
 		kFireBulletShot,
 
 	};
+
+	enum class DistanceName {
+		kNear,
+		kMiddle,
+		kFar,
+	};
+
+	struct AttackData{
+		Attacks attackName = Attacks::kBulletShot;
+		float weight = 0.0f;
+		uint32_t continuousCount = 0;
+		float magnification = 1.0f;
+	};
+
 	Model model_;
 	Model halberdModel_;
 
@@ -57,10 +75,21 @@ private:
 
 	float deltaTime_;
 
+	DistanceName currentDistance_;
+
 
 	float currentHP_;
 	float maxHP_;
 private:
+
+	void SetAttackData(Attacks attackName,float weight,DistanceName name);
+
+	void AttackSelect(std::vector<AttackData> attackDatas);
+
+	void ClearAttackDatas();
+
+	void Phase1Initialize();
+
 	void HalberdStanceUpdate();
 
 	void AttackInitialize();
@@ -102,6 +131,10 @@ private:
 	static void (Boss::* pInitializeFunc[])();
 	static void (Boss::* pUpdateFunc[])();
 private:
+	std::vector<AttackData> nearAttackDatas_;
+	std::vector<AttackData> middleAttackDatas_;
+	std::vector<AttackData> farAttackDatas_;
+private:
 	// Anim
 	Transform destinationHalberdTransform_;
 	static inline float kDestinationCompletionRate = 0.25f;
@@ -139,6 +172,9 @@ private:
 	float difficultyMagnificationDamage = 1.0f; // ダメージの難易度倍率.
 	float dopamineSpeed_ = 1.0f; // スーパードパガキモード.
 	Transform preTransform_;
+
+	float attackCoolTimer_;
+	float attackCoolTimeMax_ = 2.0f;
 
 	static inline float kBulletDamage = 10.0f;
 	static inline float kFireBulletDamage = 50.0f;

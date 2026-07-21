@@ -1,5 +1,6 @@
 #include "Boss.h"
 #include "ProjectileManager.h"
+#include "GameCamera.h"
 
 void (Boss::* Boss::pInitializeFunc[])() = {
 		&Boss::WarpInitialize,
@@ -88,12 +89,57 @@ void Boss::Initialize() {
 	hpGauge->SetPosition({ 0.0f,-300.0f });
 
 	DifficultyManager::GetInstance()->SetBossHPData(&currentHP_, maxHP_);
+
+	GameCamera::GetInstance()->SetEnemyTransform(&transform_);
+
+	Phase1Initialize();
+}
+
+void Boss::SetAttackData(Attacks attackName, float weight, DistanceName name){
+	AttackData newData;
+	newData.attackName = attackName;
+	newData.continuousCount = 0;
+	newData.weight = weight;
+	newData.magnification = 1.0f;
+	switch (name){
+	case Boss::DistanceName::kNear:
+		nearAttackDatas_.push_back(newData);
+		break;
+	case Boss::DistanceName::kMiddle:
+		middleAttackDatas_.push_back(newData);
+		break;
+	case Boss::DistanceName::kFar:
+		farAttackDatas_.push_back(newData);
+		break;
+	}
+}
+
+void Boss::Phase1Initialize() {
+	nearAttackDatas_.clear();
+	middleAttackDatas_.clear();
+	farAttackDatas_.clear();
+
+	SetAttackData(Attacks::kBulletShot,1.0f,DistanceName::kFar);
+	SetAttackData(Attacks::kDiffusionShot,0.5f,DistanceName::kFar);
+	SetAttackData(Attacks::kMovingShot,0.5f,DistanceName::kFar);
+
+	SetAttackData(Attacks::kBounsShot,0.5f,DistanceName::kMiddle);
+	SetAttackData(Attacks::kFangAttack,0.5f,DistanceName::kMiddle);
+	SetAttackData(Attacks::kPowerSlasher,0.5f,DistanceName::kMiddle);
+	SetAttackData(Attacks::kSpinningHalberd,0.5f,DistanceName::kMiddle);
+
+	SetAttackData(Attacks::kNearAttack,0.5f,DistanceName::kNear);
+	SetAttackData(Attacks::kMovingShot,0.5f,DistanceName::kNear);
+	SetAttackData(Attacks::kPowerSlasher,0.5f,DistanceName::kNear);
+
 }
 
 void Boss::Update() {
 	dopamineSpeed_ = DifficultyManager::GetInstance()->GetDopamineSpeed();
 
 	deltaTime_ = DeltaTime::GetInstance()->GetGameTime();
+
+	DistanceCheckUpdate();
 
 	HalberdStanceUpdate();
 
@@ -123,17 +169,13 @@ void Boss::Update() {
 		attackRequest_ = Attacks::kFangAttack;
 	}
 
+	RootUpdate();
+
 	AttackInitialize();
 
 	AttackUpdate();
 
-	if (!isPlayAttack_) {
-		destinationAngleY_ = atan2(transform_.translate.x - targetTransform_->translate.x, transform_.translate.z - targetTransform_->translate.z);
-		transform_.rotate.y = LerpShortAngle(transform_.rotate.y, destinationAngleY_, 0.25f);
-
-		destinationHalberdTransform_.rotate = basicHalberdRotate;
-		destinationHalberdTransform_.translate = basicHalberdPos;
-	}
+	
 
 	halberdTransform_.scale = Lerp(halberdTransform_.scale, destinationHalberdTransform_.scale, kDestinationCompletionRate);
 	halberdTransform_.rotate = LerpShortAngle(halberdTransform_.rotate, destinationHalberdTransform_.rotate, kDestinationCompletionRate);
@@ -142,17 +184,124 @@ void Boss::Update() {
 	CollisionManager::GetInstance()->AddColliderList(this);
 }
 
-void Boss::HalberdStanceUpdate() {
+void Boss::DistanceCheckUpdate() {
 	Vector3 lenght = targetTransform_->translate - transform_.translate;
 	if (lenght.Length() <= kNearRadius) {
+		currentDistance_ = DistanceName::kNear;
+	} else if (lenght.Length() <= kMiddleRadius) {
+		currentDistance_ = DistanceName::kMiddle;
+	} else {
+		currentDistance_ = DistanceName::kFar;
+	}
+}
+
+void Boss::RootUpdate() {
+	if (isPlayAttack_) {
+		return;
+	}
+
+		attackCoolTimer_ += deltaTime_ * difficultyMagnificationTime * dopamineSpeed_;
+
+	destinationAngleY_ = atan2(transform_.translate.x - targetTransform_->translate.x, transform_.translate.z - targetTransform_->translate.z);
+	transform_.rotate.y = LerpShortAngle(transform_.rotate.y, destinationAngleY_, 0.25f);
+
+	destinationHalberdTransform_.rotate = basicHalberdRotate;
+	destinationHalberdTransform_.translate = basicHalberdPos;
+
+	if (attackCoolTimer_ >= attackCoolTimeMax_) {
+		attackCoolTimeMax_ = 2.0f;
+		attackCoolTimer_ = 0.0f;
+		switch (currentDistance_) {
+		case Boss::DistanceName::kNear:
+			AttackSelect(nearAttackDatas_);
+			break;
+		case Boss::DistanceName::kMiddle:
+			AttackSelect(middleAttackDatas_);
+			break;
+		case Boss::DistanceName::kFar:
+			AttackSelect(farAttackDatas_);
+			break;
+		}
+	}
+}
+
+void Boss::AttackSelect(std::vector<AttackData> attackDatas){
+	std::vector<std::pair<Attacks, float>> randomData;
+	float weightMax = 0.0f;
+	float selectNum;
+
+	for (AttackData& data : attackDatas) {
+		float weight = data.weight * std::pow(0.5f, static_cast<float>(data.continuousCount)) * data.magnification * 10000.0f;
+		
+		weightMax = weight + weightMax;
+
+		randomData.push_back(std::pair<Attacks, float>(data.attackName,weight));
+	}
+
+	selectNum = Random::GetInstance()->RandomFloat(1.0f, weightMax);
+
+	weightMax = 0.0f;
+
+	for (std::pair<Attacks, float>& data : randomData) {
+		weightMax += data.second;
+		if (selectNum < weightMax) {
+			attackRequest_ = data.first;
+			break;
+		}
+	}
+
+	ClearAttackDatas();
+}
+
+void Boss::ClearAttackDatas(){
+	for (AttackData& data : nearAttackDatas_) {
+		data.magnification = 1.0f;
+		if (data.attackName == attackRequest_) {
+			if (data.continuousCount < 3) {
+				data.continuousCount++;
+			}
+		} else {
+			data.continuousCount = 0;
+		}
+	}
+
+	for (AttackData& data : middleAttackDatas_) {
+		data.magnification = 1.0f;
+		if (data.attackName == attackRequest_) {
+			if (data.continuousCount < 3) {
+				data.continuousCount++;
+			}
+		} else {
+			data.continuousCount = 0;
+		}
+	}
+
+	for (AttackData& data : farAttackDatas_) {
+		data.magnification = 1.0f;
+		if (data.attackName == attackRequest_) {
+			if (data.continuousCount < 3) {
+				data.continuousCount++;
+			}
+		} else {
+			data.continuousCount = 0;
+		}
+	}
+}
+
+void Boss::HalberdStanceUpdate() {
+	switch (currentDistance_){
+	case Boss::DistanceName::kNear:
 		basicHalberdPos = kBasicHalberdNearPos;
 		basicHalberdRotate = kBasicHalberdNearRotate;
-	} else if (lenght.Length() <= kMiddleRadius) {
+		break;
+	case Boss::DistanceName::kMiddle:
 		basicHalberdPos = kBasicHalberdMiddlePos;
 		basicHalberdRotate = kBasicHalberdMiddleRotate;
-	} else {
+		break;
+	case Boss::DistanceName::kFar:
 		basicHalberdPos = kBasicHalberdFarPos;
 		basicHalberdRotate = kBasicHalberdFarRotate;
+		break;
 	}
 }
 
@@ -803,21 +952,21 @@ void Boss::FangAttackUpdate() {
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kFangAttackAttackGapTimerMax);
 			float rotateY = transform_.rotate.y - Radian(90.0f);
-			float lenght = Vector3(targetTransform_->translate - transform_.translate).Length();
-			Transform newTransform = halberdTransform_;
-			std::vector<Vector3> spikePos_;
-			bool isShot_;
-			if (lenght <= (kFangAttackRadius / 3.0f) * 2.0f) {
-				for (uint32_t i = 0; i < kFangAttackRadiusNum; i++) {
-					newTransform = halberdTransform_;
-					newTransform.translate = newTransform.translate + Random::GetInstance()->RandomCircleVector3({ kFangAttackRadius ,kFangAttackRadius ,kFangAttackRadius });
-
-					ProjectileManager::GetInstance()->CreateSpike(newTransform, 0, kCollisionEnemyAttack, 15.0f, 3.0f);
-					spikePos_.push_back(newTransform.GetWorldPosition());
-				}
-			} else {
+			//float lenght = Vector3(targetTransform_->translate - transform_.translate).Length();
+			//Transform newTransform = halberdTransform_;
+			//std::vector<Vector3> spikePos_;
+			//bool isShot_;
+			//if (lenght <= (kFangAttackRadius / 3.0f) * 2.0f) {
+			//	for (uint32_t i = 0; i < kFangAttackRadiusNum; i++) {
+			//		newTransform = halberdTransform_;
+			//		newTransform.translate = newTransform.translate + Random::GetInstance()->RandomCircleVector3({ kFangAttackRadius ,kFangAttackRadius ,kFangAttackRadius });
+			//
+			//		ProjectileManager::GetInstance()->CreateSpike(newTransform, 0, kCollisionEnemyAttack, 15.0f, 3.0f);
+			//		spikePos_.push_back(newTransform.GetWorldPosition());
+			//	}
+			//} else {
 				ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, Vector3(-RadianToVector(rotateY).x, 0.0f, RadianToVector(rotateY).y) * 20.0f, BulletType::kSpike, kCollisionEnemyAttack, 15.0f, 3.0f);
-			}
+			//}
 
 		}
 		break;
@@ -843,6 +992,7 @@ void Boss::NearAttackInitialize() {
 	randomYFlip = 1.0f;
 	nearAttackSecondProbability_ = Easing(100.0f, 0.0f, currentHP_, maxHP_, EaseType::kConstant);
 	nearAttackThirdProbability_ = Easing(50.0f, 0.0f, currentHP_, maxHP_, EaseType::kConstant);
+	attackTempTransform_.Initialize();
 	attackTempTransform_.translate = { 0.0f,0.0f,0.0f };
 	attackTempTransform_.SetParent(&halberdTransform_);
 	attackTempCollider_->SetSize(kBasicHalberdColliderSize);
