@@ -8,6 +8,7 @@ GameCamera* GameCamera::GetInstance() {
 void GameCamera::Initialize() {
 	transform_.Initialize();
 	isMove_ = false;
+	isDash_ = false;
 
 	angleDirection_ = 0.0f;
 }

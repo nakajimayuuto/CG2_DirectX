@@ -150,6 +150,12 @@ void Boss::Update() {
 
 	HalberdStanceUpdate();
 
+	if (!isAttack_) {
+		damageCountFirst_ = 0;
+		damageCountSecond_ = 0;
+		damageCountThird_ = 0;
+	}
+
 #ifdef _DEBUG
 
 	ImGui::Begin("BossDebug");
@@ -184,7 +190,13 @@ void Boss::Update() {
 	ImGui::End();
 #endif // _DEBUG
 
-	DamageCoolTimeUpdate();
+	//DamageCoolTimeUpdate();
+	if (damageCoolTimer_ > 0.0f) {
+		damageCoolTimer_ -= deltaTime_;
+		if (damageCoolTimer_ <= 0.0f) {
+			damageCoolTimer_ = 0.0f;
+		}
+	}
 
 	RootUpdate();
 
@@ -343,46 +355,71 @@ void Boss::Draw() {
 
 void Boss::OnCollision(Collider* other) {
 	//if ((other->GetCollisionAttribute() & CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack)) == 0x0) {
-		switch (other->GetDamageType()) {
-		case 1:
-			//if () {
+	switch (other->GetDamageType()) {
+	case 1:
+		if (damageCountFirst_ <= 0) {
 			currentHP_ -= other->GetDamage();
 
-			DeltaTime::GetInstance()->SetHitStop(other->GetDamage() * 0.01f);
+			DeltaTime::GetInstance()->SetHitStop(0.05f);
+
+			damageCountFirst_++;
 
 			if (currentHP_ < 0.0f) {
 				currentHP_ = 0.0f;
 			}
-			//}
-			break;
-		case 2:
-			break;
-		case 3:
-			break;
-		case 4:
-			break;
-		default:
-			currentHP_ -= other->GetDamage();
-
-			DeltaTime::GetInstance()->SetHitStop(other->GetDamage() * 0.01f);
-
-			if (currentHP_ < 0.0f) {
-				currentHP_ = 0.0f;
-			}
-			break;
 		}
+		break;
+	case 2:
+		if (damageCountSecond_ <= 1) {
+			if (damageCoolTimer_ <= 0.0f) {
+				currentHP_ -= other->GetDamage();
+
+				DeltaTime::GetInstance()->SetHitStop(0.05f);
+
+				damageCoolTimer_ = other->GetDamageCoolTime();
+
+				damageCountSecond_++;
+
+				if (currentHP_ < 0.0f) {
+					currentHP_ = 0.0f;
+				}
+			}
+		}
+		break;
+	case 3:
+		if (damageCountThird_ <= 4) {
+			if (damageCoolTimer_ <= 0.0f) {
+				currentHP_ -= other->GetDamage();
+				DeltaTime::GetInstance()->SetHitStop(0.05f);
+
+				damageCoolTimer_ = other->GetDamageCoolTime();
+				damageCountThird_++;
+
+				if (currentHP_ < 0.0f) {
+					currentHP_ = 0.0f;
+				}
+			}
+		}
+		break;
+	default:
+		currentHP_ -= other->GetDamage();
+
+		DeltaTime::GetInstance()->SetHitStop(other->GetDamage() * 0.01f);
+
+		if (currentHP_ < 0.0f) {
+			currentHP_ = 0.0f;
+		}
+		break;
+	}
 	//}
 }
 
 void Boss::DamageCoolTimeUpdate() {
-	damageCoolTimeFirst_ += deltaTime_;
-	damageCoolTimeSecond_ += deltaTime_;
-	damageCoolTimeThird_ += deltaTime_;
-
-	if (damageCoolTimeSecond_ >= 0) {
-		damageCountSecond_;
-	}
-	damageCountThird_;
+	//
+	//if (damageCoolTimeSecond_ >= 0) {
+	//	damageCountSecond_;
+	//}
+	//damageCountThird_;
 }
 
 Vector3 Boss::GetMoveAnchorPointFindAll() {

@@ -46,6 +46,7 @@ void GameScene::Initialize() {
 
 	Player::RegisterGlobalVariables();
 
+
 	//testNum_ = 5;
 }
 
@@ -84,6 +85,7 @@ void GameScene::Update() {
 
 
 	player_->Update();
+	boss_->SetTargetIsAttact(player_->GetIsAttack());
 
 	boss_->Update();
 

@@ -5,15 +5,15 @@ void Player::Initialize() {
 	targetRotateY = 0.0f;
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("drill_ghost"));
 	model_.SetBlendMode(BlendMode::kNormalCullNone);
-	transform_.translate = {0.0f, kTranslateBlankY,-30.0f };
+	transform_.translate = { 0.0f, kTranslateBlankY,-30.0f };
 
 	/// HPGauge.
 	maxHP_ = 200.0f;
 	currentHP_ = maxHP_;
 
 	hpGauge_ = std::make_unique<HPGauge>();
-	hpGauge_->Initialize(&currentHP_, maxHP_, {200.0f,30.0f});
-	hpGauge_->SetPosition({-500.0f,300.0f});
+	hpGauge_->Initialize(&currentHP_, maxHP_, { 200.0f,30.0f });
+	hpGauge_->SetPosition({ -500.0f,300.0f });
 
 	// 後々削除
 	transformColliderOffset.Initialize();
@@ -38,7 +38,7 @@ void Player::Initialize() {
 
 	BehaviorAttackInitialize();
 
-	DifficultyManager::GetInstance()->SetPlayerHPData(&currentHP_,maxHP_);
+	DifficultyManager::GetInstance()->SetPlayerHPData(&currentHP_, maxHP_);
 
 	//emitter_ = std::make_unique<Emitter>();
 	//particles_ = std::make_unique<Particles>();
@@ -57,6 +57,21 @@ void Player::Initialize() {
 
 void Player::InitializeFloatingGimmick() {
 	floatingParameter = 0.0f;
+}
+
+bool Player::GetAttackButtonTrigger() {
+	InputManager* input = InputManager::GetInstance();
+	if (input->IsGamePadConnect()) {
+		if (input->TriggerPadButton(PadButtons::INPUT_X) || input->TriggerPadButton(PadButtons::INPUT_Y)) {
+			return true;
+		}
+	} else {
+		if (input->TriggerMouse(MouseButtons::MOUSE_LEFT)) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void Player::Update() {
@@ -89,6 +104,9 @@ void Player::Update() {
 
 		behaviorRequest_ = std::nullopt;
 	}
+
+	isAttack_ = false;
+	isDash_ = false;
 
 	switch (behavior_) {
 	case Player::Behavior::kRoot:
@@ -126,6 +144,7 @@ void Player::Update() {
 	transform_.rotate.y = std::fmod(transform_.rotate.y, Radian(360.0f));
 
 	GameCamera::GetInstance()->SetTargetIsMove(isMoving_);
+	GameCamera::GetInstance()->SetTargetIsDash(isDash_);
 }
 
 void Player::BehaviorRootInitialize() {
@@ -149,6 +168,10 @@ void Player::BehaviorRootUpdate() {
 
 		if (input->TriggerPadButton(PadButtons::INPUT_A) || input->TriggerPadButton(PadButtons::INPUT_B)) {
 			behaviorRequest_ = Behavior::kJump;
+		}
+
+		if (GetAttackButtonTrigger()) {
+			behaviorRequest_ = Behavior::kAttack;
 		}
 	} else {
 		if (input->PressKey(DIK_W)) {
@@ -175,7 +198,7 @@ void Player::BehaviorRootUpdate() {
 			behaviorRequest_ = Behavior::kDash;
 		}
 
-		if (input->TriggerMouse(MouseButtons::MOUSE_LEFT)) {
+		if (GetAttackButtonTrigger()) {
 			behaviorRequest_ = Behavior::kAttack;
 		}
 
@@ -202,21 +225,22 @@ void Player::BehaviorRootUpdate() {
 	UpdateFloatingGimmick();
 
 }
-void Player::BehaviorAttackInitialize(){
+void Player::BehaviorAttackInitialize() {
 	attackTimer_ = 0.0f;
 	attackTimeMax_ = kAttackFirstStart;
 	attackComboPhase_ = 0;
 	attackPhase_ = 0;
 	attackTransform_.Initialize();
 	attackTransform_.SetParent(&transformColliderOffset);
-	transformModel.SetParent(&attackTransform_); 
+	transformModel.SetParent(&attackTransform_);
 	AttackFirstInitialize();
 }
-void Player::BehaviorAttackUpdate(){
+void Player::BehaviorAttackUpdate() {
+	isAttack_ = true;
 	attackTimer_ += DeltaTime::GetInstance()->GetGameTime();
 
 
-	switch (attackComboPhase_){
+	switch (attackComboPhase_) {
 	case 0:
 		AttackFirstUpdate();
 		break;
@@ -229,7 +253,7 @@ void Player::BehaviorAttackUpdate(){
 	}
 
 }
-void Player::BehaviorAttackFinished(){
+void Player::BehaviorAttackFinished() {
 	behaviorRequest_ = Behavior::kRoot;
 	transformModel.SetParent(&transformColliderOffset);
 }
@@ -240,15 +264,16 @@ void Player::SetNextAttackPhase(float timeMax) {
 	attackTimer_ = 0.0f;
 }
 
-void Player::AttackFirstInitialize(){
-	attackCollider_.SetRadius(1.0f);
+void Player::AttackFirstInitialize() {
+	useNextAttack_ = false;
+	attackCollider_.SetRadius(2.5f);
 	attackCollider_.SetDamage(35.0f);
 	attackCollider_.SetDamageCoolTime(0.1f);
 	attackCollider_.SetDamageType(1);
 	attackCollider_.SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack));
 }
 
-void Player::AttackFirstUpdate(){
+void Player::AttackFirstUpdate() {
 	attackCollider_.SetActive(false);
 	attackCollider_.SetTransform(transform_);
 	attackCollider_.SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
@@ -262,8 +287,14 @@ void Player::AttackFirstUpdate(){
 		}
 		break;
 	case 1:
-	attackCollider_.SetActive(true);
-		attackTransform_.rotate.x = Easing(kAttackFirstStartModelRotateX,kAttackFirstSpinModelRotateX, attackTimer_, attackTimeMax_, EaseType::kConstant);
+		attackCollider_.SetActive(true);
+		attackTransform_.rotate.x = Easing(kAttackFirstStartModelRotateX, kAttackFirstSpinModelRotateX, attackTimer_, attackTimeMax_, EaseType::kConstant);
+
+		if (!useNextAttack_) {
+			if (GetAttackButtonTrigger()) {
+				useNextAttack_ = true;
+			}
+		}
 
 		if (attackTimer_ >= attackTimeMax_) {
 			SetNextAttackPhase(kAttackFirstFinish);
@@ -271,8 +302,136 @@ void Player::AttackFirstUpdate(){
 		break;
 	case 2:
 		attackTransform_.rotate.x = Easing(kAttackFirstSpinModelRotateX, Radian(360.0f), attackTimer_, attackTimeMax_, EaseType::kEaseOut);
-		transformModel.translate.y = Easing( kAttackFirstSpinModelPosY, 0.0f, attackTimer_, attackTimeMax_, EaseType::kEaseOut);
-		
+		transformModel.translate.y = Easing(kAttackFirstSpinModelPosY, 0.0f, attackTimer_, attackTimeMax_, EaseType::kEaseOut);
+
+		if (!useNextAttack_) {
+			if (GetAttackButtonTrigger()) {
+				useNextAttack_ = true;
+			}
+		}
+
+		if (attackTimer_ >= attackTimeMax_) {
+			if (useNextAttack_) {
+				attackComboPhase_++;
+				AttackSecondInitialize();
+			} else {
+				BehaviorAttackFinished();
+			}
+		}
+		break;
+	}
+
+	CollisionManager::GetInstance()->AddColliderList(&attackCollider_);
+	attackCollider_.DrawCollider();
+}
+
+void Player::AttackSecondInitialize() {
+	useNextAttack_ = false;
+	attackTimer_ = 0.0f;
+	attackTimeMax_ = kAttackSecondStart;
+	attackPhase_ = 0;
+	attackTransform_.Initialize();
+	attackTransform_.SetParent(&transformColliderOffset);
+	transformModel.SetParent(&attackTransform_);
+	attackCollider_.SetRadius(2.5f);
+	attackCollider_.SetDamage(30.0f);
+	attackCollider_.SetDamageCoolTime(0.1f);
+	attackCollider_.SetDamageType(2);
+	attackCollider_.SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack));
+}
+
+void Player::AttackSecondUpdate() {
+	attackCollider_.SetActive(false);
+	attackCollider_.SetTransform(transform_);
+	attackCollider_.SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
+	switch (attackPhase_) {
+	case 0:
+		attackTransform_.rotate.x = Easing(0.0f, kAttackFirstStartModelRotateX, attackTimer_, attackTimeMax_, EaseType::kEaseIn);
+		transformModel.translate.y = Easing(0.0f, kAttackFirstSpinModelPosY, attackTimer_, attackTimeMax_, EaseType::kEaseIn);
+
+		if (attackTimer_ >= attackTimeMax_) {
+			SetNextAttackPhase(kAttackSecondSpin);
+		}
+		break;
+	case 1:
+		attackCollider_.SetActive(true);
+		attackTransform_.rotate.x = Easing(kAttackFirstStartModelRotateX, kAttackFirstSpinModelRotateX, attackTimer_, attackTimeMax_, EaseType::kConstant);
+
+		if (!useNextAttack_) {
+			if (GetAttackButtonTrigger()) {
+				useNextAttack_ = true;
+			}
+		}
+
+		if (attackTimer_ >= attackTimeMax_) {
+			SetNextAttackPhase(kAttackSecondFinish);
+		}
+		break;
+	case 2:
+		attackTransform_.rotate.x = Easing(kAttackFirstSpinModelRotateX, Radian(360.0f), attackTimer_, attackTimeMax_, EaseType::kEaseOut);
+		transformModel.translate.y = Easing(kAttackFirstSpinModelPosY, 0.0f, attackTimer_, attackTimeMax_, EaseType::kEaseOut);
+
+		if (!useNextAttack_) {
+			if (GetAttackButtonTrigger()) {
+				useNextAttack_ = true;
+			}
+		}
+
+		if (attackTimer_ >= attackTimeMax_) {
+			if (useNextAttack_) {
+				attackComboPhase_++;
+				AttackThreeInitialize();
+			} else {
+				BehaviorAttackFinished();
+			}
+		}
+		break;
+	}
+
+	CollisionManager::GetInstance()->AddColliderList(&attackCollider_);
+	attackCollider_.DrawCollider();
+}
+
+void Player::AttackThreeInitialize() {
+	useNextAttack_ = false;
+	attackTimer_ = 0.0f;
+	attackTimeMax_ = kAttackThirdStart;
+	attackPhase_ = 0;
+	attackTransform_.Initialize();
+	attackTransform_.SetParent(&transformColliderOffset);
+	transformModel.SetParent(&attackTransform_);
+	attackCollider_.SetRadius(2.5f);
+	attackCollider_.SetDamage(25.0f);
+	attackCollider_.SetDamageCoolTime(0.1f);
+	attackCollider_.SetDamageType(3);
+	attackCollider_.SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack));
+}
+
+void Player::AttackThreeUpdate() {
+	attackCollider_.SetActive(false);
+	attackCollider_.SetTransform(transform_);
+	attackCollider_.SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
+	switch (attackPhase_) {
+	case 0:
+		attackTransform_.rotate.x = Easing(0.0f, kAttackFirstStartModelRotateX, attackTimer_, attackTimeMax_, EaseType::kEaseIn);
+		transformModel.translate.y = Easing(0.0f, kAttackFirstSpinModelPosY, attackTimer_, attackTimeMax_, EaseType::kEaseIn);
+
+		if (attackTimer_ >= attackTimeMax_) {
+			SetNextAttackPhase(kAttackThirdSpin);
+		}
+		break;
+	case 1:
+		attackCollider_.SetActive(true);
+		attackTransform_.rotate.x = Easing(kAttackFirstStartModelRotateX, kAttackFirstSpinModelRotateX, attackTimer_, attackTimeMax_, EaseType::kConstant);
+
+		if (attackTimer_ >= attackTimeMax_) {
+			SetNextAttackPhase(kAttackThirdFinish);
+		}
+		break;
+	case 2:
+		attackTransform_.rotate.x = Easing(kAttackFirstSpinModelRotateX, Radian(360.0f), attackTimer_, attackTimeMax_, EaseType::kEaseOut);
+		transformModel.translate.y = Easing(kAttackFirstSpinModelPosY, 0.0f, attackTimer_, attackTimeMax_, EaseType::kEaseOut);
+
 		if (attackTimer_ >= attackTimeMax_) {
 			BehaviorAttackFinished();
 		}
@@ -283,24 +442,13 @@ void Player::AttackFirstUpdate(){
 	attackCollider_.DrawCollider();
 }
 
-void Player::AttackSecondInitialize(){
-}
-
-void Player::AttackSecondUpdate(){
-}
-
-void Player::AttackThreeInitialize(){
-}
-
-void Player::AttackThreeUpdate(){
-}
-
 void Player::BehaviorDashInitialize() {
 
 	transform_.rotate.y = targetRotateY;
 }
 
 void Player::BehaviorDashUpdate() {
+	isDash_ = true;
 	isMoving_ = true;
 	InputManager* input = InputManager::GetInstance();
 	if (input->IsGamePadConnect()) {
@@ -356,16 +504,23 @@ void Player::BehaviorJumpUpdate() {
 void Player::UpdateFloatingGimmick() {
 	float kFloatingAnimationStep = 2.0f * std::numbers::pi_v<float> / kFloatingAnimationPeriod;
 	floatingParameter += kFloatingAnimationStep;
-	
+
 	floatingParameter = std::fmod(floatingParameter, 2.0f * std::numbers::pi_v<float>);
-	
+
 	transformColliderOffset.translate.y = (std::sin(floatingParameter) * kFloatingAmplitude) + kBodyBlankY;
 }
 
 void Player::Draw() {
-	Renderer::GetInstance()->DrawModel(transformModel, &model_, false);
-
-	Renderer::GetInstance()->DrawShadow(transformModel, &model_, { 0.0f,0.0f,0.0f,1.0f });
+	Transform dashT;
+	dashT.Initialize();
+	dashT.SetParent(&transformModel);
+	dashT.rotate.x = Radian(90.0f);
+	if (behavior_ == Behavior::kDash) {
+		Renderer::GetInstance()->DrawShadow(dashT, &model_, { 0.4f,0.4f,1.0f,1.0f });
+	} else {
+		Renderer::GetInstance()->DrawModel(transformModel, &model_, false);
+		Renderer::GetInstance()->DrawShadow(transformModel, &model_, { 0.0f,0.0f,0.0f,1.0f });
+	}
 
 	//particles_->Draw();
 
@@ -402,7 +557,7 @@ void Player::OnCollision([[maybe_unused]] Collider* other) {
 		} else {
 			damageCoolTimer_ = other->GetDamageCoolTime();
 		}
-		
+
 		if (currentHP_ < 0.0f) {
 			currentHP_ = 0.0f;
 		}

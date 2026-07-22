@@ -46,8 +46,12 @@ public:
 
 	Vector3 GetWorldPosition() override { return transform_.GetAffineMatrix().GetMatrixToTranslate(); };
 
+	bool GetIsAttack() { return isAttack_; };
+
 	void OnCollision([[maybe_unused]] Collider* other)override;
 private:
+	bool GetAttackButtonTrigger();
+
 	void BehaviorRootInitialize();
 	void BehaviorRootUpdate();
 
@@ -66,6 +70,9 @@ private:
 
 	void UpdateFloatingGimmick();
 private:
+	bool isAttack_;
+	bool isDash_;
+
 	std::unique_ptr<HPGauge> hpGauge_;
 
 	float currentHP_;
@@ -124,6 +131,7 @@ private:
 	uint32_t attackPhase_;
 	float attackTimer_;
 	float attackTimeMax_;
+	bool useNextAttack_;
 
 	Transform attackTransform_;
 
@@ -131,10 +139,23 @@ private:
 	static inline float kAttackFirstStart = 0.05f;
 	static inline float kAttackFirstSpin = 0.2f;
 	static inline float kAttackFirstFinish = 0.05f;
-	static inline float kAttackSecondStart = 0.3f;
 
 	static inline float kAttackFirstStartModelRotateX = Radian(20.0f);
 	static inline float kAttackFirstSpinModelRotateX = Radian(340.0f);
 	static inline float kAttackFirstSpinModelPosY = 0.7f;
+
+
+	static inline float kAttackSecondStart = 0.05f;
+	static inline float kAttackSecondSpin = 0.2f;
+	static inline float kAttackSecondFinish = 0.05f;
+
+	//static inline float kAttackFirstStartModelRotateX = Radian(20.0f);
+	//static inline float kAttackFirstSpinModelRotateX = Radian(340.0f);
+	//static inline float kAttackFirstSpinModelPosY = 0.7f;
+
+
+	static inline float kAttackThirdStart = 0.1f;
+	static inline float kAttackThirdSpin = 0.4f;
+	static inline float kAttackThirdFinish = 0.1f;
 };
 

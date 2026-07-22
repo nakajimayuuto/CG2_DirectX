@@ -14,6 +14,8 @@ public:
 
 	void SetTargetTransform(Transform* transform) { targetTransform_ = transform; };
 
+	void SetTargetIsAttact(bool isAttack) { isAttack_ = isAttack; };
+
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();
 
@@ -79,6 +81,8 @@ private:
 
 	float currentHP_;
 	float maxHP_;
+
+	bool isAttack_;
 private:
 
 	void SetAttackData(Attacks attackName,float weight,DistanceName name);
@@ -168,10 +172,9 @@ private:
 	Transform attackTempTransform_;
 
 	// ダメージ処理.
-	float damageCoolTimeFirst_;
-	float damageCoolTimeSecond_;
+	float damageCoolTimer_;
+	uint32_t damageCountFirst_;
 	uint32_t damageCountSecond_;
-	float damageCoolTimeThird_;
 	uint32_t damageCountThird_;
 
 
@@ -188,7 +191,7 @@ private:
 	Transform preTransform_;
 
 	float attackCoolTimer_;
-	float attackCoolTimeMax_ = 2.0f;
+	float attackCoolTimeMax_ = 3.0f;
 
 	static inline float kBulletDamage = 10.0f;
 	static inline float kFireBulletDamage = 50.0f;

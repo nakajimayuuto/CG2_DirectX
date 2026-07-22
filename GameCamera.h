@@ -14,6 +14,7 @@ public:
 	void SetEnemyTransform(const Transform* target) { targetEnemy_ = target; };
 
 	void SetTargetIsMove(bool isMove) { isMove_ = isMove; };
+	void SetTargetIsDash(bool isDash) { isDash_ = isDash; };
 
 	void Reset();
 private:
@@ -46,6 +47,7 @@ private:
 	const Transform* targetEnemy_ = nullptr;
 
 	bool isMove_;
+	bool isDash_;
 
 	float preTargetRotateY_;
 
