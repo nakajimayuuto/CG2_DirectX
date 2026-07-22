@@ -77,7 +77,6 @@ private:
 
 	DistanceName currentDistance_;
 
-
 	float currentHP_;
 	float maxHP_;
 private:
@@ -135,6 +134,11 @@ private:
 	std::vector<AttackData> middleAttackDatas_;
 	std::vector<AttackData> farAttackDatas_;
 private:
+	//Debug.
+	bool useDebugUpdateStop = false;
+
+
+
 	// Anim
 	Transform destinationHalberdTransform_;
 	static inline float kDestinationCompletionRate = 0.25f;
@@ -169,7 +173,6 @@ private:
 	float kMaxAttackTimer = 0.0f; // 攻撃のタイマー最大値.
 	uint32_t currentAttackPhase = 0; // 攻撃のフェーズ.
 	float difficultyMagnificationTime = 1.0f; // タイマーの難易度倍率.
-	float difficultyMagnificationDamage = 1.0f; // ダメージの難易度倍率.
 	float dopamineSpeed_ = 1.0f; // スーパードパガキモード.
 	Transform preTransform_;
 

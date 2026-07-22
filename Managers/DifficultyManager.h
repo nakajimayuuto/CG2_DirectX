@@ -4,6 +4,7 @@ enum Difficulty{
 	kDifficultyNormal,
 	kDifficultyHard,
 	kDifficultyHell,
+	kDifficultyCount,
 };
 
 class DifficultyManager{
@@ -19,7 +20,12 @@ public:
 	void SetPlayerHPData(float* hp, float hpMax) { playerHP = hp; playerHPMax = hpMax; };
 	void SetBossHPData(float* hp, float hpMax) { bossHP = hp; bossHPMax = hpMax; };
 
+	void SetCurrentDifficulty(Difficulty newDifficulty) { currentDifficulty_ = newDifficulty; };
+
 	Difficulty GetCurrentDifficulty() { return currentDifficulty_; };
+
+	float GetSpeedMagnification() { return speedMagnification_; };
+	float GetDamageMagnification() { return damageMagnification_; };
 private:
 	void DebugUpdate();
 private:
@@ -31,5 +37,8 @@ private:
 	float bossHPMax;
 
 	float dopamineSpeed_;
+
+	float speedMagnification_;
+	float damageMagnification_;
 };
 

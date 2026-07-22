@@ -3,9 +3,8 @@
 void Player::Initialize() {
 	transform_.Initialize();
 	targetRotateY = 0.0f;
-	models_["drill_ghost"].Initialize(ModelManager::GetInstance()->GetModelInfo("drill_ghost"));
-	models_["body"].Initialize(ModelManager::GetInstance()->GetModelInfo("player"));
-	models_["drill_ghost"].SetBlendMode(BlendMode::kNormalCullNone);
+	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("drill_ghost"));
+	model_.SetBlendMode(BlendMode::kNormalCullNone);
 	transform_.translate = {0.0f, kTranslateBlankY,-30.0f };
 
 	/// HPGauge.
@@ -17,27 +16,9 @@ void Player::Initialize() {
 	hpGauge_->SetPosition({-500.0f,300.0f});
 
 	// 後々削除
-	transformBody_.Initialize();
-	transformBody_.translate.y = kBodyBlankY;
-	transformBody_.SetParent(&transform_);
-
-	models_["head"].Initialize("player_head");
-	transformHead_.Initialize();
-	transformHead_.SetParent(&transformBody_);
-
-	models_["LArm"].Initialize("player_left_arm");
-	transformLArm_.Initialize();
-	transformLArm_.SetParent(&transformBody_);
-	transformLArm_.translate.x = -0.5f;
-
-	models_["RArm"].Initialize("player_right_arm");
-	transformRArm_.Initialize();
-	transformRArm_.SetParent(&transformBody_);
-	transformRArm_.translate.x = 0.5f;
-
-	models_["hammer_of_justice"].Initialize("hammer_of_justice");
-	transformHammer_.Initialize();
-	transformHammer_.SetParent(&transformBody_);
+	transformModel.Initialize();
+	transformModel.translate.y = kBodyBlankY;
+	transformModel.SetParent(&transform_);
 	//transform_.rotate.y = std::atan2(velocity.x, velocity.z);
 	//Vector3 velocityXZ = { velocity.x,0.0f,velocity.z };
 	//transform_.rotate.x = std::atan2(-velocity.y, velocityXZ.Length());
@@ -214,8 +195,25 @@ void Player::BehaviorRootUpdate() {
 	UpdateFloatingGimmick();
 
 }
+void Player::BehaviorAttackInitialize(){
+	attackTimer_ = 0.0f;
+}
+void Player::BehaviorAttackUpdate(){
+	switch (attackPhase_){
+	case 0:
+
+		break;
+	case 1:
+		break;
+	case 2:
+		break;
+	default:
+		break;
+	}
+
+}
 void Player::BehaviorDashInitialize() {
-	workDash_.dashParameter_ = 0.0f;
+
 	transform_.rotate.y = targetRotateY;
 }
 
@@ -241,8 +239,6 @@ void Player::BehaviorDashUpdate() {
 			transform_.rotate.y += Radian(3.0f);
 		}
 	}
-
-	workDash_.dashParameter_ += DeltaTime::GetInstance()->GetGameTime();
 
 	Vector3 move = { 0.0f,0.0f,kDashSpeed };
 
@@ -280,21 +276,13 @@ void Player::UpdateFloatingGimmick() {
 
 	floatingParameter = std::fmod(floatingParameter, 2.0f * std::numbers::pi_v<float>);
 
-	transformBody_.translate.y = (std::sin(floatingParameter) * kFloatingAmplitude) + kBodyBlankY;
+	transformModel.translate.y = (std::sin(floatingParameter) * kFloatingAmplitude) + kBodyBlankY;
 }
 
 void Player::Draw() {
-	Renderer::GetInstance()->DrawModel(transformBody_, &models_["drill_ghost"], false);
-	//Renderer::GetInstance()->DrawModel(transformHead_, &models_["head"], false);
-	//Renderer::GetInstance()->DrawModel(transformLArm_, &models_["LArm"], false);
-	//Renderer::GetInstance()->DrawModel(transformRArm_, &models_["RArm"], false);
+	Renderer::GetInstance()->DrawModel(transformModel, &model_, false);
 
-	//models_["RArm"].GetColor();
-
-	Renderer::GetInstance()->DrawShadow(transformBody_, &models_["drill_ghost"], { 0.0f,0.0f,0.0f,1.0f });
-	//Renderer::GetInstance()->DrawShadow(transformHead_, &models_["head"], { 0.0f,0.0f,0.0f,1.0f });
-	//Renderer::GetInstance()->DrawShadow(transformLArm_, &models_["LArm"], { 0.0f,0.0f,0.0f,1.0f });
-	//Renderer::GetInstance()->DrawShadow(transformRArm_, &models_["RArm"], { 0.0f,0.0f,0.0f,1.0f });
+	Renderer::GetInstance()->DrawShadow(transformModel, &model_, { 0.0f,0.0f,0.0f,1.0f });
 
 	//particles_->Draw();
 
@@ -307,40 +295,15 @@ void Player::RegisterGlobalVariables() {
 
 	const char* groupName = "Player";
 
-	GlobalVariables::GetInstance()->AddValue(groupName, "Head Translate", transformHead_.translate);
-	GlobalVariables::GetInstance()->AddValue(groupName, "ArmL Translate", transformLArm_.translate);
-	GlobalVariables::GetInstance()->AddValue(groupName, "ArmR Translate", transformRArm_.translate);
 	GlobalVariables::GetInstance()->AddValue(groupName, "FloatingAnimationPeriod", kFloatingAnimationPeriod);
 	GlobalVariables::GetInstance()->AddValue(groupName, "FloatingAmplitude", kFloatingAmplitude);
-
-	for (uint32_t i = 0; i < kComboNum; i++) {
-		GlobalVariables::GetInstance()->AddValue(groupName, std::format("anticipationTime Combo{}", i), kConstAttacks_[i].anticipationTime);
-		GlobalVariables::GetInstance()->AddValue(groupName, std::format("anticipationSpeed Combo{}", i), kConstAttacks_[i].anticipationSpeed);
-		GlobalVariables::GetInstance()->AddValue(groupName, std::format("chargeTime Combo{}", i), kConstAttacks_[i].chargeTime);
-		GlobalVariables::GetInstance()->AddValue(groupName, std::format("chargeSpeed Combo{}", i), kConstAttacks_[i].chargeSpeed);
-		GlobalVariables::GetInstance()->AddValue(groupName, std::format("swingTime Combo{}", i), kConstAttacks_[i].swingTime);
-		GlobalVariables::GetInstance()->AddValue(groupName, std::format("swingSpeed Combo{}", i), kConstAttacks_[i].swingSpeed);
-		GlobalVariables::GetInstance()->AddValue(groupName, std::format("recoveryTime Combo{}", i), kConstAttacks_[i].recoveryTime);
-	}
 }
 
 void Player::ApplyGlobalVariables() {
 	const char* groupName = "Player";
-	transformHead_.translate = GlobalVariables::GetInstance()->GetVector3Value(groupName, "Head Translate");
-	transformLArm_.translate = GlobalVariables::GetInstance()->GetVector3Value(groupName, "ArmL Translate");
-	transformRArm_.translate = GlobalVariables::GetInstance()->GetVector3Value(groupName, "ArmR Translate");
 	kFloatingAnimationPeriod = GlobalVariables::GetInstance()->GetIntValue(groupName, "FloatingAnimationPeriod");
 	kFloatingAmplitude = GlobalVariables::GetInstance()->GetFloatValue(groupName, "FloatingAmplitude");
 
-	for (uint32_t i = 0; i < kComboNum; i++) {
-		kConstAttacks_[i].anticipationTime = GlobalVariables::GetInstance()->GetFloatValue(groupName, std::format("anticipationTime Combo{}", i));
-		kConstAttacks_[i].anticipationSpeed = GlobalVariables::GetInstance()->GetFloatValue(groupName, std::format("anticipationSpeed Combo{}", i));
-		kConstAttacks_[i].chargeTime = GlobalVariables::GetInstance()->GetFloatValue(groupName, std::format("chargeTime Combo{}", i));
-		kConstAttacks_[i].chargeSpeed = GlobalVariables::GetInstance()->GetFloatValue(groupName, std::format("chargeSpeed Combo{}", i));
-		kConstAttacks_[i].swingTime = GlobalVariables::GetInstance()->GetFloatValue(groupName, std::format("swingTime Combo{}", i));
-		kConstAttacks_[i].swingSpeed = GlobalVariables::GetInstance()->GetFloatValue(groupName, std::format("swingSpeed Combo{}", i));
-		kConstAttacks_[i].recoveryTime = GlobalVariables::GetInstance()->GetFloatValue(groupName, std::format("recoveryTime Combo{}", i));
-	}
 }
 
 void Player::OnCollision([[maybe_unused]] Collider* other) {
@@ -348,7 +311,7 @@ void Player::OnCollision([[maybe_unused]] Collider* other) {
 	colliderColor_ = { 1.0f,0.0f,0.0f,1.0f };
 
 	if (damageCoolTimer_ <= 0.0f) {
-		currentHP_ -= other->GetDamage();
+		currentHP_ -= (other->GetDamage() * DifficultyManager::GetInstance()->GetDamageMagnification());
 
 		DeltaTime::GetInstance()->SetHitStop(other->GetDamage() * 0.01f);
 		if (other->GetDamageCoolTime() == -1.0f) {
@@ -361,8 +324,4 @@ void Player::OnCollision([[maybe_unused]] Collider* other) {
 			currentHP_ = 0.0f;
 		}
 	}
-}
-
-float Player::GetSumComboTime(uint32_t index) {
-	return kConstAttacks_[index].anticipationTime + kConstAttacks_[index].chargeTime + kConstAttacks_[index].recoveryTime + kConstAttacks_[index].swingTime;
 }

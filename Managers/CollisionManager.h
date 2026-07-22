@@ -5,6 +5,7 @@ enum CollisionAttributeName {
 	kCollisionPlayer,
 	kCollisionEnemy,
 	kCollisionEnemyAttack,
+	kCollisionPlayerAttack,
 };
 
 class CollisionManager{

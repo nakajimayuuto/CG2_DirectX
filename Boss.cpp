@@ -69,7 +69,7 @@ void Boss::Initialize() {
 	colliderType_ = ColliderType::kBox;
 	colliderSize_ = kBasicColliderSize;
 	collisionAttribute_ = CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy);
-	//collisionMask_ = kCollisionAttribute[kCollisionPlayer];
+	collisionMask_ = CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack);
 
 	colliderColor_ = { 0.6f,0.3f,1.0f,1.0f };
 
@@ -93,15 +93,20 @@ void Boss::Initialize() {
 	GameCamera::GetInstance()->SetEnemyTransform(&transform_);
 
 	Phase1Initialize();
+
+#ifdef _DEBUG
+	useDebugUpdateStop = true;
+#endif // _DEBUG
+
 }
 
-void Boss::SetAttackData(Attacks attackName, float weight, DistanceName name){
+void Boss::SetAttackData(Attacks attackName, float weight, DistanceName name) {
 	AttackData newData;
 	newData.attackName = attackName;
 	newData.continuousCount = 0;
 	newData.weight = weight;
 	newData.magnification = 1.0f;
-	switch (name){
+	switch (name) {
 	case Boss::DistanceName::kNear:
 		nearAttackDatas_.push_back(newData);
 		break;
@@ -119,23 +124,25 @@ void Boss::Phase1Initialize() {
 	middleAttackDatas_.clear();
 	farAttackDatas_.clear();
 
-	SetAttackData(Attacks::kBulletShot,1.0f,DistanceName::kFar);
-	SetAttackData(Attacks::kDiffusionShot,0.5f,DistanceName::kFar);
-	SetAttackData(Attacks::kMovingShot,0.5f,DistanceName::kFar);
+	SetAttackData(Attacks::kBulletShot, 1.0f, DistanceName::kFar);
+	SetAttackData(Attacks::kDiffusionShot, 0.5f, DistanceName::kFar);
+	SetAttackData(Attacks::kMovingShot, 0.5f, DistanceName::kFar);
 
-	SetAttackData(Attacks::kBounsShot,0.5f,DistanceName::kMiddle);
-	SetAttackData(Attacks::kFangAttack,0.5f,DistanceName::kMiddle);
-	SetAttackData(Attacks::kPowerSlasher,0.5f,DistanceName::kMiddle);
-	SetAttackData(Attacks::kSpinningHalberd,0.5f,DistanceName::kMiddle);
+	SetAttackData(Attacks::kBounsShot, 0.5f, DistanceName::kMiddle);
+	SetAttackData(Attacks::kFangAttack, 0.5f, DistanceName::kMiddle);
+	SetAttackData(Attacks::kPowerSlasher, 0.5f, DistanceName::kMiddle);
+	SetAttackData(Attacks::kSpinningHalberd, 0.5f, DistanceName::kMiddle);
 
-	SetAttackData(Attacks::kNearAttack,0.5f,DistanceName::kNear);
-	SetAttackData(Attacks::kMovingShot,0.5f,DistanceName::kNear);
-	SetAttackData(Attacks::kPowerSlasher,0.5f,DistanceName::kNear);
+	SetAttackData(Attacks::kNearAttack, 0.5f, DistanceName::kNear);
+	SetAttackData(Attacks::kMovingShot, 0.5f, DistanceName::kNear);
+	SetAttackData(Attacks::kPowerSlasher, 0.5f, DistanceName::kNear);
 
 }
 
 void Boss::Update() {
 	dopamineSpeed_ = DifficultyManager::GetInstance()->GetDopamineSpeed();
+
+	difficultyMagnificationTime = DifficultyManager::GetInstance()->GetSpeedMagnification();
 
 	deltaTime_ = DeltaTime::GetInstance()->GetGameTime();
 
@@ -146,6 +153,18 @@ void Boss::Update() {
 #ifdef _DEBUG
 
 	ImGui::Begin("BossDebug");
+
+	if (ImGui::Button("useUpdateStop")) {
+		if (useDebugUpdateStop) {
+			useDebugUpdateStop = false;
+		} else {
+			useDebugUpdateStop = true;
+			AttackFinished();
+		}
+	}
+	ImGui::Text("&s", useDebugUpdateStop ? "true" : "false");
+
+
 	Vector3 imRotate = Degree(transform_.rotate);
 	ImGui::DragFloat3("scale", reinterpret_cast<float*>(&transform_.scale), 0.05f, 0.0f, 5.0f);
 	ImGui::DragFloat3("rotate", reinterpret_cast<float*>(&imRotate), 1.0f, -360.0f, 360.0f);
@@ -175,7 +194,7 @@ void Boss::Update() {
 
 	AttackUpdate();
 
-	
+
 
 	halberdTransform_.scale = Lerp(halberdTransform_.scale, destinationHalberdTransform_.scale, kDestinationCompletionRate);
 	halberdTransform_.rotate = LerpShortAngle(halberdTransform_.rotate, destinationHalberdTransform_.rotate, kDestinationCompletionRate);
@@ -200,7 +219,9 @@ void Boss::RootUpdate() {
 		return;
 	}
 
+	if (!useDebugUpdateStop) {
 		attackCoolTimer_ += deltaTime_ * difficultyMagnificationTime * dopamineSpeed_;
+	}
 
 	destinationAngleY_ = atan2(transform_.translate.x - targetTransform_->translate.x, transform_.translate.z - targetTransform_->translate.z);
 	transform_.rotate.y = LerpShortAngle(transform_.rotate.y, destinationAngleY_, 0.25f);
@@ -225,17 +246,17 @@ void Boss::RootUpdate() {
 	}
 }
 
-void Boss::AttackSelect(std::vector<AttackData> attackDatas){
+void Boss::AttackSelect(std::vector<AttackData> attackDatas) {
 	std::vector<std::pair<Attacks, float>> randomData;
 	float weightMax = 0.0f;
 	float selectNum;
 
 	for (AttackData& data : attackDatas) {
 		float weight = data.weight * std::pow(0.5f, static_cast<float>(data.continuousCount)) * data.magnification * 10000.0f;
-		
+
 		weightMax = weight + weightMax;
 
-		randomData.push_back(std::pair<Attacks, float>(data.attackName,weight));
+		randomData.push_back(std::pair<Attacks, float>(data.attackName, weight));
 	}
 
 	selectNum = Random::GetInstance()->RandomFloat(1.0f, weightMax);
@@ -253,7 +274,7 @@ void Boss::AttackSelect(std::vector<AttackData> attackDatas){
 	ClearAttackDatas();
 }
 
-void Boss::ClearAttackDatas(){
+void Boss::ClearAttackDatas() {
 	for (AttackData& data : nearAttackDatas_) {
 		data.magnification = 1.0f;
 		if (data.attackName == attackRequest_) {
@@ -289,7 +310,7 @@ void Boss::ClearAttackDatas(){
 }
 
 void Boss::HalberdStanceUpdate() {
-	switch (currentDistance_){
+	switch (currentDistance_) {
 	case Boss::DistanceName::kNear:
 		basicHalberdPos = kBasicHalberdNearPos;
 		basicHalberdRotate = kBasicHalberdNearRotate;
@@ -323,6 +344,15 @@ void Boss::Draw() {
 }
 
 void Boss::OnCollision(Collider* other) {
+	if ((other->GetCollisionAttribute() & CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack)) == 0x0) {
+		currentHP_ -= other->GetDamage();
+
+		DeltaTime::GetInstance()->SetHitStop(other->GetDamage() * 0.01f);
+
+		if (currentHP_ < 0.0f) {
+			currentHP_ = 0.0f;
+		}
+	}
 }
 
 Vector3 Boss::GetMoveAnchorPointFindAll() {
@@ -965,7 +995,7 @@ void Boss::FangAttackUpdate() {
 			//		spikePos_.push_back(newTransform.GetWorldPosition());
 			//	}
 			//} else {
-				ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, Vector3(-RadianToVector(rotateY).x, 0.0f, RadianToVector(rotateY).y) * 20.0f, BulletType::kSpike, kCollisionEnemyAttack, 15.0f, 3.0f);
+			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, Vector3(-RadianToVector(rotateY).x, 0.0f, RadianToVector(rotateY).y) * 20.0f, BulletType::kSpike, kCollisionEnemyAttack, 15.0f, 3.0f);
 			//}
 
 		}

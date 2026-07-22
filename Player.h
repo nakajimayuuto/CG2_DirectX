@@ -48,13 +48,11 @@ public:
 
 	void OnCollision([[maybe_unused]] Collider* other)override;
 private:
-	float GetSumComboTime(uint32_t index);
-
 	void BehaviorRootInitialize();
 	void BehaviorRootUpdate();
 
-	void BehaviorAttackInitialize() {};
-	void BehaviorAttackUpdate() {};
+	void BehaviorAttackInitialize();
+	void BehaviorAttackUpdate();
 
 	void BehaviorDashInitialize();
 	void BehaviorDashUpdate();
@@ -67,23 +65,6 @@ private:
 
 	void UpdateFloatingGimmick();
 private:
-	enum AttackPhase {
-		kCharge,
-		kStamp,
-		kStay,
-	};
-
-	struct WorkDash {
-		float dashParameter_ = 0.0f;
-	};
-
-	struct AttackWork {
-		float attackParameter = 0.0f;
-		uint32_t comboIndex = 0;
-		uint32_t inComboPhase = 0;
-		bool comboNext = false;
-	};
-
 	std::unique_ptr<HPGauge> hpGauge_;
 
 	float currentHP_;
@@ -91,8 +72,6 @@ private:
 
 	float damageCoolTimer_;
 	float damageCoolTimeMax_;
-
-
 
 	static inline float kSpeed = 10.0f;
 	static inline float kDashSpeed = 25.0f;
@@ -108,59 +87,25 @@ private:
 
 	std::optional<Behavior> behaviorRequest_ = std::nullopt;
 
-	Vector3 beforeHammerRotate_ = {0.0f,0.0f,0.0f};
-
-	static inline float kStampAnimationMaxTime = 0.5f;
-
-	static inline float kStartHammerRotateX = 0.0f;
-	static inline float kStampHammerRotateX = Radian(90.0f);
-
-	static inline Vector3 kRollingStartHammerRotate = { Radian(60.0f),0.0f,Radian(90.0f) };
-	static inline float kRollingStartAnimationMaxTime = 0.25f;
-
-	static inline Vector3 kRollingSwingHammerRotate = { Radian(480.0f),0.0f,Radian(90.0f) };
-	static inline float kRollingSwingAnimationMaxTime = 0.25f;
-
-	static inline Vector3 kExtraSwingHammerRotate = {Radian(1200.0f),0.0f,0.0f};
-
-	AttackPhase attackPhase_;
-
-	static inline const uint32_t kComboNum = 3;
-
-	AttackWork workAttack_;
-
-	static inline std::array<Player::ConstAttack, Player::kComboNum> kConstAttacks_;
-
-	float hammerAnimationTimer_ = 0.0f;
-
-	static inline float kBehaviorDashTime = 0.5f;
-
-	WorkDash workDash_;
-
 	static inline float kJumpFirstSpeed_ = 10.0f;
 
 	Vector3 velocity_;
 	static inline float kGravityAcceleration = 0.5f;
 
-	//std::unique_ptr<Particles> particles_ = nullptr;
-	//
-	//std::unique_ptr<Emitter> emitter_ = nullptr;
-
 	bool isMoving_;
 
 	float targetRotateY;
 
-	Transform transformBody_;
-	static inline Transform transformHead_;
-	static inline Transform transformRArm_;
-	static inline Transform transformLArm_;
-	static inline Transform transformHammer_;
+	Transform transformModel;
 
-	std::map<std::string, Model> models_;
+	Model model_;
 
 	static inline float kTranslateBlankY = 1.2f;
 	static inline float kBodyBlankY = 0.3f;
 
 	static inline float kThreshold = 0.2f;
+private:
+	uint32_t attackPhase_;
+	float attackTimer_;
 };
 
