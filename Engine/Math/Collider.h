@@ -58,6 +58,9 @@ public:
 
 	bool GetActive() { return isColliderActive_; };
 	void SetActive(bool isActive) {isColliderActive_ = isActive; };
+
+	void SetDamageType(uint32_t damageType) { damageType_ = damageType; };
+	uint32_t GetDamageType() { return damageType_; };
 protected:
 	void CreateObbCollider();
 protected:
@@ -85,6 +88,7 @@ protected:
 	float damage_ = 10.0f;
 
 	float damageCoolTime_ = -1.0f;
+	uint32_t damageType_ = 0;
 
 
 	bool isColliderActive_ = true;

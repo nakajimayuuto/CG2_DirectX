@@ -81,7 +81,7 @@ void Boss::Initialize() {
 	attackTempCollider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy));
 	attackTempCollider_->SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
 
-	maxHP_ = 1000.0f;
+	maxHP_ = 3000.0f;
 	currentHP_ = maxHP_;
 
 	hpGauge = std::make_unique<HPGauge>();
@@ -184,9 +184,7 @@ void Boss::Update() {
 	ImGui::End();
 #endif // _DEBUG
 
-	if (InputManager::GetInstance()->TriggerKey(DIK_P)) {
-		attackRequest_ = Attacks::kFangAttack;
-	}
+	DamageCoolTimeUpdate();
 
 	RootUpdate();
 
@@ -344,15 +342,47 @@ void Boss::Draw() {
 }
 
 void Boss::OnCollision(Collider* other) {
-	if ((other->GetCollisionAttribute() & CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack)) == 0x0) {
-		currentHP_ -= other->GetDamage();
+	//if ((other->GetCollisionAttribute() & CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack)) == 0x0) {
+		switch (other->GetDamageType()) {
+		case 1:
+			//if () {
+			currentHP_ -= other->GetDamage();
 
-		DeltaTime::GetInstance()->SetHitStop(other->GetDamage() * 0.01f);
+			DeltaTime::GetInstance()->SetHitStop(other->GetDamage() * 0.01f);
 
-		if (currentHP_ < 0.0f) {
-			currentHP_ = 0.0f;
+			if (currentHP_ < 0.0f) {
+				currentHP_ = 0.0f;
+			}
+			//}
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		case 4:
+			break;
+		default:
+			currentHP_ -= other->GetDamage();
+
+			DeltaTime::GetInstance()->SetHitStop(other->GetDamage() * 0.01f);
+
+			if (currentHP_ < 0.0f) {
+				currentHP_ = 0.0f;
+			}
+			break;
 		}
+	//}
+}
+
+void Boss::DamageCoolTimeUpdate() {
+	damageCoolTimeFirst_ += deltaTime_;
+	damageCoolTimeSecond_ += deltaTime_;
+	damageCoolTimeThird_ += deltaTime_;
+
+	if (damageCoolTimeSecond_ >= 0) {
+		damageCountSecond_;
 	}
+	damageCountThird_;
 }
 
 Vector3 Boss::GetMoveAnchorPointFindAll() {

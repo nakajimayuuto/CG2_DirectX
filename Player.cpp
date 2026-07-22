@@ -16,9 +16,12 @@ void Player::Initialize() {
 	hpGauge_->SetPosition({-500.0f,300.0f});
 
 	// 後々削除
+	transformColliderOffset.Initialize();
+	transformColliderOffset.translate.y = kBodyBlankY;
+	transformColliderOffset.SetParent(&transform_);
+
 	transformModel.Initialize();
-	transformModel.translate.y = kBodyBlankY;
-	transformModel.SetParent(&transform_);
+	transformModel.SetParent(&transformColliderOffset);
 	//transform_.rotate.y = std::atan2(velocity.x, velocity.z);
 	//Vector3 velocityXZ = { velocity.x,0.0f,velocity.z };
 	//transform_.rotate.x = std::atan2(-velocity.y, velocityXZ.Length());
@@ -172,6 +175,10 @@ void Player::BehaviorRootUpdate() {
 			behaviorRequest_ = Behavior::kDash;
 		}
 
+		if (input->TriggerMouse(MouseButtons::MOUSE_LEFT)) {
+			behaviorRequest_ = Behavior::kAttack;
+		}
+
 		velocity_ = velocity_.Normalize() * kSpeed;
 	}
 
@@ -197,21 +204,97 @@ void Player::BehaviorRootUpdate() {
 }
 void Player::BehaviorAttackInitialize(){
 	attackTimer_ = 0.0f;
+	attackTimeMax_ = kAttackFirstStart;
+	attackComboPhase_ = 0;
+	attackPhase_ = 0;
+	attackTransform_.Initialize();
+	attackTransform_.SetParent(&transformColliderOffset);
+	transformModel.SetParent(&attackTransform_); 
+	AttackFirstInitialize();
 }
 void Player::BehaviorAttackUpdate(){
-	switch (attackPhase_){
-	case 0:
+	attackTimer_ += DeltaTime::GetInstance()->GetGameTime();
 
+
+	switch (attackComboPhase_){
+	case 0:
+		AttackFirstUpdate();
 		break;
 	case 1:
+		AttackSecondUpdate();
 		break;
 	case 2:
-		break;
-	default:
+		AttackThreeUpdate();
 		break;
 	}
 
 }
+void Player::BehaviorAttackFinished(){
+	behaviorRequest_ = Behavior::kRoot;
+	transformModel.SetParent(&transformColliderOffset);
+}
+
+void Player::SetNextAttackPhase(float timeMax) {
+	attackTimeMax_ = timeMax;
+	attackPhase_++;
+	attackTimer_ = 0.0f;
+}
+
+void Player::AttackFirstInitialize(){
+	attackCollider_.SetRadius(1.0f);
+	attackCollider_.SetDamage(35.0f);
+	attackCollider_.SetDamageCoolTime(0.1f);
+	attackCollider_.SetDamageType(1);
+	attackCollider_.SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack));
+}
+
+void Player::AttackFirstUpdate(){
+	attackCollider_.SetActive(false);
+	attackCollider_.SetTransform(transform_);
+	attackCollider_.SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
+	switch (attackPhase_) {
+	case 0:
+		attackTransform_.rotate.x = Easing(0.0f, kAttackFirstStartModelRotateX, attackTimer_, attackTimeMax_, EaseType::kEaseIn);
+		transformModel.translate.y = Easing(0.0f, kAttackFirstSpinModelPosY, attackTimer_, attackTimeMax_, EaseType::kEaseIn);
+
+		if (attackTimer_ >= attackTimeMax_) {
+			SetNextAttackPhase(kAttackFirstSpin);
+		}
+		break;
+	case 1:
+	attackCollider_.SetActive(true);
+		attackTransform_.rotate.x = Easing(kAttackFirstStartModelRotateX,kAttackFirstSpinModelRotateX, attackTimer_, attackTimeMax_, EaseType::kConstant);
+
+		if (attackTimer_ >= attackTimeMax_) {
+			SetNextAttackPhase(kAttackFirstFinish);
+		}
+		break;
+	case 2:
+		attackTransform_.rotate.x = Easing(kAttackFirstSpinModelRotateX, Radian(360.0f), attackTimer_, attackTimeMax_, EaseType::kEaseOut);
+		transformModel.translate.y = Easing( kAttackFirstSpinModelPosY, 0.0f, attackTimer_, attackTimeMax_, EaseType::kEaseOut);
+		
+		if (attackTimer_ >= attackTimeMax_) {
+			BehaviorAttackFinished();
+		}
+		break;
+	}
+
+	CollisionManager::GetInstance()->AddColliderList(&attackCollider_);
+	attackCollider_.DrawCollider();
+}
+
+void Player::AttackSecondInitialize(){
+}
+
+void Player::AttackSecondUpdate(){
+}
+
+void Player::AttackThreeInitialize(){
+}
+
+void Player::AttackThreeUpdate(){
+}
+
 void Player::BehaviorDashInitialize() {
 
 	transform_.rotate.y = targetRotateY;
@@ -273,10 +356,10 @@ void Player::BehaviorJumpUpdate() {
 void Player::UpdateFloatingGimmick() {
 	float kFloatingAnimationStep = 2.0f * std::numbers::pi_v<float> / kFloatingAnimationPeriod;
 	floatingParameter += kFloatingAnimationStep;
-
+	
 	floatingParameter = std::fmod(floatingParameter, 2.0f * std::numbers::pi_v<float>);
-
-	transformModel.translate.y = (std::sin(floatingParameter) * kFloatingAmplitude) + kBodyBlankY;
+	
+	transformColliderOffset.translate.y = (std::sin(floatingParameter) * kFloatingAmplitude) + kBodyBlankY;
 }
 
 void Player::Draw() {

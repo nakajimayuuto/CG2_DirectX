@@ -244,11 +244,6 @@ public:
 	bool ReleasePadButton(PadButtons button) const { return gamePad_.ReleaseButton(button); };
 	bool NonePadButton(PadButtons button) const { return gamePad_.NoneButton(button); };
 
-	bool PressMouseButton(PadButtons button) const { return gamePad_.PressButton(button); };
-	bool TriggerMouseButton(PadButtons button) const { return gamePad_.TriggerButton(button); };
-	bool ReleaseMouseButton(PadButtons button) const { return gamePad_.ReleaseButton(button); };
-	bool NoneMouseButton(PadButtons button) const { return gamePad_.NoneButton(button); };
-
 	bool PressMouse(MouseButtons button) const { return mouse_.PressMouse(button); };
 	bool TriggerMouse(MouseButtons button) const { return mouse_.TriggerMouse(button); };
 	bool ReleaseMouse(MouseButtons button) const { return mouse_.ReleaseMouse(button); };

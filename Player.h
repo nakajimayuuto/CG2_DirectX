@@ -53,6 +53,7 @@ private:
 
 	void BehaviorAttackInitialize();
 	void BehaviorAttackUpdate();
+	void BehaviorAttackFinished();
 
 	void BehaviorDashInitialize();
 	void BehaviorDashUpdate();
@@ -95,7 +96,7 @@ private:
 	bool isMoving_;
 
 	float targetRotateY;
-
+	Transform transformColliderOffset;
 	Transform transformModel;
 
 	Model model_;
@@ -105,7 +106,35 @@ private:
 
 	static inline float kThreshold = 0.2f;
 private:
+	void SetNextAttackPhase(float timeMax);
+
+	void AttackFirstInitialize();
+	void AttackFirstUpdate();
+
+	void AttackSecondInitialize();
+	void AttackSecondUpdate();
+
+	void AttackThreeInitialize();
+	void AttackThreeUpdate();
+
+
+private:
+	Collider attackCollider_;
+	uint32_t attackComboPhase_;
 	uint32_t attackPhase_;
 	float attackTimer_;
+	float attackTimeMax_;
+
+	Transform attackTransform_;
+
+
+	static inline float kAttackFirstStart = 0.05f;
+	static inline float kAttackFirstSpin = 0.2f;
+	static inline float kAttackFirstFinish = 0.05f;
+	static inline float kAttackSecondStart = 0.3f;
+
+	static inline float kAttackFirstStartModelRotateX = Radian(20.0f);
+	static inline float kAttackFirstSpinModelRotateX = Radian(340.0f);
+	static inline float kAttackFirstSpinModelPosY = 0.7f;
 };
 

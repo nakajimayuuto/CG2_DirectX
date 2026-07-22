@@ -11,14 +11,12 @@ void DifficultyManager::Initialize() {
 
 void DifficultyManager::Update() {
 #ifdef _DEBUG
-
 	ImGui::Begin("difficultyManager");
 	int dif = static_cast<int>(currentDifficulty_);
 	ImGui::SliderInt("Difficulty",&dif,0,kDifficultyCount - 1);
 	currentDifficulty_ = static_cast<Difficulty>(dif);
 	ImGui::Text(magic_enum::enum_name(currentDifficulty_).data());
 	ImGui::End();
-
 #endif // _DEBUG
 
 	switch (currentDifficulty_){

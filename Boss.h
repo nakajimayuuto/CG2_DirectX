@@ -126,6 +126,8 @@ private:
 
 	void NearAttackInitialize();
 	void NearAttackUpdate();
+
+	void DamageCoolTimeUpdate();
 private:
 	static void (Boss::* pInitializeFunc[])();
 	static void (Boss::* pUpdateFunc[])();
@@ -164,6 +166,15 @@ private:
 	static inline float kBasicColliderRadius = 0.5f; 
 	std::unique_ptr<Collider> attackTempCollider_;
 	Transform attackTempTransform_;
+
+	// ダメージ処理.
+	float damageCoolTimeFirst_;
+	float damageCoolTimeSecond_;
+	uint32_t damageCountSecond_;
+	float damageCoolTimeThird_;
+	uint32_t damageCountThird_;
+
+
 
 	// 攻撃全般.
 	Attacks currentAttack_ = Attacks::kWarp; // 現在の攻撃.
