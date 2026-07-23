@@ -11,6 +11,12 @@ enum class ColliderType {
 	kTorus,
 };
 
+enum class ColliderDimensionType {
+	k3D,
+	k2D,
+	kAll,
+};
+
 class Collider {
 public:
 	Collider() = default;
@@ -90,6 +96,7 @@ protected:
 	float damageCoolTime_ = -1.0f;
 	uint32_t damageType_ = 0;
 
+	ColliderDimensionType colliderDimensionType_;
 
 	bool isColliderActive_ = true;
 };
