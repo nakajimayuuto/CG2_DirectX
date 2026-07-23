@@ -3,6 +3,12 @@
 #include "HPGauge.h"
 class Boss : public Collider {
 public:
+	enum class Phase {
+		kPhase1,
+		kPhase2,
+		kPhase3,
+	};
+
 	~Boss();
 	void Initialize();
 
@@ -83,8 +89,9 @@ private:
 	float maxHP_;
 
 	bool isAttack_;
-private:
 
+	Phase phase_;
+private:
 	void SetAttackData(Attacks attackName,float weight,DistanceName name);
 
 	void AttackSelect(std::vector<AttackData> attackDatas);
@@ -130,8 +137,6 @@ private:
 
 	void NearAttackInitialize();
 	void NearAttackUpdate();
-
-	void DamageCoolTimeUpdate();
 private:
 	static void (Boss::* pInitializeFunc[])();
 	static void (Boss::* pUpdateFunc[])();

@@ -11,6 +11,11 @@ void GameCamera::Initialize() {
 	isDash_ = false;
 
 	angleDirection_ = 0.0f;
+
+	destinationPlayerAngleY_ = 0.0f;
+	destinationDashAngleY_ = 0.0f;
+	destinationTargetAngleY_ = 0.0f;
+	destinationAngleY_ = 0.0f;
 }
 
 void GameCamera::Update() {

@@ -94,6 +94,9 @@ void Boss::Initialize() {
 
 	Phase1Initialize();
 
+	phase_ = Phase::kPhase1;
+
+
 #ifdef _DEBUG
 	useDebugUpdateStop = true;
 #endif // _DEBUG
@@ -168,14 +171,22 @@ void Boss::Update() {
 			AttackFinished();
 		}
 	}
-	ImGui::Text("&s", useDebugUpdateStop ? "true" : "false");
+	ImGui::Text("%s", useDebugUpdateStop ? "true" : "false");
 
 
 	Vector3 imRotate = Degree(transform_.rotate);
 	ImGui::DragFloat3("scale", reinterpret_cast<float*>(&transform_.scale), 0.05f, 0.0f, 5.0f);
 	ImGui::DragFloat3("rotate", reinterpret_cast<float*>(&imRotate), 1.0f, -360.0f, 360.0f);
 	ImGui::DragFloat3("translate", reinterpret_cast<float*>(&transform_.translate), 0.25f, -100.0f, 100.0f);
+	ImGui::Text("");
 	ImGui::DragFloat("HP", &currentHP_, 1.0f, 0.0f, maxHP_);
+
+	if (ImGui::Button("currentHPChangeMaxHP")) {
+		maxHP_ = currentHP_;
+		hpGauge->Initialize(&currentHP_, maxHP_, { 800.0f,60.0f });
+		hpGauge->SetPosition({ 0.0f,-300.0f });
+	}
+	ImGui::Text("");
 	for (Attacks attack : magic_enum::enum_values<Attacks>()) {
 		if (static_cast<size_t>(attack) == std::size(pUpdateFunc)) {
 			break;
@@ -409,7 +420,7 @@ void Boss::OnCollision(Collider* other) {
 		if (damageCoolTimer_ <= 0.0f) {
 			currentHP_ -= other->GetDamage();
 
-			DeltaTime::GetInstance()->SetHitStop(other->GetDamage() * 0.01f);
+			DeltaTime::GetInstance()->SetHitStop(0.05f);
 
 			damageCoolTimer_ = other->GetDamageCoolTime();
 
@@ -419,7 +430,13 @@ void Boss::OnCollision(Collider* other) {
 		}
 		break;
 	}
-	//}
+	
+	if (phase_ == Phase::kPhase1) {
+		if (currentHP_ < (maxHP_ / 2.0f)) {
+			DeltaTime::GetInstance()->SetHitStop(0.5f);
+			phase_ = Phase::kPhase2;
+		}
+	}
 }
 
 Vector3 Boss::GetMoveAnchorPointFindAll() {
