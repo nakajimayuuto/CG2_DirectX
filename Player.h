@@ -13,6 +13,9 @@ public:
 		kAttack,
 		kDash,
 		kJump,
+		kDashAttack,
+		kDashJumpAttack,
+		kFall,
 	};
 
 	struct ConstAttack {
@@ -53,6 +56,7 @@ public:
 	void TestWallClamp();
 private:
 	bool GetAttackButtonTrigger();
+	bool GetJumpButtonTrigger();
 
 	void BehaviorRootInitialize();
 	void BehaviorRootUpdate();
@@ -66,6 +70,16 @@ private:
 
 	void BehaviorJumpInitialize();
 	void BehaviorJumpUpdate();
+
+	void BehaviorDashAttackInitialize();
+	void BehaviorDashAttackUpdate();
+
+	void BehaviorDashJumpAttackInitialize();
+	void BehaviorDashJumpAttackUpdate();
+	
+
+	void BehaviorFallInitialize();
+	void BehaviorFallUpdate();
 
 
 	void InitializeFloatingGimmick();
@@ -100,7 +114,7 @@ private:
 	static inline float kJumpFirstSpeed_ = 10.0f;
 
 	Vector3 velocity_;
-	static inline float kGravityAcceleration = 0.5f;
+	static inline float kGravityAcceleration = 20.0f;
 
 	bool isMoving_;
 
@@ -159,5 +173,9 @@ private:
 	static inline float kAttackThirdStart = 0.1f;
 	static inline float kAttackThirdSpin = 0.4f;
 	static inline float kAttackThirdFinish = 0.1f;
+
+
+	// DashAttack.
+	static inline float kDashAttackStart = 0.3f;
 };
 

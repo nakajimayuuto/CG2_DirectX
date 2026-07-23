@@ -402,12 +402,16 @@ void Boss::OnCollision(Collider* other) {
 		}
 		break;
 	default:
-		currentHP_ -= other->GetDamage();
+		if (damageCoolTimer_ <= 0.0f) {
+			currentHP_ -= other->GetDamage();
 
-		DeltaTime::GetInstance()->SetHitStop(other->GetDamage() * 0.01f);
+			DeltaTime::GetInstance()->SetHitStop(other->GetDamage() * 0.01f);
 
-		if (currentHP_ < 0.0f) {
-			currentHP_ = 0.0f;
+			damageCoolTimer_ = other->GetDamageCoolTime();
+
+			if (currentHP_ < 0.0f) {
+				currentHP_ = 0.0f;
+			}
 		}
 		break;
 	}

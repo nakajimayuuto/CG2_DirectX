@@ -300,7 +300,7 @@ private:
 
 	// PowerSlasher.
 	static inline float kPowerSlasherStartGapTimerMax = 0.2f;
-	static inline float kPowerSlasherStayTimerMax = 0.3f;
+	static inline float kPowerSlasherStayTimerMax = 0.7f;
 	static inline float kPowerSlasherDashTimerMax = 1.0f;
 	static inline float kPowerSlasherDashToSlashTimerMax = 0.3f;
 	static inline float kPowerSlasherSlashStayTimerMax = 0.5f;
