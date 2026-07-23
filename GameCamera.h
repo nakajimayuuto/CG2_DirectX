@@ -20,6 +20,14 @@ public:
 private:
 	void FollowedUpdate();
 
+	void FollowedControlAction();
+
+	void FollowedWallClamp();
+
+	void FollowedDash();
+
+	void FollowedTarget();
+
 	Vector3 GetOffset()const;
 private:
 	static inline float kCompletionRate = 0.25f;
@@ -32,6 +40,9 @@ private:
 
 	static inline float kMouseRotateSpeed = Radian(0.1f);
 
+	float destinationPlayerAngleY_;
+	float destinationDashAngleY_;
+	float destinationTargetAngleY_;
 	float destinationAngleY_;
 	float autoAngleY_;
 
@@ -54,6 +65,8 @@ private:
 	float wallNearDirection_;
 
 	float movingRadius_ = 70.0f;
+
+	float distanceToCenter_;
 
 	Vector3 interTarget_ = {};
 	Vector3 interOffsetTarget_ = {};
