@@ -57,6 +57,7 @@ public:
 private:
 	bool GetAttackButtonTrigger();
 	bool GetJumpButtonTrigger();
+	bool GetDownPress();
 
 	void BehaviorRootInitialize();
 	void BehaviorRootUpdate();
@@ -111,7 +112,8 @@ private:
 
 	std::optional<Behavior> behaviorRequest_ = std::nullopt;
 
-	static inline float kJumpFirstSpeed_ = 10.0f;
+	static inline float kJumpFirstSpeed_ = 7.0f;
+	static inline float kDashJumpFirstSpeed_ = 12.0f;
 
 	Vector3 velocity_;
 	static inline float kGravityAcceleration = 20.0f;

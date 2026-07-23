@@ -344,9 +344,13 @@ void Boss::Draw() {
 	renderer->DrawModel(halberdTransform_, &halberdModel_, true);
 	renderer->DrawShadow(halberdTransform_, &halberdModel_, { 0.0f,0.0f,0.0f,1.0f });
 
+#ifdef _DEBUG
+
 	for (Vector3& pos : anchorPoints_) {
 		renderer->DrawSphereWireFrame(Transform::GetInitialValue({ 0.1f,0.1f,0.1f }, { 0.0f,0.0f,0.0f }, pos), { 0.5f,0.5f,1.0f,1.0f });
 	}
+
+#endif // _DEBUG
 
 	DrawCollider();
 
@@ -416,14 +420,6 @@ void Boss::OnCollision(Collider* other) {
 		break;
 	}
 	//}
-}
-
-void Boss::DamageCoolTimeUpdate() {
-	//
-	//if (damageCoolTimeSecond_ >= 0) {
-	//	damageCountSecond_;
-	//}
-	//damageCountThird_;
 }
 
 Vector3 Boss::GetMoveAnchorPointFindAll() {

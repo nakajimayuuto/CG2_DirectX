@@ -89,6 +89,21 @@ bool Player::GetJumpButtonTrigger() {
 	return false;
 }
 
+bool Player::GetDownPress(){
+	InputManager* input = InputManager::GetInstance();
+	if (input->IsGamePadConnect()) {
+		if (input->GetLeftStickDirection().y <= - 0.5f) {
+			return true;
+		}
+	} else {
+		if (input->PressKey(DIK_S)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void Player::Update() {
 #ifdef _DEBUG
 	ImGui::Begin("player");
@@ -121,8 +136,6 @@ void Player::Update() {
 			break;
 		case Player::Behavior::kFall:
 			BehaviorFallInitialize();
-			break;
-		default:
 			break;
 		}
 
@@ -574,6 +587,7 @@ void Player::BehaviorDashAttackInitialize() {
 }
 
 void Player::BehaviorDashAttackUpdate() {
+	isDash_ = true;
 	attackCollider_.SetActive(false);
 	attackCollider_.SetTransform(transform_);
 	attackCollider_.SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
@@ -602,8 +616,8 @@ void Player::BehaviorDashAttackUpdate() {
 
 		transformModel.rotate.z += Radian(720.0f) * DeltaTime::GetInstance()->GetGameTime();
 
-		if (transform_.translate.y <= kTranslateBlankY) {
-			transform_.translate.y = kTranslateBlankY;
+		if (transform_.translate.y <= 0.0f) {
+			transform_.translate.y = 0.0f;
 			behaviorRequest_ = Behavior::kDash;
 			transformModel.rotate.x = 0.0f;
 			transformModel.rotate.z = 0.0f;
@@ -617,6 +631,10 @@ void Player::BehaviorDashAttackUpdate() {
 }
 
 void Player::BehaviorDashJumpAttackInitialize() {
+ 	if (GetDownPress()) {
+		velocity_ *= -1.0f;
+		transform_.rotate.y -= Radian(180.0f);
+	}
 	transformModel.rotate.x = Radian(90.0f);
 	attackTimer_ = 0.0f;
 	attackTimeMax_ = kDashAttackStart;
@@ -628,7 +646,7 @@ void Player::BehaviorDashJumpAttackInitialize() {
 	attackCollider_.SetDamageCoolTime(0.02f);
 	attackCollider_.SetDamageType(0);
 	attackCollider_.SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack));
-	velocity_.y = kJumpFirstSpeed_;
+	velocity_.y = kDashJumpFirstSpeed_;
 	useNextAttack_ = false;
 }
 
