@@ -48,13 +48,13 @@ void GameCamera::FollowedUpdate() {
 	FollowedTarget();
 
 	if (isDash_) {
-		destinationAngleY_ = destinationDashAngleY_;// LerpShortAngle(destinationAngleY_, destinationDashAngleY_, kCompletionRate);
+		destinationAngleY_ = LerpShortAngle(destinationPlayerAngleY_, destinationDashAngleY_, 0.05f);
 		destinationPlayerAngleY_ = destinationAngleY_;
 		destinationTargetAngleY_ = destinationAngleY_;
-		//} else if((static_cast<Vector3>(targetEnemy_->translate) - static_cast<Vector3>(target_->translate)).Length() < 30.0f){
-		//	destinationAngleY_ = destinationTargetAngleY_;
-		//  destinationPlayerAngleY_ = destinationAngleY_;
-		//  destinationDashAngleY_ = destinationAngleY_;
+	//} else if((static_cast<Vector3>(targetEnemy_->translate) - static_cast<Vector3>(target_->translate)).Length() < 30.0f){
+	//	destinationAngleY_ =  destinationTargetAngleY_;
+	//	destinationPlayerAngleY_ = destinationAngleY_;
+	//	destinationDashAngleY_ = destinationAngleY_;
 	} else {
 		destinationAngleY_ = destinationPlayerAngleY_;// LerpShortAngle(destinationAngleY_, destinationPlayerAngleY_, kCompletionRate);
 		destinationDashAngleY_ = destinationAngleY_;

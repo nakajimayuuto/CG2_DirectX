@@ -143,8 +143,21 @@ void Player::Update() {
 
 	transform_.rotate.y = std::fmod(transform_.rotate.y, Radian(360.0f));
 
+	TestWallClamp();
+
 	GameCamera::GetInstance()->SetTargetIsMove(isMoving_);
 	GameCamera::GetInstance()->SetTargetIsDash(isDash_);
+}
+
+void Player::TestWallClamp() {
+	/// ここから地獄
+	float distance = transform_.translate.Length();
+
+	float wallDirection = 0.0f;
+	if (distance > 70.0f) {
+		transform_.translate = transform_.translate.Normalize() * 70.0f;
+		
+	} 
 }
 
 void Player::BehaviorRootInitialize() {

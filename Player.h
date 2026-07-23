@@ -49,6 +49,8 @@ public:
 	bool GetIsAttack() { return isAttack_; };
 
 	void OnCollision([[maybe_unused]] Collider* other)override;
+
+	void TestWallClamp();
 private:
 	bool GetAttackButtonTrigger();
 

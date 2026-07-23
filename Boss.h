@@ -401,10 +401,10 @@ private:
 	static inline Vector3 kNearThirdHalberdStartPos = { 0.0f,4.5f,-1.0f };
 	static inline Vector3 kNearThirdHalberdStartRotate = {0.0f,0.0f,0.0f};
 	static inline float kNearThirdModelStartRotateX = -Radian(360.0f);
-	static inline float kNearThirdStartPosisionY = 7.0f;
+	static inline float kNearThirdStartPositionY = 7.0f;
 	static inline float kNearThirdModelStartRotateY = 0.0f;
 	static inline float kNearThirdModelAttackRotateX = -Radian(150.0f);
-	static inline float kNearThirdAttackPosisionY = 4.0f;
+	static inline float kNearThirdAttackPositionY = 4.0f;
 
 	static inline float kNearThirdAttackRadiusNum = 30;
 	static inline float kNearThirdAttackRadius = 20.0f;

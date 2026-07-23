@@ -1206,7 +1206,7 @@ void Boss::NearAttackUpdate() {
 		destinationHalberdTransform_.translate = Easing(kNearSecondHalberdAttackPos, kNearThirdHalberdStartPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		destinationHalberdTransform_.rotate = Easing(kNearSecondHalberdAttackRotate, kNearThirdHalberdStartRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		modelTransform_.rotate.y = Easing(kNearSecondModelAttackRotateY, kNearThirdModelStartRotateY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
-		transform_.translate.y = Easing(kBasicPositionY, kNearThirdStartPosisionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		transform_.translate.y = Easing(kBasicPositionY, kNearThirdStartPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		transform_.rotate.y = Easing(preTransform_.rotate.y, nearAttackPreTransform_, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
@@ -1219,7 +1219,7 @@ void Boss::NearAttackUpdate() {
 		}
 		break;
 	case 10: // 3段目攻撃.
-		transform_.translate.y = Easing(kNearThirdStartPosisionY, kNearThirdAttackPosisionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		transform_.translate.y = Easing(kNearThirdStartPositionY, kNearThirdAttackPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		modelTransform_.rotate.x = Easing(0.0f, kNearThirdModelAttackRotateX, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		attackTempCollider_->SetDamage(30.0f);
 		attackTempCollider_->SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
@@ -1245,7 +1245,7 @@ void Boss::NearAttackUpdate() {
 		destinationHalberdTransform_.translate = Easing(kNearThirdHalberdStartPos, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		destinationHalberdTransform_.rotate = Easing(kNearThirdHalberdStartRotate, basicHalberdRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		modelTransform_.rotate.x = Easing(kNearThirdModelAttackRotateX, 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
-		transform_.translate.y = Easing(kNearThirdAttackPosisionY, kBasicPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+		transform_.translate.y = Easing(kNearThirdAttackPositionY, kBasicPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			AttackFinished();
