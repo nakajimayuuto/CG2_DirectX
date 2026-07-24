@@ -2,10 +2,27 @@
 #include "../Satlib.h"
 #include "IScene.h"
 
+// リストボックスに入れるアイテムの構造体.
+struct GuiItem {
+	const char* name;
+	bool isSelect;
+};
+
+// 三角形を複数生成しやすくするための構造体. 
 struct DrawModelData {
 	uint32_t number_;
 	Model model;
 	ModelSphere sphere;
+
+	Transform transform;
+
+	GuiItem lightingType[3];
+
+	GuiItem textureType[3];
+
+	uint32_t number;
+
+	bool isDelete;
 };
 
 class TitleScene : public IScene {
