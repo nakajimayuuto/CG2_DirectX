@@ -58,58 +58,19 @@ void TitleScene::Update() {
 				ImGui::DragFloat3("translate", reinterpret_cast<float*>(&modelData->transform.translate), 0.1f, -10.0f, 10.0f);
 				modelData->transform.rotate = Radian(imRotate);
 				bool isSelect = false;
-				//if (ImGui::BeginListBox("Texture")) {
-				//	for (int i = 0; i < 3; i++) {
-				//		isSelect = modelData->textureType[i].isSelect;
-				//		ImGui::Selectable(modelData->textureType[i].name, &modelData->textureType[i].isSelect);
-				//
-				//		if (!modelData->textureType[i].isSelect) {
-				//			modelData->textureType[i].isSelect = isSelect;
-				//			continue;
-				//		}
-				//
-				//		for (int j = 0; j < 3; j++) {
-				//			if (i == j) {
-				//				continue;
-				//			}
-				//
-				//			modelData->textureType[j].isSelect = false;
-				//		}
-				//	}
-				//	ImGui::EndListBox();
-				//}
-
-				//for (int i = 0; i < 3; i++) {
-				//	if (modelData->textureType[i].isSelect) {
-				//		modelData->model.ChangeTexture(TextureManager::GetInstance()->GetTextureInfo(modelData->textureType[i].name));
-				//	}
-				//}
 
 				if (ImGui::BeginListBox("LightingType")) {
-					for (int i = 0; i < 3; i++) {
-						isSelect = modelData->lightingType[i].isSelect;
-						ImGui::Selectable(modelData->lightingType[i].name, &modelData->lightingType[i].isSelect);
+					for (LightingType lighting: magic_enum::enum_values<LightingType>()) {
+						bool ltSelect = (lighting == modelData->model.GetLightingType());
+						ImGui::Selectable(magic_enum::enum_name(lighting).data(), &ltSelect);
 
-						if (!modelData->lightingType[i].isSelect) {
-							modelData->lightingType[i].isSelect = isSelect;
-							continue;
-						}
-
-						for (int j = 0; j < 3; j++) {
-							if (i == j) {
-								continue;
+						if (ltSelect) {
+							if (lighting != modelData->model.GetLightingType()) {
+								modelData->model.SetLightingType(lighting);
 							}
-
-							modelData->lightingType[j].isSelect = false;
 						}
 					}
 					ImGui::EndListBox();
-				}
-
-				for (int i = 0; i < 3; i++) {
-					if (modelData->lightingType[i].isSelect) {
-						modelData->model.SetLightingType(static_cast<LightingType>(i));
-					}
 				}
 
 			}
