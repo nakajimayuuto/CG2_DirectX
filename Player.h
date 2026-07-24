@@ -59,6 +59,8 @@ private:
 	bool GetJumpButtonTrigger();
 	bool GetDownPress();
 
+	void FloatingAccelerationChange();
+
 	void BehaviorRootInitialize();
 	void BehaviorRootUpdate();
 
@@ -99,6 +101,8 @@ private:
 	float damageCoolTimeMax_;
 
 	static inline float kSpeed = 10.0f;
+	static inline float kSpeedDeceleration = 10.0f;
+	static inline float kFloatingAcceleration = 20.0f;
 	static inline float kDashSpeed = 25.0f;
 	static inline float kCompletionRate = 0.25f;
 

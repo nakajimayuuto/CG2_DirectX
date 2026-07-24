@@ -56,6 +56,7 @@ void GameCamera::FollowedUpdate() {
 		destinationAngleY_ = LerpShortAngle(destinationPlayerAngleY_, destinationDashAngleY_, 0.05f);
 		destinationPlayerAngleY_ = destinationAngleY_;
 		destinationTargetAngleY_ = destinationAngleY_;
+		Camera::GetInstance()->SetFovY(Lerp(Camera::GetInstance()->GetFovY(),kDashFovY,0.05f));
 	//} else if((static_cast<Vector3>(targetEnemy_->translate) - static_cast<Vector3>(target_->translate)).Length() < 30.0f){
 	//	destinationAngleY_ =  destinationTargetAngleY_;
 	//	destinationPlayerAngleY_ = destinationAngleY_;
@@ -64,6 +65,7 @@ void GameCamera::FollowedUpdate() {
 		destinationAngleY_ = destinationPlayerAngleY_;// LerpShortAngle(destinationAngleY_, destinationPlayerAngleY_, kCompletionRate);
 		destinationDashAngleY_ = destinationAngleY_;
 		destinationTargetAngleY_ = destinationAngleY_;
+		Camera::GetInstance()->SetFovY(Lerp(Camera::GetInstance()->GetFovY(),kNormalFovY,0.05f));
 		//destinationAngleY_ = std::atan2(targetEnemy_->translate.x - transform_.translate.x, targetEnemy_->translate.z - transform_.translate.z);
 	}
 
@@ -73,7 +75,7 @@ void GameCamera::FollowedUpdate() {
 	transform_.rotate.y = LerpShortAngle(transform_.rotate.y, destinationAngleY_, kCompletionRate);
 
 	//if (std::fabs(transform_.rotate.y) >= Radian(360.0f)) {
-	//	if (transform_.rotate.y >= 0.0f) {
+ 	//	if (transform_.rotate.y >= 0.0f) {
 	//		transform_.rotate.y -= Radian(360.0f);
 	//		destinationAngleY_ -= Radian(360.0f);
 	//	} else {

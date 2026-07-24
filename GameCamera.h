@@ -30,6 +30,9 @@ private:
 
 	Vector3 GetOffset()const;
 private:
+	static inline float kNormalFovY = 0.45f;
+	static inline float kDashFovY = 0.60f;
+
 	static inline float kCompletionRate = 0.25f;
 
 	static inline float kAutoCompletionRate = 0.025f;

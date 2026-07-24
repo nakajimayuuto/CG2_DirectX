@@ -90,6 +90,7 @@ Vector4 Camera::GetTransparentColor(const Vector3& position, const Vector4& colo
 }
 
 void Camera::Update() {
+
 	if (useDebugCamera_) {
 		DebugUpdate();
 		//matrix_ = Matrix4x4::MakeAffineMatrix(debugScale_, debugRotate_, debugTranslate_);
@@ -320,7 +321,7 @@ void Camera::RegisterGlobalVariables() {
 	// 【デバッグカメラ用】
 	useDebugCamera_ = false;
 
-	GlobalVariables::GetInstance()->AddValue(groupName, "FovY", fovY_);
+	//GlobalVariables::GetInstance()->AddValue(groupName, "FovY", fovY_);
 	GlobalVariables::GetInstance()->AddValue(groupName, "ViewportLeftTop", viewportLeftTop_);
 	GlobalVariables::GetInstance()->AddValue(groupName, "NearClip", nearClip_);
 	GlobalVariables::GetInstance()->AddValue(groupName, "FarClip", farClip_);
@@ -331,7 +332,7 @@ void Camera::RegisterGlobalVariables() {
 void Camera::ApplyGlobalVariables() {
 	const std::string& groupName = "Camera";
 
-	fovY_ = GlobalVariables::GetInstance()->GetFloatValue(groupName, "FovY");
+	//fovY_ = GlobalVariables::GetInstance()->GetFloatValue(groupName, "FovY");
 	viewportLeftTop_ = GlobalVariables::GetInstance()->GetVector3Value(groupName, "ViewportLeftTop");
 	nearClip_ = GlobalVariables::GetInstance()->GetFloatValue(groupName, "NearClip");
 	farClip_ = GlobalVariables::GetInstance()->GetFloatValue(groupName, "FarClip");

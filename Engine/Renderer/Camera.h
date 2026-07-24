@@ -69,6 +69,9 @@ public:
 	bool IsInCameraFrustum(const Vector3& point, float radius);
 
 	Vector4 GetTransparentColor(const Vector3& position,const Vector4& color);
+
+	void SetFovY(float fovY) { fovY_ = fovY; };
+	float GetFovY() { return fovY_; };
 private:
 	void DebugUpdate();
 

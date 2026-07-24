@@ -19,8 +19,17 @@ void CollisionManager::CheckAllCollision() {
 		itrB++;
 		for (; itrB != colliders_.end(); itrB++) {
 			Collider* colliderB = *itrB;
-			bool isA2D = false;
 
+			if (!Collision::SphereToSphere({ {colliderA->GetTransform().translate},colliderA->GetRadius() }, { {colliderB->GetTransform().translate}, colliderB->GetRadius() })) {
+				//if (
+				//	colliderA->GetDimensionType() != ColliderDimensionType::k2D &&
+				//	colliderB->GetDimensionType() != ColliderDimensionType::k2D
+				//	) {
+				continue;
+				//}
+			}
+
+			bool isA2D = false;
 			isA2D = colliderA->GetDimensionType() == ColliderDimensionType::k2D;
 
 			if (isA2D) {
@@ -48,6 +57,7 @@ void CollisionManager::CheckCollisionPair(Collider* colliderA, Collider* collide
 		) {
 		return;
 	}
+
 	ColliderType temp = colliderA->GetColliderType();
 	Sphere sphereA;
 	Sphere sphereB;

@@ -32,7 +32,8 @@ void Player::Initialize() {
 
 	collisionAttribute_ = CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayer);
 	collisionMask_ = (
-		CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy)
+		CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy)|
+		CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemyAttack)
 		);
 
 	BehaviorAttackInitialize();
@@ -101,6 +102,40 @@ bool Player::GetDownPress(){
 	}
 
 	return false;
+}
+
+void Player::FloatingAccelerationChange(){
+	InputManager* input = InputManager::GetInstance();
+	Vector3 acceleration = { 0.0f,0.0f,0.0f };
+	if (input->IsGamePadConnect()) {
+		Vector3 acceleration = { input->GetLeftStickDirection().x,0.0f,input->GetLeftStickDirection().y };
+
+		acceleration = acceleration.Normalize() * kFloatingAcceleration;
+	} else {
+		if (input->PressKey(DIK_W)) {
+			acceleration.z += 1.0f;
+		}
+
+		if (input->PressKey(DIK_S)) {
+			acceleration.z -= 1.0f;
+		}
+
+		if (input->PressKey(DIK_A)) {
+			acceleration.x -= 1.0f;
+		}
+
+		if (input->PressKey(DIK_D)) {
+			acceleration.x += 1.0f;
+		}
+
+		acceleration = acceleration.Normalize() * kFloatingAcceleration;
+	}
+
+	Matrix4x4 cameraRotateMatrix = Matrix4x4::MakeRotateMatrix(Camera::GetInstance()->GetTransform().rotate);
+
+	acceleration = cameraRotateMatrix.TransformNomal(acceleration);
+
+	velocity_ += acceleration * DeltaTime::GetInstance()->GetGameTime();
 }
 
 void Player::Update() {
@@ -212,6 +247,8 @@ void Player::BehaviorRootInitialize() {
 	InitializeFloatingGimmick();
 }
 
+
+
 void Player::BehaviorRootUpdate() {
 	isMoving_ = false;
 
@@ -286,6 +323,7 @@ void Player::BehaviorRootUpdate() {
 }
 
 void Player::BehaviorAttackInitialize() {
+	transform_.rotate.y = targetRotateY;
 	attackTimer_ = 0.0f;
 	attackTimeMax_ = kAttackFirstStart;
 	attackComboPhase_ = 0;
@@ -560,6 +598,8 @@ void Player::BehaviorJumpInitialize() {
 
 void Player::BehaviorJumpUpdate() {
 
+	FloatingAccelerationChange();
+
 	Vector3 accelerationVector = { 0.0f,-kGravityAcceleration,0.0f };
 	velocity_ += accelerationVector * DeltaTime::GetInstance()->GetGameTime();
 	transform_.translate += velocity_ * DeltaTime::GetInstance()->GetGameTime();
@@ -652,6 +692,7 @@ void Player::BehaviorDashJumpAttackInitialize() {
 }
 
 void Player::BehaviorDashJumpAttackUpdate() {
+	isDash_ = true;
 	attackCollider_.SetTransform(transform_);
 	attackCollider_.SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
 	Vector3 accelerationVector = { 0.0f,-kGravityAcceleration,0.0f };
@@ -690,6 +731,8 @@ void Player::BehaviorFallInitialize(){
 }
 
 void Player::BehaviorFallUpdate(){
+	FloatingAccelerationChange();
+
 	Vector3 accelerationVector = { 0.0f,-kGravityAcceleration,0.0f };
 	velocity_ += accelerationVector * DeltaTime::GetInstance()->GetGameTime();
 	transform_.translate += velocity_ * DeltaTime::GetInstance()->GetGameTime();
@@ -750,6 +793,11 @@ void Player::ApplyGlobalVariables() {
 
 void Player::OnCollision([[maybe_unused]] Collider* other) {
 	//behaviorRequest_ = Behavior::kJump;
+	if (other->GetCollisionAttribute() == CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy)) {
+		if (isDash_) {
+			return;
+		}
+	}
 	colliderColor_ = { 1.0f,0.0f,0.0f,1.0f };
 
 	if (damageCoolTimer_ <= 0.0f) {

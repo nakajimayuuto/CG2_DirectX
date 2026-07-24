@@ -69,7 +69,9 @@ void Boss::Initialize() {
 	colliderType_ = ColliderType::kBox;
 	colliderSize_ = kBasicColliderSize;
 	collisionAttribute_ = CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy);
-	collisionMask_ = CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack);
+	collisionMask_ =
+		CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack) |
+		CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayer);
 
 	colliderColor_ = { 0.6f,0.3f,1.0f,1.0f };
 
@@ -369,6 +371,9 @@ void Boss::Draw() {
 }
 
 void Boss::OnCollision(Collider* other) {
+	if (other->GetCollisionAttribute() == CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayer)) {
+		return;
+	}
 	//if ((other->GetCollisionAttribute() & CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack)) == 0x0) {
 	switch (other->GetDamageType()) {
 	case 1:
@@ -430,7 +435,7 @@ void Boss::OnCollision(Collider* other) {
 		}
 		break;
 	}
-	
+
 	if (phase_ == Phase::kPhase1) {
 		if (currentHP_ < (maxHP_ / 2.0f)) {
 			DeltaTime::GetInstance()->SetHitStop(0.5f);
@@ -1066,21 +1071,21 @@ void Boss::FangAttackUpdate() {
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kFangAttackAttackGapTimerMax);
 			float rotateY = transform_.rotate.y - Radian(90.0f);
-			//float lenght = Vector3(targetTransform_->translate - transform_.translate).Length();
-			//Transform newTransform = halberdTransform_;
-			//std::vector<Vector3> spikePos_;
-			//bool isShot_;
-			//if (lenght <= (kFangAttackRadius / 3.0f) * 2.0f) {
-			//	for (uint32_t i = 0; i < kFangAttackRadiusNum; i++) {
-			//		newTransform = halberdTransform_;
-			//		newTransform.translate = newTransform.translate + Random::GetInstance()->RandomCircleVector3({ kFangAttackRadius ,kFangAttackRadius ,kFangAttackRadius });
-			//
-			//		ProjectileManager::GetInstance()->CreateSpike(newTransform, 0, kCollisionEnemyAttack, 15.0f, 3.0f);
-			//		spikePos_.push_back(newTransform.GetWorldPosition());
-			//	}
-			//} else {
-			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, Vector3(-RadianToVector(rotateY).x, 0.0f, RadianToVector(rotateY).y) * 20.0f, BulletType::kSpike, kCollisionEnemyAttack, 15.0f, 3.0f);
-			//}
+			float lenght = Vector3(targetTransform_->translate - transform_.translate).Length();
+			Transform newTransform = halberdTransform_;
+			std::vector<Vector3> spikePos_;
+			bool isShot_;
+			if (lenght <= (kFangAttackRadius / 3.0f) * 2.0f) {
+				for (uint32_t i = 0; i < kFangAttackRadiusNum; i++) {
+					newTransform = halberdTransform_;
+					newTransform.translate = newTransform.translate + Random::GetInstance()->RandomCircleVector3({ kFangAttackRadius ,kFangAttackRadius ,kFangAttackRadius });
+
+					ProjectileManager::GetInstance()->CreateSpike(newTransform, 0, kCollisionEnemyAttack, 15.0f, 3.0f);
+					spikePos_.push_back(newTransform.GetWorldPosition());
+				}
+			} else {
+				ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, Vector3(-RadianToVector(rotateY).x, 0.0f, RadianToVector(rotateY).y) * 20.0f, BulletType::kSpike, kCollisionEnemyAttack, 15.0f, 3.0f);
+			}
 
 		}
 		break;
