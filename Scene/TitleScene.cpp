@@ -65,9 +65,6 @@ void TitleScene::CreateModel(DrawModelData* data) {
 }
 
 void TitleScene::Update() {
-	ImGui::Begin("DirectionalLight");
-	ImGui::End();
-
 	bool enumSelect;
 	if (ImGui::TreeNode("ModelType")) {
 		if (ImGui::BeginListBox("LightingType")) {
