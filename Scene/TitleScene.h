@@ -1,6 +1,7 @@
 #pragma once
 #include "../Satlib.h"
 #include "IScene.h"
+#include "../Skydome.h"
 
 // リストボックスに入れるアイテムの構造体.
 struct GuiItem {
@@ -10,7 +11,7 @@ struct GuiItem {
 
 // 三角形を複数生成しやすくするための構造体. 
 struct DrawModelData {
-	uint32_t number_;
+	uint32_t number;
 	Model model;
 	ModelSphere sphere;
 
@@ -19,8 +20,6 @@ struct DrawModelData {
 	GuiItem lightingType[3];
 
 	GuiItem textureType[3];
-
-	uint32_t number;
 
 	bool isDelete;
 };
@@ -36,4 +35,7 @@ public:
 	void CreateModel(const Vector3& position);
 private:
 	std::vector<std::unique_ptr<DrawModelData>> modelDatas_;
+
+	uint32_t modelIndex_ = 0;
+	std::unique_ptr<Skydome> skydome_;
 };
