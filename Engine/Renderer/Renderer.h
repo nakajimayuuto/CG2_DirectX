@@ -82,34 +82,41 @@ public:
 	void Initialize(const ModelInfo& info);
 	void Initialize(const std::string& name);
 
-	void Draw(const Transform& transform) const;
+	void Draw(const Transform& transform);
 
 	void SetIsVisible(bool isVisible);
 	void SetIsVisible(bool isVisible, const std::string& meshName);
 
-	bool GetIsVisible();
-	bool GetIsVisible(const std::string& meshName);
+	bool GetIsVisible() const;
+	bool GetIsVisible(const std::string& meshName) const;
 
 	void ChangeTexture(const TextureInfo& info);
 	void ChangeTexture(const TextureInfo& info, const std::string& meshName);
+	void ChangeTexture(const TextureInfo& info, uint32_t index);
 
 	void SetColor(Vector4 color);
 	void SetColor(Vector4 color, const std::string& meshName);
+	void SetColor(Vector4 color, uint32_t index);
 
 	Vector4 GetColor();
 	Vector4 GetColor(const std::string& meshName);
+	Vector4 GetColor(uint32_t index);
 
 	void SetUvTransform(const Transform& uvTransform);
 	void SetUvTransform(const Transform& uvTransform, const std::string& meshName);
+	void SetUvTransform(const Transform& uvTransform, uint32_t index);
 
 	Transform GetUvTransform();
 	Transform GetUvTransform(const std::string& meshName);
+	Transform GetUvTransform(uint32_t index);
 
 	void SetLightingType(LightingType type);
 	void SetLightingType(LightingType type, const std::string& meshName);
+	void SetLightingType(LightingType type, uint32_t index);
 
 	LightingType GetLightingType();
 	LightingType GetLightingType(const std::string& meshName);
+	LightingType GetLightingType(uint32_t index);
 
 	void SetBlendMode(BlendMode blendMode) { blendMode_ = blendMode; };
 
@@ -126,6 +133,8 @@ private:
 	std::vector<bool> isVisible_;
 
 	std::vector<ModelData> modelData_;
+
+	float radius_;
 
 	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> vertexResource_;
 
@@ -232,6 +241,8 @@ public:
 	/// <param name="textureInfo">テクスチャインフォ</param>
 	/// <param name="color">色</param>
 	void DrawSphere(const Transform& transform,const TextureInfo& textureInfo, const Vector4& color);
+
+	void DrawSphere(const Transform& transform,const TextureInfo& textureInfo, const Vector4& color,const Transform& uvTransform);
 
 	void DrawTorus(const Transform& transform, float majorRadius, float minorRadius, const std::string& name, const Vector4& color) { DrawTorus(transform,majorRadius,minorRadius, TextureManager::GetInstance()->GetTextureInfo(name), color); };
 	void DrawTorus(const Transform& transform, float majorRadius, float minorRadius,const TextureInfo& textureInfo, const Vector4& color);

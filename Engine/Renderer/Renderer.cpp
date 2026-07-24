@@ -3,14 +3,9 @@
 #include "../../Managers/SoundManager.h"
 #include <vector>
 Model::~Model() {
-	for (Material* data : materialData_) {
-		delete data;
-	}
+
 	materialData_.clear();
 
-	for (TransformationMatrix* data : wvpData_) {
-		delete data;
-	}
 	wvpData_.clear();
 
 	isVisible_.clear();
@@ -26,12 +21,12 @@ Model::~Model() {
 	vertexBufferView_.clear();
 
 	uvTransform_.clear();
-
-	delete vertexData;
 }
 
 void Model::Initialize(const ModelInfo& info) {
 	modelMax_ = static_cast<uint32_t>(info.modelData.size());
+	
+	radius_ = info.radius;
 
 	blendMode_ = BlendMode::kNormal;
 
@@ -110,9 +105,13 @@ void Model::Initialize(const std::string& name) {
 	Initialize(ModelManager::GetInstance()->GetModelInfo(name));
 }
 
-void Model::Draw(const Transform& transform) const {
+void Model::Draw(const Transform& transform) {
 	for (uint32_t i = 0; i < modelMax_; i++) {
 		if (!isVisible_[i]) {
+			return;
+		}
+
+		if (!Camera::GetInstance()->IsInCameraFrustum(transform.translate, radius_ * transform.GetMaxScale())) {
 			return;
 		}
 
@@ -120,7 +119,9 @@ void Model::Draw(const Transform& transform) const {
 
 		wvpData_[i]->World = worldMatrix;
 		wvpData_[i]->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+		wvpData_[i]->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
 
+		materialResource_[i]->Map(0, nullptr, reinterpret_cast<void**>(&materialData_[i]));
 		materialData_[i]->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransform_[i]);
 
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = GameSystem::GetInstance()->GetCommandList();
@@ -165,13 +166,13 @@ void Model::SetIsVisible(bool isVisible, const std::string& meshName) {
 	}
 };
 
-bool Model::GetIsVisible() {
+bool Model::GetIsVisible()  const {
 	if (modelMax_ == 1) {
 		return isVisible_[0];
 	}
 };
 
-bool Model::GetIsVisible(const std::string& meshName) {
+bool Model::GetIsVisible(const std::string& meshName) const {
 	for (uint32_t i = 0; i < modelMax_; i++) {
 		if (modelData_[i].meshName != meshName) {
 			continue;
@@ -203,6 +204,10 @@ void Model::ChangeTexture(const TextureInfo& info, const std::string& meshName) 
 	}
 };
 
+void Model::ChangeTexture(const TextureInfo& info, uint32_t index) {
+	modelData_[index].textureSrvHandlesGPU = info.textureSrvHandlesGPU;
+};
+
 void Model::SetColor(Vector4 color) {
 	if (modelMax_ == 1) {
 		materialData_[0]->color = color;
@@ -224,7 +229,10 @@ void Model::SetColor(Vector4 color, const std::string& meshName) {
 		materialData_[i]->color = color;
 		break;
 	}
-};
+}
+void Model::SetColor(Vector4 color, uint32_t index) {
+	materialData_[index]->color = color;
+}
 
 Vector4 Model::GetColor() {
 	return materialData_[0]->color;
@@ -237,6 +245,10 @@ Vector4 Model::GetColor(const std::string& meshName) {
 
 		return materialData_[i]->color;
 	}
+};
+
+Vector4 Model::GetColor(uint32_t index) {
+	return materialData_[index]->color;
 };
 
 void Model::SetUvTransform(const Transform& uvTransform) {
@@ -260,6 +272,10 @@ void Model::SetUvTransform(const Transform& uvTransform, const std::string& mesh
 	}
 }
 
+void Model::SetUvTransform(const Transform& uvTransform, uint32_t index){
+	uvTransform_[index] = uvTransform;
+}
+
 Transform Model::GetUvTransform() {
 	return uvTransform_[0];
 };
@@ -271,7 +287,10 @@ Transform Model::GetUvTransform(const std::string& meshName) {
 
 		return uvTransform_[i];
 	}
-};
+}
+Transform Model::GetUvTransform(uint32_t index){
+	return uvTransform_[index];
+}
 
 void Model::SetLightingType(LightingType type) {
 	if (modelMax_ == 1) {
@@ -294,6 +313,10 @@ void Model::SetLightingType(LightingType type, const std::string& meshName) {
 	}
 };
 
+void Model::SetLightingType(LightingType type, uint32_t index) {
+	materialData_[index]->lightingType = static_cast<int32_t>(type);
+};
+
 LightingType Model::GetLightingType() {
 	return static_cast<LightingType>(materialData_[0]->lightingType);
 };
@@ -306,6 +329,9 @@ LightingType Model::GetLightingType(const std::string& meshName) {
 		return static_cast<LightingType>(materialData_[i]->lightingType);
 	}
 }
+LightingType Model::GetLightingType(uint32_t index) {
+	return static_cast<LightingType>(materialData_[index]->lightingType);
+};
 
 ModelElements Model::GetModelElement() const {
 	ModelElement modelElement;
@@ -841,11 +867,39 @@ void Renderer::DrawSphere(const Transform& transform, const TextureInfo& texture
 	);
 }
 
-void Renderer::DrawTorus(const Transform& transform, float majorRadius, float minorRadius, const TextureInfo& textureInfo, const Vector4& color){
+void Renderer::DrawSphere(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color, const Transform& uvTransform){
+	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+	ModelElement* newElement;
+	newElement = new ModelElement();
+	CreateSphere(newElement);
+
+	newElement->modelData_.textureSrvHandlesGPU = textureInfo.textureSrvHandlesGPU;
+	newElement->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransform);
+
+	newElement->wvpData_->World = worldMatrix;
+	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+	newElement->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+	/*=============================================================
+	三角形の描画のコマンド.
+	=============================================================*/
+	newElement->indexInstanceNum_ = kSphereSubdivision_ * kSphereSubdivision_ * 6;
+	GameSystem::GetInstance()->DrawCommand(
+		newElement->blendMode_,
+		&newElement->vertexBufferView_,
+		&newElement->indexBufferView_,
+		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+		newElement->materialResource_,
+		newElement->wvpResource_,
+		newElement->modelData_.textureSrvHandlesGPU,
+		newElement->indexInstanceNum_
+	);
+}
+
+void Renderer::DrawTorus(const Transform& transform, float majorRadius, float minorRadius, const TextureInfo& textureInfo, const Vector4& color) {
 	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
 	std::unique_ptr<ModelElement> newElement;
 	newElement = std::make_unique<ModelElement>();
-	CreateTorus(newElement.get(),majorRadius,minorRadius );
+	CreateTorus(newElement.get(), majorRadius, minorRadius);
 
 	newElement->modelData_.textureSrvHandlesGPU = textureInfo.textureSrvHandlesGPU;
 
@@ -1121,6 +1175,9 @@ void Renderer::DrawModel(const Transform& transform, const ModelInfo& modelInfo,
 }
 
 void Renderer::DrawModel(const Transform& transform, const Model* model, bool useTransparent) {
+	if (!model->GetIsVisible()) {
+		return;
+	}
 	uint32_t modelMax_ = static_cast<uint32_t>(model->GetModelCountMax());
 
 	std::unique_ptr<ModelElements> newElements;
@@ -1207,7 +1264,7 @@ void Renderer::DrawSprite(const Transform& transform, const TextureInfo& texture
 	);
 }
 
-void Renderer::DrawSprite(const Transform& transform, const Vector2& size, const TextureInfo& textureInfo, const Vector4& color){
+void Renderer::DrawSprite(const Transform& transform, const Vector2& size, const TextureInfo& textureInfo, const Vector4& color) {
 	Transform worldTransform = transform;
 
 	//Vector2 size;
@@ -1550,14 +1607,14 @@ void Renderer::CreateTorus(ModelElement* newElement, float majorRadius, float mi
 
 	uint32_t vertexPerRow = kTorusSubdivision_ + 1;
 
-	for (uint32_t y = 0; y <= kTorusSubdivision_; y++){
+	for (uint32_t y = 0; y <= kTorusSubdivision_; y++) {
 		float v = (float)y / kTorusSubdivision_;
 		float theta = v * pi * 2.0f;
 
 		float cosTheta = std::cos(theta);
 		float sinTheta = std::sin(theta);
 
-		for (uint32_t x = 0; x <= kTorusSubdivision_; x++){
+		for (uint32_t x = 0; x <= kTorusSubdivision_; x++) {
 			uint32_t index = y * vertexPerRow + x;
 
 			float u = (float)x / kTorusSubdivision_;
