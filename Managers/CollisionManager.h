@@ -39,6 +39,7 @@ public:
 	uint32_t GetCollisionAttribute(CollisionAttributeName name) { return kCollisionAttributes[name]; };
 private:
 	void CheckCollisionPair(Collider* colliderA, Collider* colliderB);
+	void CheckCollisionPair2D(Collider* colliderA, Collider* colliderB);
 private:
 	static inline bool isColliderDraw_;
 

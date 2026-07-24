@@ -67,6 +67,9 @@ public:
 
 	void SetDamageType(uint32_t damageType) { damageType_ = damageType; };
 	uint32_t GetDamageType() { return damageType_; };
+
+	void SetDimensionType(ColliderDimensionType type) { colliderDimensionType_ = type; };
+	ColliderDimensionType GetDimensionType() { return colliderDimensionType_; };
 protected:
 	void CreateObbCollider();
 protected:
@@ -96,7 +99,7 @@ protected:
 	float damageCoolTime_ = -1.0f;
 	uint32_t damageType_ = 0;
 
-	ColliderDimensionType colliderDimensionType_;
+	ColliderDimensionType colliderDimensionType_ = ColliderDimensionType::k3D;
 
 	bool isColliderActive_ = true;
 };
