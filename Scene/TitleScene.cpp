@@ -8,6 +8,7 @@ void TitleScene::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("multiMesh", "Resource/Evaluation", "multiMesh.obj");
 	ModelManager::GetInstance()->RegisterObj("multiMaterial", "Resource/Evaluation", "multiMaterial.obj");
 	ModelManager::GetInstance()->RegisterObj("suzanne", "Resource/Evaluation", "suzanne.obj");
+	CreateModelData({ 0.0f,0.0f,0.0f }, DrawModelType::Plane);
 	CreateModelData({ 0.0f,0.0f,0.0f }, DrawModelType::Sphere);
 	Camera::GetInstance()->SetPosition({ 0.0f,0.0f,-10.0f });
 	currentNewModelType_ = DrawModelType::Plane;
@@ -61,6 +62,9 @@ void TitleScene::CreateModel(DrawModelData* data) {
 	case DrawModelType::Suzzanne:
 		data->model.Initialize(ModelManager::GetInstance()->GetModelInfo("suzanne"));
 		break;
+	case DrawModelType::Sprite:
+		data->sprite.Initialize(TextureManager::GetInstance()->GetTextureInfo("uvChecker"));
+		break;
 	}
 }
 
@@ -99,78 +103,87 @@ void TitleScene::Update() {
 			bool isVisible = modelData->model.GetIsVisible();
 			ImGui::Checkbox("isVisible", &isVisible);
 			modelData->model.SetIsVisible(isVisible);
+			Vector3 imRotate;
+			bool isSelect = false;
+			Vector4 color;
+			Transform uvTransform;
 
 			if (isVisible) {
-				Vector3 imRotate = Degree(modelData->transform.rotate);
-				ImGui::DragFloat3("scale", reinterpret_cast<float*>(&modelData->transform.scale), 0.1f, 0.0f, 10.0f);
-				ImGui::DragFloat3("rotate", reinterpret_cast<float*>(&imRotate), 1.0f, -360.0f, 360.0f);
-				ImGui::DragFloat3("translate", reinterpret_cast<float*>(&modelData->transform.translate), 0.1f, -10.0f, 10.0f);
-				modelData->transform.rotate = Radian(imRotate);
-				bool isSelect = false;
-				Vector4 color;
-				Transform uvTransform;
-				uvTransform.Initialize();
+				if (modelData->type == DrawModelType::Sprite) {
+					imRotate.z = Degree(modelData->transform.rotate.z);
+					ImGui::DragFloat2("scale", reinterpret_cast<float*>(&modelData->transform.scale),1.0f, 0.0f, 1000.0f);
+					ImGui::DragFloat("rotate", &imRotate.z, 1.0f, -360.0f, 360.0f);
+					ImGui::DragFloat2("translate", reinterpret_cast<float*>(&modelData->transform.translate), 10.0f, -1280.0f, 1280.0f);
+					modelData->transform.rotate.z = Radian(imRotate.z);
+					uvTransform.Initialize();
+				} else {
+					imRotate = Degree(modelData->transform.rotate);
+					ImGui::DragFloat3("scale", reinterpret_cast<float*>(&modelData->transform.scale), 0.1f, 0.0f, 10.0f);
+					ImGui::DragFloat3("rotate", reinterpret_cast<float*>(&imRotate), 1.0f, -360.0f, 360.0f);
+					ImGui::DragFloat3("translate", reinterpret_cast<float*>(&modelData->transform.translate), 0.1f, -10.0f, 10.0f);
+					modelData->transform.rotate = Radian(imRotate);
+					uvTransform.Initialize();
+					if (modelData->isMultiMesh) {
+						for (uint32_t i = 0; i < modelData->model.GetModelCountMax(); i++) {
+							ImGui::PushID(i);
+							color = modelData->model.GetColor(i);
+							ImGui::ColorEdit4("color", reinterpret_cast<float*>(&color));
+							modelData->model.SetColor(color, i);
 
-				if (modelData->isMultiMesh) {
-					for (uint32_t i = 0; i < modelData->model.GetModelCountMax();i++) {
-						ImGui::PushID(i);
-						color = modelData->model.GetColor(i);
+
+							if (ImGui::BeginListBox("LightingType")) {
+								for (LightingType lighting : magic_enum::enum_values<LightingType>()) {
+									enumSelect = (lighting == modelData->model.GetLightingType(i));
+									ImGui::Selectable(magic_enum::enum_name(lighting).data(), &enumSelect);
+
+									if (enumSelect) {
+										if (lighting != modelData->model.GetLightingType(i)) {
+											modelData->model.SetLightingType(lighting, i);
+										}
+									}
+								}
+								ImGui::EndListBox();
+							}
+
+							uvTransform = modelData->model.GetUvTransform(i);
+							imRotate.z = Degree(uvTransform.rotate.z);
+
+							ImGui::DragFloat2("uvScale", reinterpret_cast<float*>(&uvTransform.scale), 0.1f, 0.0f, 10.0f);
+							ImGui::DragFloat("uvRotate", &imRotate.z, 1.0f, -360.0f, 360.0f);
+							ImGui::DragFloat2("uvTranslate", reinterpret_cast<float*>(&uvTransform.translate), 0.1f, -10.0f, 10.0f);
+							uvTransform.rotate.z = Radian(imRotate.z);
+							modelData->model.SetUvTransform(uvTransform, i);
+							ImGui::PopID();
+						}
+					} else {
+						color = modelData->model.GetColor();
 						ImGui::ColorEdit4("color", reinterpret_cast<float*>(&color));
-						modelData->model.SetColor(color, i);
+						modelData->model.SetColor(color);
 
 
 						if (ImGui::BeginListBox("LightingType")) {
 							for (LightingType lighting : magic_enum::enum_values<LightingType>()) {
-								enumSelect = (lighting == modelData->model.GetLightingType(i));
+								enumSelect = (lighting == modelData->model.GetLightingType());
 								ImGui::Selectable(magic_enum::enum_name(lighting).data(), &enumSelect);
 
 								if (enumSelect) {
-									if (lighting != modelData->model.GetLightingType(i)) {
-										modelData->model.SetLightingType(lighting,i);
+									if (lighting != modelData->model.GetLightingType()) {
+										modelData->model.SetLightingType(lighting);
 									}
 								}
 							}
 							ImGui::EndListBox();
 						}
 
-						uvTransform = modelData->model.GetUvTransform(i);
+						uvTransform = modelData->model.GetUvTransform();
 						imRotate.z = Degree(uvTransform.rotate.z);
 
 						ImGui::DragFloat2("uvScale", reinterpret_cast<float*>(&uvTransform.scale), 0.1f, 0.0f, 10.0f);
 						ImGui::DragFloat("uvRotate", &imRotate.z, 1.0f, -360.0f, 360.0f);
 						ImGui::DragFloat2("uvTranslate", reinterpret_cast<float*>(&uvTransform.translate), 0.1f, -10.0f, 10.0f);
 						uvTransform.rotate.z = Radian(imRotate.z);
-						modelData->model.SetUvTransform(uvTransform,i);
-						ImGui::PopID();
+						modelData->model.SetUvTransform(uvTransform);
 					}
-				}else{
-					color = modelData->model.GetColor();
-					ImGui::ColorEdit4("color", reinterpret_cast<float*>(&color));
-					modelData->model.SetColor(color);
-
-
-					if (ImGui::BeginListBox("LightingType")) {
-						for (LightingType lighting : magic_enum::enum_values<LightingType>()) {
-							enumSelect = (lighting == modelData->model.GetLightingType());
-							ImGui::Selectable(magic_enum::enum_name(lighting).data(), &enumSelect);
-
-							if (enumSelect) {
-								if (lighting != modelData->model.GetLightingType()) {
-									modelData->model.SetLightingType(lighting);
-								}
-							}
-						}
-						ImGui::EndListBox();
-					}
-
-					uvTransform = modelData->model.GetUvTransform();
-					imRotate.z = Degree(uvTransform.rotate.z);
-
-					ImGui::DragFloat2("uvScale", reinterpret_cast<float*>(&uvTransform.scale), 0.1f, 0.0f, 10.0f);
-					ImGui::DragFloat("uvRotate",&imRotate.z, 1.0f, -360.0f, 360.0f);
-					ImGui::DragFloat2("uvTranslate", reinterpret_cast<float*>(&uvTransform.translate), 0.1f, -10.0f, 10.0f);
-					uvTransform.rotate.z = Radian(imRotate.z);
-					modelData->model.SetUvTransform(uvTransform);
 				}
 			}
 		}
@@ -199,6 +212,8 @@ void TitleScene::Draw() {
 			Renderer::GetInstance()->SetLightingType(modelData->model.GetLightingType());
 			Renderer::GetInstance()->DrawSphere(modelData->transform, modelData->sphereInfo, modelData->model.GetColor(),modelData->model.GetUvTransform());
 			Renderer::GetInstance()->SetLightingType(LightingType::kHalfLambert);
+		} else if(modelData->type == DrawModelType::Sprite){
+			modelData->sprite.Draw(modelData->transform);
 		} else {
 			modelData->model.Draw(modelData->transform);
 		}

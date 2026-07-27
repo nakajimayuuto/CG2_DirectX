@@ -557,7 +557,7 @@ void Sprite::Draw(const Transform& transform) {
 	GameSystem::GetInstance()->DrawCommand(
 		blendMode_,
 		&vertexBufferView_,
-		nullptr,
+		&indexBufferView_,
 		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
 		materialResource_,
 		transformationMatrixResource_,

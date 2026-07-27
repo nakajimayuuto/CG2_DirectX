@@ -17,12 +17,14 @@ enum class DrawModelType {
 	MultiMesh,
 	MultiMaterial,
 	Suzzanne,
+	Sprite,
 };
 
-// 三角形を複数生成しやすくするための構造体. 
+// モデルのデバッグをしやすくするための構造体.
 struct DrawModelData {
 	uint32_t number;
 	Model model;
+	Sprite sprite;
 	TextureInfo sphereInfo;
 
 	Transform transform;
