@@ -171,6 +171,7 @@ public:
 	Vector4 GetColor() { return materialData_->color; };
 
 	void SetUvTransform(const Transform& transform) { uvTransform_ = transform; }
+	Transform GetUvTransform() { return uvTransform_; };
 
 	void SetSize(Vector2 size);
 	void SetSize(WindowSize windowSize);
@@ -178,6 +179,7 @@ public:
 	Vector2 GetSize()const { return size_; };
 
 	ModelElement* GetModelElement()const;
+
 private:
 	void AdaptationSize();
 private:

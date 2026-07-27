@@ -8,9 +8,10 @@ void TitleScene::Initialize() {
 	ModelManager::GetInstance()->RegisterObj("multiMesh", "Resource/Evaluation", "multiMesh.obj");
 	ModelManager::GetInstance()->RegisterObj("multiMaterial", "Resource/Evaluation", "multiMaterial.obj");
 	ModelManager::GetInstance()->RegisterObj("suzanne", "Resource/Evaluation", "suzanne.obj");
+	CreateModelData({ -390.0f,-110.0f,0.0f }, DrawModelType::Sprite);
 	CreateModelData({ 0.0f,0.0f,0.0f }, DrawModelType::Plane);
-	CreateModelData({ 0.0f,0.0f,0.0f }, DrawModelType::Sphere);
 	Camera::GetInstance()->SetPosition({ 0.0f,0.0f,-10.0f });
+	Camera::GetInstance()->ChangeCameraMode();
 	currentNewModelType_ = DrawModelType::Plane;
 }
 
@@ -111,11 +112,19 @@ void TitleScene::Update() {
 			if (isVisible) {
 				if (modelData->type == DrawModelType::Sprite) {
 					imRotate.z = Degree(modelData->transform.rotate.z);
-					ImGui::DragFloat2("scale", reinterpret_cast<float*>(&modelData->transform.scale),1.0f, 0.0f, 1000.0f);
+					ImGui::DragFloat2("scale", reinterpret_cast<float*>(&modelData->transform.scale),0.1f, 0.0f, 100.0f);
 					ImGui::DragFloat("rotate", &imRotate.z, 1.0f, -360.0f, 360.0f);
 					ImGui::DragFloat2("translate", reinterpret_cast<float*>(&modelData->transform.translate), 10.0f, -1280.0f, 1280.0f);
 					modelData->transform.rotate.z = Radian(imRotate.z);
 					uvTransform.Initialize();
+					uvTransform = modelData->sprite.GetUvTransform();
+					imRotate.z = Degree(uvTransform.rotate.z);
+
+					ImGui::DragFloat2("uvScale", reinterpret_cast<float*>(&uvTransform.scale), 0.1f, 0.0f, 10.0f);
+					ImGui::DragFloat("uvRotate", &imRotate.z, 1.0f, -360.0f, 360.0f);
+					ImGui::DragFloat2("uvTranslate", reinterpret_cast<float*>(&uvTransform.translate), 0.1f, -10.0f, 10.0f);
+					uvTransform.rotate.z = Radian(imRotate.z);
+					modelData->sprite.SetUvTransform(uvTransform);
 				} else {
 					imRotate = Degree(modelData->transform.rotate);
 					ImGui::DragFloat3("scale", reinterpret_cast<float*>(&modelData->transform.scale), 0.1f, 0.0f, 10.0f);

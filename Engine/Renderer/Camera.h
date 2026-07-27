@@ -101,10 +101,8 @@ private:
 	float minDepth_;
 	float maxDepth_;
 
-
-	Vector3 debugScale_;
-	//Vector3 debugRotate_;
-	Vector3 debugTranslate_;
+	Transform debugTransform_;
+	Transform debugTransformCenter_;
 
 	Matrix4x4 debugMatRot_;
 

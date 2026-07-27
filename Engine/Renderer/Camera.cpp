@@ -114,35 +114,35 @@ void Camera::DebugUpdate() {
 
 	if (useMoving) {
 		if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
-			debugTranslate_.x += 0.05f;
+			debugTransformCenter_.translate.x += 0.05f;
 		}
 		if (InputManager::GetInstance()->PressKey(DIK_LEFT)) {
-			debugTranslate_.x -= 0.05f;
+			debugTransformCenter_.translate.x -= 0.05f;
 		}
 		if (InputManager::GetInstance()->PressKey(DIK_UP)) {
-			debugTranslate_.z += 0.05f;
+			debugTransformCenter_.translate.z += 0.05f;
 		}
 		if (InputManager::GetInstance()->PressKey(DIK_DOWN)) {
-			debugTranslate_.z -= 0.05f;
+			debugTransformCenter_.translate.z -= 0.05f;
 		}
 		if (InputManager::GetInstance()->PressKey(DIK_SPACE)) {
-			debugTranslate_.y += 0.05f;
+			debugTransformCenter_.translate.y += 0.05f;
 		}
 		if (InputManager::GetInstance()->PressKey(DIK_LCONTROL)) {
-			debugTranslate_.y -= 0.05f;
+			debugTransformCenter_.translate.y -= 0.05f;
 		}
 	} else {
 		if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
-			debugRotate.x += Radian(1.0f);
+			debugTransform_.rotate.x += Radian(1.0f);
 		}
 		if (InputManager::GetInstance()->PressKey(DIK_LEFT)) {
-			debugRotate.x -= Radian(1.0f);
+			debugTransform_.rotate.x -= Radian(1.0f);
 		}
 		if (InputManager::GetInstance()->PressKey(DIK_UP)) {
-			debugRotate.y -= Radian(1.0f);
+			debugTransform_.rotate.y -= Radian(1.0f);
 		}
 		if (InputManager::GetInstance()->PressKey(DIK_DOWN)) {
-			debugRotate.y += Radian(1.0f);
+			debugTransform_.rotate.y += Radian(1.0f);
 		}
 	}
 
