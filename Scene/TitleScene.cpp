@@ -85,7 +85,6 @@ void TitleScene::CreateModel(DrawModelData* data) {
 void TitleScene::Update() {
 	bool enumSelect;
 
-
 #ifdef _DEBUG
 
 	ImGui::Begin("Window");
