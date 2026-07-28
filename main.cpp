@@ -16,11 +16,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	/*=============================================================
 	ここから下がゲームの変数.
 	=============================================================*/
+	SoundManager::GetInstance()->RegisterSound("test", "Resource/free_k.wav");
 
 	SceneManager::GetInstance()->Initialize();
 
-	SoundManager::GetInstance()->RegisterSound("test", "Resource/free_k.wav");
-	SoundData data = SoundManager::GetInstance()->GetSoundData("test");
 
 	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.5f;
 	// ウィンドウのxボタンが押されるまでループ.
@@ -33,25 +32,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			GlobalVariables::GetInstance()->Update();
 
 			SceneManager::GetInstance()->Update();
-
-#ifdef _DEBUG
-
-			ImGui::Begin("bgmTest");
-			if (ImGui::Button("start")) {
-				SoundManager::GetInstance()->SoundPlay(data, 1.0f, 1.0f, kBGM, true, "test");
-			}
-			if (ImGui::Button("stop")) {
-				SoundManager::GetInstance()->SoundStop("test");
-			}
-			if (ImGui::Button("noLoopStart")) {
-				SoundManager::GetInstance()->SoundPlay(data, 1.0f, 1.0f, kBGM, false, "noLtest");
-			}
-			if (ImGui::Button("se")) {
-				SoundManager::GetInstance()->SoundPlay(data, 1.0f, 1.0f, kSoundEffect);
-			}
-			ImGui::End();
-
-#endif // _DEBUG
 
 			/*=============================================================
 			以下にゲームの描画処理を記述.

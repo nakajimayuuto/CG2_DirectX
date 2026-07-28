@@ -57,4 +57,6 @@ private:
 	uint32_t modelIndex_ = 0;
 
 	DrawModelType currentNewModelType_;
+
+	SoundData data;
 };

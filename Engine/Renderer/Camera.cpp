@@ -36,14 +36,20 @@ void Camera::Initialize() {
 	// 【デバッグカメラ用】
 	useDebugCamera_ = false;
 
-	debugScale_ = { 1.0f,1.0f,1.0f };
-	debugTranslate_ = { 0.0f,0.0f,-10.0f };
+	debugTransformCenter_.Initialize();
+	debugTransform_.Initialize();
+	debugTransformCenter_.translate = { 0.0f,10.0f,-13.0f };
+	debugTransformCenter_.rotate = { Radian(30.0f),0.0f,0.0f };
+	//debugTransform_.translate.z = -10.0f;
+	debugTransform_.SetParent(&debugTransformCenter_);
+	//debugScale_ = { 1.0f,1.0f,1.0f };
+	//debugTranslate_ = { 0.0f,0.0f,-10.0f };
 
 	transparentRadiusMax_ = 9.0f;
 	transparentRadiusMin_ = 2.0f;
 	transparentAlphaMin_ = 0.0f;
 
-	debugMatRot_ = Matrix4x4::MakeAffineMatrix(debugScale_, rotate_, debugTranslate_);
+	//debugMatRot_ = Matrix4x4::MakeAffineMatrix(debugScale_, rotate_, debugTranslate_);
 
 	spriteTransform.Initialize();
 	spriteTransform.translate.x = 640.0f;
@@ -59,11 +65,11 @@ void Camera::CreateResource() {
 	cameraData_->worldPosition = { 0.0f,0.0f,0.0f };
 }
 
-bool Camera::IsInCameraFrustum(const Vector3& point,float radius){
-	for (int i = 0; i < 6; i++){
-		float d = static_cast<Vector3>(point).Dot(planes_[i].normal)+ planes_[i].distance;
+bool Camera::IsInCameraFrustum(const Vector3& point, float radius) {
+	for (int i = 0; i < 6; i++) {
+		float d = static_cast<Vector3>(point).Dot(planes_[i].normal) + planes_[i].distance;
 
-		if (d > radius){
+		if (d > radius) {
 			return false;
 		}
 	}
@@ -71,8 +77,8 @@ bool Camera::IsInCameraFrustum(const Vector3& point,float radius){
 	return true;
 }
 
-Vector4 Camera::GetTransparentColor(const Vector3& position, const Vector4& color){
-	if (!Collision::SphereToSphere({ translate_,transparentRadiusMax_ }, {position,0.5f})) {
+Vector4 Camera::GetTransparentColor(const Vector3& position, const Vector4& color) {
+	if (!Collision::SphereToSphere({ translate_,transparentRadiusMax_ }, { position,0.5f })) {
 		return color;
 	}
 
@@ -84,7 +90,7 @@ Vector4 Camera::GetTransparentColor(const Vector3& position, const Vector4& colo
 
 	Vector4 newColor = color;
 
-	newColor.w = Easing(transparentAlphaMin_, color.w,std::max(distance - transparentRadiusMin_, transparentRadiusMin_),transparentRadiusMax_ - transparentRadiusMin_,EaseType::kConstant);
+	newColor.w = Easing(transparentAlphaMin_, color.w, std::max(distance - transparentRadiusMin_, transparentRadiusMin_), transparentRadiusMax_ - transparentRadiusMin_, EaseType::kConstant);
 
 	return newColor;
 }
@@ -107,58 +113,55 @@ void Camera::Update() {
 void Camera::DebugUpdate() {
 	Vector3 debugRotate = { 0.0f,0.0f,0.0f };
 	bool useMoving = false;
+	Vector3 move = { 0.0f,0.0f,0.0f };
+	InputManager* input = InputManager::GetInstance();
+	if(input->IsGamePadConnect()) {
+		move = { input->GetLeftStickDirection().x, 0.0f, input->GetLeftStickDirection().y };
 
-	if (InputManager::GetInstance()->PressKey(DIK_LSHIFT)) {
-		useMoving = true;
-	}
-
-	if (useMoving) {
-		if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
-			debugTransformCenter_.translate.x += 0.05f;
-		}
-		if (InputManager::GetInstance()->PressKey(DIK_LEFT)) {
-			debugTransformCenter_.translate.x -= 0.05f;
-		}
-		if (InputManager::GetInstance()->PressKey(DIK_UP)) {
-			debugTransformCenter_.translate.z += 0.05f;
-		}
-		if (InputManager::GetInstance()->PressKey(DIK_DOWN)) {
-			debugTransformCenter_.translate.z -= 0.05f;
-		}
-		if (InputManager::GetInstance()->PressKey(DIK_SPACE)) {
-			debugTransformCenter_.translate.y += 0.05f;
-		}
-		if (InputManager::GetInstance()->PressKey(DIK_LCONTROL)) {
-			debugTransformCenter_.translate.y -= 0.05f;
-		}
+		debugTransformCenter_.rotate.x += -input->GetRightStickDirection().y * Radian(1.0f);
+		debugTransformCenter_.rotate.y += input->GetRightStickDirection().x * Radian(1.0f);
 	} else {
-		if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
-			debugTransform_.rotate.x += Radian(1.0f);
+		if (input->PressKey(DIK_D)) {
+			move.x += 1.0f;
 		}
-		if (InputManager::GetInstance()->PressKey(DIK_LEFT)) {
-			debugTransform_.rotate.x -= Radian(1.0f);
+		if (input->PressKey(DIK_A)) {
+			move.x -= 1.0f;
 		}
-		if (InputManager::GetInstance()->PressKey(DIK_UP)) {
-			debugTransform_.rotate.y -= Radian(1.0f);
+		if (input->PressKey(DIK_W)) {
+			move.z += 1.0f;
 		}
-		if (InputManager::GetInstance()->PressKey(DIK_DOWN)) {
-			debugTransform_.rotate.y += Radian(1.0f);
+		if (input->PressKey(DIK_S)) {
+			move.z -= 1.0f;
 		}
+		if (input->PressKey(DIK_SPACE)) {
+			move.y += 1.0f;
+		}
+		if (input->PressKey(DIK_LSHIFT)) {
+			move.y -= 1.0f;
+		}
+
+		debugTransformCenter_.rotate.x += input->GetMouse().GetMove().y * Radian(0.1f);
+		debugTransformCenter_.rotate.y += input->GetMouse().GetMove().x * Radian(0.1f);
 	}
 
+	Matrix4x4 cameraRotateMatrix = Matrix4x4::MakeRotateMatrix(debugTransformCenter_.rotate);
 
-	Matrix4x4 matRotDelta = Matrix4x4::Identity();
-	matRotDelta *= Matrix4x4::MakeRotateYMatrix(debugRotate.x);
-	matRotDelta *= Matrix4x4::MakeRotateXMatrix(debugRotate.y);
-
-	debugMatRot_ = matRotDelta * debugMatRot_;
-
-	//matrix_ = Matrix4x4::MakeScaleMatrix(debugScale_);
-	matrix_ = debugMatRot_;
-	matrix_ *= Matrix4x4::MakeTranslateMatrix(debugTranslate_);
+	move = move.Normalize();
+	move = cameraRotateMatrix.TransformNomal(move);
+	debugTransformCenter_.translate += move * kDebugSpeed;
+	matrix_ = debugTransform_.GetAffineMatrix();
+	//Matrix4x4 matRotDelta = Matrix4x4::Identity();
+	//matRotDelta *= Matrix4x4::MakeRotateYMatrix(debugRotate.x);
+	//matRotDelta *= Matrix4x4::MakeRotateXMatrix(debugRotate.y);
+	//
+	//debugMatRot_ = matRotDelta * debugMatRot_;
+	//
+	////matrix_ = Matrix4x4::MakeScaleMatrix(debugScale_);
+	//matrix_ = debugMatRot_;
+	//matrix_ *= Matrix4x4::MakeTranslateMatrix(debugTranslate_);
 }
 
-void Camera::FrustumUpdate(){
+void Camera::FrustumUpdate() {
 
 	Vector3 cameraPos = translate_;
 	Vector3 right = gameCameraMatrix_.GetXAxis().Normalize();
@@ -256,20 +259,20 @@ void Camera::DrawRange() {
 		return;
 	}
 
-	Renderer::GetInstance()->DrawLine(nearVertex_.leftTop, nearVertex_.rightTop,{1.0f,1.0f,1.0f,1.0f});
-	Renderer::GetInstance()->DrawLine(nearVertex_.rightTop, nearVertex_.rightBottom,{1.0f,1.0f,1.0f,1.0f});
-	Renderer::GetInstance()->DrawLine(nearVertex_.rightBottom, nearVertex_.leftBottom,{1.0f,1.0f,1.0f,1.0f});
-	Renderer::GetInstance()->DrawLine(nearVertex_.leftBottom, nearVertex_.leftTop,{1.0f,1.0f,1.0f,1.0f});
+	Renderer::GetInstance()->DrawLine(nearVertex_.leftTop, nearVertex_.rightTop, { 1.0f,1.0f,1.0f,1.0f });
+	Renderer::GetInstance()->DrawLine(nearVertex_.rightTop, nearVertex_.rightBottom, { 1.0f,1.0f,1.0f,1.0f });
+	Renderer::GetInstance()->DrawLine(nearVertex_.rightBottom, nearVertex_.leftBottom, { 1.0f,1.0f,1.0f,1.0f });
+	Renderer::GetInstance()->DrawLine(nearVertex_.leftBottom, nearVertex_.leftTop, { 1.0f,1.0f,1.0f,1.0f });
 
-	Renderer::GetInstance()->DrawLine(farVertex_.leftTop, farVertex_.rightTop,{1.0f,1.0f,1.0f,1.0f});
-	Renderer::GetInstance()->DrawLine(farVertex_.rightTop, farVertex_.rightBottom,{1.0f,1.0f,1.0f,1.0f});
-	Renderer::GetInstance()->DrawLine(farVertex_.rightBottom, farVertex_.leftBottom,{1.0f,1.0f,1.0f,1.0f});
-	Renderer::GetInstance()->DrawLine(farVertex_.leftBottom, farVertex_.leftTop,{1.0f,1.0f,1.0f,1.0f});
+	Renderer::GetInstance()->DrawLine(farVertex_.leftTop, farVertex_.rightTop, { 1.0f,1.0f,1.0f,1.0f });
+	Renderer::GetInstance()->DrawLine(farVertex_.rightTop, farVertex_.rightBottom, { 1.0f,1.0f,1.0f,1.0f });
+	Renderer::GetInstance()->DrawLine(farVertex_.rightBottom, farVertex_.leftBottom, { 1.0f,1.0f,1.0f,1.0f });
+	Renderer::GetInstance()->DrawLine(farVertex_.leftBottom, farVertex_.leftTop, { 1.0f,1.0f,1.0f,1.0f });
 
-	Renderer::GetInstance()->DrawLine(nearVertex_.leftTop, farVertex_.leftTop,{1.0f,1.0f,1.0f,1.0f});
-	Renderer::GetInstance()->DrawLine(nearVertex_.rightTop, farVertex_.rightTop,{1.0f,1.0f,1.0f,1.0f});
-	Renderer::GetInstance()->DrawLine(nearVertex_.leftBottom, farVertex_.leftBottom,{1.0f,1.0f,1.0f,1.0f});
-	Renderer::GetInstance()->DrawLine(nearVertex_.rightBottom, farVertex_.rightBottom,{1.0f,1.0f,1.0f,1.0f});
+	Renderer::GetInstance()->DrawLine(nearVertex_.leftTop, farVertex_.leftTop, { 1.0f,1.0f,1.0f,1.0f });
+	Renderer::GetInstance()->DrawLine(nearVertex_.rightTop, farVertex_.rightTop, { 1.0f,1.0f,1.0f,1.0f });
+	Renderer::GetInstance()->DrawLine(nearVertex_.leftBottom, farVertex_.leftBottom, { 1.0f,1.0f,1.0f,1.0f });
+	Renderer::GetInstance()->DrawLine(nearVertex_.rightBottom, farVertex_.rightBottom, { 1.0f,1.0f,1.0f,1.0f });
 }
 
 Vector3 Camera::GetCameraVector3(Vector3 vector3, Matrix4x4 matrix) {

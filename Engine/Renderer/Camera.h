@@ -79,6 +79,8 @@ private:
 
 	void DrawRange();
 private:
+	static inline float kDebugSpeed = 0.05f;
+
 	Vector3 scale_;
 	Vector3 rotate_;
 	Vector3 translate_;
