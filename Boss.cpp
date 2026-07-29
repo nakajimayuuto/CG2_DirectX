@@ -1074,7 +1074,6 @@ void Boss::FangAttackUpdate() {
 			float lenght = Vector3(targetTransform_->translate - transform_.translate).Length();
 			Transform newTransform = halberdTransform_;
 			std::vector<Vector3> spikePos_;
-			bool isShot_;
 			if (lenght <= (kFangAttackRadius / 3.0f) * 2.0f) {
 				for (uint32_t i = 0; i < kFangAttackRadiusNum; i++) {
 					newTransform = halberdTransform_;

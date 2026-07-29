@@ -179,7 +179,7 @@ void Player::Update() {
 	isAttack_ = false;
 	isDash_ = false;
 
-	colliderDimensionType_ == ColliderDimensionType::k3D;
+	colliderDimensionType_ = ColliderDimensionType::k3D;
 	switch (behavior_) {
 	case Player::Behavior::kRoot:
 		BehaviorRootUpdate();
@@ -191,7 +191,7 @@ void Player::Update() {
 		break;
 	case Player::Behavior::kDash:
 		BehaviorDashUpdate();
-		colliderDimensionType_ == ColliderDimensionType::k2D;
+		colliderDimensionType_ = ColliderDimensionType::k2D;
 		CollisionManager::GetInstance()->AddColliderList(this);
 		break;
 	case Player::Behavior::kJump:
@@ -204,7 +204,7 @@ void Player::Update() {
 		break;
 	case Player::Behavior::kDashJumpAttack:
 		BehaviorDashJumpAttackUpdate();
-		colliderDimensionType_ == ColliderDimensionType::k2D;
+		colliderDimensionType_ = ColliderDimensionType::k2D;
 		CollisionManager::GetInstance()->AddColliderList(this);
 		break;
 	case Player::Behavior::kFall:
@@ -649,7 +649,7 @@ void Player::BehaviorDashAttackUpdate() {
 		}
 		break;
 	default:
-		colliderDimensionType_ == ColliderDimensionType::k2D;
+		colliderDimensionType_ = ColliderDimensionType::k2D;
 		attackCollider_.SetActive(true);
 		Vector3 accelerationVector = { 0.0f,-kGravityAcceleration,0.0f };
 		velocity_ += accelerationVector * DeltaTime::GetInstance()->GetGameTime();
