@@ -19,6 +19,7 @@ void SceneManager::Initialize() {
 	//#ifdef _DEBUG
 	Debug::GetInstance()->LoadDebugSettings();
 	currentScene_ = std::make_unique<TitleScene>();
+	sceneName_ = SceneName::kTitleScene;
 	//#endif // _DEBUG
 
 	currentScene_->Initialize();
@@ -45,11 +46,12 @@ void SceneManager::ChangeSceneUpdate() {
 
 	switch (sceneName_) {
 	case SceneName::kGameScene:
-
+		sceneName_ = SceneName::kGameScene;
 		currentScene_ = std::make_unique <GameScene>();
 		currentScene_->Initialize();
 		break;
 	case SceneName::kTitleScene:
+		sceneName_ = SceneName::kTitleScene;
 		currentScene_ = std::make_unique <TitleScene>();
 		currentScene_->Initialize();
 		break;

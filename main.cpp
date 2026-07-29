@@ -10,6 +10,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
+	TextureManager::GetInstance()->RegisterTexture("window_back", "Resource/Window/window_back.png");
+	TextureManager::GetInstance()->RegisterTexture("window_mask", "Resource/Window/window_mask.png");
+	TextureManager::GetInstance()->RegisterTexture("window_s_l_back", "Resource/Window/window_square_large_back.png");
+	TextureManager::GetInstance()->RegisterTexture("window_s_l_mask", "Resource/Window/window_square_large_mask.png");
+	TextureManager::GetInstance()->RegisterTexture("window_s_s_mask", "Resource/Window/window_square_small_back.png");
+	TextureManager::GetInstance()->RegisterTexture("window_s_s_back", "Resource/Window/window_square_small_mask.png");
+
+	TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resource/uvChecker.png");
+	ModelManager::GetInstance()->RegisterObj("plane", "Resource/Evaluation", "plane.obj");
+	ModelManager::GetInstance()->RegisterObj("teapot", "Resource/Evaluation", "teapot.obj");
+	ModelManager::GetInstance()->RegisterObj("bunny", "Resource/Evaluation", "bunny.obj");
+	ModelManager::GetInstance()->RegisterObj("multiMesh", "Resource/Evaluation", "multiMesh.obj");
+	ModelManager::GetInstance()->RegisterObj("multiMaterial", "Resource/Evaluation", "multiMaterial.obj");
+	ModelManager::GetInstance()->RegisterObj("suzanne", "Resource/Evaluation", "suzanne.obj");
 
 
 

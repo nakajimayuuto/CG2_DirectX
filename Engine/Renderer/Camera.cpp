@@ -34,14 +34,7 @@ void Camera::Initialize() {
 	maxDepth_ = 1.0f;
 
 	// 【デバッグカメラ用】
-	useDebugCamera_ = false;
-
-	debugTransformCenter_.Initialize();
-	debugTransform_.Initialize();
-	debugTransformCenter_.translate = { 0.0f,10.0f,-13.0f };
-	debugTransformCenter_.rotate = { Radian(30.0f),0.0f,0.0f };
-	//debugTransform_.translate.z = -10.0f;
-	debugTransform_.SetParent(&debugTransformCenter_);
+	DebugInitialize();
 	//debugScale_ = { 1.0f,1.0f,1.0f };
 	//debugTranslate_ = { 0.0f,0.0f,-10.0f };
 
@@ -66,13 +59,13 @@ void Camera::CreateResource() {
 }
 
 bool Camera::IsInCameraFrustum(const Vector3& point, float radius) {
-	for (int i = 0; i < 6; i++) {
-		float d = static_cast<Vector3>(point).Dot(planes_[i].normal) + planes_[i].distance;
-
-		if (d > radius) {
-			return false;
-		}
-	}
+	//for (int i = 0; i < 6; i++) {
+	//	float d = static_cast<Vector3>(point).Dot(planes_[i].normal) + planes_[i].distance;
+	//
+	//	if (d > radius) {
+	//		return false;
+	//	}
+	//}
 
 	return true;
 }
@@ -99,7 +92,9 @@ void Camera::Update() {
 
 	if (useDebugCamera_) {
 		DebugUpdate();
-		//matrix_ = Matrix4x4::MakeAffineMatrix(debugScale_, debugRotate_, debugTranslate_);
+		cameraData_->worldPosition = debugTransform_.GetWorldPosition();
+		//gameCameraMatrix_ = Matrix4x4::MakeAffineMatrix(debugTransform_.scale, -debugTransform_.rotate, debugTransform_.GetWorldPosition());
+		//FrustumUpdate();
 		return;
 	}
 
@@ -108,6 +103,16 @@ void Camera::Update() {
 
 	gameCameraMatrix_ = Matrix4x4::MakeAffineMatrix(scale_, -rotate_, translate_);
 	FrustumUpdate();
+}
+
+void Camera::DebugInitialize(){
+	useDebugCamera_ = true;
+
+	debugTransformCenter_.Initialize();
+	debugTransform_.Initialize();
+	debugTransformCenter_.translate = { 0.0f,10.0f,-13.0f };
+	debugTransformCenter_.rotate = { Radian(30.0f),0.0f,0.0f };
+	debugTransform_.SetParent(&debugTransformCenter_);
 }
 
 void Camera::DebugUpdate() {

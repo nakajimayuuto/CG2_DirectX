@@ -555,15 +555,46 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 	// DepthStencilStateの設定.
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
 	// Depthの機能を有効化する.
-	depthStencilDesc.DepthEnable = true;
-	// 書き込みします.
-	if (shaderType == ShaderType::kParticle) {
-		depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+	if (blendMode == BlendMode::kStencil) {
+		depthStencilDesc.DepthEnable = FALSE;
+
+		depthStencilDesc.StencilEnable = TRUE;
+
+		depthStencilDesc.StencilReadMask = 0xFF;
+		depthStencilDesc.StencilWriteMask = 0xFF;
+
+		depthStencilDesc.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+		depthStencilDesc.FrontFace.StencilPassOp = D3D12_STENCIL_OP_REPLACE;
+		depthStencilDesc.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+		depthStencilDesc.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+
+		depthStencilDesc.BackFace = depthStencilDesc.FrontFace;
 	} else {
-		depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+		if (blendMode == BlendMode::kStencilNoneNormal) {
+			depthStencilDesc.DepthEnable = false;
+			depthStencilDesc.StencilEnable = false;
+
+			depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+			depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+		} else {
+			depthStencilDesc.DepthEnable = true;
+			depthStencilDesc.StencilEnable = true;
+
+			depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+			depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+
+			depthStencilDesc.StencilReadMask = 0xFF;
+			depthStencilDesc.StencilWriteMask = 0x00;    // ←ここを変更
+
+			depthStencilDesc.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_EQUAL;
+			depthStencilDesc.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+			depthStencilDesc.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+			depthStencilDesc.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+
+			depthStencilDesc.BackFace = depthStencilDesc.FrontFace;
+		}
+
 	}
-	// 比較関数はLessEqual。つまり、近ければ描画される.
-	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
 	/*=============================================================
 	PSO(どこに書けばいいかわからぬ).
@@ -802,43 +833,47 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
 	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
 	blendDesc.RenderTarget[0].BlendEnable = true;
-
-	switch (blendMode) {
-	case BlendMode::kNormal:
-	case BlendMode::kNormalCullNone:
-	case BlendMode::kLine:
-		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-		break;
-	case BlendMode::kAdd:
-		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-		break;
-	case BlendMode::kSubtract:
-		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;
-		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-		break;
-	case BlendMode::kMultily:
-		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO;
-		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_SRC_COLOR;
-		break;
-	case BlendMode::kScreen:
-		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
-		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-		break;
-	default:
+	if (blendMode == BlendMode::kStencil) {
+		blendDesc.RenderTarget[0].RenderTargetWriteMask = 0;
+		//D3D12_COLOR_WRITE_ENABLE_ALL; // 0
 		blendDesc.RenderTarget[0].BlendEnable = false;
-		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-		break;
+	} else {
+		switch (blendMode) {
+		case BlendMode::kNormal:
+		case BlendMode::kNormalCullNone:
+		case BlendMode::kLine:
+			blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+			blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+			blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+			break;
+		case BlendMode::kAdd:
+			blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+			blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+			blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+			break;
+		case BlendMode::kSubtract:
+			blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+			blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;
+			blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+			break;
+		case BlendMode::kMultily:
+			blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO;
+			blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+			blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_SRC_COLOR;
+			break;
+		case BlendMode::kScreen:
+			blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
+			blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+			blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+			break;
+		default:
+			blendDesc.RenderTarget[0].BlendEnable = false;
+			blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+			blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+			blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+			break;
+		}
 	}
-
 
 	// 【RasterizerStateの設定を行う】
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
@@ -944,6 +979,11 @@ void GameSystem::DrawCommand(
 		if (indexBufferView != nullptr) {
 			data.commandList->IASetIndexBuffer(indexBufferView); // IBVを設定.
 		}
+
+		if (blendMode != BlendMode::kStencilNoneNormal) {
+			data.commandList->OMSetStencilRef(1);
+		}
+
 		// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
 		data.commandList->IASetPrimitiveTopology(topology);
 

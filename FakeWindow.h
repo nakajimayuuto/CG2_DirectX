@@ -38,8 +38,8 @@ public:
 	Vector2 GetWindowClientSize() { return {mask_.GetTextureInfo().width - 2.0f,mask_.GetTextureInfo().height - 32.0f}; };
 private:
 	Transform2D transform_;
-	Renderer::Sprite back_;
-	Renderer::Sprite mask_;
+	Sprite back_;
+	Sprite mask_;
 
 	WindowType type_;
 	bool isActive_;

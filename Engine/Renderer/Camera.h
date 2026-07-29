@@ -72,6 +72,8 @@ public:
 
 	void SetFovY(float fovY) { fovY_ = fovY; };
 	float GetFovY() { return fovY_; };
+
+	void DebugInitialize();
 private:
 	void DebugUpdate();
 

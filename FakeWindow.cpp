@@ -6,7 +6,6 @@ void FakeWindow::Initialize() {
 	back_.SetBlendMode(BlendMode::kStencilNoneNormal);
 	back_.SetTranslateZ(-200);
 	mask_.SetBlendMode(BlendMode::kStencil);
-	mask_.SetBlendMode(BlendMode::kStencil);
 	mask_.SetTranslateZ(-100);
 
 	isActive_ = true;

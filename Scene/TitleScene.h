@@ -2,6 +2,7 @@
 #include "../Satlib.h"
 #include "IScene.h"
 #include "../Skydome.h"
+#include "../FakeWindow.h"
 
 // リストボックスに入れるアイテムの構造体.
 struct GuiItem {
@@ -52,11 +53,19 @@ public:
 
 	void CreateModel(DrawModelData* data);
 private:
+	void CreateFakeWindow();
+private:
 	std::vector<std::unique_ptr<DrawModelData>> modelDatas_;
+
+	std::vector<std::unique_ptr<FakeWindow>> fakeWindows_;
+
+	bool useFakeWindow_;
 
 	uint32_t modelIndex_ = 0;
 
 	DrawModelType currentNewModelType_;
 
 	SoundData data;
+
+	Sprite stencilMask_;
 };

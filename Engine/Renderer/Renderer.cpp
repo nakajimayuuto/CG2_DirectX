@@ -114,7 +114,6 @@ void Model::Draw(const Transform& transform) {
 		if (!Camera::GetInstance()->IsInCameraFrustum(transform.translate, radius_ * transform.GetMaxScale())) {
 			return;
 		}
-
 		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
 
 		wvpData_[i]->World = worldMatrix;
@@ -539,7 +538,6 @@ void Sprite::Draw(const Transform& transform) {
 		return;
 	}
 
-
 	transformationMatrixData_->World = transform.GetAffineMatrix();
 	transformationMatrixData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(transform.GetAffineMatrix());
 
@@ -570,7 +568,7 @@ void Sprite::Draw(const Transform2D& transform) {
 	transform3D.rotate.z = 0.0f;
 	transform3D.translate.x = transform.translate.x;
 	transform3D.translate.y = transform.translate.y;
-	transform3D.translate.z = 0.0f;
+	transform3D.translate.z =depth_;
 	;
 	Draw(transform3D);
 }

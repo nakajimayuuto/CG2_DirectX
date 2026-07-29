@@ -1,13 +1,8 @@
 #include "TitleScene.h"
 
 void TitleScene::Initialize() {
-	TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resource/uvChecker.png");
-	ModelManager::GetInstance()->RegisterObj("plane", "Resource/Evaluation", "plane.obj");
-	ModelManager::GetInstance()->RegisterObj("teapot", "Resource/Evaluation", "teapot.obj");
-	ModelManager::GetInstance()->RegisterObj("bunny", "Resource/Evaluation", "bunny.obj");
-	ModelManager::GetInstance()->RegisterObj("multiMesh", "Resource/Evaluation", "multiMesh.obj");
-	ModelManager::GetInstance()->RegisterObj("multiMaterial", "Resource/Evaluation", "multiMaterial.obj");
-	ModelManager::GetInstance()->RegisterObj("suzanne", "Resource/Evaluation", "suzanne.obj");
+	fakeWindows_.clear();
+	modelDatas_.clear();
 	CreateModelData({ -390.0f,-110.0f,0.0f }, DrawModelType::Sprite);
 	CreateModelData({ 0.0f,0.0f,0.0f }, DrawModelType::Plane);
 	CreateModelData({ -2.0f,0.0f,2.0f }, DrawModelType::Sphere);
@@ -18,10 +13,16 @@ void TitleScene::Initialize() {
 	CreateModelData({ 2.0f,0.0f,6.0f }, DrawModelType::Suzzanne);
 	Camera::GetInstance()->SetPosition({ 0.0f,10.0f,-13.0f });
 	Camera::GetInstance()->SetRotate({ Radian(30.0f),0.0f,0.0f });
-	Camera::GetInstance()->ChangeCameraMode();
+	Camera::GetInstance()->DebugInitialize();
+	//Camera::GetInstance()->ChangeCameraMode();
 	currentNewModelType_ = DrawModelType::Plane;
 
 	data = SoundManager::GetInstance()->GetSoundData("test");
+
+	stencilMask_.Initialize();
+	stencilMask_.SetBlendMode(BlendMode::kStencil);
+
+	CreateFakeWindow();
 }
 
 void TitleScene::CreateModelData(const Vector3& position, DrawModelType type) {
@@ -88,6 +89,14 @@ void TitleScene::Update() {
 #ifdef _DEBUG
 
 	ImGui::Begin("Window");
+	if (ImGui::Button("Reset")) {
+		SceneManager::GetInstance()->ReloadScene();
+	}
+
+	if (ImGui::Button("Finish")) {
+		Environment::GetInstance()->GameFinished();
+	}
+
 	if (ImGui::CollapsingHeader("Models")) {
 		if (ImGui::TreeNode("ModelType")) {
 			if (ImGui::BeginListBox("LightingType")) {
@@ -219,6 +228,14 @@ void TitleScene::Update() {
 		}
 	}
 
+	if (ImGui::CollapsingHeader("Light")) {
+		ImGui::ColorEdit4("LightColor",reinterpret_cast<float*>(&LightManager::GetInstance()->GetDirectionalLightData()->color));
+		ImGui::SliderFloat3("LightDirection",reinterpret_cast<float*>(&LightManager::GetInstance()->GetDirectionalLightData()->direction),-1.0f,1.0f);
+		ImGui::DragFloat("LightIntensity",&LightManager::GetInstance()->GetDirectionalLightData()->intensity,0.01f,0.0f,1.0f);
+		LightManager::GetInstance()->GetDirectionalLightData()->direction = LightManager::GetInstance()->GetDirectionalLightData()->direction.Normalize();
+
+	}
+	
 	if (ImGui::CollapsingHeader("Sound")) {
 		if (ImGui::Button("start")) {
 			SoundManager::GetInstance()->SoundPlay(data, 1.0f, 1.0f, kBGM, true, "test");
@@ -230,6 +247,61 @@ void TitleScene::Update() {
 			SoundManager::GetInstance()->SoundPlay(data, 1.0f, 1.0f, kSoundEffect);
 		}
 	}
+
+
+	for (auto it = fakeWindows_.begin(); it != fakeWindows_.end(); ) {
+		if (!(*it)->GetIsActive()) {
+			it = fakeWindows_.erase(it);
+		} else {
+			++it;
+		}
+	}
+
+	if (ImGui::CollapsingHeader("FakeWindow")) {
+		ImGui::Text("useFakeWindow");
+		if (ImGui::Button(useFakeWindow_ ? "true" : "false")) {
+			if (useFakeWindow_) {
+				useFakeWindow_ = false;
+			} else {
+				useFakeWindow_ = true;
+			}
+		}
+
+
+		if (useFakeWindow_) {
+			if (ImGui::Button("Create")) {
+				CreateFakeWindow();
+			}
+
+			Vector2 imVector2;
+			Vector2 imScale2;
+			float imRotateZ;
+			uint32_t index = 0;;
+			for (auto& window : fakeWindows_) {
+				ImGui::PushID(index);
+				imVector2 = window->GetTransform().translate;
+				imScale2 = window->GetTransform().scale;
+				imRotateZ = Degree(window->GetTransform().rotate);
+				ImGui::DragFloat2("scale", reinterpret_cast<float*>(&imScale2), 0.1f, 0.0f, 100.0f);
+				ImGui::DragFloat("rotate", &imRotateZ, 1.0f, -360.0f, 360.0f);
+				ImGui::DragFloat2("translate", reinterpret_cast<float*>(&imVector2), 10.0f, -(1920.0f / 2.0f) - (window->GetWindowSize().x / 2.0f), (1920.0f / 2.0f) + (window->GetWindowSize().x / 2.0f));
+				window->SetTransform({ imScale2,Radian(imRotateZ),imVector2 });
+				int type = static_cast<int>(window->GetType());
+				//ImGui::SliderInt("Type", &type, 0, kWindowTypeCount - 1);
+				//if (type != static_cast<int>(window->GetType())) {
+				//	window->SetType(static_cast<WindowType>(type));
+				//}
+
+				if (ImGui::Button("Delete")) {
+					window->SetIsActive(false);
+				}
+				ImGui::PopID();
+				index++;
+			}
+		}
+	}
+
+
 	ImGui::End();
 
 #endif // _DEBUG
@@ -250,6 +322,18 @@ void TitleScene::Update() {
 }
 
 void TitleScene::Draw() {
+	if (useFakeWindow_) {
+		for (auto& window : fakeWindows_) {
+			window->DrawBack();
+		}
+		for (auto& window : fakeWindows_) {
+			window->DrawMask();
+		}
+	} else {
+		stencilMask_.Draw(Transform::GetInitialValue({ 2000.0f, 1200.0f, 0.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,100.0f }));
+
+	}
+
 	Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 100.0f, 100.0f, 0.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,100.0f }), { 1920.0f,1080.0f }, "white_template", { 0.1f,0.25f,0.5f,1.0f });
 
 	for (auto& modelData : modelDatas_) {
@@ -266,4 +350,11 @@ void TitleScene::Draw() {
 			modelData->model.Draw(modelData->transform);
 		}
 	}
+}
+
+void TitleScene::CreateFakeWindow() {
+	std::unique_ptr<FakeWindow> newWindow;
+	newWindow = std::make_unique<FakeWindow>();
+	newWindow->Initialize();
+	fakeWindows_.push_back(std::move(newWindow));
 }
