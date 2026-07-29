@@ -55,7 +55,7 @@ private:
 	// 定数.
 	const LPCWSTR kWindowTitle_ = L"AL3_03_3Dレールアクション";
 
-	const WindowSize kWindowSize_ = { 1280,720 };//{1280,720};
+	const WindowSize kWindowSize_ = { 1920,1080 };//{1280,720};
 
 
 	float aspect_;

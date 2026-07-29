@@ -196,6 +196,9 @@
     <Filter Include="Managers\DifficultyManager">
       <UniqueIdentifier>{a46b1c6e-4237-48a7-a6db-26c516211610}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\FakeWindow">
+      <UniqueIdentifier>{c4bc8122-e6f4-4e6e-8929-f1460dab2dcb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -371,6 +374,9 @@
     </ClCompile>
     <ClCompile Include="Managers\DifficultyManager.cpp">
       <Filter>Managers\DifficultyManager</Filter>
+    </ClCompile>
+    <ClCompile Include="FakeWindow.cpp">
+      <Filter>ソース ファイル\FakeWindow</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -562,6 +568,9 @@
     </ClInclude>
     <ClInclude Include="Boss.h">
       <Filter>ソース ファイル\Boss</Filter>
+    </ClInclude>
+    <ClInclude Include="FakeWindow.h">
+      <Filter>ソース ファイル\FakeWindow</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

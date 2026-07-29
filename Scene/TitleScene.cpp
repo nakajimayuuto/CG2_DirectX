@@ -250,7 +250,7 @@ void TitleScene::Update() {
 }
 
 void TitleScene::Draw() {
-	Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f, 1.0f, 0.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,100.0f }), { 1280.0f,720.0f }, "white_template", { 0.1f,0.25f,0.5f,1.0f });
+	Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 100.0f, 100.0f, 0.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,100.0f }), { 1920.0f,1080.0f }, "white_template", { 0.1f,0.25f,0.5f,1.0f });
 
 	for (auto& modelData : modelDatas_) {
 		if (modelData->type == DrawModelType::Sphere) {

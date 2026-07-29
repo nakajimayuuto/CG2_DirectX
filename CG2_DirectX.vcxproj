@@ -17,6 +17,7 @@
   <ItemGroup>
     <ClCompile Include="Boss.cpp" />
     <ClCompile Include="BossWarp.cpp" />
+    <ClCompile Include="FakeWindow.cpp" />
     <ClCompile Include="HPGauge.cpp" />
     <ClCompile Include="Managers\DifficultyManager.cpp" />
     <ClCompile Include="ProjectileManager.cpp" />
@@ -104,6 +105,7 @@
     <ClInclude Include="Boss.h" />
     <ClInclude Include="BossWarp.h" />
     <ClInclude Include="externals\magic_enum\magic_enum.hpp" />
+    <ClInclude Include="FakeWindow.h" />
     <ClInclude Include="HPGauge.h" />
     <ClInclude Include="Managers\DifficultyManager.h" />
     <ClInclude Include="ProjectileManager.h" />
