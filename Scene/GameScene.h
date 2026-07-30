@@ -2,11 +2,6 @@
 #include <list>
 #include "IScene.h"
 #include "../Satlib.h"
-#include "../Skydome.h"
-#include "../Ground.h"
-#include "../Player.h"
-#include "../GameCamera.h"
-#include "../Boss.h"
 
 class GameScene : public IScene {
 public:
@@ -19,15 +14,4 @@ public:
 private:
 	void CheckAllCollisions();
 private:
-	std::unique_ptr<Player> player_;
-	std::unique_ptr<Skydome> skydome_;
-	std::unique_ptr<Ground> ground_;
-	std::unique_ptr<Boss> boss_;
-
-	float testRotate_;
-
-	float majorRadius_;
-	float minorRadius_;
-
-	int32_t testNum_;
 };

@@ -1,7 +1,6 @@
 #pragma once
 #include "../Satlib.h"
 #include "IScene.h"
-#include "../Skydome.h"
 #include "../FakeWindow.h"
 
 // リストボックスに入れるアイテムの構造体.
