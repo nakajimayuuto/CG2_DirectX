@@ -36,9 +36,6 @@ void DeltaTime::Update() {
 		gameTime = deltaTime;
 	}
 
-
-
-	DebugUpdate();
 }
 
 void DeltaTime::DebugUpdate() {

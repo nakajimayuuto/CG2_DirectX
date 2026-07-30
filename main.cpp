@@ -43,8 +43,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			以下にゲームの更新処理を記述.
 			=============================================================*/
 
-			GlobalVariables::GetInstance()->Update();
-
 			SceneManager::GetInstance()->Update();
 
 			/*=============================================================
