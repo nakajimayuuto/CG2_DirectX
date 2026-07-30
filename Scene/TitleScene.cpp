@@ -23,6 +23,8 @@ void TitleScene::Initialize() {
 	stencilMask_.SetBlendMode(BlendMode::kStencil);
 
 	CreateFakeWindow();
+	CreateFakeWindow();
+	fakeWindows_[1]->SetTransform({ { 1.0f,1.0f },0.0f,{ 640.0f,360.0f } });
 }
 
 void TitleScene::CreateModelData(const Vector3& position, DrawModelType type) {
@@ -86,6 +88,7 @@ void TitleScene::CreateModel(DrawModelData* data) {
 void TitleScene::Update() {
 	bool enumSelect;
 
+	/**/
 #ifdef _DEBUG
 
 	ImGui::Begin("Window");
@@ -99,7 +102,7 @@ void TitleScene::Update() {
 
 	if (ImGui::CollapsingHeader("Models")) {
 		if (ImGui::TreeNode("ModelType")) {
-			if (ImGui::BeginListBox("LightingType")) {
+			if (ImGui::BeginListBox("ModelType")) {
 				for (DrawModelType type : magic_enum::enum_values<DrawModelType>()) {
 					enumSelect = (currentNewModelType_ == type);
 					ImGui::Selectable(magic_enum::enum_name(type).data(), &enumSelect);
@@ -229,13 +232,13 @@ void TitleScene::Update() {
 	}
 
 	if (ImGui::CollapsingHeader("Light")) {
-		ImGui::ColorEdit4("LightColor",reinterpret_cast<float*>(&LightManager::GetInstance()->GetDirectionalLightData()->color));
-		ImGui::SliderFloat3("LightDirection",reinterpret_cast<float*>(&LightManager::GetInstance()->GetDirectionalLightData()->direction),-1.0f,1.0f);
-		ImGui::DragFloat("LightIntensity",&LightManager::GetInstance()->GetDirectionalLightData()->intensity,0.01f,0.0f,1.0f);
+		ImGui::ColorEdit4("LightColor", reinterpret_cast<float*>(&LightManager::GetInstance()->GetDirectionalLightData()->color));
+		ImGui::SliderFloat3("LightDirection", reinterpret_cast<float*>(&LightManager::GetInstance()->GetDirectionalLightData()->direction), -1.0f, 1.0f);
+		ImGui::DragFloat("LightIntensity", &LightManager::GetInstance()->GetDirectionalLightData()->intensity, 0.01f, 0.0f, 1.0f);
 		LightManager::GetInstance()->GetDirectionalLightData()->direction = LightManager::GetInstance()->GetDirectionalLightData()->direction.Normalize();
 
 	}
-	
+
 	if (ImGui::CollapsingHeader("Sound")) {
 		if (ImGui::Button("start")) {
 			SoundManager::GetInstance()->SoundPlay(data, 1.0f, 1.0f, kBGM, true, "test");
@@ -279,21 +282,23 @@ void TitleScene::Update() {
 			uint32_t index = 0;;
 			for (auto& window : fakeWindows_) {
 				ImGui::PushID(index);
-				imVector2 = window->GetTransform().translate;
-				imScale2 = window->GetTransform().scale;
-				imRotateZ = Degree(window->GetTransform().rotate);
-				ImGui::DragFloat2("scale", reinterpret_cast<float*>(&imScale2), 0.1f, 0.0f, 100.0f);
-				ImGui::DragFloat("rotate", &imRotateZ, 1.0f, -360.0f, 360.0f);
-				ImGui::DragFloat2("translate", reinterpret_cast<float*>(&imVector2), 10.0f, -(1920.0f / 2.0f) - (window->GetWindowSize().x / 2.0f), (1920.0f / 2.0f) + (window->GetWindowSize().x / 2.0f));
-				window->SetTransform({ imScale2,Radian(imRotateZ),imVector2 });
-				int type = static_cast<int>(window->GetType());
-				//ImGui::SliderInt("Type", &type, 0, kWindowTypeCount - 1);
-				//if (type != static_cast<int>(window->GetType())) {
-				//	window->SetType(static_cast<WindowType>(type));
-				//}
+				if (ImGui::CollapsingHeader("Window")) {
+					imVector2 = window->GetTransform().translate;
+					imScale2 = window->GetTransform().scale;
+					imRotateZ = Degree(window->GetTransform().rotate);
+					ImGui::DragFloat2("scale", reinterpret_cast<float*>(&imScale2), 0.1f, 0.0f, 100.0f);
+					ImGui::DragFloat("rotate", &imRotateZ, 1.0f, -360.0f, 360.0f);
+					ImGui::DragFloat2("translate", reinterpret_cast<float*>(&imVector2), 10.0f, -(1920.0f / 2.0f) - (window->GetWindowSize().x / 2.0f), (1920.0f / 2.0f) + (window->GetWindowSize().x / 2.0f));
+					window->SetTransform({ imScale2,Radian(imRotateZ),imVector2 });
+					int type = static_cast<int>(window->GetType());
+					//ImGui::SliderInt("Type", &type, 0, kWindowTypeCount - 1);
+					//if (type != static_cast<int>(window->GetType())) {
+					//	window->SetType(static_cast<WindowType>(type));
+					//}
 
-				if (ImGui::Button("Delete")) {
-					window->SetIsActive(false);
+					if (ImGui::Button("Delete")) {
+						window->SetIsActive(false);
+					}
 				}
 				ImGui::PopID();
 				index++;

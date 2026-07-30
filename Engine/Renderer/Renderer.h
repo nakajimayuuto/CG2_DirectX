@@ -406,6 +406,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> sphereIndexResource_ = nullptr;
 	VertexData* sphereVertexData = nullptr;
 	uint32_t* sphereIndexData = nullptr;
+	D3D12_VERTEX_BUFFER_VIEW sphereVertexBufferView_{};
+	D3D12_INDEX_BUFFER_VIEW sphereIndexBufferView_{};
 
 	// TorusResource.
 	const uint32_t kTorusSubdivision_ = 32;

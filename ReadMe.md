@@ -1,19 +1,74 @@
+# 注意
+本プロジェクトは全画面で実行されます。
+プロジェクトはESCキー、またはImGuiのFinishにて終了できます。
+
 # 操作方法
-ImGuiのChangeというボタンにて課題の実装確認用の画面と演出用の画面を切り替えることができます。<br>
+## Camera
+WASDまたはRスティックにて、移動マウスまたはLスティックにて回転、<br>
+SPACEまたはBボタンで上昇、LSHIFTまたはAボタンで下降ができます。<br>
+<br>
 
-課題確認用の画面ではCreateにて三角形の追加ができ、<br>それぞれ個別にSRT、Texture、Colorを変えられます。<br>
+## ImGui
+Resetでシーンの初期化ができ、。<br>
+Finishでプログラムの終了ができます。<br>
 
-演出用画面ではPlayAnimationというボタンでちょっとしたアニメーションを再生できます。
+### Models
+ModelsタブではModelTypeにてモデルを指定し、Createボタンでモデルを生成することができます。<br>
+また、それぞれのModel毎にタブがあり、TransformやLighting、UVTransform、モデルの削除等を変更することができます。<br>
+
+### Light
+LightタブではDirectionalLightの色、方向、輝度を変更することができます。<br>
+
+### Sound
+Soundタブでは音声のループ再生、停止、効果音としての再生(重複でき、停止の影響を受けない音声)が出来ます。
+
+### FakeWindow
+FakeWindowタブではuseFakeWindowをボタンでTrueにすることで疑似ウィンドウモードにすることができます。<br>
+疑似ウィンドウモードでFakeWindowタブのCreateボタンを押すと疑似ウィンドウを増やすことができます。<br>
+また、それぞれのWindowタブを開くとTransformの変更とWindowの削除ができます。
 
 # 実装した加点要素
-## 三角形を動かす
-三角形描画用のクラスModelTriangleのDraw関数の引数にクラスTransformを入れることで実装
-## Textureを貼る
-初期状態で課題確認用の三角形にuvChecker.png、演出用の三角形にeffect_triangle.pngを貼って実装
-## DepthBufferの利用
-課題確認用の三角形や演出用の三角形で確認可能
-## Textureの動的切り替え
-ImGuiから3種類のテクスチャに切り替え可能
-## 三角形を利用した映像演出
-演出用画面にて、三角形を複数使用した三角錐が回転する映像を見ることが出来ます。<br>
-また、ImGuiのPlayAnimationというボタンで三角形が回転しながら開くアニメーションを再生出来ます。
+## 球の描画
+CG2_05_00にて作成した方法で描画。
+## Rambertian Reflectance
+ModelsタブのLightingTypeをkLambertに変更することで確認可能。<br>
+DirectionalLightはLightタブにて変更可能。
+## Half Rambert
+ModelsタブのLightingTypeをkHalfLambertに変更することで確認可能。<br>
+DirectionalLightはLightタブにて変更可能。
+## UVTransform
+ModelsタブのuvScale、uvRotate、uvTranslateにて確認可能。
+## 複数モデルの描画
+実行時点で複数のモデルが描画されています。<br>
+またModelsタブのModelTypeからモデルの見た目を指定して<br>
+CreateModelボタンを押すことでモデルを追加することもできます。
+## Utah Teapotの描画
+実行時点で描画されています。<br>
+UtahTeapotを選択した状態でCreateModelボタンを押すことで追加することもできます。
+## Sound
+CG2_07_00を基に作成し、クラス化とMicrosoft Media Fondationへの適応を行いました。<br>
+SoundタブのPlayでループ再生、Stopで再生の停止、seで効果音として再生(ループ再生されず、重複して鳴らすことができる)が出来ます。
+## GamePad
+CG2_07_01をもとにXInputを利用して実装しました。<br>
+本プロジェクトではカメラの移動にてGamePadを使用できます。
+## Stanford Bunnyの描画
+実行時点で描画されています。<br>
+StanfordBunnyを選択した状態でCreateModelボタンを押すことで追加することもできます。
+## MutliMesh対応
+本プロジェクトではMultiMeshは同じトランスフォームで動く複数のオブジェクトとして実装しています。<br>
+ModelsタブのMultiMeshタブにてメッシュごとにUVやLightingを変更可能です。
+## MutliMaterial対応
+MultiMeshと同じく、同じトランスフォームで動く複数のオブジェクトとして実装しています。<br>
+ModelsタブのMultiMeshタブにてメッシュごとにUVやLightingを変更可能です。
+## Suzanneの描画
+実行時点で描画されています。<br>
+Textureデータの存在しないモデルを読み込んだ場合真っ白なTextureを適応して描画するように実装しています。<br>
+## Lighting方式の変更
+ModelsタブのそれぞれのモデルのLightingTypeを変更することで確認可能です。
+## ドキュメント
+本ドキュメントにて成果物の情報を説明しています。
+## その他
+FakeWindowタブのuseFakeWindowをTrueにすると疑似ウィンドウを確認することができます。<br>
+FakeWindowはStencilBufferと背景透過を利用して作成しています。<br>
+CreateWindowにて疑似ウィンドウを作成できます。<br>
+FakeWindowタブ内のそれぞれのWindowタブにて疑似ウィンドウのTransformの変更と、疑似ウィンドウの削除ができます。<br>

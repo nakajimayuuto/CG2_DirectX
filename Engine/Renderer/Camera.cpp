@@ -125,6 +125,12 @@ void Camera::DebugUpdate() {
 
 		debugTransformCenter_.rotate.x += -input->GetRightStickDirection().y * Radian(1.0f);
 		debugTransformCenter_.rotate.y += input->GetRightStickDirection().x * Radian(1.0f);
+		if (input->PressPadButton(PadButtons::INPUT_B)) {
+			move.y += 1.0f;
+		}
+		if (input->PressPadButton(PadButtons::INPUT_A)) {
+			move.y -= 1.0f;
+		}
 	} else {
 		if (input->PressKey(DIK_D)) {
 			move.x += 1.0f;
