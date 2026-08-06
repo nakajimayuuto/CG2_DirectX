@@ -53,7 +53,7 @@ private:
 	void SetWindowed();
 private:
 	// 定数.
-	const LPCWSTR kWindowTitle_ = L"AL3_03_3Dレールアクション";
+	const LPCWSTR kWindowTitle_ = L"LE2A_18_ナカジマ_ユウト_AL3";
 
 	const WindowSize kWindowSize_ = { 1280,720 };//{1280,720};
 

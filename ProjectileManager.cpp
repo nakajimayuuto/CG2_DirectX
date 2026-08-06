@@ -169,7 +169,7 @@ void Bullet::Update() {
 
 void Bullet::Draw() {
 	DrawCollider();
-	//Renderer::GetInstance()->DrawSphereWireFrame(modelTransform_, { 1.0f,0.0f,0.0f,1.0f });
+	Renderer::GetInstance()->DrawSphereWireFrame(modelTransform_, { 1.0f,0.0f,0.0f,1.0f });
 }
 
 void Bullet::NormalInitialize() {
@@ -333,5 +333,5 @@ void Spike::Update() {
 }
 
 void Spike::Draw() {
-
+	Renderer::GetInstance()->DrawBoxWireFrame(GetOBB(), {1.0f,0.0f,0.0f,1.0f});
 }
