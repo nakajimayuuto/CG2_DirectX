@@ -180,6 +180,10 @@ public:
 
 	ModelElement* GetModelElement()const;
 
+	TextureInfo GetTextureInfo() { return textureInfo_; };
+
+	void SetBlendMode(BlendMode blendMode) { blendMode_ = blendMode; };
+	void SetTranslateZ(float depth) { depth_ = depth; };
 private:
 	void AdaptationSize();
 private:
@@ -212,6 +216,8 @@ private:
 	D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
 
 	BlendMode blendMode_;
+
+	float depth_;
 };
 
 class Renderer {
@@ -400,6 +406,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> sphereIndexResource_ = nullptr;
 	VertexData* sphereVertexData = nullptr;
 	uint32_t* sphereIndexData = nullptr;
+	D3D12_VERTEX_BUFFER_VIEW sphereVertexBufferView_{};
+	D3D12_INDEX_BUFFER_VIEW sphereIndexBufferView_{};
 
 	// TorusResource.
 	const uint32_t kTorusSubdivision_ = 32;

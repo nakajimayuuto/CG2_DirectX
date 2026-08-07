@@ -16,6 +16,9 @@ void GameCamera::Initialize() {
 	destinationDashAngleY_ = 0.0f;
 	destinationTargetAngleY_ = 0.0f;
 	destinationAngleY_ = 0.0f;
+
+	dashEaseTimer_ = 0.0f;
+	targetEaseTimer_ = 0.0f;
 }
 
 void GameCamera::Update() {
@@ -53,29 +56,63 @@ void GameCamera::FollowedUpdate() {
 	FollowedTarget();
 
 	if (isDash_) {
-		destinationAngleY_ = LerpShortAngle(destinationPlayerAngleY_, destinationDashAngleY_, 0.05f);
-		destinationPlayerAngleY_ = destinationAngleY_;
-		destinationTargetAngleY_ = destinationAngleY_;
-		Camera::GetInstance()->SetFovY(Lerp(Camera::GetInstance()->GetFovY(),kDashFovY,0.05f));
+		//destinationAngleY_ = LerpShortAngle(destinationPlayerAngleY_, destinationDashAngleY_, 0.05f);
+		Camera::GetInstance()->SetFovY(Lerp(Camera::GetInstance()->GetFovY(), kDashFovY, 0.05f));
+		if (dashEaseTimer_ >= 1.0f) {
+			dashEaseTimer_ = 1.0f;
+		} else {
+			dashEaseTimer_ += DeltaTime::GetInstance()->GetGameTime();
+		}
+
+		if (targetEaseTimer_ <= 0.0f) {
+			targetEaseTimer_ = 0.0f;
+		} else {
+			targetEaseTimer_ -= DeltaTime::GetInstance()->GetGameTime();
+		}
 	//} else if((static_cast<Vector3>(targetEnemy_->translate) - static_cast<Vector3>(target_->translate)).Length() < 30.0f){
-	//	destinationAngleY_ =  destinationTargetAngleY_;
-	//	destinationPlayerAngleY_ = destinationAngleY_;
-	//	destinationDashAngleY_ = destinationAngleY_;
-	} else {
-		destinationAngleY_ = destinationPlayerAngleY_;// LerpShortAngle(destinationAngleY_, destinationPlayerAngleY_, kCompletionRate);
-		destinationDashAngleY_ = destinationAngleY_;
-		destinationTargetAngleY_ = destinationAngleY_;
-		Camera::GetInstance()->SetFovY(Lerp(Camera::GetInstance()->GetFovY(),kNormalFovY,0.05f));
-		//destinationAngleY_ = std::atan2(targetEnemy_->translate.x - transform_.translate.x, targetEnemy_->translate.z - transform_.translate.z);
+	} else{
+		if (dashEaseTimer_ <= 0.0f) {
+			dashEaseTimer_ = 0.0f;
+		} else {
+			dashEaseTimer_ -= DeltaTime::GetInstance()->GetGameTime();
+		}
+
+		if (targetEaseTimer_ >= 1.0f) {
+			targetEaseTimer_ = 1.0f;
+		} else {
+			targetEaseTimer_ += DeltaTime::GetInstance()->GetGameTime();
+		}
+		Camera::GetInstance()->SetFovY(Lerp(Camera::GetInstance()->GetFovY(), kNormalFovY, 0.05f));
+	//} else {
+	//	//destinationAngleY_ = destinationTargetAngleY_;// LerpShortAngle(destinationAngleY_, destinationPlayerAngleY_, kCompletionRate);
+	//	Camera::GetInstance()->SetFovY(Lerp(Camera::GetInstance()->GetFovY(), kNormalFovY, 0.05f));
+	//	if (dashEaseTimer_ <= 0.0f) {
+	//		dashEaseTimer_ = 0.0f;
+	//	} else {
+	//		dashEaseTimer_ -= DeltaTime::GetInstance()->GetGameTime();
+	//	}
+	//
+	//	if (targetEaseTimer_ <= 0.0f) {
+	//		targetEaseTimer_ = 0.0f;
+	//	} else {
+	//		targetEaseTimer_ -= DeltaTime::GetInstance()->GetGameTime();
+	//	}
+	//	//destinationAngleY_ = std::atan2(targetEnemy_->translate.x - transform_.translate.x, targetEnemy_->translate.z - transform_.translate.z);
 	}
 
+	destinationPlayerAngleY_ = LerpShortAngle( destinationPlayerAngleY_, destinationTargetAngleY_, targetEaseTimer_);
+	destinationAngleY_ = LerpShortAngle(destinationPlayerAngleY_, destinationDashAngleY_, dashEaseTimer_);
+
+	destinationPlayerAngleY_ = destinationAngleY_;
+	destinationTargetAngleY_ = destinationAngleY_;
+	destinationDashAngleY_ = destinationAngleY_;
 
 	FollowedWallClamp();
 
 	transform_.rotate.y = LerpShortAngle(transform_.rotate.y, destinationAngleY_, kCompletionRate);
 
 	//if (std::fabs(transform_.rotate.y) >= Radian(360.0f)) {
- 	//	if (transform_.rotate.y >= 0.0f) {
+	//	if (transform_.rotate.y >= 0.0f) {
 	//		transform_.rotate.y -= Radian(360.0f);
 	//		destinationAngleY_ -= Radian(360.0f);
 	//	} else {
@@ -123,9 +160,11 @@ void GameCamera::FollowedControlAction() {
 	Vector3 offset = GetOffset();
 	float newAngleDirection = 0.0f;
 
-
+	float targetY = interTarget_.y;
 	interTarget_ = Lerp(interTarget_, target_->translate, kCompletionRate);
 	float direction = 0.0f;
+	interTarget_.y = targetY;
+
 
 	distanceToCenter_ = (interTarget_ + offset).Length();
 
@@ -169,26 +208,26 @@ void GameCamera::FollowedWallClamp() {
 
 	float wallDirection = 0.0f;
 	if (distanceToCenter_ > movingRadius_) {
-		wallOffsetPos = transform_.translate.Normalize() * movingRadius_;
+		wallOffsetPos = interOffsetTarget_.Normalize() * movingRadius_;
 		transform_.translate = Lerp(interOffsetTarget_, wallOffsetPos, 0.75f);
-		wallDirection = std::atan2(target_->translate.x - transform_.translate.x, target_->translate.z - transform_.translate.z);
-
-		if (std::fabs(destinationAngleY_ - wallDirection) >= Radian(360.0f)) {
-			if (wallDirection < 0.0f) {
-				wallDirection += Radian(360.0f);
-			} else {
-				wallDirection -= Radian(360.0f);
-			}
-		}
-
-		destinationAngleY_ = LerpShortAngle(destinationAngleY_, wallDirection, 0.1f);
+		//wallDirection = std::atan2(target_->translate.x - transform_.translate.x, target_->translate.z - transform_.translate.z);
+		//
+		//if (std::fabs(destinationAngleY_ - wallDirection) >= Radian(360.0f)) {
+		//	if (wallDirection < 0.0f) {
+		//		wallDirection += Radian(360.0f);
+		//	} else {
+		//		wallDirection -= Radian(360.0f);
+		//	}
+		//}
+		//
+		//destinationAngleY_ = LerpShortAngle(destinationAngleY_, wallDirection, 0.1f);
 	} else {
 		transform_.translate = Lerp(interOffsetTarget_, wallOffsetPos, 0.25f);
 	}
 }
 
-void GameCamera::FollowedDash() {
-	destinationDashAngleY_ = target_->rotate.y;
+void GameCamera::FollowedDash() {	
+	destinationDashAngleY_ = LerpShortAngle(destinationDashAngleY_,target_->rotate.y,0.1f);
 }
 
 void GameCamera::FollowedTarget() {

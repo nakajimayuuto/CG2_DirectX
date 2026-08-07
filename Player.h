@@ -58,6 +58,7 @@ private:
 	bool GetAttackButtonTrigger();
 	bool GetJumpButtonTrigger();
 	bool GetDownPress();
+	float GetDirectionYPress();
 
 	void FloatingAccelerationChange();
 

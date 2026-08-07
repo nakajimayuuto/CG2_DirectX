@@ -114,7 +114,6 @@ void Model::Draw(const Transform& transform) {
 		if (!Camera::GetInstance()->IsInCameraFrustum(transform.translate, radius_ * transform.GetMaxScale())) {
 			return;
 		}
-
 		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
 
 		wvpData_[i]->World = worldMatrix;
@@ -539,7 +538,6 @@ void Sprite::Draw(const Transform& transform) {
 		return;
 	}
 
-
 	transformationMatrixData_->World = transform.GetAffineMatrix();
 	transformationMatrixData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(transform.GetAffineMatrix());
 
@@ -570,7 +568,7 @@ void Sprite::Draw(const Transform2D& transform) {
 	transform3D.rotate.z = 0.0f;
 	transform3D.translate.x = transform.translate.x;
 	transform3D.translate.y = transform.translate.y;
-	transform3D.translate.z = 0.0f;
+	transform3D.translate.z =depth_;
 	;
 	Draw(transform3D);
 }
@@ -790,6 +788,26 @@ void Renderer::CreateSphereResource() {
 			}
 		}
 	}
+
+
+
+
+	sphereVertexBufferView_.BufferLocation = sphereVertexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
+	sphereVertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * kSphereSubdivision_ * kSphereSubdivision_ * 4);
+	// 1頂点あたりのサイズ.
+	sphereVertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+	// 【IndexResourceを生成する】
+	// 実際に頂点リソースを作る.
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	sphereIndexBufferView_.BufferLocation = sphereIndexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズはインデックス6つ分のサイズ.
+	sphereIndexBufferView_.SizeInBytes = sizeof(uint32_t) * kSphereSubdivision_ * kSphereSubdivision_ * 6;
+	// インデックスはuint32_tとする.
+	sphereIndexBufferView_.Format = DXGI_FORMAT_R32_UINT;
 }
 
 void Renderer::CreateTorusResource() {
@@ -863,9 +881,9 @@ void Renderer::DrawSphere(const Transform& transform, const TextureInfo& texture
 
 void Renderer::DrawSphere(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color, const Transform& uvTransform){
 	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
-	ModelElement* newElement;
-	newElement = new ModelElement();
-	CreateSphere(newElement);
+	std::unique_ptr<ModelElement> newElement;
+	newElement = std::make_unique<ModelElement>();
+	CreateSphere(newElement.get());
 
 	newElement->modelData_.textureSrvHandlesGPU = textureInfo.textureSrvHandlesGPU;
 	newElement->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransform);
@@ -1500,53 +1518,34 @@ void Renderer::CreateSphere(ModelElement* newElement) {
 	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
 	newElement->vertexResource_ = sphereVertexResource_;
 	newElement->indexResource_ = sphereIndexResource_;
+	newElement->vertexData = sphereVertexData;
+	newElement->indexData = sphereIndexData;
+	newElement->vertexBufferView_ = sphereVertexBufferView_;
+	newElement->indexBufferView_ = sphereIndexBufferView_;
+	newElement->materialResource_ = modelInstances[currentDrawModelIndex_]->materialResource_;
+	newElement->wvpResource_ = modelInstances[currentDrawModelIndex_]->wvpResource_;
 
-	// 【MaterialResourceを生成する】
-	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
-	newElement->materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
-	// マテリアルにデータを書き込む.
-	// 書き込むためのアドレスを取得.
+	newElement->blendMode_ = blendMode_;
+	newElement->uvTransform_.Initialize();
+	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
+	currentDrawModelIndex_++;
 	newElement->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->materialData_));
 	// 今回は赤を書き込んでみる
 	newElement->materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	newElement->materialData_->lightingType = static_cast<uint32_t>(lightingType_);//static_cast<uint32_t>(LightingType::kHalfLambert);
+	newElement->materialData_->lightingType = static_cast<uint32_t>(lightingType_);;
+	newElement->materialData_->uvTransform = Matrix4x4::Identity();
 	newElement->materialData_->reflectionType = static_cast<uint32_t>(reflectionType_);
 	newElement->materialData_->shininess = 40.0f;
-	newElement->materialData_->uvTransform = Matrix4x4::Identity();
 
 	// 【TransformationMatrix】
 	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
-	newElement->wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
 	// データを書き込む.
 	// 書き込むためのアドレスを取得.
 	newElement->wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->wvpData_));
 	// 単位行列を書き込んでおく.
 	newElement->wvpData_->WVP = Matrix4x4::Identity();
 	newElement->wvpData_->World = Matrix4x4::Identity();
-
-
-	// 【VertexBufferViewを作成する】
-
-	// 頂点バッファビューを作成する.
-	// リソースの先頭のアドレスから使う.
-	newElement->vertexBufferView_.BufferLocation = newElement->vertexResource_->GetGPUVirtualAddress();
-	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
-	newElement->vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * kSphereSubdivision_ * kSphereSubdivision_ * 4);
-	// 1頂点あたりのサイズ.
-	newElement->vertexBufferView_.StrideInBytes = sizeof(VertexData);
-
-	// 【IndexResourceを生成する】
-	// 実際に頂点リソースを作る.
-
-	// 頂点バッファビューを作成する.
-	// リソースの先頭のアドレスから使う.
-	newElement->indexBufferView_.BufferLocation = newElement->indexResource_->GetGPUVirtualAddress();
-	// 使用するリソースのサイズはインデックス6つ分のサイズ.
-	newElement->indexBufferView_.SizeInBytes = sizeof(uint32_t) * kSphereSubdivision_ * kSphereSubdivision_ * 6;
-	// インデックスはuint32_tとする.
-	newElement->indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
-
-
+	newElement->wvpData_->WorldInverseTranspose = Matrix4x4::Identity();
 }
 
 void Renderer::CreateTorus(ModelElement* newElement, float majorRadius, float minorRadius) {

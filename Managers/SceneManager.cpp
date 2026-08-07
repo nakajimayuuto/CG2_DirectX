@@ -16,9 +16,10 @@ SceneManager* SceneManager::GetInstance() {
 
 void SceneManager::Initialize() {
 	CollisionManager::GetInstance()->CollisionAttributeInitialize();
+	currentScene_ = std::make_unique<TitleScene>();
 	//#ifdef _DEBUG
 	Debug::GetInstance()->LoadDebugSettings();
-	currentScene_ = std::make_unique<TitleScene>();
+	currentScene_ = std::make_unique<GameScene>();
 	//#endif // _DEBUG
 
 	currentScene_->Initialize();

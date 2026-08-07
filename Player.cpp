@@ -32,7 +32,7 @@ void Player::Initialize() {
 
 	collisionAttribute_ = CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayer);
 	collisionMask_ = (
-		CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy)|
+		CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy) |
 		CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemyAttack)
 		);
 
@@ -89,10 +89,10 @@ bool Player::GetJumpButtonTrigger() {
 	return false;
 }
 
-bool Player::GetDownPress(){
+bool Player::GetDownPress() {
 	InputManager* input = InputManager::GetInstance();
 	if (input->IsGamePadConnect()) {
-		if (input->GetLeftStickDirection().y <= - 0.5f) {
+		if (input->GetLeftStickDirection().y <= -0.5f) {
 			return true;
 		}
 	} else {
@@ -104,7 +104,36 @@ bool Player::GetDownPress(){
 	return false;
 }
 
-void Player::FloatingAccelerationChange(){
+float Player::GetDirectionYPress() {
+	InputManager* input = InputManager::GetInstance();
+	if (input->IsGamePadConnect()) {
+		//if (input->GetLeftStickDirection().y <= - 0.5f) {
+		return input->GetLeftStickDirection().y;
+		//}
+	} else {
+		Vector2 direction = { 0.0f,0.0f };
+		if (input->PressKey(DIK_W)) {
+			direction.y += 1.0f;
+		}
+
+		if (input->PressKey(DIK_A)) {
+			direction.x -= 1.0f;
+		}
+
+		if (input->PressKey(DIK_S)) {
+			direction.y -= 1.0f;
+		}
+
+		if (input->PressKey(DIK_D)) {
+			direction.x += 1.0f;
+		}
+
+		return VectorToRadian(direction);
+	}
+
+}
+
+void Player::FloatingAccelerationChange() {
 	InputManager* input = InputManager::GetInstance();
 	Vector3 acceleration = { 0.0f,0.0f,0.0f };
 	if (input->IsGamePadConnect()) {
@@ -672,10 +701,12 @@ void Player::BehaviorDashAttackUpdate() {
 }
 
 void Player::BehaviorDashJumpAttackInitialize() {
- 	if (GetDownPress()) {
-		velocity_ *= -1.0f;
+	if (GetDownPress()) {
+		velocity_ *= -1.0f;	
 		transform_.rotate.y -= Radian(180.0f);
 	}
+
+
 	transformModel.rotate.x = Radian(90.0f);
 	attackTimer_ = 0.0f;
 	attackTimeMax_ = kDashAttackStart;
@@ -726,11 +757,11 @@ void Player::BehaviorDashJumpAttackUpdate() {
 	attackCollider_.DrawCollider();
 }
 
-void Player::BehaviorFallInitialize(){
+void Player::BehaviorFallInitialize() {
 	velocity_.y = 0.0f;
 }
 
-void Player::BehaviorFallUpdate(){
+void Player::BehaviorFallUpdate() {
 	FloatingAccelerationChange();
 
 	Vector3 accelerationVector = { 0.0f,-kGravityAcceleration,0.0f };

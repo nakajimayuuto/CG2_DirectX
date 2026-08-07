@@ -29,6 +29,8 @@ private:
 	void FollowedTarget();
 
 	Vector3 GetOffset()const;
+
+	//void IncrementEaseTimer();
 private:
 	static inline float kNormalFovY = 0.45f;
 	static inline float kDashFovY = 0.60f;
@@ -48,6 +50,9 @@ private:
 	float destinationTargetAngleY_;
 	float destinationAngleY_;
 	float autoAngleY_;
+
+	float dashEaseTimer_;
+	float targetEaseTimer_;
 
 	static inline float kLerpPlayerDirectionMin_ = 30.0f;
 	static inline float kLerpPlayerDirectionMax_ = 90.0f;
