@@ -151,7 +151,7 @@ void Bullet::Initialize(const Transform& transform, const Vector3& velocity, Bul
 	colliderRadius_ = 0.4f;
 	colliderColor_ = { 1.0f,0.0f,0.0f,1.0f };
 	collisionAttribute_ = CollisionManager::GetInstance()->GetCollisionAttribute(colliderName);
-
+	colliderDimensionType_ = ColliderDimensionType::k3D;
 
 	damage_ = damage;
 	damageCoolTime_ = damageCoolTime;

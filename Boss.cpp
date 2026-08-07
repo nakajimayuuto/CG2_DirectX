@@ -78,9 +78,9 @@ void Boss::Initialize() {
 	attackTempTransform_.Initialize();
 	attackTempCollider_ = std::make_unique<Collider>();
 	attackTempTransform_.SetParent(&transform_);
-	attackTempCollider_->SetRadius(2.0f);
+	attackTempCollider_->SetRadius(5.0f);
 	attackTempCollider_->SetColliderType(ColliderType::kSphere);
-	attackTempCollider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy));
+	attackTempCollider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemyAttack));
 	attackTempCollider_->SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
 
 	maxHP_ = 3000.0f;
@@ -819,7 +819,9 @@ void Boss::SpinningInitialize() {
 	attackTempTransform_.SetParent(&transform_);
 	attackTempCollider_->SetSize(kBasicHalberdColliderSize);
 	attackTempCollider_->SetColliderType(ColliderType::kBox);
-	attackTempCollider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy));
+	attackTempCollider_->SetDimensionType(ColliderDimensionType::k3D);
+	attackTempCollider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemyAttack));
+	attackTempCollider_->SetCollisionMask(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayer));
 	attackTempCollider_->SetDebugColor({ 1.0f,1.0f,1.0f,1.0f });
 	attackTempCollider_->SetDamage(5.0f);
 	attackTempCollider_->SetDamageCoolTime(0.1f);
@@ -911,7 +913,9 @@ void Boss::PowerSlasherInitialize() {
 	attackTempTransform_.translate = { 1.0f,0.0f,0.0f };
 	attackTempCollider_->SetSize(kBasicHalberdColliderSize);
 	attackTempCollider_->SetColliderType(ColliderType::kBox);
-	attackTempCollider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy));
+	attackTempCollider_->SetDimensionType(ColliderDimensionType::k3D);
+	attackTempCollider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemyAttack));
+	attackTempCollider_->SetCollisionMask(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayer));
 	attackTempCollider_->SetDebugColor({ 1.0f,1.0f,1.0f,1.0f });
 	halberdTransform_.SetParent(&transform_);
 	powerSlasherHalberdCenter_.Initialize();
@@ -1115,7 +1119,9 @@ void Boss::NearAttackInitialize() {
 	attackTempTransform_.SetParent(&halberdTransform_);
 	attackTempCollider_->SetSize(kBasicHalberdColliderSize);
 	attackTempCollider_->SetColliderType(ColliderType::kBox);
-	attackTempCollider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy));
+	attackTempCollider_->SetDimensionType(ColliderDimensionType::k3D);
+	attackTempCollider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemyAttack));
+	attackTempCollider_->SetCollisionMask(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayer));
 	attackTempCollider_->SetDebugColor({ 1.0f,1.0f,1.0f,1.0f });
 	attackTempCollider_->SetDamage(10.0f);
 	attackTempCollider_->SetDamageCoolTime(0.4f);

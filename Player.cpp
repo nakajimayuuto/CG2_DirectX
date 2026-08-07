@@ -29,7 +29,7 @@ void Player::Initialize() {
 	behavior_ = Behavior::kRoot;
 
 	InitializeFloatingGimmick();
-
+	colliderDimensionType_ = ColliderDimensionType::k3D;
 	collisionAttribute_ = CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayer);
 	collisionMask_ = (
 		CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy) |
