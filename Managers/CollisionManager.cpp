@@ -20,7 +20,7 @@ void CollisionManager::CheckAllCollision() {
 		for (; itrB != colliders_.end(); itrB++) {
 			Collider* colliderB = *itrB;
 
-			if (!Collision::SphereToSphere({ {colliderA->GetTransform().translate},colliderA->GetRadius() }, { {colliderB->GetTransform().translate}, colliderB->GetRadius() })) {
+			if (!Collision::SphereToSphere({ {colliderA->GetTransform().GetWorldPosition()},colliderA->GetRadius()}, {{colliderB->GetTransform().GetWorldPosition()}, colliderB->GetRadius()})) {
 				//if (
 				//	colliderA->GetDimensionType() != ColliderDimensionType::k2D &&
 				//	colliderB->GetDimensionType() != ColliderDimensionType::k2D

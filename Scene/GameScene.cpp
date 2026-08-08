@@ -47,6 +47,10 @@ void GameScene::Update() {
 		Camera::GetInstance()->ChangeCameraMode();
 	}
 
+	if (InputManager::GetInstance()->TriggerKey(DIK_F4)) {
+		Renderer::GetInstance()->ChangeUseDebugLine();
+	}
+
 	player_->Update();
 	boss_->SetTargetIsAttact(player_->GetIsAttack());
 
@@ -64,7 +68,6 @@ void GameScene::Update() {
 }
 
 void GameScene::Draw() {
-	skydome_->Draw();
 	ground_->Draw();
 
 	Renderer::GetInstance()->SetBlendMode(BlendMode::kNormalCullNone);

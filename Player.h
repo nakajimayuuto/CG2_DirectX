@@ -55,6 +55,8 @@ public:
 
 	void TestWallClamp();
 private:
+	void SlashEffectCreate(Transform* targetTransform, uint32_t num);
+
 	bool GetAttackButtonTrigger();
 	bool GetJumpButtonTrigger();
 	bool GetDownPress();

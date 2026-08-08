@@ -8,11 +8,29 @@ void ProjectileManager::Initialize() {
 	bullets.clear();
 	waves.clear();
 
+	for (uint32_t i = 0; i < kBulletLightMax_;i++) {
+		lightNames_.push_back("bullet_" + i);
+		LightManager::GetInstance()->CreatePointLight(lightNames_[i]);
+	}
 }
 
 void ProjectileManager::Update() {
+	uint32_t currentLightNum_ = 0;
+
+	for (auto& name : lightNames_) {
+		LightManager::GetInstance()->SetLightIsActive(name,false);
+	}
+
 	for (auto& bullet : bullets) {
 		bullet->Update();
+
+		if (bullet->GetType() == BulletType::kNormal) {
+			if (currentLightNum_ < kBulletLightMax_) {
+				LightManager::GetInstance()->SetLightPos(lightNames_[currentLightNum_], bullet->GetTransform().GetWorldPosition());
+				LightManager::GetInstance()->SetLightIsActive(lightNames_[currentLightNum_], true);
+				currentLightNum_++;
+			}
+		}
 	}
 
 	for (auto it = bullets.begin(); it != bullets.end(); ) {

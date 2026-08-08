@@ -108,13 +108,13 @@ public:
 
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetCommandQueue() { return commandQueue; };
 
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> GetCommandAllocator() { return commandAllocator; };
+	//Microsoft::WRL::ComPtr<ID3D12CommandAllocator> GetCommandAllocator() { return commandAllocator; };
 
 	Microsoft::WRL::ComPtr<ID3D12Fence> GetFence() { return fence; };
 
-	uint64_t GetFenceValue() { return fenceValue; };
+	//uint64_t GetFenceValue() { return fenceValue; };
 
-	void FenceValueIncrement() { fenceValue++; };
+	//void FenceValueIncrement() { fenceValue++; };
 
 	HANDLE GetFenceEvent() { return fenceEvent; };
 
@@ -208,6 +208,8 @@ private:
 
 	void WindowSizeUpdate();
 private:
+	uint32_t drawCount_;
+
 	/*=============================================================
 	ResourceLeakChecker
 	=============================================================*/

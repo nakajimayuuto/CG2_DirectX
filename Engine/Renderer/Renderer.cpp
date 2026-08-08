@@ -106,6 +106,10 @@ void Model::Initialize(const std::string& name) {
 }
 
 void Model::Draw(const Transform& transform) {
+	Draw(transform, true);
+}
+
+void Model::Draw(const Transform& transform, bool useTransparent){
 	for (uint32_t i = 0; i < modelMax_; i++) {
 		if (!isVisible_[i]) {
 			return;
@@ -622,6 +626,11 @@ Renderer* Renderer::GetInstance() {
 }
 
 void Renderer::Initialize() {
+#ifdef _DEBUG
+	useDebugLine_ = true;
+#endif // _DEBUG
+
+
 	currentDrawModelIndex_ = 0;
 	currentDrawSpriteIndex_ = 0;
 	currentDrawTorusIndex_ = 0;
@@ -665,9 +674,6 @@ void Renderer::ClearDrawIndex() {
 	currentDrawLineIndex_ = 0;
 	currentDrawSpriteIndex_ = 0;
 	currentDrawTorusIndex_ = 0;
-	delete lineElement_;
-	lineElement_ = new ModelElement();
-	CreateLine(lineElement_);
 }
 
 void Renderer::SetBlendMode(BlendMode blendMode) {
@@ -717,6 +723,10 @@ void Renderer::DrawLine(const Vector3& startVector3, const Vector3& endVector3, 
 
 
 void Renderer::DrawLineAll() {
+	if (!useDebugLine_) {
+		return;
+	}
+
 	Matrix4x4 worldMatrix = Matrix4x4::Identity();
 	lineElement_->wvpData_->World = worldMatrix;
 	lineElement_->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
@@ -732,6 +742,14 @@ void Renderer::DrawLineAll() {
 		lineElement_->modelData_.textureSrvHandlesGPU,
 		currentDrawLineIndex_ * 2
 	);
+}
+
+void Renderer::ChangeUseDebugLine(){
+	if (useDebugLine_) {
+		useDebugLine_ = false;
+	} else {
+		useDebugLine_ = true;
+	}
 }
 
 void Renderer::CreateSphereResource() {

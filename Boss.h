@@ -93,6 +93,8 @@ private:
 	bool isAttack_;
 
 	Phase phase_;
+
+	std::unique_ptr<Emitter> emitter_;
 private:
 	void SetAttackData(Attacks attackName,float weight,DistanceName name);
 

@@ -47,7 +47,7 @@ void Player::Initialize() {
 	//emitter_->SetParticle(particles_.get());
 	//emitter_->Initialize(transform_, 3, 0.5f);
 
-	//colliderRadius_ = 0.3f;
+	colliderRadius_ = 2.0f;
 	colliderSize_ = { 0.5f,1.0f,0.5f };
 	colliderType_ = ColliderType::kBox;
 
@@ -277,6 +277,17 @@ void Player::TestWallClamp() {
 	}
 }
 
+void Player::SlashEffectCreate(Transform* targetTransform, uint32_t num){
+	Transform effectCreate;
+	for (uint32_t i = 0; i < 3; i++) {
+		effectCreate.Initialize();
+		effectCreate.SetParent(targetTransform);
+		effectCreate.translate = Random::GetInstance()->RandomVector3(-(*targetTransform).scale / 2.0f, (*targetTransform).scale / 2.0f);
+
+		ParticleManager::GetInstance()->SpawnParticles("cross", effectCreate.GetWorldPosition());
+	}
+}
+
 void Player::BehaviorRootInitialize() {
 	floatingParameter = 0.0f;
 
@@ -402,7 +413,7 @@ void Player::SetNextAttackPhase(float timeMax) {
 
 void Player::AttackFirstInitialize() {
 	useNextAttack_ = false;
-	attackCollider_.SetRadius(2.5f);
+	attackCollider_.SetRadius(3.0f);
 	attackCollider_.SetDamage(35.0f);
 	attackCollider_.SetDamageCoolTime(0.1f);
 	attackCollider_.SetDamageType(1);
@@ -413,6 +424,12 @@ void Player::AttackFirstUpdate() {
 	attackCollider_.SetActive(false);
 	attackCollider_.SetTransform(transform_);
 	attackCollider_.SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
+	Transform effectTransform;
+	effectTransform.Initialize();
+	effectTransform.SetParent(&transformModel);
+	effectTransform.scale = {1.0f,1.0f,1.0f};
+	effectTransform.translate = { 0.0f,2.0f,0.0f };
+	SlashEffectCreate(&effectTransform,3);
 	switch (attackPhase_) {
 	case 0:
 		attackTransform_.rotate.x = Easing(0.0f, kAttackFirstStartModelRotateX, attackTimer_, attackTimeMax_, EaseType::kEaseIn);
@@ -469,7 +486,7 @@ void Player::AttackSecondInitialize() {
 	attackTransform_.Initialize();
 	attackTransform_.SetParent(&transformColliderOffset);
 	transformModel.SetParent(&attackTransform_);
-	attackCollider_.SetRadius(2.5f);
+	attackCollider_.SetRadius(3.0f);
 	attackCollider_.SetDamage(30.0f);
 	attackCollider_.SetDamageCoolTime(0.05f);
 	attackCollider_.SetDamageType(2);
@@ -480,6 +497,12 @@ void Player::AttackSecondUpdate() {
 	attackCollider_.SetActive(false);
 	attackCollider_.SetTransform(transform_);
 	attackCollider_.SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
+	Transform effectTransform;
+	effectTransform.Initialize();
+	effectTransform.SetParent(&transformModel);
+	effectTransform.scale = { 1.0f,1.0f,1.0f };
+	effectTransform.translate = { 0.0f,2.0f,0.0f };
+	SlashEffectCreate(&effectTransform, 3);
 	switch (attackPhase_) {
 	case 0:
 		attackTransform_.rotate.x = Easing(0.0f, kAttackFirstStartModelRotateX, attackTimer_, attackTimeMax_, EaseType::kEaseIn);
@@ -536,7 +559,7 @@ void Player::AttackThreeInitialize() {
 	attackTransform_.Initialize();
 	attackTransform_.SetParent(&transformColliderOffset);
 	transformModel.SetParent(&attackTransform_);
-	attackCollider_.SetRadius(2.5f);
+	attackCollider_.SetRadius(4.0f);
 	attackCollider_.SetDamage(25.0f);
 	attackCollider_.SetDamageCoolTime(0.02f);
 	attackCollider_.SetDamageType(3);
@@ -547,6 +570,12 @@ void Player::AttackThreeUpdate() {
 	attackCollider_.SetActive(false);
 	attackCollider_.SetTransform(transform_);
 	attackCollider_.SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
+	Transform effectTransform;
+	effectTransform.Initialize();
+	effectTransform.SetParent(&transformModel);
+	effectTransform.scale = { 1.0f,2.0f,1.0f };
+	effectTransform.translate = { 0.0f,2.5f,0.0f };
+	SlashEffectCreate(&effectTransform, 3);
 	switch (attackPhase_) {
 	case 0:
 		attackTransform_.rotate.x = Easing(0.0f, kAttackFirstStartModelRotateX, attackTimer_, attackTimeMax_, EaseType::kEaseIn);

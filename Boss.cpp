@@ -67,6 +67,7 @@ void Boss::Initialize() {
 	attackRequest_ = std::nullopt;
 
 	colliderType_ = ColliderType::kBox;
+	colliderRadius_ = 10.0f;
 	colliderSize_ = kBasicColliderSize;
 	collisionAttribute_ = CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy);
 	collisionMask_ =
@@ -102,6 +103,11 @@ void Boss::Initialize() {
 	LightManager::GetInstance()->GetLightData("boss_light")->color = {0.5f,0.5f,1.0f,1.0f};
 	LightManager::GetInstance()->GetLightData("boss_light")->radius = 5.0f;
 	LightManager::GetInstance()->GetLightData("boss_light")->intensity = 1.0f;
+
+	emitter_ = std::make_unique<Emitter>();
+	emitter_->SetParticle(ParticleManager::GetInstance()->GetParticles("blue_fire"));
+	emitter_->Initialize(Transform::GetInitialValue(kBasicColliderSize, {0.0f,0.0f,0.0f},transform_.GetWorldPosition()), 1, 0.1f);
+
 
 #ifdef _DEBUG
 	useDebugUpdateStop = true;
@@ -221,7 +227,8 @@ void Boss::Update() {
 
 	AttackUpdate();
 
-
+	emitter_->SetTransform(Transform::GetInitialValue((kBasicColliderSize * 3.0f), { 0.0f,0.0f,0.0f }, transform_.GetWorldPosition()));
+	emitter_->Update();
 
 	halberdTransform_.scale = Lerp(halberdTransform_.scale, destinationHalberdTransform_.scale, kDestinationCompletionRate);
 	halberdTransform_.rotate = LerpShortAngle(halberdTransform_.rotate, destinationHalberdTransform_.rotate, kDestinationCompletionRate);
@@ -357,6 +364,7 @@ void Boss::HalberdStanceUpdate() {
 
 void Boss::Draw() {
 	Renderer* renderer = Renderer::GetInstance();
+	//model_.Draw(modelTransform_,true);
 	renderer->DrawModel(modelTransform_, &model_, true);
 	renderer->DrawShadow(modelTransform_, &model_, { 0.0f,0.0f,0.0f,1.0f });
 
@@ -503,6 +511,8 @@ void Boss::AttackInitialize() {
 	kMaxAttackTimer = 0.0f; // 攻撃のタイマー最大値.
 	currentAttackPhase = 0; // 攻撃のフェーズ.
 	preTransform_ = transform_;
+
+	attackTempCollider_->SetRadius(4.0f);
 
 	(this->*pInitializeFunc[static_cast<size_t>(currentAttack_)])();
 }
@@ -841,6 +851,7 @@ void Boss::SpinningInitialize() {
 	attackTempCollider_->SetDebugColor({ 1.0f,1.0f,1.0f,1.0f });
 	attackTempCollider_->SetDamage(5.0f);
 	attackTempCollider_->SetDamageCoolTime(0.1f);
+	attackTempCollider_->SetActive(true);
 	spinningRotateY = 0.0f;
 	isColliderActive_ = false;
 }
@@ -923,17 +934,17 @@ void Boss::SpinningUpdate() {
 	}
 
 
+	attackTempCollider_->SetTransform(attackTempTransform_);
 	attackTempTransform_ = destinationHalberdTransform_;
 	if (currentAttackPhase <= 4 && currentAttackPhase >= 2) {
 		// 回転時ハルバードに当たり判定を出す.
-		transform_.translate += move * deltaTime_ * difficultyMagnificationTime * dopamineSpeed_;
+		transform_.translate += move * deltaTime_ * DifficultyManager::GetInstance()->GetSpeedMagnification() * dopamineSpeed_;
 		attackTempCollider_->SetSize({ kBasicHalberdColliderSize.x + 2.0f,kBasicHalberdColliderSize.y,kBasicHalberdColliderSize.z });
 		attackTempTransform_.translate.y = -1.8f;
 		CollisionManager::GetInstance()->AddColliderList(attackTempCollider_.get());
 		attackTempCollider_->SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
 	}
 
-	attackTempCollider_->SetTransform(attackTempTransform_);
 	attackTempCollider_->DrawCollider();
 }
 

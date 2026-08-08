@@ -76,11 +76,14 @@ void LoadDatas() {
 
 	TextureManager::GetInstance()->RegisterTexture("effect_plane", "Resource/effects/effect_plane.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_fire", "Resource/effects/effect_fire.png");
+	TextureManager::GetInstance()->RegisterTexture("effect_blue_fire", "Resource/effects/effect_blue_fire.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_slash", "Resource/effects/effect_slash.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_cross", "Resource/effects/effect_cross.png");
 	ParticleManager::GetInstance()->CreateNewParticles("normal",TextureManager::GetInstance()->GetTextureInfo("effect_plane"), BillboardType::kAllAxis,Particles::Move::kNormal);
 	ParticleManager::GetInstance()->CreateNewParticles("fire",TextureManager::GetInstance()->GetTextureInfo("effect_fire"), BillboardType::kAllAxis,Particles::Move::kFire);
 	ParticleManager::GetInstance()->SetParticleSize("fire", {0.2f,0.2f,0.2f});
+	ParticleManager::GetInstance()->CreateNewParticles("blue_fire",TextureManager::GetInstance()->GetTextureInfo("effect_blue_fire"), BillboardType::kAllAxis,Particles::Move::kFire);
+	ParticleManager::GetInstance()->SetParticleSize("blue_fire", {0.2f,0.2f,0.2f});
 	ParticleManager::GetInstance()->CreateNewParticles("slash",TextureManager::GetInstance()->GetTextureInfo("effect_slash"), BillboardType::kAllAxis,Particles::Move::kSlash);
 	ParticleManager::GetInstance()->SetParticleSize("slash", {0.5f,0.5f,0.5f});
 	ParticleManager::GetInstance()->CreateNewParticles("cross",TextureManager::GetInstance()->GetTextureInfo("effect_cross"), BillboardType::kAllAxis,Particles::Move::kSlash);

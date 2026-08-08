@@ -27,32 +27,32 @@ TextureInfo TextureManager::RegisterTexture(const std::string& name, const std::
 	textures_[name].width = static_cast<uint32_t>(mipImage.GetMetadata().width);
 	textures_[name].height = static_cast<uint32_t>(mipImage.GetMetadata().height);
 
-	// commandListをCloseし、キックしたりする(スワップチェーン無しのフレーム更新みたいなもの).
-	HRESULT hr = GameSystem::GetInstance()->GetCommandList()->Close();
-	assert(SUCCEEDED(hr));
-
-	//GPUにコマンドリストの実行を行わせる.
-	Microsoft::WRL::ComPtr<ID3D12CommandList> commandLists[] = { GameSystem::GetInstance()->GetCommandList() };
-	GameSystem::GetInstance()->GetCommandQueue()->ExecuteCommandLists(1, commandLists->GetAddressOf());
-
-	// Fanceの値を更新.
-	GameSystem::GetInstance()->FenceValueIncrement();
-	// GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る.
-	GameSystem::GetInstance()->GetCommandQueue()->Signal(GameSystem::GetInstance()->GetFence().Get(), GameSystem::GetInstance()->GetFenceValue());
-
-	// Fenceの値が指定したSignal値にたどり着いているか確認する.
-	// GetCompletedValueの初期値はFence作成時に渡した初期値.
-	if (GameSystem::GetInstance()->GetFence()->GetCompletedValue() < GameSystem::GetInstance()->GetFenceValue()) {
-		// 指定したSignalにたどり着いていないので、たどり着くまで待つようにイベントを設定する.
-		GameSystem::GetInstance()->GetFence()->SetEventOnCompletion(GameSystem::GetInstance()->GetFenceValue(), GameSystem::GetInstance()->GetFenceEvent());
-		// イベント待つ.
-		WaitForSingleObject(GameSystem::GetInstance()->GetFenceEvent(), INFINITE);
-	}
-
-	hr = GameSystem::GetInstance()->GetCommandAllocator()->Reset();
-	assert(SUCCEEDED(hr));
-	hr = GameSystem::GetInstance()->GetCommandList()->Reset(GameSystem::GetInstance()->GetCommandAllocator().Get(), nullptr);
-	assert(SUCCEEDED(hr));
+	//// commandListをCloseし、キックしたりする(スワップチェーン無しのフレーム更新みたいなもの).
+	//HRESULT hr = GameSystem::GetInstance()->GetCommandList()->Close();
+	//assert(SUCCEEDED(hr));
+	//
+	////GPUにコマンドリストの実行を行わせる.
+	//Microsoft::WRL::ComPtr<ID3D12CommandList> commandLists[] = { GameSystem::GetInstance()->GetCommandList() };
+	//GameSystem::GetInstance()->GetCommandQueue()->ExecuteCommandLists(1, commandLists->GetAddressOf());
+	//
+	//// Fanceの値を更新.
+	//GameSystem::GetInstance()->FenceValueIncrement();
+	//// GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る.
+	//GameSystem::GetInstance()->GetCommandQueue()->Signal(GameSystem::GetInstance()->GetFence().Get(), GameSystem::GetInstance()->GetFenceValue());
+	//
+	//// Fenceの値が指定したSignal値にたどり着いているか確認する.
+	//// GetCompletedValueの初期値はFence作成時に渡した初期値.
+	//if (GameSystem::GetInstance()->GetFence()->GetCompletedValue() < GameSystem::GetInstance()->GetFenceValue()) {
+	//	// 指定したSignalにたどり着いていないので、たどり着くまで待つようにイベントを設定する.
+	//	GameSystem::GetInstance()->GetFence()->SetEventOnCompletion(GameSystem::GetInstance()->GetFenceValue(), GameSystem::GetInstance()->GetFenceEvent());
+	//	// イベント待つ.
+	//	WaitForSingleObject(GameSystem::GetInstance()->GetFenceEvent(), INFINITE);
+	//}
+	//
+	//hr = GameSystem::GetInstance()->GetCommandAllocator()->Reset();
+	//assert(SUCCEEDED(hr));
+	//hr = GameSystem::GetInstance()->GetCommandList()->Reset(GameSystem::GetInstance()->GetCommandAllocator().Get(), nullptr);
+	//assert(SUCCEEDED(hr));
 
 	/*=============================================================
 	ShaderResourceViewを作る.

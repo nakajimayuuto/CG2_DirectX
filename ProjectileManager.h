@@ -16,6 +16,10 @@ public:
 	void Draw();
 
 	bool GetIsActive() { return isActive_; };
+
+	BulletType GetType() { return type_; };
+
+	Transform GetTransform() { return transform_; };
 private:
 	static void (Bullet::* pInitializeFunc[])();
 	static void (Bullet::* pUpdateFunc[])();
@@ -137,4 +141,6 @@ private:
 	std::vector<std::unique_ptr<Bullet>> bullets;
 	std::vector<std::unique_ptr<Wave>> waves;
 	std::vector<std::unique_ptr<Spike>> spikes;
+	std::vector<std::string> lightNames_;
+	const uint32_t kBulletLightMax_ = 30;
 };

@@ -858,6 +858,8 @@ void GameSystem::DrawCommand(
 	} else {
 		commandList->DrawIndexedInstanced(indexInstancedNum, 1, 0, 0, 0);
 	}
+
+	drawCount_++;
 }
 
 bool GameSystem::ProcessMessage() {
@@ -869,6 +871,7 @@ bool GameSystem::ProcessMessage() {
 }
 
 bool GameSystem::BeginFrame() {
+	drawCount_ = 0;
 	// Windowにメッセージが来てたら最優先で処理させる.
 	if (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
 		TranslateMessage(&msg);
@@ -882,7 +885,6 @@ bool GameSystem::BeginFrame() {
 	DeltaTime::GetInstance()->GetStartDebugTime();
 
 	SoundManager::GetInstance()->Update();
-	LightManager::GetInstance()->Update();
 	//Renderer::Line::GetInstance()->ClearDrawIndex();
 	Renderer::GetInstance()->ClearDrawIndex();
 
@@ -957,6 +959,11 @@ void GameSystem::EndFrame() {
 	Camera::GetInstance()->Draw();
 
 	Renderer::GetInstance()->DrawLineAll();
+
+	ImGui::Begin("drawCount");
+	ImGui::Text("%d", drawCount_);
+	ImGui::End();
+
 #ifdef USE_IMGUI
 	// ImGuiの内部コマンドを生成する.
 	ImGui::Render();
@@ -989,7 +996,6 @@ void GameSystem::EndFrame() {
 	//GPUとOSに画面の交換を行うよう通知する.
 	swapChain->Present(1, 0);
 
-
 	// Fenceの値を更新.
 	fenceValue++;
 	// GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る.
@@ -999,12 +1005,21 @@ void GameSystem::EndFrame() {
 
 	// Fenceの値が指定したSignal値にたどり着いているか確認する.
 	// GetCompletedValueの初期値はFence作成時に渡した初期値.
+	auto start = std::chrono::high_resolution_clock::now();
+
 	if (fence->GetCompletedValue() < fenceValue) {
-		// 指定したSignalにたどり着いていないので、たどり着くまで待つようにイベントを設定する.
+
 		fence->SetEventOnCompletion(fenceValue, fenceEvent);
-		// イベント待つ.
+
 		WaitForSingleObject(fenceEvent, INFINITE);
 	}
+
+	auto end = std::chrono::high_resolution_clock::now();
+
+	double waitTime =
+		std::chrono::duration<double, std::milli>(end - start).count();
+
+	OutputDebugStringA(static_cast<LPCSTR>(std::format("{}ms\n",waitTime).c_str()));
 
 
 	// 次のフレーム用のコマンドリストを準備.
@@ -1478,11 +1493,11 @@ Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GameSystem::CreateDescriptorHeap(Mi
 
 void GameSystem::SrvDescriptorHeapNumIncrement() {
 	if (srvDescriptorHeapNum_ >= kSrvDescriptorHeapNumMax) {
-#ifdef DEBUG
+#ifdef _DEBUG
 
 		assert(false, "現在使えるsrvDescriptorHeapのサイズ(128)を使い切りました");
 
-#endif // DEBUG
+#endif // _DEBUG
 		return;
 	}
 	srvDescriptorHeapNum_++;

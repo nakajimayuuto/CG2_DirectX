@@ -84,6 +84,8 @@ public:
 
 	void Draw(const Transform& transform);
 
+	void Draw(const Transform& transform,bool useTransparent);
+
 	void SetIsVisible(bool isVisible);
 	void SetIsVisible(bool isVisible, const std::string& meshName);
 
@@ -380,6 +382,8 @@ public:
 	void DrawShadow(const Transform& transform, const ModelInfo& modelInfo, const Vector4& color);
 
 	void DrawLineAll();
+
+	void ChangeUseDebugLine();
 private:
 	void CreateSphereResource();
 	void CreateTorusResource();
@@ -437,6 +441,8 @@ private:
 
 	uint32_t currentDrawLineIndex_;
 	const uint32_t maxLineNum_ = 100000;
+
+	bool useDebugLine_ = false;
 };
 
 class TestParticle {
