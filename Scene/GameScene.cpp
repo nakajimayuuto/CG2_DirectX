@@ -6,7 +6,7 @@ GameScene::~GameScene() {
 }
 
 void GameScene::Initialize() {
-
+	LightManager::GetInstance()->ClearLight();
 	Camera::GetInstance()->SetPosition({ 0.0f,2.0f,-30.0f });
 	GameCamera::GetInstance()->Initialize();
 	player_ = std::make_unique<Player>();
@@ -24,6 +24,10 @@ void GameScene::Initialize() {
 	boss_->SetTargetTransform(player_->GetTransform());
 
 	ProjectileManager::GetInstance()->Initialize();
+
+	worldFrameEmitter_ = std::make_unique<Emitter>();
+	worldFrameEmitter_->SetParticle(ParticleManager::GetInstance()->GetParticles("fire"));
+	worldFrameEmitter_->Initialize(Transform::GetInitialValue({ 150.0f,10.0f,150.0f }, { 0.0f,0.0f,0.0f }, {0.0f,5.0f,0.0f}), 10, 0.1f);
 
 	Player::RegisterGlobalVariables();
 }
@@ -53,6 +57,8 @@ void GameScene::Update() {
 	GameCamera::GetInstance()->Update();
 
 	Camera::GetInstance()->Update();
+
+	worldFrameEmitter_->Update();
 
 	CheckAllCollisions();
 }

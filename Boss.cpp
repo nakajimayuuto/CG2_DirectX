@@ -97,7 +97,11 @@ void Boss::Initialize() {
 	Phase1Initialize();
 
 	phase_ = Phase::kPhase1;
-
+	
+	LightManager::GetInstance()->CreatePointLight("boss_light");
+	LightManager::GetInstance()->GetLightData("boss_light")->color = {0.5f,0.5f,1.0f,1.0f};
+	LightManager::GetInstance()->GetLightData("boss_light")->radius = 5.0f;
+	LightManager::GetInstance()->GetLightData("boss_light")->intensity = 1.0f;
 
 #ifdef _DEBUG
 	useDebugUpdateStop = true;
@@ -224,6 +228,8 @@ void Boss::Update() {
 	halberdTransform_.translate = Lerp(halberdTransform_.translate, destinationHalberdTransform_.translate, kDestinationCompletionRate);
 
 	CollisionManager::GetInstance()->AddColliderList(this);
+
+	LightManager::GetInstance()->SetLightPos("boss_light", transform_.GetWorldPosition());
 }
 
 void Boss::DistanceCheckUpdate() {
@@ -444,6 +450,16 @@ void Boss::OnCollision(Collider* other) {
 	}
 }
 
+void Boss::SlashEffectCreate(Transform* targetTransform, uint32_t num){
+	Transform effectCreate;
+	for (uint32_t i = 0; i < 3; i++) {
+		effectCreate.Initialize();
+		effectCreate.SetParent(targetTransform);
+		effectCreate.translate = Random::GetInstance()->RandomVector3(-(*targetTransform).scale / 2.0f, (*targetTransform).scale / 2.0f);
+
+		ParticleManager::GetInstance()->SpawnParticles("cross", effectCreate.GetWorldPosition());
+	}
+}
 Vector3 Boss::GetMoveAnchorPointFindAll() {
 	float maxLength = 0.0f;
 	Vector3 newPos = { 0.0f,0.0f,0.0f };
@@ -830,6 +846,7 @@ void Boss::SpinningInitialize() {
 }
 
 void Boss::SpinningUpdate() {
+	Transform effectTransform;
 	attackTempCollider_->SetDebugColor({ 1.0f,1.0f,1.0f,1.0f });
 	attackTempCollider_->SetSize(kBasicHalberdColliderSize);
 
@@ -856,6 +873,10 @@ void Boss::SpinningUpdate() {
 		}
 		break;
 	case 2: // 回転し初め.
+		effectTransform = attackTempTransform_;
+		effectTransform.scale = kBasicHalberdColliderSize;
+		effectTransform.translate.y = 0.0f;
+		SlashEffectCreate(&effectTransform, 3);
 		transform_.rotate.y = Easing(preTransform_.rotate.y + kSpinningStartRotateY, preTransform_.rotate.y + kSpinningStartRotateY - Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kSpinningSpinTimerMax);
@@ -863,6 +884,10 @@ void Boss::SpinningUpdate() {
 		}
 		break;
 	case 3: // 回転の最中.
+		effectTransform = attackTempTransform_;
+		effectTransform.scale = kBasicHalberdColliderSize;
+		effectTransform.translate.y = 0.0f;
+		SlashEffectCreate(&effectTransform, 3);
 		transform_.rotate.y = Easing(preTransform_.rotate.y + kSpinningStartRotateY, preTransform_.rotate.y + kSpinningSpinGapRotateY - (Radian(360.0f) * 10.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kConstant);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kSpinningSpinFinnishedTimerMax);
@@ -870,6 +895,10 @@ void Boss::SpinningUpdate() {
 		}
 		break;
 	case 4: // 回転し終わり.
+		effectTransform = attackTempTransform_;
+		effectTransform.scale = kBasicHalberdColliderSize;
+		effectTransform.translate.y = 0.0f;
+		SlashEffectCreate(&effectTransform, 3);
 		transform_.rotate.y = Easing(preTransform_.rotate.y + kSpinningSpinGapRotateY, preTransform_.rotate.y + kSpinningSpinGapRotateY - Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		destinationHalberdTransform_.translate = Easing(kSpinningHalberdStartPos, kSpinningHalberdSpinGapPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		destinationHalberdTransform_.rotate = Easing(kSpinningHalberdStartRotate, kSpinningHalberdSpinGapRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
@@ -935,7 +964,6 @@ void Boss::PowerSlasherUpdate() {
 	Vector3 move = { 0.0f,0.0f,-kPowerSlasherSpeed };
 
 	Matrix4x4 rotateMatrix = Matrix4x4::MakeRotateMatrix({ 0.0f,transform_.rotate.y,0.0f });
-
 	move = rotateMatrix.TransformNomal(move);
 
 	switch (currentAttackPhase) {
@@ -968,6 +996,7 @@ void Boss::PowerSlasherUpdate() {
 		destinationHalberdTransform_.rotate = Easing(kPowerSlasherHalberdStartRotate, kPowerSlasherHalberdAttackRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		powerSlasherHalberdCenter_.rotate.y = Easing(0.0f, Radian(180.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		modelTransform_.rotate.y = Easing(kPowerSlasherModelStartRotateY, kPowerSlasherModelFinishedRotateY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		SlashEffectCreate(&attackTempTransform_, 3);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			// 6(後隙)に遷移.
 			currentAttackPhase++;
@@ -1001,6 +1030,8 @@ void Boss::PowerSlasherUpdate() {
 	case 5: // 攻撃を行う.
 		powerSlasherHalberdCenter_.rotate.y = Easing(0.0f, Radian(180.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		modelTransform_.rotate.y = Easing(kPowerSlasherModelStartRotateY, kPowerSlasherModelFinishedRotateY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		SlashEffectCreate(&attackTempTransform_,3);
+
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kPowerSlasherSlashStayTimerMax);
 		}
@@ -1041,6 +1072,7 @@ void Boss::FangAttackInitialize() {
 }
 
 void Boss::FangAttackUpdate() {
+	Transform effectTransform;
 	switch (currentAttackPhase) {
 	case 0: // 上昇しながらハルバードを前に構える.
 		transform_.translate.y = Easing(kBasicPositionY, kFangAttackAnimPositionY / 2.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
@@ -1069,6 +1101,11 @@ void Boss::FangAttackUpdate() {
 		}
 		break;
 	case 3: // 攻撃態勢に入りながら急降下.
+		effectTransform.Initialize();
+		effectTransform.SetParent(&transform_);
+		effectTransform.translate.z = -4.0f;
+		effectTransform.translate.y = 2.0f;
+		SlashEffectCreate(&effectTransform, 3);
 		transform_.translate.y = Easing(kFangAttackAnimPositionY, kFangAttackAttackPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		transform_.rotate.x = Easing(preTransform_.rotate.x, kFangAttackAttackRotateX, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		destinationHalberdTransform_.translate = Easing(kFangAttackHalberdSpinPos, kFangAttackHalberdAttackPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
@@ -1162,6 +1199,7 @@ void Boss::NearAttackUpdate() {
 		}
 		break;
 	case 2: // 攻撃.
+		SlashEffectCreate(&attackTempTransform_, 3);
 		destinationHalberdTransform_.translate = Easing(kNearFirstHalberdStartPos, kNearFirstHalberdAttackPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		destinationHalberdTransform_.rotate = Easing(kNearFirstHalberdStartRotate, kNearFirstHalberdAttackRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		modelTransform_.rotate.y = Easing(kNearFirstModelStartRotateY, kNearFirstModelAttackRotateY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
@@ -1202,6 +1240,7 @@ void Boss::NearAttackUpdate() {
 		}
 		break;
 	case 6: // 2段目攻撃.
+		SlashEffectCreate(&attackTempTransform_, 3);
 		destinationHalberdTransform_.translate = Easing(kNearFirstHalberdAttackPos, kNearSecondHalberdAttackPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		destinationHalberdTransform_.rotate = Easing(kNearSecondHalberdStartRotate, kNearSecondHalberdAttackRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		modelTransform_.rotate.y = Easing(kNearFirstModelAttackRotateY, kNearSecondModelAttackRotateY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
@@ -1246,6 +1285,7 @@ void Boss::NearAttackUpdate() {
 		}
 		break;
 	case 10: // 3段目攻撃.
+		SlashEffectCreate(&attackTempTransform_, 3);
 		transform_.translate.y = Easing(kNearThirdStartPositionY, kNearThirdAttackPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		modelTransform_.rotate.x = Easing(0.0f, kNearThirdModelAttackRotateX, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		attackTempCollider_->SetDamage(30.0f);

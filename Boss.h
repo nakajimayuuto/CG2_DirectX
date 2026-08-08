@@ -29,6 +29,8 @@ public:
 
 	void OnCollision([[maybe_unused]] Collider* other)override;
 private:
+	void SlashEffectCreate(Transform* targetTransform,uint32_t num);
+
 	Vector3 GetMoveAnchorPointFindAll();
 	Vector3 GetMoveAnchorPointFind(float radius);
 

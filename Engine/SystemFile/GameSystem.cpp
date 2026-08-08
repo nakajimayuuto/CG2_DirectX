@@ -396,7 +396,7 @@ void GameSystem::Initialize() {
 
 	ModelManager::GetInstance()->RegisterObj("block_template", "Resource/block", "block.obj");
 
-	ModelManager::GetInstance()->RegisterObj("effect_plane", "Resource/EffectPlane", "effect_plane.obj");
+	ModelManager::GetInstance()->RegisterObj("effect_plane", "Resource/effects", "effect_plane.obj");
 
 	TextureManager::GetInstance()->RegisterTexture("white_template", "Resource/white_template.png");
 
@@ -882,7 +882,7 @@ bool GameSystem::BeginFrame() {
 	DeltaTime::GetInstance()->GetStartDebugTime();
 
 	SoundManager::GetInstance()->Update();
-
+	LightManager::GetInstance()->Update();
 	//Renderer::Line::GetInstance()->ClearDrawIndex();
 	Renderer::GetInstance()->ClearDrawIndex();
 

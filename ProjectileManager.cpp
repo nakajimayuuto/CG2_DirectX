@@ -230,10 +230,11 @@ void Wave::Initialize(const Transform& transform, float speed, float height, flo
 	transform_.translate = transform.GetWorldPosition();
 	transform_.translate.y = 0.0f;
 	colliderRadius_ = 0.0f;
-	collisionAttribute_ = colliderName;
+	collisionAttribute_ = CollisionManager::GetInstance()->GetCollisionAttribute(colliderName);
 	speed_ = speed;
 	isActive_ = true;
 	lifeTimer_ = 0.0f;
+	colliderDimensionType_ = ColliderDimensionType::kAll;
 	colliderType_ = ColliderType::kTorus;
 	if (time == -1.0f) {
 		lifeTimeMax_ = kBasicLifeTimeMax_;
@@ -287,10 +288,11 @@ void Spike::Initialize(const Transform& transform, uint32_t size, CollisionAttri
 	transform_.Initialize();
 	transform_.translate = transform.translate;
 	transform_.translate.y = -(colliderSize_.y / 2.0f);
-	collisionAttribute_ = colliderName;
+	collisionAttribute_ = CollisionManager::GetInstance()->GetCollisionAttribute(colliderName);
 	isActive_ = true;
 	lifeTimer_ = 0.0f;
 	colliderType_ = ColliderType::kBox;
+	colliderDimensionType_ = ColliderDimensionType::kAll;
 	spikePhase_ = 0;
 	lifeTimeMax_ = kStartTimeMax;
 	colliderColor_ = { 1.0f,0.0f,0.0f,1.0f };

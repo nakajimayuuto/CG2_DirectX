@@ -28,6 +28,7 @@ public:
 	float cosAngle; // ライトの余弦(これはSpotLightのみ).
 	float cosFalloffStart; // falloff(ライトの光が減衰し始める角度)の余弦(これはSpotLightのみ).
 	LightType type; // PointLightかSpotLightか.
+	bool isActive;
 };
 
 class LightManager{
@@ -46,12 +47,18 @@ public:
 
 	void CreateSpotLight(std::string name);
 
+	void SetLightPos(std::string name,const Vector3 pos);
+
+	void SetLightIsActive(std::string name,bool isActive);
+
 	Microsoft::WRL::ComPtr<ID3D12Resource> GetLightNumResource() { return lightNumResource_; };
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> GetDirectionalLightResource() { return directionalLight_->GetDirectionalLightResource(); };
 
 	D3D12_GPU_DESCRIPTOR_HANDLE GetPointLightSrvHandleGPU() { return pointLight_->GetSrvHandleGPU(); };
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSpotLightSrvHandleGPU() { return spotLight_->GetSrvHandleGPU(); };
+
+	void ClearLight();
 
 	void DeleteLight();
 private:

@@ -33,10 +33,14 @@ void SceneManager::Update() {
 	ChangeSceneUpdate();
 
 	currentScene_->Update();
+
+	ParticleManager::GetInstance()->Update();
 }
 
 void SceneManager::Draw() {
 	currentScene_->Draw();
+
+	ParticleManager::GetInstance()->Draw();
 }
 
 void SceneManager::ChangeSceneUpdate() {

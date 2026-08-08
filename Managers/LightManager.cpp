@@ -16,6 +16,7 @@ void LightData::Initialize(LightType newType) {
 	cosAngle = Radian(60.0f); // ライトの余弦(これはSpotLightのみ).
 	cosFalloffStart = Radian(30.0f); // falloff(ライトの光が減衰し始める角度)の余弦(これはSpotLightのみ).
 	type = newType; // PointLightかSpotLightか.
+	isActive = true;
 
 }
 
@@ -47,6 +48,10 @@ void LightManager::Update() {
 	SpotLightData spotLightData;
 
 	for (std::pair<std::string, LightData*> lightData : lightDatas_) {
+		if (!lightData.second->isActive) {
+			continue;
+		}
+
 		switch (lightData.second->type) {
 		case LightType::kPoint:
 			pointLightData.position = lightData.second->position;
@@ -125,4 +130,32 @@ void LightManager::CreateSpotLight(std::string name){
 	lightDatas_[name] = new LightData();
 	lightDatas_[name]->Initialize(LightType::kSpot);
 
+}
+
+void LightManager::SetLightPos(std::string name, const Vector3 pos){
+	auto it = lightDatas_.find(name);
+
+#ifdef _DEBUG
+
+	assert(it != lightDatas_.end(), std::format("name : {}と一致するlightDataが見つかりませんでした", name));
+
+#endif // _DEBUG
+
+	lightDatas_[name]->position = pos;
+}
+
+void LightManager::SetLightIsActive(std::string name, bool isActive){
+	auto it = lightDatas_.find(name);
+
+#ifdef _DEBUG
+
+	assert(it != lightDatas_.end(), std::format("name : {}と一致するlightDataが見つかりませんでした", name));
+
+#endif // _DEBUG
+
+	lightDatas_[name]->isActive = isActive;
+}
+
+void LightManager::ClearLight(){
+	lightDatas_.clear();
 }

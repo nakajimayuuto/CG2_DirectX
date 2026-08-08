@@ -13,17 +13,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-	LoadDatas();
 
 	/*=============================================================
 	ここから下がゲームの変数.
 	=============================================================*/
 	SoundManager::GetInstance()->RegisterSound("test", "Resource/free_k.wav");
+	ParticleManager::GetInstance()->Initialize();
+	LoadDatas();
+
+
+
 
 	SceneManager::GetInstance()->Initialize();
-
-
-	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.5f;
+	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.1f;
 	// ウィンドウのxボタンが押されるまでループ.
 	while (system->ProcessMessage()) {
 		if (system->BeginFrame()) {
@@ -34,6 +36,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			GlobalVariables::GetInstance()->Update();
 
 			SceneManager::GetInstance()->Update();
+
+			ImGui::Begin("aa");
+			ImGui::DragFloat("intensity", &LightManager::GetInstance()->GetDirectionalLightData()->intensity,0.01f,0.0f,1.0f);
+
+			ImGui::End();
 
 			/*=============================================================
 			以下にゲームの描画処理を記述.
@@ -54,7 +61,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 void LoadDatas() {
 	TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resource/uvChecker.png");
 	TextureManager::GetInstance()->RegisterTexture("reticle", "Resource/reticle.png");
-	TextureManager::GetInstance()->RegisterTexture("effect_plane", "Resource/EffectPlane/effect_plane.png");
 	ModelManager::GetInstance()->RegisterObj("skydome", "Resource/skydome", "skydome.obj");
 	ModelManager::GetInstance()->RegisterObj("creeking", "Resource/creeking", "creeking.obj");
 	ModelManager::GetInstance()->RegisterObj("boss", "Resource/boss", "boss_ghost.obj", false);
@@ -67,5 +73,17 @@ void LoadDatas() {
 	ModelManager::GetInstance()->RegisterObj("player_head", "Resource/player_hovering_mode/head", "head.obj");
 	ModelManager::GetInstance()->RegisterObj("hammer_of_justice", "Resource/Hammer", "hammer_of_justice_uv.obj");
 	ModelManager::GetInstance()->RegisterObj("enemy", "Resource/enemy", "enemy.obj");
+
+	TextureManager::GetInstance()->RegisterTexture("effect_plane", "Resource/effects/effect_plane.png");
+	TextureManager::GetInstance()->RegisterTexture("effect_fire", "Resource/effects/effect_fire.png");
+	TextureManager::GetInstance()->RegisterTexture("effect_slash", "Resource/effects/effect_slash.png");
+	TextureManager::GetInstance()->RegisterTexture("effect_cross", "Resource/effects/effect_cross.png");
+	ParticleManager::GetInstance()->CreateNewParticles("normal",TextureManager::GetInstance()->GetTextureInfo("effect_plane"), BillboardType::kAllAxis,Particles::Move::kNormal);
+	ParticleManager::GetInstance()->CreateNewParticles("fire",TextureManager::GetInstance()->GetTextureInfo("effect_fire"), BillboardType::kAllAxis,Particles::Move::kFire);
+	ParticleManager::GetInstance()->SetParticleSize("fire", {0.2f,0.2f,0.2f});
+	ParticleManager::GetInstance()->CreateNewParticles("slash",TextureManager::GetInstance()->GetTextureInfo("effect_slash"), BillboardType::kAllAxis,Particles::Move::kSlash);
+	ParticleManager::GetInstance()->SetParticleSize("slash", {0.5f,0.5f,0.5f});
+	ParticleManager::GetInstance()->CreateNewParticles("cross",TextureManager::GetInstance()->GetTextureInfo("effect_cross"), BillboardType::kAllAxis,Particles::Move::kSlash);
+	ParticleManager::GetInstance()->SetParticleSize("cross", {0.2f,0.2f,0.2f});
 
 }

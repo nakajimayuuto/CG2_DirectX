@@ -48,6 +48,17 @@ void ParticleManager::CheckCollision() {
 }
 
 
+void ParticleManager::SpawnParticles(const std::string& name, const Transform transform){
+
+	particles_[name]->MakeNewParticle(transform);
+
+}
+
+void ParticleManager::SpawnParticles(const std::string& name, const Vector3 vector3){
+
+	particles_[name]->MakeNewParticle(vector3);
+}
+
 void ParticleManager::CreateNewParticles(const std::string& name, const TextureInfo& info){
 	if (particles_.find(name) != particles_.end()) {
 		return;
@@ -55,6 +66,17 @@ void ParticleManager::CreateNewParticles(const std::string& name, const TextureI
 
 	particles_[name] = new Particles();
 	particles_[name]->Initialize(info);
+}
+
+void ParticleManager::CreateNewParticles(const std::string& name, const TextureInfo& info, BillboardType billType, Particles::Move moveType){
+	if (particles_.find(name) != particles_.end()) {
+		return;
+	}
+
+	particles_[name] = new Particles();
+	particles_[name]->Initialize(info);
+	particles_[name]->SetBillboardType(billType);
+	particles_[name]->SetMoveType(moveType);
 }
 
 void ParticleManager::CreateNewParticles(const std::string& name, const ModelInfo& info){
@@ -115,6 +137,12 @@ void ParticleManager::SetBillboardType(const std::string& name, BillboardType ty
 	}
 
 	particles_[name]->SetBillboardType(type);
+}
+
+void ParticleManager::SetParticleSize(const std::string& name, const Vector3 size){
+	auto it = particles_.find(name);
+
+	particles_[name]->SetSize(size);
 }
 
 void ParticleManager::SetEmitterTransform(const std::string& name, const Transform& transform){

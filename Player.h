@@ -90,6 +90,8 @@ private:
 
 	void UpdateFloatingGimmick();
 private:
+	std::string emitterName_ = "player_emitter";
+	
 	bool isAttack_;
 	bool isDash_;
 

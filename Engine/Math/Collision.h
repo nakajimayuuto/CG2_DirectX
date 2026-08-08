@@ -46,4 +46,6 @@ public:
 	static bool OBBToPositionY(const OBB& obb, float posY,bool isUp);
 
 	static bool SimpleOBBToTorus(const OBB& obb, const Transform& transform,float majorRadius,float minorRadius);
+
+	static bool SimpleOBBToTorus2D(const OBB& obb, const Transform& transform,float majorRadius,float minorRadius);
 };

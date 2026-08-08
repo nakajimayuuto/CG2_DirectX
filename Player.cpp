@@ -53,6 +53,11 @@ void Player::Initialize() {
 
 
 	GameCamera::GetInstance()->SetTarget(&transform_);
+
+	LightManager::GetInstance()->CreatePointLight("player_light");
+	LightManager::GetInstance()->GetLightData("player_light")->color = { 0.5f,0.5f,1.0f,1.0f };
+	LightManager::GetInstance()->GetLightData("player_light")->radius = 5.0f;
+	LightManager::GetInstance()->GetLightData("player_light")->intensity = 1.0f;
 }
 
 void Player::InitializeFloatingGimmick() {
@@ -173,6 +178,8 @@ void Player::Update() {
 	ImGui::DragFloat("HP", &currentHP_, 1.0f, 0.0f, maxHP_);
 	ImGui::End();
 #endif // _DEBUG
+	LightManager::GetInstance()->SetLightPos("player_light", transform_.GetWorldPosition());
+	LightManager::GetInstance()->SetLightIsActive("player_light", true);
 
 
 	if (behaviorRequest_) {
@@ -222,6 +229,7 @@ void Player::Update() {
 		BehaviorDashUpdate();
 		colliderDimensionType_ = ColliderDimensionType::k2D;
 		CollisionManager::GetInstance()->AddColliderList(this);
+		LightManager::GetInstance()->SetLightIsActive("player_light", false);
 		break;
 	case Player::Behavior::kJump:
 		BehaviorJumpUpdate();
@@ -233,7 +241,6 @@ void Player::Update() {
 		break;
 	case Player::Behavior::kDashJumpAttack:
 		BehaviorDashJumpAttackUpdate();
-		colliderDimensionType_ = ColliderDimensionType::k2D;
 		CollisionManager::GetInstance()->AddColliderList(this);
 		break;
 	case Player::Behavior::kFall:

@@ -35,6 +35,12 @@ enum class BillboardType {
 
 class Particles{
 public:
+	enum class Move {
+		kNormal,
+		kFire,
+		kSlash,
+	};
+
 	~Particles();
 	void Initialize(const ModelInfo& info);
 
@@ -49,11 +55,21 @@ public:
 	void Draw();
 
 	void SetBillboardType(BillboardType billboardType);
+	void SetMoveType(Move moveType);
 
 	BillboardType GetBillboardType() { return billboardType_; };
+	
+	void SetSize(const Vector3 size) { size_ = size; };
 
 	void CheckCollision(const Field& field);
 private:
+	void MoveNormal();
+	void MoveFire();
+private:
+	Vector3 size_;
+
+	Move moveType_;
+
 	uint32_t modelMax_;
 	static inline const uint32_t kNumMaxInstance = 100;
 
@@ -129,4 +145,6 @@ private:
 	uint32_t count_;
 	float frequency_;
 	float frequencyTime_;
+
+	bool useTimer_;
 };

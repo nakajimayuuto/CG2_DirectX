@@ -96,6 +96,11 @@ void CollisionManager::CheckCollisionPair(Collider* colliderA, Collider* collide
 			sphereA.center = colliderA->GetWorldPosition();
 			sphereA.radius = colliderA->GetRadius();
 			obbB = colliderB->GetOBB();
+
+			if (Collision::OBBToSphere(obbB, sphereA)) {
+				colliderA->OnCollision(colliderB);
+				colliderB->OnCollision(colliderA);
+			}
 		} else {
 			if (colliderB->GetColliderType() == ColliderType::kTorus) {
 				obbB = colliderA->GetOBB();
@@ -107,13 +112,14 @@ void CollisionManager::CheckCollisionPair(Collider* colliderA, Collider* collide
 				sphereA.center = colliderB->GetWorldPosition();
 				sphereA.radius = colliderB->GetRadius();
 				obbB = colliderA->GetOBB();
+
+				if (Collision::OBBToSphere(obbB, sphereA)) {
+					colliderA->OnCollision(colliderB);
+					colliderB->OnCollision(colliderA);
+				}
 			}
 		}
 
-		if (Collision::OBBToSphere(obbB, sphereA)) {
-			colliderA->OnCollision(colliderB);
-			colliderB->OnCollision(colliderA);
-		}
 	}
 }
 
@@ -132,19 +138,25 @@ void CollisionManager::CheckCollisionPair2D(Collider* colliderA, Collider* colli
 
 	if (colliderA->GetColliderType() == colliderB->GetColliderType()) {
 		if (temp == ColliderType::kSphere) {
+			// スフィア同士.
 			sphereA.center = colliderA->GetWorldPosition();
 			sphereA.radius = colliderA->GetRadius();
 
 			sphereB.center = colliderB->GetWorldPosition();
 			sphereB.radius = colliderB->GetRadius();
+			sphereA.center.y = 20.0f;
+			sphereB.center.y = 20.0f;
 
 			if (Collision::SphereToSphere(sphereA, sphereB)) {
 				colliderA->OnCollision(colliderB);
 				colliderB->OnCollision(colliderA);
 			}
 		} else {
+			// OBB同士.
 			obbA = colliderA->GetOBB();
 			obbB = colliderB->GetOBB();
+			obbA.center.y = 20.0f;
+			obbB.center.y = 20.0f;
 
 			if (Collision::OBBToOBB(obbA, obbB)) {
 				colliderA->OnCollision(colliderB);
@@ -153,32 +165,45 @@ void CollisionManager::CheckCollisionPair2D(Collider* colliderA, Collider* colli
 		}
 	} else {
 		if (temp == ColliderType::kTorus) {
+			// トーラスとOBB.
 			obbB = colliderB->GetOBB();
-			if (Collision::SimpleOBBToTorus(obbB, colliderA->GetTransform(), colliderA->GetRadius(), colliderA->GetMinorRadius())) {
+			if (Collision::SimpleOBBToTorus2D(obbB, colliderA->GetTransform(), colliderA->GetRadius(), colliderA->GetMinorRadius())) {
 				colliderA->OnCollision(colliderB);
 				colliderB->OnCollision(colliderA);
 			}
 		} else if (temp == ColliderType::kSphere) {
+			// スフィアとOBB.
 			sphereA.center = colliderA->GetWorldPosition();
 			sphereA.radius = colliderA->GetRadius();
 			obbB = colliderB->GetOBB();
+			sphereA.center.y = 20.0f;
+			obbB.center.y = 20.0f;
+
+			if (Collision::OBBToSphere(obbB, sphereA)) {
+				colliderA->OnCollision(colliderB);
+				colliderB->OnCollision(colliderA);
+			}
 		} else {
 			if (colliderB->GetColliderType() == ColliderType::kTorus) {
+				// トーラスとOBB.
 				obbB = colliderA->GetOBB();
-				if (Collision::SimpleOBBToTorus(obbB, colliderB->GetTransform(), colliderB->GetRadius(), colliderB->GetMinorRadius())) {
+				if (Collision::SimpleOBBToTorus2D(obbB, colliderB->GetTransform(), colliderB->GetRadius(), colliderB->GetMinorRadius())) {
 					colliderA->OnCollision(colliderB);
 					colliderB->OnCollision(colliderA);
 				}
 			} else {
+				// スフィアとOBB
 				sphereA.center = colliderB->GetWorldPosition();
 				sphereA.radius = colliderB->GetRadius();
 				obbB = colliderA->GetOBB();
-			}
-		}
+				sphereA.center.y = 20.0f;
+				obbB.center.y = 20.0f;
 
-		if (Collision::OBBToSphere(obbB, sphereA)) {
-			colliderA->OnCollision(colliderB);
-			colliderB->OnCollision(colliderA);
+				if (Collision::OBBToSphere(obbB, sphereA)) {
+					colliderA->OnCollision(colliderB);
+					colliderB->OnCollision(colliderA);
+				}
+			}
 		}
 	}
 }

@@ -4,7 +4,7 @@
 #include "../Math/Easing.h"
 #include "Renderer.h"
 
-Particles::~Particles(){
+Particles::~Particles() {
 	delete vertexData;
 	delete materialData_;
 	delete instancingData_;
@@ -222,64 +222,62 @@ void Particles::Initialize(const TextureInfo& info) {
 
 void Particles::MakeNewParticle(const Vector3& position) {
 	ParticleData newParticleData;
-	newParticleData.transform.Initialize();
-	newParticleData.transform.rotate.x = Radian(70.0f);
-	newParticleData.transform.translate = position;
-	newParticleData.velocity = Random::GetInstance()->RandomVector3({ -1.0f,-1.0f,-1.0f }, { 1.0f,1.0f,1.0f });
-	newParticleData.color.SetColorWithoutAlpha(Random::GetInstance()->RandomVector3({ 0.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }), 1.0f);
-	newParticleData.currentTime = 0;
-	newParticleData.lifeTime = Random::GetInstance()->RandomFloat(1.0f, 3.0f);
+		newParticleData.transform.Initialize();
+		newParticleData.transform.translate = position;
+		newParticleData.transform.scale = size_;
+		newParticleData.currentTime = 0;
+	switch (moveType_){
+	case Particles::Move::kFire:
+		newParticleData.velocity = {0.0f,Random::GetInstance()->RandomFloat(0.01f,0.5f),0.0f};
+		newParticleData.color.InitializeColor();
+		newParticleData.lifeTime = Random::GetInstance()->RandomFloat(1.0f, 3.0f);
+		break;
+	case Particles::Move::kSlash:
+		newParticleData.color.InitializeColor();
+		newParticleData.velocity = {0.0f,0.0f,0.0f};
+		newParticleData.lifeTime = 0.5f;
+		break;
+	case Particles::Move::kNormal:
+	default:
+		newParticleData.velocity = Random::GetInstance()->RandomVector3({ -1.0f,-1.0f,-1.0f }, { 1.0f,1.0f,1.0f });
+		newParticleData.color.SetColorWithoutAlpha(Random::GetInstance()->RandomVector3({ 0.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }), 1.0f);
+		newParticleData.lifeTime = Random::GetInstance()->RandomFloat(1.0f, 3.0f);
+		break;
+	}
 
 	particleData_.push_back(newParticleData);
 }
 
 void Particles::MakeNewParticle(const Transform& transform) {
-	Transform particleTransform = transform;
-	particleTransform.scale = { 1.0f,1.0f,1.0f };
-
-	ParticleData newParticleData;
-	newParticleData.transform.Initialize();
-	newParticleData.transform.rotate.x = Radian(70.0f);
-	newParticleData.transform.translate = particleTransform.GetAffineMatrix().GetMatrixToTranslate();
-	newParticleData.velocity = Random::GetInstance()->RandomVector3({ -1.0f,-1.0f,-1.0f }, { 1.0f,1.0f,1.0f });
-	newParticleData.color.SetColorWithoutAlpha(Random::GetInstance()->RandomVector3({ 0.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }), 1.0f);
-	newParticleData.currentTime = 0;
-	newParticleData.lifeTime = Random::GetInstance()->RandomFloat(1.0f, 3.0f);
-
-	particleData_.push_back(newParticleData);
+	MakeNewParticle(transform.GetAffineMatrix().GetMatrixToTranslate());
 }
 
 void Particles::Update() {
+	switch (moveType_){
+	case Particles::Move::kNormal:
+	case Particles::Move::kFire:
+	case Particles::Move::kSlash:
+		MoveNormal();
+		break;
+	}	
+}
+
+void Particles::MoveNormal(){
 	for (ParticleData& particle : particleData_) {
 		particle.transform.translate += particle.velocity * DeltaTime::GetInstance()->GetGameTime();
 		particle.currentTime += DeltaTime::GetInstance()->GetGameTime();
 		particle.color.w = Easing(1.0f, 0.0f, particle.currentTime, particle.lifeTime, EaseType::kConstant);
 	}
-
-	//switch (billboardType_) {
-	//case BillboardType::kAllAxis:
-	//	billboardMatrix_ = Matrix4x4::MakeRotateMatrix(Camera::GetInstance()->GetTransform().rotate);
-	//		break;
-	//case BillboardType::kOnlyX:
-	//	billboardMatrix_ = Matrix4x4::MakeRotateXMatrix(Camera::GetInstance()->GetTransform().rotate.x);
-	//	break;
-	//case BillboardType::kOnlyY:
-	//	billboardMatrix_ = Matrix4x4::MakeRotateYMatrix(Camera::GetInstance()->GetTransform().rotate.y);
-	//	break;
-	//case BillboardType::kOnlyZ:
-	//	billboardMatrix_ = Matrix4x4::MakeRotateZMatrix(Camera::GetInstance()->GetTransform().rotate.z);
-	//	break;
-	//}
-
 }
 
 void Particles::CheckCollision(const Field& field) {
-	for (std::list<ParticleData>::iterator particleIterator = particleData_.begin(); particleIterator != particleData_.end();++particleIterator) {
+	for (std::list<ParticleData>::iterator particleIterator = particleData_.begin(); particleIterator != particleData_.end(); ++particleIterator) {
 		if (Collision::AABBToPoint(field.GetArea(), (*particleIterator).transform.translate)) {
 			(*particleIterator).velocity += field.GetAcceleration() * DeltaTime::GetInstance()->GetGameTime();
 		}
 	}
 }
+
 
 void Particles::Draw() {
 	if (!isVisible_) {
@@ -369,12 +367,26 @@ void Particles::SetBillboardType(BillboardType billboardType) {
 	billboardType_ = billboardType;
 }
 
+void Particles::SetMoveType(Move moveType){
+	if (moveType == moveType_) {
+		return;
+	}
+
+	moveType_ = moveType;
+}
+
 void Emitter::Initialize(const Transform& transform, uint32_t count, float frequency) {
 	shape_ = EmitterShape::kBox;
 	transform_ = transform;
 	count_ = count;
 	frequency_ = frequency;
 	frequencyTime_ = 0.0f;
+
+	if (frequency < 0.0f) {
+		useTimer_ = false;
+	} else {
+		useTimer_ = true;
+	}
 }
 
 void Emitter::CreateParticle() {
@@ -391,10 +403,14 @@ void Emitter::CreateParticle() {
 }
 
 void Emitter::Update() {
+	if (!useTimer_) {
+		return;
+	}
+
 	frequencyTime_ += DeltaTime::GetInstance()->GetGameTime();
 
 	if (frequency_ <= frequencyTime_) {
-	//s	CreateParticle();
+			CreateParticle();
 		frequencyTime_ -= frequency_;
 	}
 }

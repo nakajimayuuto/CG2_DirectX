@@ -556,3 +556,12 @@ bool Collision::SimpleOBBToTorus(const OBB& obb, const Transform& transform, flo
 	}
 	return false;
 }
+
+bool Collision::SimpleOBBToTorus2D(const OBB& obb, const Transform& transform, float majorRadius, float minorRadius){
+	if (OBBToSphere(obb, { transform.GetWorldPosition(),(majorRadius)+(minorRadius / 2.0f) })) {
+		if (!OBBToSphereFarthest(obb, { transform.GetWorldPosition(),(majorRadius)-(minorRadius / 2.0f) })) {
+			return true;
+		} 
+	}
+	return false;
+}

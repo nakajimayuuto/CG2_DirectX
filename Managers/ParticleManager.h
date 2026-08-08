@@ -14,7 +14,11 @@ public:
 
 	void Draw();
 
+	void SpawnParticles(const std::string& name,const Transform transform);
+	void SpawnParticles(const std::string& name,const Vector3 vector3);
+
 	void CreateNewParticles(const std::string& name ,const TextureInfo& info);
+	void CreateNewParticles(const std::string& name ,const TextureInfo& info,BillboardType billType,Particles::Move moveType);
 	void CreateNewParticles(const std::string& name, const ModelInfo& info);
 
 	void CreateNewEmitter(const std::string& name, const std::string& setParticleName, const Transform& transform, uint32_t count, float frequency);
@@ -25,6 +29,8 @@ public:
 	void SetBillboardType(BillboardType type);
 
 	void SetBillboardType(const std::string& name, BillboardType type);
+
+	void SetParticleSize(const std::string& name,const Vector3 size);
 
 	void SetEmitterTransform(const std::string& name, const Transform& transform);
 
