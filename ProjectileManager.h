@@ -45,6 +45,9 @@ private:
 
 	bool isActive_;
 
+	// NormalData
+	static inline float kModelRotateSpeed = Radian(90.0f);
+
 
 	// BounsData
 	float kBounsE_ = 0.7f;

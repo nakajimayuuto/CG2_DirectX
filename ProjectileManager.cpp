@@ -8,8 +8,8 @@ void ProjectileManager::Initialize() {
 	bullets.clear();
 	waves.clear();
 
-	for (uint32_t i = 0; i < kBulletLightMax_;i++) {
-		lightNames_.push_back("bullet_" + i);
+	for (uint32_t i = 0; i < kBulletLightMax_; i++) {
+		lightNames_.push_back(std::format("bullet_{}", i));
 		LightManager::GetInstance()->CreatePointLight(lightNames_[i]);
 	}
 }
@@ -18,7 +18,7 @@ void ProjectileManager::Update() {
 	uint32_t currentLightNum_ = 0;
 
 	for (auto& name : lightNames_) {
-		LightManager::GetInstance()->SetLightIsActive(name,false);
+		LightManager::GetInstance()->SetLightIsActive(name, false);
 	}
 
 	for (auto& bullet : bullets) {
@@ -35,6 +35,9 @@ void ProjectileManager::Update() {
 
 	for (auto it = bullets.begin(); it != bullets.end(); ) {
 		if (!(*it)->GetIsActive()) {
+			//if ((*it)->GetType() == BulletType::kNormal) {
+			//	LightManager::
+			//}
 			it = bullets.erase(it);
 		} else {
 			++it;
@@ -96,8 +99,13 @@ void ProjectileManager::Draw() {
 void ProjectileManager::CreateBullet(const Transform& transform, const Vector3& velocity, BulletType type, CollisionAttributeName colliderName, float damage, float damageCoolTime) {
 	std::unique_ptr<Bullet> bullet;
 	bullet = std::make_unique<Bullet>();
-	bullet->Initialize(transform, velocity, type, colliderName,damage,damageCoolTime);
+	bullet->Initialize(transform, velocity, type, colliderName, damage, damageCoolTime);
+	if (bullet->GetType() == BulletType::kNormal) {
+
+	}
 	bullets.push_back(std::move(bullet));
+
+
 }
 
 void ProjectileManager::CreateDiffusionBullet(const Transform& transform, const Vector3& velocity, BulletType type, CollisionAttributeName colliderName, float damage, float damageCoolTime, float diffusionRadian, uint32_t amount) {
@@ -170,6 +178,9 @@ void Bullet::Initialize(const Transform& transform, const Vector3& velocity, Bul
 	colliderColor_ = { 1.0f,0.0f,0.0f,1.0f };
 	collisionAttribute_ = CollisionManager::GetInstance()->GetCollisionAttribute(colliderName);
 	colliderDimensionType_ = ColliderDimensionType::k3D;
+	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("bullet_crystal"));
+	model_.SetBlendMode(BlendMode::kNormalCullNone);
+	model_.SetLightingType(LightingType::kNone);
 
 	damage_ = damage;
 	damageCoolTime_ = damageCoolTime;
@@ -187,7 +198,8 @@ void Bullet::Update() {
 
 void Bullet::Draw() {
 	DrawCollider();
-	Renderer::GetInstance()->DrawSphereWireFrame(modelTransform_, { 1.0f,0.0f,0.0f,1.0f });
+	//Renderer::GetInstance()->DrawSphereWireFrame(modelTransform_, { 1.0f,0.0f,0.0f,1.0f });
+	model_.Draw(modelTransform_);
 }
 
 void Bullet::NormalInitialize() {
@@ -196,9 +208,18 @@ void Bullet::NormalInitialize() {
 
 void Bullet::NormalUpdate() {
 	transform_.translate += velocity_ * DeltaTime::GetInstance()->GetGameTime();
+	modelTransform_.rotate.x += kModelRotateSpeed * DeltaTime::GetInstance()->GetGameTime();
+	modelTransform_.rotate.y += kModelRotateSpeed * DeltaTime::GetInstance()->GetGameTime();
 }
 
 void Bullet::BounsInitialize() {
+	colliderRadius_ = 0.8f;
+	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("effect_plane"));
+	model_.ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("bullet_bounce"));
+	model_.SetBlendMode(BlendMode::kNormal);
+	modelTransform_.Initialize();
+	modelTransform_.ClearParent();
+	modelTransform_.scale = { 0.8f,0.8f,0.8f };
 	velocity_.y = 1.0f;
 
 	lifeTimeMax_ = 5.0f;
@@ -216,13 +237,16 @@ void Bullet::BounsUpdate() {
 		Vector3 movingDirection = reflected - projectToNormal;
 		velocity_ = projectToNormal * kBounsE_ + movingDirection;
 	}
+
+	modelTransform_.translate = transform_.GetWorldPosition();
+	modelTransform_.rotate = Camera::GetInstance()->GetRotate();
 }
 
 void Bullet::SpikeInitialize() {
 	transform_.rotate.y = std::atan2(velocity_.x, velocity_.z);
 	lifeTimeMax_ = 8.0f;
 	spikeCreateTimer_ = 0.0f;
-	colliderColor_ = {1.0f,1.0f,1.0f,1.0f};
+	colliderColor_ = { 1.0f,1.0f,1.0f,1.0f };
 	isColliderActive_ = false;
 }
 
@@ -235,7 +259,7 @@ void Bullet::SpikeUpdate() {
 		Transform newTrasform;
 		newTrasform = transform_;
 		newTrasform.translate += Random::GetInstance()->RandomVector3({ -kRadnomsize_.x / 2.0f,0.0f,-kRadnomsize_.z / 2.0f }, { kRadnomsize_.x / 2.0f,0.0f,kRadnomsize_.z / 2.0f });
-		ProjectileManager::GetInstance()->CreateSpike(newTrasform, 0, kCollisionEnemyAttack,damage_,damageCoolTime_);
+		ProjectileManager::GetInstance()->CreateSpike(newTrasform, 0, kCollisionEnemyAttack, damage_, damageCoolTime_);
 	}
 }
 
@@ -271,7 +295,7 @@ void Wave::Update() {
 	colliderRadius_ += speed_ * DeltaTime::GetInstance()->GetGameTime();
 
 	if (!isTimeInf_) {
-		height_ = Easing(heightMax_,0.0f,lifeTimer_,lifeTimeMax_,EaseType::kEaseIn);
+		height_ = Easing(heightMax_, 0.0f, lifeTimer_, lifeTimeMax_, EaseType::kEaseIn);
 		colliderMinorRadius_ = height_ * 0.001f;
 	}
 
@@ -353,5 +377,5 @@ void Spike::Update() {
 }
 
 void Spike::Draw() {
-	Renderer::GetInstance()->DrawBoxWireFrame(GetOBB(), {1.0f,0.0f,0.0f,1.0f});
+	Renderer::GetInstance()->DrawBoxWireFrame(GetOBB(), { 1.0f,0.0f,0.0f,1.0f });
 }

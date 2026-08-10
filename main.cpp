@@ -36,11 +36,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			GlobalVariables::GetInstance()->Update();
 
 			SceneManager::GetInstance()->Update();
-
+#ifdef _DEBUG
 			ImGui::Begin("aa");
 			ImGui::DragFloat("intensity", &LightManager::GetInstance()->GetDirectionalLightData()->intensity,0.01f,0.0f,1.0f);
 
 			ImGui::End();
+#endif // _DEBUG
 
 			/*=============================================================
 			以下にゲームの描画処理を記述.
@@ -74,6 +75,8 @@ void LoadDatas() {
 	ModelManager::GetInstance()->RegisterObj("hammer_of_justice", "Resource/Hammer", "hammer_of_justice_uv.obj");
 	ModelManager::GetInstance()->RegisterObj("enemy", "Resource/enemy", "enemy.obj");
 	ModelManager::GetInstance()->RegisterObj("wall", "Resource/wall", "wall.obj");
+	ModelManager::GetInstance()->RegisterObj("bullet_crystal", "Resource/Bullet", "bullet_crystal.obj");
+	TextureManager::GetInstance()->RegisterTexture("bullet_bounce", "Resource/Bullet/bullet_bounce.png");
 
 	TextureManager::GetInstance()->RegisterTexture("effect_plane", "Resource/effects/effect_plane.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_fire", "Resource/effects/effect_fire.png");

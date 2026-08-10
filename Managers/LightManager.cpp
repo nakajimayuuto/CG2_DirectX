@@ -159,3 +159,7 @@ void LightManager::SetLightIsActive(std::string name, bool isActive){
 void LightManager::ClearLight(){
 	lightDatas_.clear();
 }
+
+void LightManager::DeleteLight(std::string name){
+	delete lightDatas_[name];
+}

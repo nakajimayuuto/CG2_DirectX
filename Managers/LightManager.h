@@ -60,7 +60,7 @@ public:
 
 	void ClearLight();
 
-	void DeleteLight();
+	void DeleteLight(std::string name);
 private:
 	std::map<std::string, LightData*> lightDatas_;
 

@@ -72,7 +72,7 @@ private:
 
 	float wallNearDirection_;
 
-	float movingRadius_ = 70.0f;
+	float movingRadius_ = 75.0f;
 
 	float distanceToCenter_;
 

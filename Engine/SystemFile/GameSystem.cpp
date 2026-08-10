@@ -960,11 +960,11 @@ void GameSystem::EndFrame() {
 
 	Renderer::GetInstance()->DrawLineAll();
 
+#ifdef USE_IMGUI
 	ImGui::Begin("drawCount");
 	ImGui::Text("%d", drawCount_);
 	ImGui::End();
 
-#ifdef USE_IMGUI
 	// ImGuiの内部コマンドを生成する.
 	ImGui::Render();
 #endif // USE_IMGUI

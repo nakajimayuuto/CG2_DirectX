@@ -115,7 +115,7 @@ void Model::Draw(const Transform& transform, bool useTransparent){
 			return;
 		}
 
-		if (!Camera::GetInstance()->IsInCameraFrustum(transform.translate, radius_ * transform.GetMaxScale())) {
+		if (!Camera::GetInstance()->IsInCameraFrustum(transform.GetWorldPosition(), radius_ * transform.GetMaxScale())) {
 			return;
 		}
 		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
@@ -173,6 +173,8 @@ bool Model::GetIsVisible()  const {
 	if (modelMax_ == 1) {
 		return isVisible_[0];
 	}
+
+	return false;
 };
 
 bool Model::GetIsVisible(const std::string& meshName) const {
