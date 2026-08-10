@@ -26,8 +26,21 @@ Vector3 Random::RandomCircleVector3(Vector3 radius){
 
 	random = RandomVector3(-(radius / 2.0f), radius / 2.0f);
 
-	while (random.Normalize().x > radius.x || random.Normalize().y > radius.y || random.Normalize().z > radius.z) {
+	while (random.x > radius.x || random.y > radius.y || random.z > radius.z) {
 		random = RandomVector3(-(radius / 2.0f), radius / 2.0f);
+	}
+
+	return random;
+}
+
+Vector3 Random::RandomCircleVector3(float radius){
+	Vector3 random;
+	Vector3 newRadius = { radius / 2.0f,radius / 2.0f,radius / 2.0f };
+
+	random = RandomVector3({ -(newRadius )}, newRadius );
+
+	while (random.Length() > radius / 2.0f) {
+		random = RandomVector3(-(newRadius), newRadius);
 	}
 
 	return random;

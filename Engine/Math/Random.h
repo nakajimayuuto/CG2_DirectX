@@ -14,6 +14,8 @@ public:
 
 	Vector3 RandomCircleVector3(Vector3 radius);
 
+	Vector3 RandomCircleVector3(float radius);
+
 	bool Probability(float percent);
 private:
 	std::mt19937_64 engine;

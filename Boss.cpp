@@ -98,15 +98,15 @@ void Boss::Initialize() {
 	Phase1Initialize();
 
 	phase_ = Phase::kPhase1;
-	
+
 	LightManager::GetInstance()->CreatePointLight("boss_light");
-	LightManager::GetInstance()->GetLightData("boss_light")->color = {0.5f,0.5f,1.0f,1.0f};
+	LightManager::GetInstance()->GetLightData("boss_light")->color = { 0.5f,0.5f,1.0f,1.0f };
 	LightManager::GetInstance()->GetLightData("boss_light")->radius = 5.0f;
 	LightManager::GetInstance()->GetLightData("boss_light")->intensity = 1.0f;
 
 	emitter_ = std::make_unique<Emitter>();
 	emitter_->SetParticle(ParticleManager::GetInstance()->GetParticles("blue_fire"));
-	emitter_->Initialize(Transform::GetInitialValue(kBasicColliderSize, {0.0f,0.0f,0.0f},transform_.GetWorldPosition()), 1, 0.1f);
+	emitter_->Initialize(Transform::GetInitialValue(kBasicColliderSize, { 0.0f,0.0f,0.0f }, transform_.GetWorldPosition()), 1, 0.1f);
 
 
 #ifdef _DEBUG
@@ -147,6 +147,7 @@ void Boss::Phase1Initialize() {
 	SetAttackData(Attacks::kFangAttack, 0.5f, DistanceName::kMiddle);
 	SetAttackData(Attacks::kPowerSlasher, 0.5f, DistanceName::kMiddle);
 	SetAttackData(Attacks::kSpinningHalberd, 0.5f, DistanceName::kMiddle);
+	SetAttackData(Attacks::kWaveShot, 0.5f, DistanceName::kMiddle);
 
 	SetAttackData(Attacks::kNearAttack, 0.5f, DistanceName::kNear);
 	SetAttackData(Attacks::kMovingShot, 0.5f, DistanceName::kNear);
@@ -458,7 +459,7 @@ void Boss::OnCollision(Collider* other) {
 	}
 }
 
-void Boss::SlashEffectCreate(Transform* targetTransform, uint32_t num){
+void Boss::SlashEffectCreate(Transform* targetTransform, uint32_t num) {
 	Transform effectCreate;
 	for (uint32_t i = 0; i < 3; i++) {
 		effectCreate.Initialize();
@@ -1041,7 +1042,7 @@ void Boss::PowerSlasherUpdate() {
 	case 5: // 攻撃を行う.
 		powerSlasherHalberdCenter_.rotate.y = Easing(0.0f, Radian(180.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		modelTransform_.rotate.y = Easing(kPowerSlasherModelStartRotateY, kPowerSlasherModelFinishedRotateY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
-		SlashEffectCreate(&attackTempTransform_,3);
+		SlashEffectCreate(&attackTempTransform_, 3);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kPowerSlasherSlashStayTimerMax);
@@ -1122,21 +1123,7 @@ void Boss::FangAttackUpdate() {
 		destinationHalberdTransform_.translate = Easing(kFangAttackHalberdSpinPos, kFangAttackHalberdAttackPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kFangAttackAttackGapTimerMax);
-			float rotateY = transform_.rotate.y - Radian(90.0f);
-			float lenght = Vector3(targetTransform_->translate - transform_.translate).Length();
-			Transform newTransform = halberdTransform_;
-			std::vector<Vector3> spikePos_;
-			if (lenght <= (kFangAttackRadius / 3.0f) * 2.0f) {
-				for (uint32_t i = 0; i < kFangAttackRadiusNum; i++) {
-					newTransform = halberdTransform_;
-					newTransform.translate = newTransform.translate + Random::GetInstance()->RandomCircleVector3({ kFangAttackRadius ,kFangAttackRadius ,kFangAttackRadius });
-
-					ProjectileManager::GetInstance()->CreateSpike(newTransform, 0, kCollisionEnemyAttack, 15.0f, 3.0f);
-					spikePos_.push_back(newTransform.GetWorldPosition());
-				}
-			} else {
-				ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, Vector3(-RadianToVector(rotateY).x, 0.0f, RadianToVector(rotateY).y) * 20.0f, BulletType::kSpike, kCollisionEnemyAttack, 15.0f, 3.0f);
-			}
+			FangAttackFangCreate();
 
 		}
 		break;
@@ -1154,6 +1141,29 @@ void Boss::FangAttackUpdate() {
 			halberdTransform_.SetParent(&transform_);
 		}
 		break;
+	}
+}
+
+void Boss::FangAttackFangCreate() {
+	float rotateY = transform_.rotate.y - Radian(90.0f);
+	float lenght = Vector3(targetTransform_->translate - transform_.translate).Length();
+	Transform newTransform;
+	newTransform.Initialize();
+	Vector2 center = { halberdTransform_.GetWorldPosition().x, halberdTransform_.GetWorldPosition().z };
+
+	if (lenght <= (kFangAttackRadius / 3.0f) * 2.0f) {
+		for (uint32_t j = 0; j < kFangAttackLoopCount; j++) {
+			uint32_t maxCount = 4 * j;
+			float rotateBlank = Random::GetInstance()->RandomFloat(0.1f, (360.0f / maxCount));
+
+			for (uint32_t i = 0; i < maxCount; i++) {
+				newTransform.translate.x = Rotate({ kFangAttackRadius * Easing(0.0f,1.0f,static_cast<float>(j),static_cast<float>(kFangAttackLoopCount),EaseType::kConstant),0.0f }, center, (i * (360.0f / maxCount) + rotateBlank)).x;
+				newTransform.translate.z = Rotate({ kFangAttackRadius * Easing(0.0f,1.0f,static_cast<float>(j),static_cast<float>(kFangAttackLoopCount),EaseType::kConstant),0.0f }, center, (i * (360.0f / maxCount) + rotateBlank)).y;
+				ProjectileManager::GetInstance()->CreateSpike(newTransform, 0, kCollisionEnemyAttack, 15.0f, 3.0f);
+			}
+		}
+	} else {
+		ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, Vector3(-RadianToVector(rotateY).x, 0.0f, RadianToVector(rotateY).y) * 20.0f, BulletType::kSpike, kCollisionEnemyAttack, 15.0f, 3.0f);
 	}
 }
 
@@ -1306,11 +1316,19 @@ void Boss::NearAttackUpdate() {
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kNearThirdAttackGapTimerMax);
 			ProjectileManager::GetInstance()->CreateWave(transform_, 25.0f, 1.0f, 1.0f, kCollisionEnemyAttack, 20.0f, 3.0f);
-			Transform newTransform = halberdTransform_;
-			for (uint32_t i = 0; i < kNearThirdAttackRadiusNum; i++) {
-				newTransform = halberdTransform_;
-				newTransform.translate += newTransform.GetWorldPosition() + Random::GetInstance()->RandomCircleVector3({ kNearThirdAttackRadius ,kNearThirdAttackRadius ,kNearThirdAttackRadius });
-				ProjectileManager::GetInstance()->CreateSpike(newTransform, 0, kCollisionEnemyAttack, 20.0f, 3.0f);
+			Transform newTransform;
+			newTransform.Initialize();
+			Vector2 center = { halberdTransform_.GetWorldPosition().x, halberdTransform_.GetWorldPosition().z };
+
+			for (uint32_t j = 0; j < kNearThirdAttackRadiusLoopCount; j++) {
+				uint32_t maxCount = 4 * j;
+				float rotateBlank = Random::GetInstance()->RandomFloat(0.1f, (360.0f / maxCount));
+
+				for (uint32_t i = 0; i < maxCount; i++) {
+					newTransform.translate.x = Rotate({ kNearThirdAttackRadius * Easing(0.0f,1.0f,static_cast<float>(j),static_cast<float>(kNearThirdAttackRadiusLoopCount),EaseType::kConstant),0.0f }, center, (i * (360.0f / maxCount) + rotateBlank)).x;
+					newTransform.translate.z = Rotate({ kNearThirdAttackRadius * Easing(0.0f,1.0f,static_cast<float>(j),static_cast<float>(kNearThirdAttackRadiusLoopCount),EaseType::kConstant),0.0f }, center, (i * (360.0f / maxCount) + rotateBlank)).y;
+					ProjectileManager::GetInstance()->CreateSpike(newTransform, 0, kCollisionEnemyAttack, 15.0f, 3.0f);
+				}
 			}
 		}
 		break;

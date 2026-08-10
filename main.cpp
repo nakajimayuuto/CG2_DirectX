@@ -26,6 +26,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	SceneManager::GetInstance()->Initialize();
 	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.1f;
+	LightManager::GetInstance()->GetDirectionalLightData()->color = {1.0f,0.5f,0.5f,1.0f};
 	// ウィンドウのxボタンが押されるまでループ.
 	while (system->ProcessMessage()) {
 		if (system->BeginFrame()) {
@@ -76,10 +77,12 @@ void LoadDatas() {
 	ModelManager::GetInstance()->RegisterObj("enemy", "Resource/enemy", "enemy.obj");
 	ModelManager::GetInstance()->RegisterObj("wall", "Resource/wall", "wall.obj");
 	ModelManager::GetInstance()->RegisterObj("bullet_crystal", "Resource/Bullet", "bullet_crystal.obj");
+	ModelManager::GetInstance()->RegisterObj("spike", "Resource/Spike", "spike.obj");
 	TextureManager::GetInstance()->RegisterTexture("bullet_bounce", "Resource/Bullet/bullet_bounce.png");
 
 	TextureManager::GetInstance()->RegisterTexture("effect_plane", "Resource/effects/effect_plane.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_fire", "Resource/effects/effect_fire.png");
+	TextureManager::GetInstance()->RegisterTexture("effect_big_fire", "Resource/effects/effect_big_fire.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_blue_fire", "Resource/effects/effect_blue_fire.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_slash", "Resource/effects/effect_slash.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_cross", "Resource/effects/effect_cross.png");
@@ -92,5 +95,7 @@ void LoadDatas() {
 	ParticleManager::GetInstance()->SetParticleSize("slash", {0.5f,0.5f,0.5f});
 	ParticleManager::GetInstance()->CreateNewParticles("cross",TextureManager::GetInstance()->GetTextureInfo("effect_cross"), BillboardType::kAllAxis,Particles::Move::kSlash);
 	ParticleManager::GetInstance()->SetParticleSize("cross", {0.2f,0.2f,0.2f});
+	ParticleManager::GetInstance()->CreateNewParticles("big_fire", TextureManager::GetInstance()->GetTextureInfo("effect_big_fire"), BillboardType::kAllAxis, Particles::Move::kFire);
+	ParticleManager::GetInstance()->SetParticleSize("big_fire", { 0.5f,0.5f,0.5f });
 
 }

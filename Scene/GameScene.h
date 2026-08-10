@@ -25,4 +25,5 @@ private:
 	std::unique_ptr<Boss> boss_;
 
 	std::unique_ptr<Emitter> worldFrameEmitter_;
+	std::unique_ptr<Emitter> worldBigFrameEmitter_;
 };

@@ -27,7 +27,14 @@ void GameScene::Initialize() {
 
 	worldFrameEmitter_ = std::make_unique<Emitter>();
 	worldFrameEmitter_->SetParticle(ParticleManager::GetInstance()->GetParticles("fire"));
-	worldFrameEmitter_->Initialize(Transform::GetInitialValue({ 150.0f,10.0f,150.0f }, { 0.0f,0.0f,0.0f }, {0.0f,5.0f,0.0f}), 10, 0.1f);
+	// 第一形態.
+	//worldFrameEmitter_->Initialize(Transform::GetInitialValue({ 150.0f,10.0f,150.0f }, { 0.0f,0.0f,0.0f }, {0.0f,5.0f,0.0f}), 10, 0.1f);
+	// 第二形態.
+	worldFrameEmitter_->Initialize(Transform::GetInitialValue({ 150.0f,10.0f,150.0f }, { 0.0f,0.0f,0.0f }, {0.0f,5.0f,0.0f}), 30, 0.1f);
+
+	worldBigFrameEmitter_ = std::make_unique<Emitter>();
+	worldBigFrameEmitter_->SetParticle(ParticleManager::GetInstance()->GetParticles("big_fire"));
+	worldBigFrameEmitter_->Initialize(Transform::GetInitialValue({ 150.0f,10.0f,150.0f }, { 0.0f,0.0f,0.0f }, {0.0f,5.0f,0.0f}), 5, 0.2f);
 
 	Player::RegisterGlobalVariables();
 }
@@ -63,6 +70,7 @@ void GameScene::Update() {
 	Camera::GetInstance()->Update();
 
 	worldFrameEmitter_->Update();
+	worldBigFrameEmitter_->Update();
 
 	CheckAllCollisions();
 }

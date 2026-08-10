@@ -138,6 +138,7 @@ private:
 
 	void FangAttackInitialize();
 	void FangAttackUpdate();
+	void FangAttackFangCreate();
 
 	void NearAttackInitialize();
 	void NearAttackUpdate();
@@ -360,6 +361,7 @@ private:
 	static inline float kFangAttackAttackRotateX = -Radian(150.0f);
 
 	static inline float kFangAttackRadius = 20.0f;
+	static inline uint32_t kFangAttackLoopCount = 8;
 	static inline uint32_t kFangAttackRadiusNum = 100;
 
 	Transform halberdModelTransform;
@@ -417,6 +419,7 @@ private:
 
 	static inline float kNearThirdAttackRadiusNum = 30;
 	static inline float kNearThirdAttackRadius = 20.0f;
+	static inline uint32_t kNearThirdAttackRadiusLoopCount = 4;
 
 
 };

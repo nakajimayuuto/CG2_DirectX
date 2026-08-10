@@ -80,6 +80,7 @@ public:
 	bool GetIsActive() { return isActive_; };
 private:
 
+	Transform modelTransform_;
 	uint32_t spikePhase_;
 	float lifeTimer_ = 0.0f;
 	float lifeTimeMax_ = 0.0f;
@@ -88,6 +89,8 @@ private:
 	static inline float kEndTimeMax = 0.15f;
 
 	bool isActive_;
+
+	Model model_;
 
 	static inline Vector3 kBasicSpikeSize = {0.4f, 1.0f, 0.4f};
 };

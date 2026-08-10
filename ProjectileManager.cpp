@@ -35,9 +35,6 @@ void ProjectileManager::Update() {
 
 	for (auto it = bullets.begin(); it != bullets.end(); ) {
 		if (!(*it)->GetIsActive()) {
-			//if ((*it)->GetType() == BulletType::kNormal) {
-			//	LightManager::
-			//}
 			it = bullets.erase(it);
 		} else {
 			++it;
@@ -199,7 +196,9 @@ void Bullet::Update() {
 void Bullet::Draw() {
 	DrawCollider();
 	//Renderer::GetInstance()->DrawSphereWireFrame(modelTransform_, { 1.0f,0.0f,0.0f,1.0f });
-	model_.Draw(modelTransform_);
+	if (type_ != BulletType::kSpike) {
+		model_.Draw(modelTransform_);
+	}
 }
 
 void Bullet::NormalInitialize() {
@@ -247,7 +246,7 @@ void Bullet::SpikeInitialize() {
 	lifeTimeMax_ = 8.0f;
 	spikeCreateTimer_ = 0.0f;
 	colliderColor_ = { 1.0f,1.0f,1.0f,1.0f };
-	isColliderActive_ = false;
+	//isColliderActive_ = false;
 }
 
 void Bullet::SpikeUpdate() {
@@ -312,24 +311,32 @@ void Spike::Initialize(const Transform& transform, uint32_t size, CollisionAttri
 	uint32_t sizeIndex;
 	sizeIndex = size;
 	if (size == 0) {
-		sizeIndex = static_cast<uint32_t>(Random::GetInstance()->RandomFloat(1.0f, 4.0f));
+		sizeIndex = static_cast<uint32_t>(Random::GetInstance()->RandomFloat(1.0f, 3.0f));
 	}
 
-	switch (sizeIndex) {
-	case 1:
-		colliderSize_ = kBasicSpikeSize;
-		break;
-	case 2:
-		colliderSize_ = kBasicSpikeSize * 1.5f;
-		break;
-	case 3:
-		colliderSize_ = kBasicSpikeSize * 2.0f;
-		break;
-	}
 
 	transform_.Initialize();
 	transform_.translate = transform.translate;
 	transform_.translate.y = -(colliderSize_.y / 2.0f);
+
+	modelTransform_.Initialize();
+	modelTransform_.SetParent(&transform_);
+	modelTransform_.translate.y = -2.0f;
+	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("spike"));
+	switch (sizeIndex) {
+	case 1:
+		colliderSize_ = kBasicSpikeSize;
+		modelTransform_.scale = {2.0f,2.0f,2.0f};
+		break;
+	case 2:
+		colliderSize_ = kBasicSpikeSize * 1.5f;
+		modelTransform_.scale = { 3.0f,3.0f,3.0f };
+		break;
+	case 3:
+		colliderSize_ = kBasicSpikeSize * 2.0f;
+		modelTransform_.scale = { 4.0f,4.0f,4.0f };
+		break;
+	}
 	collisionAttribute_ = CollisionManager::GetInstance()->GetCollisionAttribute(colliderName);
 	isActive_ = true;
 	lifeTimer_ = 0.0f;
@@ -377,5 +384,6 @@ void Spike::Update() {
 }
 
 void Spike::Draw() {
-	Renderer::GetInstance()->DrawBoxWireFrame(GetOBB(), { 1.0f,0.0f,0.0f,1.0f });
+	//Renderer::GetInstance()->DrawBoxWireFrame(GetOBB(), { 1.0f,0.0f,0.0f,1.0f });
+	model_.Draw(modelTransform_);
 }

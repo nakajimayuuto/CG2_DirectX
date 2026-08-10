@@ -413,7 +413,7 @@ void Player::SetNextAttackPhase(float timeMax) {
 
 void Player::AttackFirstInitialize() {
 	useNextAttack_ = false;
-	attackCollider_.SetRadius(3.0f);
+	attackCollider_.SetRadius(3.5f);
 	attackCollider_.SetDamage(35.0f);
 	attackCollider_.SetDamageCoolTime(0.1f);
 	attackCollider_.SetDamageType(1);
@@ -486,7 +486,7 @@ void Player::AttackSecondInitialize() {
 	attackTransform_.Initialize();
 	attackTransform_.SetParent(&transformColliderOffset);
 	transformModel.SetParent(&attackTransform_);
-	attackCollider_.SetRadius(3.0f);
+	attackCollider_.SetRadius(3.5f);
 	attackCollider_.SetDamage(30.0f);
 	attackCollider_.SetDamageCoolTime(0.05f);
 	attackCollider_.SetDamageType(2);
@@ -559,7 +559,7 @@ void Player::AttackThreeInitialize() {
 	attackTransform_.Initialize();
 	attackTransform_.SetParent(&transformColliderOffset);
 	transformModel.SetParent(&attackTransform_);
-	attackCollider_.SetRadius(4.0f);
+	attackCollider_.SetRadius(4.5f);
 	attackCollider_.SetDamage(25.0f);
 	attackCollider_.SetDamageCoolTime(0.02f);
 	attackCollider_.SetDamageType(3);
