@@ -321,20 +321,19 @@ void Spike::Initialize(const Transform& transform, uint32_t size, CollisionAttri
 
 	modelTransform_.Initialize();
 	modelTransform_.SetParent(&transform_);
-	modelTransform_.translate.y = -2.0f;
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("spike"));
 	switch (sizeIndex) {
 	case 1:
 		colliderSize_ = kBasicSpikeSize;
-		modelTransform_.scale = {2.0f,2.0f,2.0f};
+		modelTransform_.scale = {1.0f,1.0f,1.0f};
 		break;
 	case 2:
 		colliderSize_ = kBasicSpikeSize * 1.5f;
-		modelTransform_.scale = { 3.0f,3.0f,3.0f };
+		modelTransform_.scale = { 1.5f,1.5f,1.5f };
 		break;
 	case 3:
 		colliderSize_ = kBasicSpikeSize * 2.0f;
-		modelTransform_.scale = { 4.0f,4.0f,4.0f };
+		modelTransform_.scale = { 2.0f,2.0f,2.0f };
 		break;
 	}
 	collisionAttribute_ = CollisionManager::GetInstance()->GetCollisionAttribute(colliderName);

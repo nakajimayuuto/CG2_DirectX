@@ -1146,12 +1146,12 @@ void Boss::FangAttackUpdate() {
 
 void Boss::FangAttackFangCreate() {
 	float rotateY = transform_.rotate.y - Radian(90.0f);
-	float lenght = Vector3(targetTransform_->translate - transform_.translate).Length();
+	float lenght = Vector3(targetTransform_->GetWorldPosition() - transform_.GetWorldPosition()).Length();
 	Transform newTransform;
 	newTransform.Initialize();
 	Vector2 center = { halberdTransform_.GetWorldPosition().x, halberdTransform_.GetWorldPosition().z };
 
-	if (lenght <= (kFangAttackRadius / 3.0f) * 2.0f) {
+	if (lenght <= kFangAttackRadius) {
 		for (uint32_t j = 0; j < kFangAttackLoopCount; j++) {
 			uint32_t maxCount = 4 * j;
 			float rotateBlank = Random::GetInstance()->RandomFloat(0.1f, (360.0f / maxCount));

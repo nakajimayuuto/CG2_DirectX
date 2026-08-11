@@ -105,6 +105,8 @@ private:
 	float damageCoolTimer_;
 	float damageCoolTimeMax_;
 
+	float movingRadius_ = 73.5f;
+
 	static inline float kSpeed = 10.0f;
 	static inline float kSpeedDeceleration = 10.0f;
 	static inline float kFloatingAcceleration = 20.0f;

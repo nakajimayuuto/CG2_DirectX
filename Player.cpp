@@ -271,8 +271,8 @@ void Player::TestWallClamp() {
 	float distance = transform_.translate.Length();
 
 	float wallDirection = 0.0f;
-	if (distance > 75.0f) {
-		transform_.translate = transform_.translate.Normalize() * 75.0f;
+	if (distance > movingRadius_) {
+		transform_.translate = transform_.translate.Normalize() * movingRadius_;
 
 	}
 }
