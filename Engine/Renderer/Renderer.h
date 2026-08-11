@@ -201,8 +201,6 @@ private:
 
 	bool isVisible_;
 
-	const uint32_t kSubdivision_ = 16;
-
 	TextureInfo textureInfo_;
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_ = nullptr;

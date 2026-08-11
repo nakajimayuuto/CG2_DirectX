@@ -196,6 +196,9 @@
     <Filter Include="Managers\DifficultyManager">
       <UniqueIdentifier>{a46b1c6e-4237-48a7-a6db-26c516211610}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Renderer\TextRenderer">
+      <UniqueIdentifier>{3d2b152b-129d-4259-b37f-40e221e1ee01}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -371,6 +374,9 @@
     </ClCompile>
     <ClCompile Include="Managers\DifficultyManager.cpp">
       <Filter>Managers\DifficultyManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Renderer\TextRenderer.cpp">
+      <Filter>Engine\Renderer\TextRenderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -562,6 +568,9 @@
     </ClInclude>
     <ClInclude Include="Boss.h">
       <Filter>ソース ファイル\Boss</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Renderer\TextRenderer.h">
+      <Filter>Engine\Renderer\TextRenderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

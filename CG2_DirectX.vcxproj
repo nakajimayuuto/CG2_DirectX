@@ -17,6 +17,7 @@
   <ItemGroup>
     <ClCompile Include="Boss.cpp" />
     <ClCompile Include="BossWarp.cpp" />
+    <ClCompile Include="Engine\Renderer\TextRenderer.cpp" />
     <ClCompile Include="HPGauge.cpp" />
     <ClCompile Include="Managers\DifficultyManager.cpp" />
     <ClCompile Include="ProjectileManager.cpp" />
@@ -103,6 +104,7 @@
   <ItemGroup>
     <ClInclude Include="Boss.h" />
     <ClInclude Include="BossWarp.h" />
+    <ClInclude Include="Engine\Renderer\TextRenderer.h" />
     <ClInclude Include="externals\magic_enum\magic_enum.hpp" />
     <ClInclude Include="HPGauge.h" />
     <ClInclude Include="Managers\DifficultyManager.h" />
