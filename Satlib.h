@@ -27,6 +27,7 @@
 #include "./Managers/LightManager.h"
 #include "./Managers/ModelManager.h"
 #include "./Managers/SceneManager.h"
+#include "GamePhase.h"
 #include "./Managers/SoundManager.h"
 #include "./Managers/InputManager.h"	
 

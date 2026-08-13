@@ -78,6 +78,7 @@ void LoadDatas() {
 	ModelManager::GetInstance()->RegisterObj("wall", "Resource/wall", "wall.obj");
 	ModelManager::GetInstance()->RegisterObj("bullet_crystal", "Resource/Bullet", "bullet_crystal.obj");
 	ModelManager::GetInstance()->RegisterObj("spike", "Resource/Spike", "spike.obj");
+	ModelManager::GetInstance()->RegisterObj("tutorial_wall", "Resource/Wall", "tutorial_wall.obj");
 	TextureManager::GetInstance()->RegisterTexture("bullet_bounce", "Resource/Bullet/bullet_bounce.png");
 
 	TextureManager::GetInstance()->RegisterTexture("effect_plane", "Resource/effects/effect_plane.png");

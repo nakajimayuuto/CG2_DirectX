@@ -6,6 +6,10 @@ GameScene::~GameScene() {
 }
 
 void GameScene::Initialize() {
+	gGamePhase = GamePhase::kTutorial;
+	TutorialManager::GetInstance()->Initialize();
+
+
 	LightManager::GetInstance()->ClearLight();
 	Camera::GetInstance()->SetPosition({ 0.0f,2.0f,-30.0f });
 	GameCamera::GetInstance()->Initialize();
@@ -78,11 +82,19 @@ void GameScene::Update() {
 void GameScene::Draw() {
 	ground_->Draw();
 
-	//Renderer::GetInstance()->SetBlendMode(BlendMode::kNormalCullNone);
-	Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,0.5f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "wall", { 1.0f,1.0f,1.0f,1.0f },false);
-	//Renderer::GetInstance()->DrawBox(Transform::GetInitialValue({ 150.0f,50.0f,150.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
-	//Renderer::GetInstance()->DrawBox(Transform::GetInitialValue({ 150.0f,50.0f,150.0f }, { 0.0f,Radian(45.0f),0.0f }, { 0.0f,0.0f,0.0f }), "uvChecker", { 1.0f,1.0f,1.0f,1.0f });
-	//Renderer::GetInstance()->SetBlendMode(BlendMode::kNormal);
+	if (gGamePhase == GamePhase::kTutorial) {
+		Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,5.0f,-175.0f }), "tutorial_wall", { 1.0f,1.0f,1.0f,1.0f }, false);
+		
+		Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,0.5f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "wall", { 1.0f,1.0f,1.0f,0.3f }, false);
+	} else if (gGamePhase == GamePhase::kBossLastJarona || gGamePhase == GamePhase::kGameClearStage) {
+		Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,5.0f,-125.0f }), "tutorial_wall", { 1.0f,1.0f,1.0f,1.0f }, false);
+	} else if (gGamePhase == GamePhase::kBossLastJaronaAnim) {
+		Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,5.0f,-125.0f }), "tutorial_wall", { 1.0f,1.0f,1.0f,1.0f }, false);
+
+		Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,0.5f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "wall", { 1.0f,1.0f,1.0f,1.0f }, false);
+	}else{
+		Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,0.5f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "wall", { 1.0f,1.0f,1.0f,1.0f }, false);
+	}
 
 	ProjectileManager::GetInstance()->Draw();
 

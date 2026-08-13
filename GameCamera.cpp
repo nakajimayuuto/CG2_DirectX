@@ -100,14 +100,20 @@ void GameCamera::FollowedUpdate() {
 	//	//destinationAngleY_ = std::atan2(targetEnemy_->translate.x - transform_.translate.x, targetEnemy_->translate.z - transform_.translate.z);
 	}
 
-	destinationPlayerAngleY_ = LerpShortAngle( destinationPlayerAngleY_, destinationTargetAngleY_, targetEaseTimer_);
+	//destinationPlayerAngleY_ = LerpShortAngle( destinationPlayerAngleY_, destinationTargetAngleY_, targetEaseTimer_);
 	destinationAngleY_ = LerpShortAngle(destinationPlayerAngleY_, destinationDashAngleY_, dashEaseTimer_);
 
 	destinationPlayerAngleY_ = destinationAngleY_;
 	destinationTargetAngleY_ = destinationAngleY_;
 	destinationDashAngleY_ = destinationAngleY_;
+	
+	transform_.translate = interOffsetTarget_;
 
-	FollowedWallClamp();
+	if (gGamePhase == GamePhase::kTutorial || gGamePhase == GamePhase::kBossLastJarona || gGamePhase == GamePhase::kGameClearStage) {
+
+	} else {
+		FollowedWallClamp();
+	}
 
 	transform_.rotate.y = LerpShortAngle(transform_.rotate.y, destinationAngleY_, kCompletionRate);
 
@@ -215,8 +221,6 @@ void GameCamera::FollowedWallClamp() {
 		//}
 		//
 		//destinationAngleY_ = LerpShortAngle(destinationAngleY_, wallDirection, 0.1f);
-	} else {
-		transform_.translate = Lerp(interOffsetTarget_, wallOffsetPos, 0.25f);
 	}
 }
 

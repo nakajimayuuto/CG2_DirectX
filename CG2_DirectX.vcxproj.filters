@@ -378,6 +378,9 @@
     <ClCompile Include="Engine\Renderer\TextRenderer.cpp">
       <Filter>Engine\Renderer\TextRenderer</Filter>
     </ClCompile>
+    <ClCompile Include="GamePhase.cpp">
+      <Filter>Scene\GameScene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -571,6 +574,9 @@
     </ClInclude>
     <ClInclude Include="Engine\Renderer\TextRenderer.h">
       <Filter>Engine\Renderer\TextRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="GamePhase.h">
+      <Filter>Scene\GameScene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

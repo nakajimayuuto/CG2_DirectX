@@ -6,7 +6,7 @@
 /// <summary>
 /// 自キャラ
 /// </summary>
-class Player : public Collider{
+class Player : public Collider {
 public:
 	enum class Behavior {
 		kRoot,
@@ -53,7 +53,9 @@ public:
 
 	void OnCollision([[maybe_unused]] Collider* other)override;
 
-	void TestWallClamp();
+	void CircleWallClamp();
+
+	void TutorialWallClamp();
 private:
 	void SlashEffectCreate(Transform* targetTransform, uint32_t num);
 
@@ -82,7 +84,7 @@ private:
 
 	void BehaviorDashJumpAttackInitialize();
 	void BehaviorDashJumpAttackUpdate();
-	
+
 
 	void BehaviorFallInitialize();
 	void BehaviorFallUpdate();
@@ -93,7 +95,7 @@ private:
 	void UpdateFloatingGimmick();
 private:
 	std::string emitterName_ = "player_emitter";
-	
+
 	bool isAttack_;
 	bool isDash_;
 
@@ -141,6 +143,13 @@ private:
 	static inline float kBodyBlankY = 0.3f;
 
 	static inline float kThreshold = 0.2f;
+private:
+	bool tutorialUsableMove_;
+	bool tutorialUsableJump_;
+	bool tutorialUsableDash_;
+	bool tutorialUsableAttack_;
+private:
+	void CheckTutorialFlag();
 private:
 	void SetNextAttackPhase(float timeMax);
 

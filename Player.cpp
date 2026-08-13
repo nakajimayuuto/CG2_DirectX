@@ -182,6 +182,8 @@ void Player::Update() {
 	LightManager::GetInstance()->SetLightIsActive("player_light", true);
 
 
+
+
 	if (behaviorRequest_) {
 		behavior_ = behaviorRequest_.value();
 
@@ -260,13 +262,17 @@ void Player::Update() {
 
 	transform_.rotate.y = std::fmod(transform_.rotate.y, Radian(360.0f));
 
-	TestWallClamp();
+	if (gGamePhase == GamePhase::kTutorial || gGamePhase == GamePhase::kBossLastJarona || gGamePhase == GamePhase::kGameClearStage) {
+		TutorialWallClamp();
+	} else {
+		CircleWallClamp();
+	}
 
 	GameCamera::GetInstance()->SetTargetIsMove(isMoving_);
 	GameCamera::GetInstance()->SetTargetIsDash(isDash_);
 }
 
-void Player::TestWallClamp() {
+void Player::CircleWallClamp() {
 	/// ここから地獄
 	float distance = transform_.translate.Length();
 
@@ -277,7 +283,17 @@ void Player::TestWallClamp() {
 	}
 }
 
-void Player::SlashEffectCreate(Transform* targetTransform, uint32_t num){
+void Player::TutorialWallClamp(){
+	if (transform_.translate.x > 5.0f - colliderSize_.x) {
+		transform_.translate.x = 5.0f - colliderSize_.x;
+	}
+
+	if (transform_.translate.x < -5.0f + colliderSize_.x) {
+		transform_.translate.x = -5.0f + colliderSize_.x;
+	}
+}
+
+void Player::SlashEffectCreate(Transform* targetTransform, uint32_t num) {
 	Transform effectCreate;
 	for (uint32_t i = 0; i < 3; i++) {
 		effectCreate.Initialize();
@@ -405,6 +421,28 @@ void Player::BehaviorAttackFinished() {
 	transformModel.SetParent(&transformColliderOffset);
 }
 
+void Player::CheckTutorialFlag(){
+	TutorialManager* tutorialManager = TutorialManager::GetInstance();
+	if (gGamePhase == kTutorial) {
+		switch (tutorialManager->GetCurrentFlagName())
+		{
+		case TutorialManager::TutorialFlagName::kFirstJump:
+			tutorialUsableMove_ = false;
+			tutorialUsableJump_ = true;
+			tutorialUsableDash_ = false;
+			tutorialUsableAttack_ = false;
+			break;
+		default:
+			break;
+		}
+	} else {
+		tutorialUsableMove_ = true;
+		tutorialUsableJump_ = true;
+		tutorialUsableDash_ = true;
+		tutorialUsableAttack_ = true;
+	}
+}
+
 void Player::SetNextAttackPhase(float timeMax) {
 	attackTimeMax_ = timeMax;
 	attackPhase_++;
@@ -427,9 +465,9 @@ void Player::AttackFirstUpdate() {
 	Transform effectTransform;
 	effectTransform.Initialize();
 	effectTransform.SetParent(&transformModel);
-	effectTransform.scale = {1.0f,1.0f,1.0f};
+	effectTransform.scale = { 1.0f,1.0f,1.0f };
 	effectTransform.translate = { 0.0f,2.0f,0.0f };
-	SlashEffectCreate(&effectTransform,3);
+	SlashEffectCreate(&effectTransform, 3);
 	switch (attackPhase_) {
 	case 0:
 		attackTransform_.rotate.x = Easing(0.0f, kAttackFirstStartModelRotateX, attackTimer_, attackTimeMax_, EaseType::kEaseIn);
@@ -738,7 +776,7 @@ void Player::BehaviorDashAttackUpdate() {
 
 void Player::BehaviorDashJumpAttackInitialize() {
 	if (GetDownPress()) {
-		velocity_ *= -1.0f;	
+		velocity_ *= -1.0f;
 		transform_.rotate.y -= Radian(180.0f);
 	}
 
