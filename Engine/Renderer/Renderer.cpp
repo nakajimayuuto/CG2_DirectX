@@ -990,12 +990,17 @@ void Renderer::DrawSphereWireFrame(const Transform& transform, const Vector4& co
 }
 
 void Renderer::DrawBox(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color) {
+	DrawBox(transform,Transform::GetInitialValue(),textureInfo,color);
+}
+
+void Renderer::DrawBox(const Transform& transform, const Transform& uvTransform, const TextureInfo& textureInfo, const Vector4& color){
 	std::unique_ptr<ModelElement> newElement;
 	newElement = std::make_unique<ModelElement>();
 	ModelData data = ModelManager::GetInstance()->GetModelInfo("block_template").modelData[0];
 	newElement->vertexResource_ = data.vertexResource_;
 	newElement->vertexBufferView_ = data.vertexBufferView_;
 	CreateBox(newElement.get());
+	newElement->modelData_.textureSrvHandlesGPU = textureInfo.textureSrvHandlesGPU;
 
 	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
 
@@ -1003,7 +1008,8 @@ void Renderer::DrawBox(const Transform& transform, const TextureInfo& textureInf
 	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
 	newElement->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
 
-	newElement->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(newElement->uvTransform_);
+	newElement->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransform);
+	newElement->materialData_->color = color;
 
 	/*=============================================================
 	三角形の描画のコマンド.

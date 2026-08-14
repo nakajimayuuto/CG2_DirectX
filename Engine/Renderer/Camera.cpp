@@ -29,7 +29,7 @@ void Camera::Initialize() {
 	fovY_ = 0.45f;
 	viewportLeftTop_ = { 0.0f,0.0f,0.0f };
 	nearClip_ = 0.1f;
-	farClip_ = 200.0f;
+	farClip_ = 300.0f;
 	minDepth_ = 0.0f;
 	maxDepth_ = 1.0f;
 

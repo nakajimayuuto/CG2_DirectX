@@ -53,9 +53,13 @@ public:
 
 	void OnCollision([[maybe_unused]] Collider* other)override;
 
+	void SetStartPosition(const Vector3& position) { transform_.translate = position; transform_.translate.y = kTranslateBlankY; };
+
 	void CircleWallClamp();
 
 	void TutorialWallClamp();
+
+	void SetTutorialClamp(float positionZ) { tutorialClampPosZ_ = positionZ; };
 private:
 	void SlashEffectCreate(Transform* targetTransform, uint32_t num);
 
@@ -98,6 +102,7 @@ private:
 
 	bool isAttack_;
 	bool isDash_;
+	bool isJump_;
 
 	std::unique_ptr<HPGauge> hpGauge_;
 
@@ -144,12 +149,18 @@ private:
 
 	static inline float kThreshold = 0.2f;
 private:
+	void CheckTutorialFlag();
+
+	void CheckTutorialUpdate();
+private:
 	bool tutorialUsableMove_;
 	bool tutorialUsableJump_;
 	bool tutorialUsableDash_;
 	bool tutorialUsableAttack_;
-private:
-	void CheckTutorialFlag();
+
+	float tutorialTimer_;
+
+	float tutorialClampPosZ_;
 private:
 	void SetNextAttackPhase(float timeMax);
 

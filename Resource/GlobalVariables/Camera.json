@@ -1,6 +1,6 @@
-{
+﻿{
     "Camera": {
-        "FarClip": 100.0,
+        "FarClip": 200.0,
         "FovY": 0.44999998807907104,
         "MaxDepth": 1.0,
         "MinDepth": 0.0,

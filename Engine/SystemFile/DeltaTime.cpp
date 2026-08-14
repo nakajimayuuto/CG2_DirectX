@@ -12,6 +12,7 @@ void DeltaTime::Initialize() {
 	preFrameTime = clock();
 	stopTimer_ = 0.0f;
 	isHitStop_ = false;
+	gameTimeSpeed_ = 1.0f;
 }
 
 void DeltaTime::Update() {
@@ -33,7 +34,7 @@ void DeltaTime::Update() {
 		}
 		gameTime = 0.0f;
 	} else {
-		gameTime = deltaTime;
+		gameTime = deltaTime * gameTimeSpeed_;
 	}
 
 

@@ -24,6 +24,8 @@ private:
 
 	void FollowedWallClamp();
 
+	void TutorialWallClamp();
+
 	void FollowedDash();
 
 	void FollowedTarget();

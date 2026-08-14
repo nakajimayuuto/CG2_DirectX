@@ -199,6 +199,9 @@
     <Filter Include="Engine\Renderer\TextRenderer">
       <UniqueIdentifier>{3d2b152b-129d-4259-b37f-40e221e1ee01}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Fade">
+      <UniqueIdentifier>{42a1fabf-f152-4e62-98dc-369db65b5a9f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -380,6 +383,9 @@
     </ClCompile>
     <ClCompile Include="GamePhase.cpp">
       <Filter>Scene\GameScene</Filter>
+    </ClCompile>
+    <ClCompile Include="Fade.cpp">
+      <Filter>ソース ファイル\Fade</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -577,6 +583,9 @@
     </ClInclude>
     <ClInclude Include="GamePhase.h">
       <Filter>Scene\GameScene</Filter>
+    </ClInclude>
+    <ClInclude Include="Fade.h">
+      <Filter>ソース ファイル\Fade</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -41,6 +41,10 @@ public:
 
 	void SetOnCollisionFunc(void (*func)([[maybe_unused]] Collider* other));
 
+	void SetOnCollision(bool onCollision) { onCollision_ = onCollision; };
+
+	bool GetOnCollision() { return onCollision_; };
+
 	virtual Vector3 GetWorldPosition() { return transform_.GetAffineMatrix().GetMatrixToTranslate(); };
 	
 	ColliderType GetColliderType() { return colliderType_; };
@@ -104,5 +108,7 @@ protected:
 	ColliderDimensionType colliderDimensionType_ = ColliderDimensionType::k3D;
 
 	bool isColliderActive_ = true;
+
+	bool onCollision_ = false;
 };
 

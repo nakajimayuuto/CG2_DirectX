@@ -169,8 +169,10 @@ public:
 	void ChangeTexture(const TextureInfo& info) { textureInfo_.textureSrvHandlesGPU = info.textureSrvHandlesGPU; };
 
 	void SetColor(Vector4 color) { materialData_->color = color; };
+	void SetAlpha(float alpha) { materialData_->color = {materialData_->color.x,materialData_->color.y,materialData_->color.z,alpha}; };
 
 	Vector4 GetColor() { return materialData_->color; };
+	float GetAlpha() { return materialData_->color.w; };
 
 	void SetUvTransform(const Transform& transform) { uvTransform_ = transform; }
 	Transform GetUvTransform() { return uvTransform_; };
@@ -277,6 +279,7 @@ public:
 	/// <param name="textureInfo">テクスチャインフォ</param>
 	/// <param name="color">色</param>
 	void DrawBox(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color);
+	void DrawBox(const Transform& transform, const Transform& uvTransform, const TextureInfo& textureInfo, const Vector4& color);
 
 	/// <summary>
 	/// ボックスの描画.

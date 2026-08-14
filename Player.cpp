@@ -58,6 +58,8 @@ void Player::Initialize() {
 	LightManager::GetInstance()->GetLightData("player_light")->color = { 0.5f,0.5f,1.0f,1.0f };
 	LightManager::GetInstance()->GetLightData("player_light")->radius = 5.0f;
 	LightManager::GetInstance()->GetLightData("player_light")->intensity = 1.0f;
+
+	tutorialTimer_ = 0.0f;
 }
 
 void Player::InitializeFloatingGimmick() {
@@ -176,13 +178,13 @@ void Player::Update() {
 #ifdef _DEBUG
 	ImGui::Begin("player");
 	ImGui::DragFloat("HP", &currentHP_, 1.0f, 0.0f, maxHP_);
+	ImGui::Text("pos %f,%f,%f", transform_.translate.x, transform_.translate.y, transform_.translate.z);
 	ImGui::End();
 #endif // _DEBUG
 	LightManager::GetInstance()->SetLightPos("player_light", transform_.GetWorldPosition());
 	LightManager::GetInstance()->SetLightIsActive("player_light", true);
 
-
-
+	CheckTutorialFlag();
 
 	if (behaviorRequest_) {
 		behavior_ = behaviorRequest_.value();
@@ -215,6 +217,7 @@ void Player::Update() {
 	}
 
 	isAttack_ = false;
+	isDash_ = false;
 	isDash_ = false;
 
 	colliderDimensionType_ = ColliderDimensionType::k3D;
@@ -251,6 +254,8 @@ void Player::Update() {
 		break;
 	}
 
+	CheckTutorialUpdate();
+
 	colliderColor_ = { 0.5f,0.5f,1.0f,1.0f };
 
 	if (damageCoolTimer_ > 0.0f) {
@@ -283,13 +288,17 @@ void Player::CircleWallClamp() {
 	}
 }
 
-void Player::TutorialWallClamp(){
+void Player::TutorialWallClamp() {
 	if (transform_.translate.x > 5.0f - colliderSize_.x) {
 		transform_.translate.x = 5.0f - colliderSize_.x;
 	}
 
 	if (transform_.translate.x < -5.0f + colliderSize_.x) {
 		transform_.translate.x = -5.0f + colliderSize_.x;
+	}
+
+	if (transform_.translate.z > tutorialClampPosZ_ - colliderSize_.z) {
+		transform_.translate.z = tutorialClampPosZ_ - colliderSize_.z;
 	}
 }
 
@@ -318,47 +327,51 @@ void Player::BehaviorRootUpdate() {
 	velocity_ = { 0.0f,0.0f,0.0f };
 	InputManager* input = InputManager::GetInstance();
 	if (input->IsGamePadConnect()) {
-		velocity_ = { input->GetLeftStickDirection().x,0.0f,input->GetLeftStickDirection().y };
-
-		velocity_ = velocity_.Normalize() * kSpeed;
-		if (input->TriggerPadButton(PadButtons::INPUT_R1)) {
-			behaviorRequest_ = Behavior::kDash;
+		if (tutorialUsableMove_) {
+			velocity_ = { input->GetLeftStickDirection().x,0.0f,input->GetLeftStickDirection().y };
+			velocity_ = velocity_.Normalize() * kSpeed;
 		}
 
-		if (GetJumpButtonTrigger()) {
-			behaviorRequest_ = Behavior::kJump;
+		if (tutorialUsableJump_) {
+			if (GetJumpButtonTrigger()) {
+				behaviorRequest_ = Behavior::kJump;
+			}
 		}
 
-		if (GetAttackButtonTrigger()) {
-			behaviorRequest_ = Behavior::kAttack;
+		if (tutorialUsableAttack_) {
+			if (GetAttackButtonTrigger()) {
+				behaviorRequest_ = Behavior::kAttack;
+			}
 		}
 	} else {
-		if (input->PressKey(DIK_W)) {
-			velocity_.z += 1.0f;
+		if (tutorialUsableMove_) {
+			if (input->PressKey(DIK_W)) {
+				velocity_.z += 1.0f;
+			}
+
+			if (input->PressKey(DIK_S)) {
+				velocity_.z -= 1.0f;
+			}
+
+			if (input->PressKey(DIK_A)) {
+				velocity_.x -= 1.0f;
+			}
+
+			if (input->PressKey(DIK_D)) {
+				velocity_.x += 1.0f;
+			}
 		}
 
-		if (input->PressKey(DIK_S)) {
-			velocity_.z -= 1.0f;
+		if (tutorialUsableJump_) {
+			if (GetJumpButtonTrigger()) {
+				behaviorRequest_ = Behavior::kJump;
+			}
 		}
 
-		if (input->PressKey(DIK_A)) {
-			velocity_.x -= 1.0f;
-		}
-
-		if (input->PressKey(DIK_D)) {
-			velocity_.x += 1.0f;
-		}
-
-		if (GetJumpButtonTrigger()) {
-			behaviorRequest_ = Behavior::kJump;
-		}
-
-		if (input->TriggerKey(DIK_LCONTROL)) {
-			behaviorRequest_ = Behavior::kDash;
-		}
-
-		if (GetAttackButtonTrigger()) {
-			behaviorRequest_ = Behavior::kAttack;
+		if (tutorialUsableAttack_) {
+			if (GetAttackButtonTrigger()) {
+				behaviorRequest_ = Behavior::kAttack;
+			}
 		}
 
 		velocity_ = velocity_.Normalize() * kSpeed;
@@ -421,16 +434,64 @@ void Player::BehaviorAttackFinished() {
 	transformModel.SetParent(&transformColliderOffset);
 }
 
-void Player::CheckTutorialFlag(){
+void Player::CheckTutorialFlag() {
 	TutorialManager* tutorialManager = TutorialManager::GetInstance();
 	if (gGamePhase == kTutorial) {
-		switch (tutorialManager->GetCurrentFlagName())
-		{
+		switch (tutorialManager->GetCurrentFlagName()) {
 		case TutorialManager::TutorialFlagName::kFirstJump:
 			tutorialUsableMove_ = false;
 			tutorialUsableJump_ = true;
 			tutorialUsableDash_ = false;
 			tutorialUsableAttack_ = false;
+			break;
+		case TutorialManager::TutorialFlagName::kMoveTest:
+			tutorialUsableMove_ = true;
+			tutorialUsableJump_ = true;
+			tutorialUsableDash_ = false;
+			tutorialUsableAttack_ = false;
+			break;
+		case TutorialManager::TutorialFlagName::kAttackTest:
+			tutorialUsableMove_ = true;
+			tutorialUsableJump_ = true;
+			tutorialUsableDash_ = false;
+			tutorialUsableAttack_ = true;
+			break;
+		case TutorialManager::TutorialFlagName::kDashToJump:
+			tutorialUsableMove_ = false;
+			tutorialUsableJump_ = true;
+			tutorialUsableDash_ = false;
+			tutorialUsableAttack_ = false;
+			break;
+		case TutorialManager::TutorialFlagName::kDashToAttack:
+			tutorialUsableMove_ = false;
+			tutorialUsableJump_ = false;
+			tutorialUsableDash_ = true;
+			tutorialUsableAttack_ = false;
+			break;
+		case TutorialManager::TutorialFlagName::kDashJumpTest:
+			if (transform_.translate.z >= -275.0f) {
+				tutorialUsableMove_ = false;
+				tutorialUsableJump_ = true;
+				tutorialUsableDash_ = false;
+				tutorialUsableAttack_ = false;
+
+				if (behavior_ == Behavior::kDashJumpAttack || behavior_ == Behavior::kFall) {
+					DeltaTime::GetInstance()->SetGameTimeSpeed(1.0f);
+				} else {
+					DeltaTime::GetInstance()->SetGameTimeSpeed(0.0f);
+				}
+			} else {
+				tutorialUsableMove_ = true;
+				tutorialUsableJump_ = false;
+				tutorialUsableDash_ = false;
+				tutorialUsableAttack_ = false;
+			}
+			break;
+		case TutorialManager::TutorialFlagName::kFinaleTest:
+			tutorialUsableMove_ = true;
+			tutorialUsableJump_ = true;
+			tutorialUsableDash_ = true;
+			tutorialUsableAttack_ = true;
 			break;
 		default:
 			break;
@@ -440,6 +501,54 @@ void Player::CheckTutorialFlag(){
 		tutorialUsableJump_ = true;
 		tutorialUsableDash_ = true;
 		tutorialUsableAttack_ = true;
+	}
+}
+
+void Player::CheckTutorialUpdate() {
+	TutorialManager* tutorialManager = TutorialManager::GetInstance();
+	if (!gGamePhase == kTutorial) {
+		return;
+	}
+
+	switch (tutorialManager->GetCurrentFlagName())
+	{
+	case TutorialManager::TutorialFlagName::kFirstJump:
+		if (isJump_) {
+			tutorialManager->NextTutorial();
+		}
+		break;
+	case TutorialManager::TutorialFlagName::kMoveTest:
+		if (isMoving_) {
+			tutorialTimer_ += DeltaTime::GetInstance()->GetGameTime();
+
+			if (tutorialTimer_ > 3.0f) {
+				tutorialManager->NextTutorial();
+			}
+		}
+		break;
+	case TutorialManager::TutorialFlagName::kAttackTest:
+		break;
+	case TutorialManager::TutorialFlagName::kDashToJump:
+		if (transform_.translate.y >= 2.3f) {
+			DeltaTime::GetInstance()->SetGameTimeSpeed(0.0f);
+			tutorialManager->NextTutorial();
+		}
+		break;
+	case TutorialManager::TutorialFlagName::kDashToAttack:
+		if (isDash_) {
+			DeltaTime::GetInstance()->SetGameTimeSpeed(1.0f);
+			tutorialManager->NextTutorial();
+		}
+		break;
+	case TutorialManager::TutorialFlagName::kDashJumpTest:
+		if (behavior_ == Behavior::kRoot) {
+			tutorialManager->NextTutorial();
+		}
+		break;
+	case TutorialManager::TutorialFlagName::kFinaleTest:
+		break;
+	default:
+		break;
 	}
 }
 
@@ -655,30 +764,30 @@ void Player::BehaviorDashUpdate() {
 	isMoving_ = true;
 	InputManager* input = InputManager::GetInstance();
 	if (input->IsGamePadConnect()) {
-		if (input->TriggerPadButton(PadButtons::INPUT_R1)) {
-			behaviorRequest_ = Behavior::kRoot;
+		if (tutorialUsableJump_) {
+			if (GetJumpButtonTrigger()) {
+				behaviorRequest_ = Behavior::kDashJumpAttack;
+			}
 		}
 
-		if (GetJumpButtonTrigger()) {
-			behaviorRequest_ = Behavior::kDashJumpAttack;
+		if (tutorialUsableMove_) {
+			transform_.rotate.y += input->GetLeftStickDirection().x * Radian(3.0f);
 		}
-
-		transform_.rotate.y += input->GetLeftStickDirection().x * Radian(3.0f);
 	} else {
-		if (input->TriggerKey(DIK_LCONTROL)) {
-			behaviorRequest_ = Behavior::kRoot;
+		if (tutorialUsableMove_) {
+			if (input->PressKey(DIK_A)) {
+				transform_.rotate.y -= Radian(3.0f);
+			}
+
+			if (input->PressKey(DIK_D)) {
+				transform_.rotate.y += Radian(3.0f);
+			}
 		}
 
-		if (input->PressKey(DIK_A)) {
-			transform_.rotate.y -= Radian(3.0f);
-		}
-
-		if (input->PressKey(DIK_D)) {
-			transform_.rotate.y += Radian(3.0f);
-		}
-
-		if (GetJumpButtonTrigger()) {
-			behaviorRequest_ = Behavior::kDashJumpAttack;
+		if (tutorialUsableJump_) {
+			if (GetJumpButtonTrigger()) {
+				behaviorRequest_ = Behavior::kDashJumpAttack;
+			}
 		}
 	}
 
@@ -700,6 +809,7 @@ void Player::BehaviorJumpInitialize() {
 }
 
 void Player::BehaviorJumpUpdate() {
+	isJump_ = true;
 
 	FloatingAccelerationChange();
 
@@ -713,8 +823,10 @@ void Player::BehaviorJumpUpdate() {
 		behaviorRequest_ = Behavior::kRoot;
 	}
 
-	if (GetAttackButtonTrigger()) {
-		behaviorRequest_ = Behavior::kDashAttack;
+	if (tutorialUsableDash_) {
+		if (GetAttackButtonTrigger()) {
+			behaviorRequest_ = Behavior::kDashAttack;
+		}
 	}
 }
 
@@ -818,8 +930,10 @@ void Player::BehaviorDashJumpAttackUpdate() {
 		transformModel.rotate.x = Easing(0.0f, Radian(90.0f), velocity_.y, 5.0f, EaseType::kConstant);
 		transformModel.rotate.z = 0.0f;
 		if (!useNextAttack_) {
-			if (GetAttackButtonTrigger()) {
-				useNextAttack_ = true;
+			if (tutorialUsableDash_) {
+				if (GetAttackButtonTrigger()) {
+					useNextAttack_ = true;
+				}
 			}
 		}
 	} else {

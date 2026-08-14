@@ -56,7 +56,6 @@ void GameCamera::FollowedUpdate() {
 	FollowedTarget();
 
 	if (isDash_) {
-		//destinationAngleY_ = LerpShortAngle(destinationPlayerAngleY_, destinationDashAngleY_, 0.05f);
 		Camera::GetInstance()->SetFovY(Lerp(Camera::GetInstance()->GetFovY(), kDashFovY, 0.05f));
 		if (dashEaseTimer_ >= 1.0f) {
 			dashEaseTimer_ = 1.0f;
@@ -100,7 +99,10 @@ void GameCamera::FollowedUpdate() {
 	//	//destinationAngleY_ = std::atan2(targetEnemy_->translate.x - transform_.translate.x, targetEnemy_->translate.z - transform_.translate.z);
 	}
 
-	//destinationPlayerAngleY_ = LerpShortAngle( destinationPlayerAngleY_, destinationTargetAngleY_, targetEaseTimer_);
+	if (gGamePhase == GamePhase::kTutorial) {
+		destinationPlayerAngleY_ = LerpShortAngle(destinationPlayerAngleY_, destinationTargetAngleY_, targetEaseTimer_);
+	}
+
 	destinationAngleY_ = LerpShortAngle(destinationPlayerAngleY_, destinationDashAngleY_, dashEaseTimer_);
 
 	destinationPlayerAngleY_ = destinationAngleY_;
@@ -110,7 +112,7 @@ void GameCamera::FollowedUpdate() {
 	transform_.translate = interOffsetTarget_;
 
 	if (gGamePhase == GamePhase::kTutorial || gGamePhase == GamePhase::kBossLastJarona || gGamePhase == GamePhase::kGameClearStage) {
-
+		TutorialWallClamp();
 	} else {
 		FollowedWallClamp();
 	}
@@ -198,6 +200,13 @@ void GameCamera::FollowedControlAction() {
 	}
 
 	interOffsetTarget_ = interTarget_ + offset;
+}
+
+void GameCamera::TutorialWallClamp() {
+	transform_.translate.x = 0.0f;
+	transform_.rotate.y = 0.0f;
+	destinationAngleY_ = 0.0f;
+
 }
 
 void GameCamera::FollowedWallClamp() {

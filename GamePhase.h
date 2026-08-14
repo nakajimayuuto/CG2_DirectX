@@ -11,7 +11,7 @@ enum GamePhase {
 	kGameClearStage,
 };
 
-static inline GamePhase gGamePhase;
+inline GamePhase gGamePhase;
 
 
 class TutorialManager {
