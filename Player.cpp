@@ -493,6 +493,12 @@ void Player::CheckTutorialFlag() {
 			tutorialUsableDash_ = true;
 			tutorialUsableAttack_ = true;
 			break;
+		case TutorialManager::TutorialFlagName::kFinaleAnim:
+			tutorialUsableMove_ = false;
+			tutorialUsableJump_ = false;
+			tutorialUsableDash_ = false;
+			tutorialUsableAttack_ = false;
+			break;
 		default:
 			break;
 		}

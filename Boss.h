@@ -29,7 +29,7 @@ public:
 
 	void OnCollision([[maybe_unused]] Collider* other)override;
 private:
-	void SlashEffectCreate(Transform* targetTransform,uint32_t num);
+	void SlashEffectCreate(Transform* targetTransform, uint32_t num);
 
 	Vector3 GetMoveAnchorPointFindAll();
 	Vector3 GetMoveAnchorPointFind(float radius);
@@ -37,6 +37,8 @@ private:
 	void DistanceCheckUpdate();
 
 	void RootUpdate();
+
+	void EffectUpdate();
 private:
 	enum class Attacks {
 		kWarp,
@@ -60,7 +62,7 @@ private:
 		kFar,
 	};
 
-	struct AttackData{
+	struct AttackData {
 		Attacks attackName = Attacks::kBulletShot;
 		float weight = 0.0f;
 		uint32_t continuousCount = 0;
@@ -96,7 +98,7 @@ private:
 
 	std::unique_ptr<Emitter> emitter_;
 private:
-	void SetAttackData(Attacks attackName,float weight,DistanceName name);
+	void SetAttackData(Attacks attackName, float weight, DistanceName name);
 
 	void AttackSelect(std::vector<AttackData> attackDatas);
 
@@ -160,10 +162,10 @@ private:
 	static inline float kDestinationCompletionRate = 0.25f;
 	static inline float kBasicPositionY = 2.5f;
 
-	Vector3 basicHalberdPos = {-1.0f,0.0f,0.0f};
+	Vector3 basicHalberdPos = { -1.0f,0.0f,0.0f };
 	Vector3 basicHalberdRotate = { -Radian(90.0f) ,0.0f,0.0f };
 
-	static inline Vector3 kBasicHalberdFarPos = {-1.0f,0.0f,0.0f};
+	static inline Vector3 kBasicHalberdFarPos = { -1.0f,0.0f,0.0f };
 	static inline Vector3 kBasicHalberdFarRotate = { -Radian(90.0f) ,0.0f,0.0f };
 
 	static inline float kMiddleRadius = 40.0f;
@@ -177,7 +179,7 @@ private:
 
 	static inline Vector3 kBasicColliderSize = { 1.0f,1.6f,1.0f };
 	static inline Vector3 kBasicHalberdColliderSize = { 0.6f,2.8f,0.8f };
-	static inline float kBasicColliderRadius = 0.5f; 
+	static inline float kBasicColliderRadius = 0.5f;
 	std::unique_ptr<Collider> attackTempCollider_;
 	Transform attackTempTransform_;
 
@@ -269,7 +271,7 @@ private:
 	static inline float kWaveAttackTimerMax = 0.3f;
 	static inline float kWaveAttackGapTimerMax = 0.7f;
 	static inline float kWaveFinishedGapTimerMax = 0.3f;
-	
+
 	static inline float kWaveAnimPositionY = 8.0f;
 	static inline Vector3 kWaveHalberdPos = { -0.5f,3.5f,0.0f };
 	static inline Vector3 kWaveHalberdStartRotate = { 0.0f,0.0f,0.0f };
@@ -277,7 +279,7 @@ private:
 	static inline float kWaveAttackPositionY = 2.5f;
 	static inline Vector3 kWaveHalberdAttackPos = { 0.0f,1.0f,-1.0f };
 	static inline float kWaveAttackRotateX = -Radian(150.0f);
-	
+
 	// 目の前でハルバード回転
 	// 
 	// 上に飛ばす
@@ -369,7 +371,7 @@ private:
 	// NearAttack.
 	static inline float kNearAttackGapTimerMax = 0.7f;
 	static inline float kNearAttackFinishedGapTimerMax = 0.2f;
-	
+
 	static inline float kNearFirstStartGapTimerMax = 0.2f;
 	static inline float kNearFirstStayTimerMax = 0.5f;
 	static inline float kNearFirstAttackTimerMax = 0.25f;
@@ -404,13 +406,13 @@ private:
 	static inline float kNearFirstModelAttackRotateY = -Radian(30.0f);
 
 	static inline Vector3 kNearSecondHalberdStartPos = { 3.0f,-0.5f,-2.0f };
-	static inline Vector3 kNearSecondHalberdStartRotate = {0.0f,0.0f,Radian(270.0f)};
+	static inline Vector3 kNearSecondHalberdStartRotate = { 0.0f,0.0f,Radian(270.0f) };
 	static inline Vector3 kNearSecondHalberdAttackPos = { -3.0f,-0.5f,-2.0f };
 	static inline Vector3 kNearSecondHalberdAttackRotate = { -Radian(180.0f), 0.0f,Radian(270.0f) };
 	static inline float kNearSecondModelAttackRotateY = Radian(30.0f);
 
 	static inline Vector3 kNearThirdHalberdStartPos = { 0.0f,4.5f,-1.0f };
-	static inline Vector3 kNearThirdHalberdStartRotate = {0.0f,0.0f,0.0f};
+	static inline Vector3 kNearThirdHalberdStartRotate = { 0.0f,0.0f,0.0f };
 	static inline float kNearThirdModelStartRotateX = -Radian(360.0f);
 	static inline float kNearThirdStartPositionY = 7.0f;
 	static inline float kNearThirdModelStartRotateY = 0.0f;
@@ -420,7 +422,35 @@ private:
 	static inline float kNearThirdAttackRadiusNum = 30;
 	static inline float kNearThirdAttackRadius = 20.0f;
 	static inline uint32_t kNearThirdAttackRadiusLoopCount = 4;
+public:
+	void StartAnimInitialize();
+private:
+	void AnimInitialize();
 
+	void NextAnimPhase(float timerMax);
 
+	void StartAnimationUpdate();
+private:
+	// 全体で使う.
+	uint32_t animPhase_ = 0;
+	float animTimer_;
+	float animTimerMax_;
+	Transform preCameraTransform_;
+
+	// StartAnim
+	static inline float kAnimStartBlank = 1.0f; // 始まりの余白.
+	static inline float kAnimStartCameraMove = 1.5f; // 敵にカメラが近づく.
+	static inline float kAnimStartCameraMoveBlank = 0.5f; // カメラが近づいた後の余白.
+	static inline float kAnimStartHalberdSpawn = 0.7f; // ハルバードが現れる.
+	static inline float kAnimStartHalberdSpawnBlank = 0.2f; // ハルバードが現れる.
+	static inline float kAnimStartHalbardSetPos = 0.7f; // ハルバードが敵の手元に移動.
+	static inline float kAnimStartHalbardSetPosBlank = 0.3f; // 手元に移動した後の余白.
+	static inline float kAnimStartEyeGrown = 0.5f; // 敵の上田光.
+
+	static inline Vector3 kAnimStartHalberdRotate = {0.0f,Radian(-90.0f),0.0f};
+	static inline Vector3 kAnimStartHalberdPos = { 0.0f,-10.0f ,0.0f };
+	static inline Vector3 kAnimStartCameraMovePos = { 0.0f,3.0f ,-10.0f };
+	static inline Vector3 kAnimStartHalberdSpawnPos = { 0.0f,7.0f ,2.0f };
+	static inline Vector3 kAnimStartHalberdSpawnCameraPos = { 0.0f,11.5f ,-15.0f };
 };
 

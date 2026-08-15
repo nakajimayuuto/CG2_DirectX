@@ -9,6 +9,12 @@ public:
 
 	void Update();
 
+	void SetTransform(const Transform& transform) { transform_ = transform; };
+	Transform GetTransform() { return transform_; };
+
+	void SetPosition(const Vector3& position) { transform_.translate = position; }
+	void SetRotate(const Vector3& rotate) { transform_.rotate = rotate; }
+
 	void SetTarget(const Transform* target) { target_ = target; Reset(); };
 
 	void SetEnemyTransform(const Transform* target) { targetEnemy_ = target; };

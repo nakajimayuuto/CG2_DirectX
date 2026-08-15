@@ -53,7 +53,7 @@ void Boss::Initialize() {
 	}
 
 	currentAttack_ = Attacks::kWarp;
-
+	transform_.Initialize();
 	transform_.translate.y = kBasicPositionY;
 	modelTransform_.Initialize();
 	modelTransform_.SetParent(&transform_);
@@ -162,6 +162,18 @@ void Boss::Update() {
 
 	deltaTime_ = DeltaTime::GetInstance()->GetGameTime();
 
+	if (gGamePhase == GamePhase::kGameStartAnim) {
+		StartAnimationUpdate();
+
+		EffectUpdate();
+		return;
+	} else if(gGamePhase == GamePhase::kBossPhaseChangeAnim){
+		EffectUpdate();
+	} else if(gGamePhase == GamePhase::kBossLastJaronaAnim){
+		EffectUpdate();
+
+	}
+
 	DistanceCheckUpdate();
 
 	HalberdStanceUpdate();
@@ -214,7 +226,6 @@ void Boss::Update() {
 	ImGui::End();
 #endif // _DEBUG
 
-	//DamageCoolTimeUpdate();
 	if (damageCoolTimer_ > 0.0f) {
 		damageCoolTimer_ -= deltaTime_;
 		if (damageCoolTimer_ <= 0.0f) {
@@ -228,15 +239,18 @@ void Boss::Update() {
 
 	AttackUpdate();
 
-	emitter_->SetTransform(Transform::GetInitialValue((kBasicColliderSize * 3.0f), { 0.0f,0.0f,0.0f }, transform_.GetWorldPosition()));
-	emitter_->Update();
-
 	halberdTransform_.scale = Lerp(halberdTransform_.scale, destinationHalberdTransform_.scale, kDestinationCompletionRate);
 	halberdTransform_.rotate = LerpShortAngle(halberdTransform_.rotate, destinationHalberdTransform_.rotate, kDestinationCompletionRate);
 	halberdTransform_.translate = Lerp(halberdTransform_.translate, destinationHalberdTransform_.translate, kDestinationCompletionRate);
 
 	CollisionManager::GetInstance()->AddColliderList(this);
+	EffectUpdate();
+}
 
+void Boss::EffectUpdate() {
+
+	emitter_->SetTransform(Transform::GetInitialValue((kBasicColliderSize * 3.0f), { 0.0f,0.0f,0.0f }, transform_.GetWorldPosition()));
+	emitter_->Update();
 	LightManager::GetInstance()->SetLightPos("boss_light", transform_.GetWorldPosition());
 }
 
@@ -1350,4 +1364,71 @@ void Boss::NearAttackUpdate() {
 	}
 	attackTempCollider_->DrawCollider();
 
+}
+
+void Boss::StartAnimInitialize(){
+	GameCamera::GetInstance()->SetPosition({0.0f,1.0f,-70.0f});
+	AnimInitialize();
+	halberdTransform_.rotate = kAnimStartHalberdRotate;
+	halberdTransform_.translate = kAnimStartHalberdPos;
+	transform_.rotate.y = Radian(180.0f);
+}
+
+void Boss::AnimInitialize(){
+	animPhase_ = 0;
+	animTimer_ = 0.0f;
+	animTimerMax_ = 1.0f;
+}
+
+void Boss::NextAnimPhase(float timerMax) {
+	animTimer_ = 0;
+	animTimerMax_ = timerMax;
+	animPhase_++;
+}
+
+void Boss::StartAnimationUpdate(){
+	GameCamera* camera = GameCamera::GetInstance();
+
+	animTimer_ += deltaTime_;
+	switch (animPhase_){
+	case 0:
+
+		if (animTimer_ >= animTimerMax_) {
+			NextAnimPhase(kAnimStartCameraMove);
+			preCameraTransform_ = camera->GetTransform();
+		}
+		break;
+	case 1:
+		camera->SetPosition(Easing(preCameraTransform_.translate, kAnimStartCameraMovePos, animTimer_, animTimerMax_, EaseType::kEaseInOut));
+		if (animTimer_ >= animTimerMax_) {
+			NextAnimPhase(kAnimStartCameraMoveBlank);
+		}
+		break;
+	case 2:
+		if (animTimer_ >= animTimerMax_) {
+			NextAnimPhase(kAnimStartHalberdSpawn);
+		}
+		break;
+	case 3:
+		halberdTransform_.translate = Easing(kAnimStartHalberdPos,kAnimStartHalberdSpawnPos, animTimer_, animTimerMax_, EaseType::kEaseInOut);
+		camera->SetPosition(Easing(kAnimStartCameraMovePos,kAnimStartHalberdSpawnCameraPos, animTimer_, animTimerMax_, EaseType::kEaseInOut));
+		if (animTimer_ >= animTimerMax_) {
+			NextAnimPhase(kAnimStartHalberdSpawnBlank);
+		}
+		break;
+	case 4:
+		if (animTimer_ >= animTimerMax_) {
+			NextAnimPhase(kAnimStartHalbardSetPos);
+		}
+		break;
+	case 5:
+		halberdTransform_.translate = Easing(kAnimStartHalberdPos,kAnimStartHalberdSpawnPos, animTimer_, animTimerMax_, EaseType::kEaseInOut);
+		camera->SetPosition(Easing(kAnimStartCameraMovePos,kAnimStartHalberdSpawnCameraPos, animTimer_, animTimerMax_, EaseType::kEaseInOut));
+		if (animTimer_ >= animTimerMax_) {
+			NextAnimPhase(kAnimStartHalbardSetPosBlank);
+		}
+		break;
+	default:
+		break;
+	}
 }

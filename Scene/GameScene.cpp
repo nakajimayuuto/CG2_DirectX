@@ -50,8 +50,12 @@ void GameScene::Initialize() {
 
 	Player::RegisterGlobalVariables();
 
+	fade_ = std::make_unique<Fade>();
 	fade_->Initialize();
-	fade_->Start(Fade::Status::FadeOut, 1.0f);
+	fade_->SetColor({ 0.0f,0.0f,0.0f });
+	fade_->Start(Fade::Status::FadeIn, 1.0f);
+	useSkipStart_ = false;
+	useSkipEnd_ = false;
 	//gGamePhase = GamePhase::kBossLastJarona;
 }
 
@@ -61,6 +65,12 @@ void GameScene::Update() {
 	Player::ApplyGlobalVariables();
 
 	skydome_->Update();
+#ifdef _DEBUG
+	ImGui::Begin("GamePhase");
+	ImGui::Text(magic_enum::enum_name(gGamePhase).data());
+	ImGui::End();
+#endif // _DEBUG
+
 
 	if (InputManager::GetInstance()->TriggerKey(DIK_R)) {
 		SceneManager::GetInstance()->ReloadScene();
@@ -74,6 +84,10 @@ void GameScene::Update() {
 		Renderer::GetInstance()->ChangeUseDebugLine();
 	}
 
+	if (InputManager::GetInstance()->TriggerKey(DIK_F2)) {
+		gGamePhase = GamePhase::kTutorial;
+	}
+
 	player_->Update();
 
 	boss_->SetTargetIsAttact(player_->GetIsAttack());
@@ -84,14 +98,16 @@ void GameScene::Update() {
 
 	GameCamera::GetInstance()->Update();
 
-	Camera::GetInstance()->Update();
 
 	worldFrameEmitter_->Update();
 	worldBigFrameEmitter_->Update();
 
+	AnimSkipUpdate();
+
 	fade_->Update();
 	TutorialUpdate();
 
+	Camera::GetInstance()->Update();
 	CheckAllCollisions();
 }
 
@@ -120,11 +136,97 @@ void GameScene::Draw() {
 
 	TutorialDraw();
 
+	ParticleManager::GetInstance()->Draw();
+
 	fade_->Draw();
 }
 
 void GameScene::CheckAllCollisions() {
 	CollisionManager::GetInstance()->CheckAllCollision();
+}
+
+void GameScene::AnimSkipUpdate() {
+	if (gGamePhase != GamePhase::kTutorial && 
+		gGamePhase != GamePhase::kGameStartAnim &&
+		gGamePhase != GamePhase::kBossPhaseChangeAnim &&
+		gGamePhase != GamePhase::kBossLastJaronaAnim) {
+		return;
+	} 
+
+	if (gGamePhase == GamePhase::kTutorial) {
+		if (InputManager::GetInstance()->IsGamePadConnect()) {
+			if (InputManager::GetInstance()->TriggerPadButton(INPUT_START)) {
+				fade_->SetColor({0.0f,0.0f,0.0f});
+				fade_->Start(Fade::Status::FadeOut, 1.0f);
+				useSkipStart_ = true;
+			}
+		} else {
+			if (InputManager::GetInstance()->TriggerKey(DIK_P)) {
+				fade_->SetColor({ 0.0f,0.0f,0.0f });
+				fade_->Start(Fade::Status::FadeOut, 1.0f);
+				useSkipStart_ = true;
+			}
+		}
+
+		AnimSkipFadeUpdate();
+		return;
+	} 
+
+	if (InputManager::GetInstance()->IsGamePadConnect()) {
+		if (InputManager::GetInstance()->TriggerPadButton(INPUT_A)) {
+			fade_->SetColor({ 0.0f,0.0f,0.0f });
+			fade_->Start(Fade::Status::FadeOut, 1.0f);
+			useSkipStart_ = true;
+		}
+	} else {
+		if (InputManager::GetInstance()->TriggerKey(DIK_SPACE)) {
+			fade_->SetColor({ 0.0f,0.0f,0.0f });
+			fade_->Start(Fade::Status::FadeOut, 1.0f);
+			useSkipStart_ = true;
+		}
+	}
+
+	AnimSkipFadeUpdate();
+}
+
+void GameScene::AnimSkipFadeUpdate(){
+	if (useSkipStart_) {
+		if (fade_->isFinished()) {
+			switch (gGamePhase) {
+			case kTutorial:
+				player_->Initialize();
+				player_->SetStartPosition({ 0.0f,1.0f,-50.0f });
+				boss_->StartAnimInitialize();
+				break;
+			case kGameStartAnim:
+				break;
+			case kBossPhase1:
+				break;
+			case kBossPhaseChangeAnim:
+				break;
+			case kBossPhase2:
+				break;
+			case kBossLastJaronaAnim:
+				break;
+			case kBossLastJarona:
+				break;
+			case kGameClearStage:
+				break;
+			default:
+				break;
+			}
+
+			gGamePhase = static_cast<GamePhase>(static_cast<uint32_t>(gGamePhase) + 1);
+			useSkipStart_ = false;
+			useSkipEnd_ = true;
+			fade_->Start(Fade::Status::FadeIn, 1.0f);
+		}
+	} else if (useSkipEnd_) {
+		if (fade_->isFinished()) {
+			useSkipEnd_ = false;
+		}
+
+	}
 }
 
 void GameScene::TutorialUpdate() {
@@ -142,10 +244,19 @@ void GameScene::TutorialUpdate() {
 	} else if (TutorialManager::GetInstance()->GetCurrentFlagName() == TutorialManager::TutorialFlagName::kFinaleTest) {
 		if (!tutorialExitWall_->isActive_) {
 			if (fade_->isFinished()) {
-				fade_->Start(Fade::Status::FadeIn, 1.0f);
+				fade_->SetColor({ 1.0f,1.0f,1.0f });
+				fade_->Start(Fade::Status::FadeOut, 1.0f);
+				TutorialManager::GetInstance()->NextTutorial();
 			}
 		}
-
+	} else if (TutorialManager::GetInstance()->GetCurrentFlagName() == TutorialManager::TutorialFlagName::kFinaleAnim) {
+		if (fade_->isFinished()) {
+			fade_->Start(Fade::Status::FadeIn, 1.0f);
+			gGamePhase = GamePhase::kGameStartAnim;
+			player_->Initialize();
+			player_->SetStartPosition({ 0.0f,1.0f,-50.0f });
+			boss_->StartAnimInitialize();
+		}
 	}
 
 	if (tutorialAttackWall_->isActive_) {

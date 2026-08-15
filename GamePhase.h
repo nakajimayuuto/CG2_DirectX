@@ -24,6 +24,7 @@ public:
 		kDashToAttack,
 		kDashJumpTest,
 		kFinaleTest,
+		kFinaleAnim,
 		kTestCount,
 	};
 

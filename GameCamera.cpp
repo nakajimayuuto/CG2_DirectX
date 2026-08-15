@@ -22,7 +22,14 @@ void GameCamera::Initialize() {
 }
 
 void GameCamera::Update() {
-	FollowedUpdate();
+	if (gGamePhase == GamePhase::kGameStartAnim ||
+		gGamePhase == GamePhase::kBossPhaseChangeAnim ||
+		gGamePhase == GamePhase::kBossLastJaronaAnim
+		) {
+
+	} else {
+		FollowedUpdate();
+	}
 
 	Camera::GetInstance()->SetTransform(transform_);
 }
@@ -68,8 +75,8 @@ void GameCamera::FollowedUpdate() {
 		} else {
 			targetEaseTimer_ -= DeltaTime::GetInstance()->GetGameTime();
 		}
-	//} else if((static_cast<Vector3>(targetEnemy_->translate) - static_cast<Vector3>(target_->translate)).Length() < 30.0f){
-	} else{
+		//} else if((static_cast<Vector3>(targetEnemy_->translate) - static_cast<Vector3>(target_->translate)).Length() < 30.0f){
+	} else {
 		if (dashEaseTimer_ <= 0.0f) {
 			dashEaseTimer_ = 0.0f;
 		} else {
@@ -82,24 +89,24 @@ void GameCamera::FollowedUpdate() {
 			targetEaseTimer_ += DeltaTime::GetInstance()->GetGameTime();
 		}
 		Camera::GetInstance()->SetFovY(Lerp(Camera::GetInstance()->GetFovY(), kNormalFovY, 0.05f));
-	//} else {
-	//	//destinationAngleY_ = destinationTargetAngleY_;// LerpShortAngle(destinationAngleY_, destinationPlayerAngleY_, kCompletionRate);
-	//	Camera::GetInstance()->SetFovY(Lerp(Camera::GetInstance()->GetFovY(), kNormalFovY, 0.05f));
-	//	if (dashEaseTimer_ <= 0.0f) {
-	//		dashEaseTimer_ = 0.0f;
-	//	} else {
-	//		dashEaseTimer_ -= DeltaTime::GetInstance()->GetGameTime();
-	//	}
-	//
-	//	if (targetEaseTimer_ <= 0.0f) {
-	//		targetEaseTimer_ = 0.0f;
-	//	} else {
-	//		targetEaseTimer_ -= DeltaTime::GetInstance()->GetGameTime();
-	//	}
-	//	//destinationAngleY_ = std::atan2(targetEnemy_->translate.x - transform_.translate.x, targetEnemy_->translate.z - transform_.translate.z);
+		//} else {
+		//	//destinationAngleY_ = destinationTargetAngleY_;// LerpShortAngle(destinationAngleY_, destinationPlayerAngleY_, kCompletionRate);
+		//	Camera::GetInstance()->SetFovY(Lerp(Camera::GetInstance()->GetFovY(), kNormalFovY, 0.05f));
+		//	if (dashEaseTimer_ <= 0.0f) {
+		//		dashEaseTimer_ = 0.0f;
+		//	} else {
+		//		dashEaseTimer_ -= DeltaTime::GetInstance()->GetGameTime();
+		//	}
+		//
+		//	if (targetEaseTimer_ <= 0.0f) {
+		//		targetEaseTimer_ = 0.0f;
+		//	} else {
+		//		targetEaseTimer_ -= DeltaTime::GetInstance()->GetGameTime();
+		//	}
+		//	//destinationAngleY_ = std::atan2(targetEnemy_->translate.x - transform_.translate.x, targetEnemy_->translate.z - transform_.translate.z);
 	}
 
-	if (gGamePhase == GamePhase::kTutorial) {
+	if (gGamePhase != GamePhase::kTutorial) {
 		destinationPlayerAngleY_ = LerpShortAngle(destinationPlayerAngleY_, destinationTargetAngleY_, targetEaseTimer_);
 	}
 
@@ -108,7 +115,7 @@ void GameCamera::FollowedUpdate() {
 	destinationPlayerAngleY_ = destinationAngleY_;
 	destinationTargetAngleY_ = destinationAngleY_;
 	destinationDashAngleY_ = destinationAngleY_;
-	
+
 	transform_.translate = interOffsetTarget_;
 
 	if (gGamePhase == GamePhase::kTutorial || gGamePhase == GamePhase::kBossLastJarona || gGamePhase == GamePhase::kGameClearStage) {
@@ -128,7 +135,7 @@ void GameCamera::FollowedUpdate() {
 	//		destinationAngleY_ += Radian(360.0f);
 	//	}
 	//}
-	
+
 	// ここまで地獄
 
 	preTargetRotateY_ = target_->rotate.y;
@@ -233,8 +240,8 @@ void GameCamera::FollowedWallClamp() {
 	}
 }
 
-void GameCamera::FollowedDash() {	
-	destinationDashAngleY_ = LerpShortAngle(destinationDashAngleY_,target_->rotate.y,0.1f);
+void GameCamera::FollowedDash() {
+	destinationDashAngleY_ = LerpShortAngle(destinationDashAngleY_, target_->rotate.y, 0.1f);
 }
 
 void GameCamera::FollowedTarget() {
