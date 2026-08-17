@@ -10,13 +10,12 @@ void DifficultyManager::Initialize() {
 }
 
 void DifficultyManager::Update() {
+
 #ifdef _DEBUG
 	ImGui::Begin("difficultyManager");
 	int dif = static_cast<int>(currentDifficulty_);
-	ImGui::SliderInt("Difficulty",&dif,0,kDifficultyCount - 1);
+	ImGui::SliderInt("Difficulty", &dif, 0, kDifficultyCount - 1);
 	currentDifficulty_ = static_cast<Difficulty>(dif);
-	ImGui::Text(magic_enum::enum_name(currentDifficulty_).data());
-	ImGui::End();
 #endif // _DEBUG
 
 	switch (currentDifficulty_){
@@ -38,5 +37,12 @@ void DifficultyManager::Update() {
 		break;
 	}
 
-	dopamineSpeed_ = Easing(0.75f,1.0f,*playerHP,playerHPMax,EaseType::kConstant) * Easing(1.5f, 1.0f, *bossHP, bossHPMax, EaseType::kConstant);
+	dopamineSpeed_ = Easing(kPlayerHPMinDopamineMagnification,1.0f,*playerHP,playerHPMax,EaseType::kConstant) * Easing(kBossHPMinDopamineMagnification, 1.0f, *bossHP, bossHPMax, EaseType::kConstant);
+
+#ifdef _DEBUG
+	ImGui::Text(magic_enum::enum_name(currentDifficulty_).data());
+	ImGui::Text("DopamineSpeed:%f\n",dopamineSpeed_);
+	ImGui::Text("CurrentBossSpeedMag:%f\nCurrentBossDamageMag:%f\n", speedMagnification_ * dopamineSpeed_,damageMagnification_);
+	ImGui::End();
+#endif // _DEBUG
 }

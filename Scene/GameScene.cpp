@@ -192,13 +192,17 @@ void GameScene::AnimSkipUpdate() {
 void GameScene::AnimSkipFadeUpdate(){
 	if (useSkipStart_) {
 		if (fade_->isFinished()) {
+			gGamePhase = static_cast<GamePhase>(static_cast<uint32_t>(gGamePhase) + 1);
+			useSkipStart_ = false;
+			useSkipEnd_ = true;
+
 			switch (gGamePhase) {
 			case kTutorial:
-				player_->Initialize();
-				player_->SetStartPosition({ 0.0f,1.0f,-50.0f });
-				boss_->StartAnimInitialize();
 				break;
 			case kGameStartAnim:
+				player_->Initialize();
+				player_->SetStartPosition({ 0.0f,1.0f,-50.0f });
+				boss_->Initialize();
 				break;
 			case kBossPhase1:
 				break;
@@ -216,9 +220,6 @@ void GameScene::AnimSkipFadeUpdate(){
 				break;
 			}
 
-			gGamePhase = static_cast<GamePhase>(static_cast<uint32_t>(gGamePhase) + 1);
-			useSkipStart_ = false;
-			useSkipEnd_ = true;
 			fade_->Start(Fade::Status::FadeIn, 1.0f);
 		}
 	} else if (useSkipEnd_) {
@@ -255,7 +256,7 @@ void GameScene::TutorialUpdate() {
 			gGamePhase = GamePhase::kGameStartAnim;
 			player_->Initialize();
 			player_->SetStartPosition({ 0.0f,1.0f,-50.0f });
-			boss_->StartAnimInitialize();
+			boss_->Initialize();
 		}
 	}
 

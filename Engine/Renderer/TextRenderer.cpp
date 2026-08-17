@@ -143,11 +143,11 @@ void TextRenderer::Initialize() {
 
         x += glyphWidth + padding;
 
-        if (x >= atlasWidth_)
-        {
-            x = 0;
-            y += glyphHeight + padding;
-        }
+       //if (x >= atlasWidth_)
+       //{
+       //    x = 0;
+       //    y += glyphHeight + padding;
+       //}
     }
 }
 

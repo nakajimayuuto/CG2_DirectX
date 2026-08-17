@@ -438,19 +438,51 @@ private:
 	Transform preCameraTransform_;
 
 	// StartAnim
-	static inline float kAnimStartBlank = 1.0f; // 始まりの余白.
-	static inline float kAnimStartCameraMove = 1.5f; // 敵にカメラが近づく.
-	static inline float kAnimStartCameraMoveBlank = 0.5f; // カメラが近づいた後の余白.
-	static inline float kAnimStartHalberdSpawn = 0.7f; // ハルバードが現れる.
-	static inline float kAnimStartHalberdSpawnBlank = 0.2f; // ハルバードが現れる.
-	static inline float kAnimStartHalbardSetPos = 0.7f; // ハルバードが敵の手元に移動.
-	static inline float kAnimStartHalbardSetPosBlank = 0.3f; // 手元に移動した後の余白.
-	static inline float kAnimStartEyeGrown = 0.5f; // 敵の上田光.
+	static inline float kAnimStartBlankTimerMax = 1.0f; // 始まりの余白.
+	static inline float kAnimStartCameraMoveTimerMax = 1.5f; // 敵にカメラが近づく.
+	static inline float kAnimStartCameraMoveBlankTimerMax = 0.5f; // カメラが近づいた後の余白.
+	static inline float kAnimStartHalberdSpawnTimerMax = 0.7f; // ハルバードが現れる.
+	static inline float kAnimStartHalberdSpawnBlankTimerMax = 0.2f; // ハルバードが現れる.
+	static inline float kAnimStartHalbardSetPosTimerMax = 0.7f; // ハルバードが敵の手元に移動.
+	static inline float kAnimStartHalbardSetPosBlankTimerMax = 0.3f; // 手元に移動した後の余白.
+	static inline float kAnimStartEyeGrownTimerMax = 0.5f; // 敵の上田光.
+	static inline float kAnimStartEyeGrownBlankTimerMax = 0.5f; // 敵の上田光.
+	static inline float kAnimStartJumpTimerMax = 0.5f; // 飛び上がる.
+	static inline float kAnimStartJumpBlankTimerMax = 0.5f; // 飛び上がり余白.
+	static inline float kAnimStartAttackTimerMax = 0.2f; // 叩きつけ.
+
+	static inline float kAnimStartAttackBlankTimerMax = 2.0f; // 叩きつけの余白.
+	static inline float kAnimStartNameShowTimerMax = 0.5f; // 叩きつけで名前出る.
+	static inline float kAnimStartFinishTimerMax = 0.5f; // 叩きつけの余白.
+
 
 	static inline Vector3 kAnimStartHalberdRotate = {0.0f,Radian(-90.0f),0.0f};
-	static inline Vector3 kAnimStartHalberdPos = { 0.0f,-10.0f ,0.0f };
+	static inline Vector3 kAnimStartHalberdPos = { 0.0f,-10.0f ,-2.0f };
+
 	static inline Vector3 kAnimStartCameraMovePos = { 0.0f,3.0f ,-10.0f };
-	static inline Vector3 kAnimStartHalberdSpawnPos = { 0.0f,7.0f ,2.0f };
-	static inline Vector3 kAnimStartHalberdSpawnCameraPos = { 0.0f,11.5f ,-15.0f };
+
+	static inline Vector3 kAnimStartHalberdSpawnPos = { 0.0f,7.0f ,-2.0f };
+	static inline Vector3 kAnimStartHalberdSpawnCameraPos = { 0.0f,11.5f ,-12.0f };
+
+	static inline Vector3 kAnimStartHalberdSetRotate = { Radian(30.0f),Radian(-90.0f),0.0f };
+	static inline Vector3 kAnimStartHalberdSetPos = { -2.0f,1.0f ,-2.0f };
+	static inline Vector3 kAnimStartHalberdSetCameraPos = {1.0f,4.5f ,-12.0f };
+
+	static inline Vector3 kAnimStartEyeGrownRotate = {0.0f,Radian(315.0f) ,0.0f};
+	static inline Vector3 kAnimStartEyeGrownCameraPos = {1.0f,4.5f ,-15.0f };
+
+	static inline float kAnimStartJumpPosY = 7.0f;
+	static inline Vector3 kAnimStartJumpCameraPos = { 0.0f,3.4f ,-23.0f };
+	static inline Vector3 kAnimStartJumpCameraRotate = { Radian(-15.0f),0.0f,0.0f };
+	static inline Vector3 kAnimStartJumpHalberdPos = { 0.0f,3.0f ,-2.0f };
+	static inline Vector3 kAnimStartJumpHalberdRotate = { Radian(0.0f),Radian(0.0f),Radian(0.0f) };
+
+	static inline Vector3 kAnimStartAttackCameraPos = { 0.0f,0.5f ,-25.0f };
+	static inline Vector3 kAnimStartAttackCameraRotate = { Radian(-10.0f),0.0f,0.0f };
+	static inline Vector3 kAnimStartAttackHalberdPos = { 0.0f,-1.0f ,-4.0f };
+	static inline Vector3 kAnimStartAttackHalberdRotate = { Radian(-120.0f),Radian(0.0f),Radian(0.0f) };
+
+	static inline Vector3 kAnimStartFinishHalberdPos = { -2.0f,2.0f ,-2.0f };
+	static inline Vector3 kAnimStartFinishHalberdRotate = { Radian(0.0f),Radian(0.0f),Radian(-30.0f) };
 };
 

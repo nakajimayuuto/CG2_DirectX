@@ -40,5 +40,8 @@ private:
 
 	float speedMagnification_;
 	float damageMagnification_;
+
+	static inline float kPlayerHPMinDopamineMagnification = 0.5f;
+	static inline float kBossHPMinDopamineMagnification = 1.5f;
 };
 

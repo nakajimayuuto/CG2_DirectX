@@ -41,12 +41,13 @@ private:
 
 	float lifeTimer_ = 0.0f;
 	float lifeTimeMax_ = 3.0f;
-	static inline float kBasicLifeTimeMax_ = 3.0f;
+	static inline float kBasicLifeTimeMax_ = 5.0f;
 
 	bool isActive_;
 
 	// NormalData
 	static inline float kModelRotateSpeed = Radian(90.0f);
+	std::unique_ptr<Emitter> emitter_;
 
 
 	// BounsData

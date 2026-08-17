@@ -202,6 +202,9 @@ void Bullet::Draw() {
 }
 
 void Bullet::NormalInitialize() {
+	emitter_ = std::make_unique<Emitter>();
+	emitter_->Initialize(transform_,1,0.1f);
+	emitter_->SetParticle(ParticleManager::GetInstance()->GetParticles("cross"));
 	transform_.rotate.y = std::atan2(velocity_.x, velocity_.z);
 }
 
@@ -209,6 +212,8 @@ void Bullet::NormalUpdate() {
 	transform_.translate += velocity_ * DeltaTime::GetInstance()->GetGameTime();
 	modelTransform_.rotate.x += kModelRotateSpeed * DeltaTime::GetInstance()->GetGameTime();
 	modelTransform_.rotate.y += kModelRotateSpeed * DeltaTime::GetInstance()->GetGameTime();
+	emitter_->SetTransform(transform_);
+	emitter_->Update();
 }
 
 void Bullet::BounsInitialize() {
