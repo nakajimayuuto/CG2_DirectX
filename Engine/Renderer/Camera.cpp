@@ -65,6 +65,12 @@ void Camera::CreateResource() {
 	cameraData_->worldPosition = { 0.0f,0.0f,0.0f };
 }
 
+void Camera::GetFLog() {
+	GameSystem::Log(std::format("Right   : {},{},{}", right.x, right.y, right.z));
+	GameSystem::Log(std::format("Up      : {},{},{}", up.x, up.y, up.z));
+	GameSystem::Log(std::format("Forward : {},{},{}", forward.x, forward.y, forward.z));
+};
+
 bool Camera::IsInCameraFrustum(const Vector3& point, float radius) {
 	for (int i = 0; i < 6; i++) {
 		float d = static_cast<Vector3>(point).Dot(planes_[i].normal) + planes_[i].distance;
@@ -106,7 +112,7 @@ void Camera::Update() {
 	cameraData_->worldPosition = translate_;
 	matrix_ = Matrix4x4::MakeAffineMatrix(scale_, rotate_, translate_);
 
-	gameCameraMatrix_ = Matrix4x4::MakeAffineMatrix(scale_, -rotate_, translate_);
+	gameCameraMatrix_ = Matrix4x4::MakeAffineMatrix(scale_, rotate_, translate_);
 	FrustumUpdate();
 }
 
@@ -164,9 +170,9 @@ void Camera::DebugUpdate() {
 void Camera::FrustumUpdate() {
 
 	Vector3 cameraPos = translate_;
-	Vector3 right = gameCameraMatrix_.GetXAxis().Normalize();
-	Vector3 up = gameCameraMatrix_.GetYAxis().Normalize();
-	Vector3 forward = gameCameraMatrix_.GetZAxis().Normalize();
+	right = gameCameraMatrix_.GetXAxis().Normalize();
+	up = gameCameraMatrix_.GetYAxis().Normalize();
+	forward = gameCameraMatrix_.GetZAxis().Normalize();
 
 	float aspect =
 		windowWidth_ / windowHeight_;
@@ -248,6 +254,16 @@ void Camera::FrustumUpdate() {
 	// bottom
 	planes_[5].SetPlane(farVertex_.rightBottom, farVertex_.leftBottom, nearVertex_.leftBottom);
 
+	ImGui::Begin("Frustm");
+	ImGui::Text("Right   : %f %f %f",
+		right.x, right.y, right.z);
+
+	ImGui::Text("Up      : %f %f %f",
+		up.x, up.y, up.z);
+
+	ImGui::Text("Forward : %f %f %f",
+		forward.x, forward.y, forward.z);
+	ImGui::End();
 }
 
 void Camera::Draw() {

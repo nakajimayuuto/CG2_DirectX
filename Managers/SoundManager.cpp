@@ -369,6 +369,11 @@ void SoundManager::SoundPlay(const SoundData& soundData, float speed, float volu
 	playSoundDatas_[handle]->type_ = type;
 }
 
+void SoundManager::SoundPlay(const std::string& soundData, float speed, float volume, SoundType type, bool canLoop, std::string handle){
+	SoundData a = SoundManager::GetInstance()->GetSoundData(soundData);
+	SoundPlay(a,speed,volume,type,canLoop,handle);
+}
+
 void SoundManager::SoundPlay(const SoundData& soundData, float speed, float volume, SoundType type) {
 	HRESULT result;
 
@@ -395,6 +400,11 @@ void SoundManager::SoundPlay(const SoundData& soundData, float speed, float volu
 	soundOneTimeDatas_[soundNum_]->type_ = type;
 
 	soundNum_++;
+}
+
+void SoundManager::SoundPlay(const std::string& soundData, float speed, float volume, SoundType type){
+	SoundData a = SoundManager::GetInstance()->GetSoundData(soundData);
+	SoundPlay(a, speed, volume, type);
 }
 
 void SoundManager::SoundPause(std::string handle) {

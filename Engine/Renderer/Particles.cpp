@@ -1,6 +1,7 @@
 #include "Particles.h"
 #include "../SystemFile/DeltaTime.h"
 #include "../Math/Random.h"
+#include "../Renderer/Camera.h"
 #include "../Math/Easing.h"
 #include "Renderer.h"
 

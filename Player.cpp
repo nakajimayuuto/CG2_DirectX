@@ -280,11 +280,11 @@ void Player::Update() {
 void Player::CircleWallClamp() {
 	/// ここから地獄
 	float distance = transform_.translate.Length();
-
+	float posY = transform_.translate.y;
 	float wallDirection = 0.0f;
 	if (distance > movingRadius_) {
 		transform_.translate = transform_.translate.Normalize() * movingRadius_;
-
+		transform_.translate.y = posY;
 	}
 }
 
@@ -297,8 +297,12 @@ void Player::TutorialWallClamp() {
 		transform_.translate.x = -5.0f + colliderSize_.x;
 	}
 
-	if (transform_.translate.z > tutorialClampPosZ_ - colliderSize_.z) {
-		transform_.translate.z = tutorialClampPosZ_ - colliderSize_.z;
+	if (transform_.translate.z > tutorialClampMinPosZ_ - colliderSize_.z) {
+		transform_.translate.z = tutorialClampMinPosZ_ - colliderSize_.z;
+	}
+
+	if (transform_.translate.z < tutorialClampMaxPosZ_ + colliderSize_.z) {
+		transform_.translate.z = tutorialClampMaxPosZ_ + colliderSize_.z;
 	}
 }
 
@@ -443,6 +447,7 @@ void Player::CheckTutorialFlag() {
 			tutorialUsableJump_ = true;
 			tutorialUsableDash_ = false;
 			tutorialUsableAttack_ = false;
+			tutorialClampMaxPosZ_ = -380.0f;
 			break;
 		case TutorialManager::TutorialFlagName::kMoveTest:
 			tutorialUsableMove_ = true;
@@ -481,13 +486,14 @@ void Player::CheckTutorialFlag() {
 					DeltaTime::GetInstance()->SetGameTimeSpeed(0.0f);
 				}
 			} else {
-				tutorialUsableMove_ = true;
+				tutorialUsableMove_ = false;
 				tutorialUsableJump_ = false;
 				tutorialUsableDash_ = false;
 				tutorialUsableAttack_ = false;
 			}
 			break;
 		case TutorialManager::TutorialFlagName::kFinaleTest:
+			tutorialClampMaxPosZ_ = -265.0f;
 			tutorialUsableMove_ = true;
 			tutorialUsableJump_ = true;
 			tutorialUsableDash_ = true;
@@ -503,10 +509,17 @@ void Player::CheckTutorialFlag() {
 			break;
 		}
 	} else {
-		tutorialUsableMove_ = true;
-		tutorialUsableJump_ = true;
-		tutorialUsableDash_ = true;
-		tutorialUsableAttack_ = true;
+		if (gGamePhase == GamePhase::kGameStartAnim || gGamePhase == GamePhase::kBossPhaseChangeAnim || gGamePhase == GamePhase::kBossLastJaronaAnim) {
+			tutorialUsableMove_ = false;
+			tutorialUsableJump_ = false;
+			tutorialUsableDash_ = false;
+			tutorialUsableAttack_ = false;
+		} else {
+			tutorialUsableMove_ = true;
+			tutorialUsableJump_ = true;
+			tutorialUsableDash_ = true;
+			tutorialUsableAttack_ = true;
+		}
 	}
 }
 
@@ -837,6 +850,10 @@ void Player::BehaviorJumpUpdate() {
 }
 
 void Player::BehaviorDashAttackInitialize() {
+	if (TutorialManager::GetInstance()->GetCurrentFlagName() == TutorialManager::TutorialFlagName::kDashToAttack) {
+		transform_.rotate.y = 0.0f;
+	}
+
 	attackTimer_ = 0.0f;
 	attackTimeMax_ = kDashAttackStart;
 	attackPhase_ = 0;
@@ -893,9 +910,11 @@ void Player::BehaviorDashAttackUpdate() {
 }
 
 void Player::BehaviorDashJumpAttackInitialize() {
-	if (GetDownPress()) {
-		velocity_ *= -1.0f;
-		transform_.rotate.y -= Radian(180.0f);
+	if (TutorialManager::GetInstance()->GetCurrentFlagName() != TutorialManager::TutorialFlagName::kDashJumpTest) {
+		if (GetDownPress()) {
+			velocity_ *= -1.0f;
+			transform_.rotate.y -= Radian(180.0f);
+		}
 	}
 
 
@@ -921,6 +940,7 @@ void Player::BehaviorDashJumpAttackUpdate() {
 	Vector3 accelerationVector = { 0.0f,-kGravityAcceleration,0.0f };
 	velocity_ += accelerationVector * DeltaTime::GetInstance()->GetGameTime();
 	transform_.translate += velocity_ * DeltaTime::GetInstance()->GetGameTime();
+
 
 	if (velocity_.y <= 0.0f) {
 		if (useNextAttack_) {
@@ -968,8 +988,10 @@ void Player::BehaviorFallUpdate() {
 		behaviorRequest_ = Behavior::kRoot;
 	}
 
-	if (GetAttackButtonTrigger()) {
-		behaviorRequest_ = Behavior::kDashAttack;
+	if (tutorialUsableDash_) {
+		if (GetAttackButtonTrigger()) {
+			behaviorRequest_ = Behavior::kDashAttack;
+		}
 	}
 }
 

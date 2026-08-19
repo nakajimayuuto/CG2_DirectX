@@ -23,7 +23,9 @@ public:
 
 	void Draw();
 
-	void SetPosition(Vector3 vector3) { translate_ = vector3; }
+	void SetPosition(Vector3 vector3) { 
+		translate_ = vector3;
+	}
 
 	void SetRotate(Vector3 rotate) { rotate_ = rotate; };
 
@@ -65,6 +67,8 @@ public:
 	Microsoft::WRL::ComPtr<ID3D12Resource> GetCameraForGPUResource() { return cameraResource_; };
 
 	void CreateResource();
+
+	void GetFLog();
 
 	bool IsInCameraFrustum(const Vector3& point, float radius);
 
@@ -128,4 +132,8 @@ private:
 	float transparentRadiusMin_;
 
 	float transparentAlphaMin_;
+
+	Vector3 right;
+	Vector3 up;
+	Vector3 forward;
 };

@@ -28,11 +28,12 @@ public:
 			timerMax_ = timerMax;
 			attackCount_ = 1;
 			attackCountMax_ = 3;
-			collider_.SetSize({ 10.0f,10.0f,1.0f });
+			collider_.SetSize({ 10.0f,20.0f,1.0f });
 			collider_.SetRadius(11.0f);
 			collider_.SetColliderType(ColliderType::kBox);
 			transform_.Initialize();
-			transform_.scale = { 10.0f,10.0f,1.0f };
+			transform_.scale = { 10.0f,20.0f,1.0f };
+			transform_.translate = {0.0f,50.0f,0.0f};
 			collider_.SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy));
 			collider_.SetCollisionMask(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack));
 			color_ = { 1.0f,1.0f,1.0f,1.0f };

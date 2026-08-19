@@ -16,7 +16,6 @@
 #include "../Math/Vertex.h"
 #include "../Math/Matrix4x4.h"
 #include "../Math/Transform.h"
-#include "../Renderer/Camera.h"
 #include "../Math/Math.h"
 #include "../../Environment.h"
 

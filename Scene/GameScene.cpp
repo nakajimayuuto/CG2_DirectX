@@ -6,6 +6,8 @@ GameScene::~GameScene() {
 }
 
 void GameScene::Initialize() {
+	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.1f;
+	LightManager::GetInstance()->GetDirectionalLightData()->color = { 1.0f,0.5f,0.5f,1.0f };
 	TutorialManager::GetInstance()->Initialize();
 
 
@@ -42,11 +44,11 @@ void GameScene::Initialize() {
 
 	tutorialAttackWall_ = std::make_unique<TutorialObject>();
 	tutorialAttackWall_->Initialize(1.0f);
-	tutorialAttackWall_->transform_.translate = { 0.0f,5.0f,-340.0f };
+	tutorialAttackWall_->transform_.translate = { 0.0f,10.0f,-340.0f };
 
 	tutorialExitWall_ = std::make_unique<TutorialObject>();
 	tutorialExitWall_->Initialize(2.0f);
-	tutorialExitWall_->transform_.translate = { 0.0f,5.0f,-75.0f };
+	tutorialExitWall_->transform_.translate = { 0.0f,10.0f,-75.0f };
 
 	Player::RegisterGlobalVariables();
 
@@ -115,17 +117,21 @@ void GameScene::Draw() {
 	ground_->Draw();
 
 	if (gGamePhase == GamePhase::kTutorial) {
-		Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,5.0f,-275.0f }), "tutorial_wall", { 1.0f,1.0f,1.0f,1.0f }, false);
+		Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,-275.0f }), "tutorial_wall", { 1.0f,1.0f,1.0f,1.0f }, false);
+		Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,-275.0f }), "tutorial_celling", { 1.0f,1.0f,1.0f,1.0f }, false);
 
-		Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,0.5f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "wall", { 1.0f,1.0f,1.0f,0.3f }, false);
+		Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "wall", { 1.0f,1.0f,1.0f,0.3f }, false);
 	} else if (gGamePhase == GamePhase::kBossLastJarona || gGamePhase == GamePhase::kGameClearStage) {
-		Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,5.0f,-275.0f }), "tutorial_wall", { 1.0f,1.0f,1.0f,1.0f }, false);
+		Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,-275.0f }), "tutorial_wall", { 1.0f,1.0f,1.0f,1.0f }, false);
+		Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,-275.0f }), "tutorial_celling", { 1.0f,1.0f,1.0f,1.0f }, false);
 	} else if (gGamePhase == GamePhase::kBossLastJaronaAnim) {
-		Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,5.0f,-275.0f }), "tutorial_wall", { 1.0f,1.0f,1.0f,1.0f }, false);
+		Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,-275.0f }), "tutorial_wall", { 1.0f,1.0f,1.0f,1.0f }, false);
+		Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,-275.0f }), "tutorial_celling", { 1.0f,1.0f,1.0f,1.0f }, false);
 
-		Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,0.5f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "wall", { 1.0f,1.0f,1.0f,1.0f }, false);
+		Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "wall", { 1.0f,1.0f,1.0f,1.0f }, false);
 	} else {
-		Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,0.5f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "wall", { 1.0f,1.0f,1.0f,1.0f }, false);
+		Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "wall", { 1.0f,1.0f,1.0f,1.0f }, false);
+		Renderer::GetInstance()->DrawBox(Transform::GetInitialValue({ 10.0f,10.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,5.0f,-75.0f }), "door", { 1.0f,1.0f,1.0f,1.0f });
 	}
 
 	ProjectileManager::GetInstance()->Draw();
@@ -138,6 +144,12 @@ void GameScene::Draw() {
 
 	ParticleManager::GetInstance()->Draw();
 
+	if (gGamePhase != GamePhase::kTutorial && gGamePhase != GamePhase::kBossLastJarona && gGamePhase != GamePhase::kGameClearStage && gGamePhase != GamePhase::kBossLastJaronaAnim) {
+		Renderer::GetInstance()->DrawBox(Transform::GetInitialValue({ 10.0f,10.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,5.0f,-75.0f }), "door", { 1.0f,1.0f,1.0f,1.0f });
+	}
+
+	Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 500.0f,200.0f,0.0f }), "play_guid", { 1.0f,1.0f,1.0f,1.0f });
+
 	fade_->Draw();
 }
 
@@ -146,17 +158,17 @@ void GameScene::CheckAllCollisions() {
 }
 
 void GameScene::AnimSkipUpdate() {
-	if (gGamePhase != GamePhase::kTutorial && 
+	if (gGamePhase != GamePhase::kTutorial &&
 		gGamePhase != GamePhase::kGameStartAnim &&
 		gGamePhase != GamePhase::kBossPhaseChangeAnim &&
 		gGamePhase != GamePhase::kBossLastJaronaAnim) {
 		return;
-	} 
+	}
 
-	if (gGamePhase == GamePhase::kTutorial) {
+	//if (gGamePhase == GamePhase::kTutorial) {
 		if (InputManager::GetInstance()->IsGamePadConnect()) {
 			if (InputManager::GetInstance()->TriggerPadButton(INPUT_START)) {
-				fade_->SetColor({0.0f,0.0f,0.0f});
+				fade_->SetColor({ 0.0f,0.0f,0.0f });
 				fade_->Start(Fade::Status::FadeOut, 1.0f);
 				useSkipStart_ = true;
 			}
@@ -170,26 +182,26 @@ void GameScene::AnimSkipUpdate() {
 
 		AnimSkipFadeUpdate();
 		return;
-	} 
+	//}
 
-	if (InputManager::GetInstance()->IsGamePadConnect()) {
-		if (InputManager::GetInstance()->TriggerPadButton(INPUT_A)) {
-			fade_->SetColor({ 0.0f,0.0f,0.0f });
-			fade_->Start(Fade::Status::FadeOut, 1.0f);
-			useSkipStart_ = true;
-		}
-	} else {
-		if (InputManager::GetInstance()->TriggerKey(DIK_SPACE)) {
-			fade_->SetColor({ 0.0f,0.0f,0.0f });
-			fade_->Start(Fade::Status::FadeOut, 1.0f);
-			useSkipStart_ = true;
-		}
-	}
+	//if (InputManager::GetInstance()->IsGamePadConnect()) {
+	//	if (InputManager::GetInstance()->TriggerPadButton(INPUT_A)) {
+	//		fade_->SetColor({ 0.0f,0.0f,0.0f });
+	//		fade_->Start(Fade::Status::FadeOut, 1.0f);
+	//		useSkipStart_ = true;
+	//	}
+	//} else {
+	//	if (InputManager::GetInstance()->TriggerKey(DIK_SPACE)) {
+	//		fade_->SetColor({ 0.0f,0.0f,0.0f });
+	//		fade_->Start(Fade::Status::FadeOut, 1.0f);
+	//		useSkipStart_ = true;
+	//	}
+	//}
 
 	AnimSkipFadeUpdate();
 }
 
-void GameScene::AnimSkipFadeUpdate(){
+void GameScene::AnimSkipFadeUpdate() {
 	if (useSkipStart_) {
 		if (fade_->isFinished()) {
 			gGamePhase = static_cast<GamePhase>(static_cast<uint32_t>(gGamePhase) + 1);
@@ -261,11 +273,11 @@ void GameScene::TutorialUpdate() {
 	}
 
 	if (tutorialAttackWall_->isActive_) {
-		player_->SetTutorialClamp(tutorialAttackWall_->transform_.translate.z);
+		player_->SetTutorialMinClamp(tutorialAttackWall_->transform_.translate.z);
 	} else if (tutorialExitWall_->isActive_) {
-		player_->SetTutorialClamp(tutorialExitWall_->transform_.translate.z);
+		player_->SetTutorialMinClamp(tutorialExitWall_->transform_.translate.z);
 	} else {
-		player_->SetTutorialClamp(80.0f);
+		player_->SetTutorialMinClamp(80.0f);
 	}
 }
 

@@ -101,6 +101,17 @@ public:
 	/// <param name="canLoop">ループ再生するか</param>
 	/// <param name="handle">音源のハンドル(主にBGM用)</param>
 	void SoundPlay(const SoundData& soundData,float speed,float volume, SoundType type,bool canLoop,std::string handle);
+
+	/// <summary>
+	/// 音源を再生する.
+	/// </summary>
+	/// <param name="soundData">音声データ</param>
+	/// <param name="speed">速度</param>
+	/// <param name="volume">音量</param>
+	/// <param name="type">音源の分類</param>
+	/// <param name="canLoop">ループ再生するか</param>
+	/// <param name="handle">音源のハンドル(主にBGM用)</param>
+	void SoundPlay(const std::string& soundData,float speed,float volume, SoundType type,bool canLoop,std::string handle);
 	
 	/// <summary>
 	/// 音源を再生する(効果音等の一瞬流す音声用).
@@ -110,6 +121,15 @@ public:
 	/// <param name="volume">音量</param>
 	/// <param name="type">音源の分類</param>
 	void SoundPlay(const SoundData& soundData, float speed, float volume, SoundType type);
+	
+	/// <summary>
+	/// 音源を再生する(効果音等の一瞬流す音声用).
+	/// </summary>
+	/// <param name="soundData">音声データ</param>
+	/// <param name="speed">速度</param>
+	/// <param name="volume">音量</param>
+	/// <param name="type">音源の分類</param>
+	void SoundPlay(const std::string& soundData, float speed, float volume, SoundType type);
 
 	
 	void SoundPause(std::string handle);

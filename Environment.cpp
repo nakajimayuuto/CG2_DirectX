@@ -1,5 +1,6 @@
 #include "Environment.h"
 #include "./Engine/SystemFile/GameSystem.h"
+#include "./Engine/Renderer/Camera.h"
 
 Environment* Environment::GetInstance() {
 	static Environment gameSystem;

@@ -59,7 +59,8 @@ public:
 
 	void TutorialWallClamp();
 
-	void SetTutorialClamp(float positionZ) { tutorialClampPosZ_ = positionZ; };
+	void SetTutorialMinClamp(float positionZ) { tutorialClampMinPosZ_ = positionZ; };
+	void SetTutorialMaxClamp(float positionZ) { tutorialClampMaxPosZ_ = positionZ; };
 private:
 	void SlashEffectCreate(Transform* targetTransform, uint32_t num);
 
@@ -160,7 +161,8 @@ private:
 
 	float tutorialTimer_;
 
-	float tutorialClampPosZ_;
+	float tutorialClampMinPosZ_;
+	float tutorialClampMaxPosZ_;
 private:
 	void SetNextAttackPhase(float timeMax);
 

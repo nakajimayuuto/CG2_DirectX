@@ -1,4 +1,5 @@
 #include "Renderer.h"
+#include "Camera.h"
 
 #include "../../Managers/SoundManager.h"
 #include <vector>
@@ -1285,6 +1286,7 @@ void Renderer::DrawSprite(const Transform& transform, const TextureInfo& texture
 	newElement->wvpData_->World = worldMatrix;
 	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
 	newElement->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+	newElement->materialData_->color = color;
 
 	newElement->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(newElement->uvTransform_);
 	/*=============================================================

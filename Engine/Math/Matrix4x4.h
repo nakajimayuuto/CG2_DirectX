@@ -36,14 +36,14 @@ public:
 	static Matrix4x4 MakeRotateZMatrix(float radian);
 	static Matrix4x4 MakeRotateMatrix(Vector3 rotate);
 
-	Vector3 GetXAxis() { return { matrix[0][0], matrix[1][0], matrix[2][0] }; };
-	static Vector3 GetXAxis(const Matrix4x4& matrix) { return { matrix.matrix[0][0], matrix.matrix[1][0], matrix.matrix[2][0] }; };
+	Vector3 GetXAxis() { return { matrix[0][0], matrix[0][1], matrix[0][2] }; };
+	static Vector3 GetXAxis(const Matrix4x4& matrix) { return { matrix.matrix[0][0], matrix.matrix[0][1], matrix.matrix[0][2] }; };
 
-	Vector3 GetYAxis() { return { matrix[0][1], matrix[1][1], matrix[2][1] }; };
-	static Vector3 GetYAxis(const Matrix4x4& matrix) { return { matrix.matrix[0][1], matrix.matrix[1][1], matrix.matrix[2][1] }; };
+	Vector3 GetYAxis() { return { matrix[1][0], matrix[1][1], matrix[1][2] }; };
+	static Vector3 GetYAxis(const Matrix4x4& matrix) { return { matrix.matrix[1][0], matrix.matrix[1][1], matrix.matrix[1][2] }; };
 
-	Vector3 GetZAxis() { return { matrix[0][2], matrix[1][2], matrix[2][2] }; };
-	static Vector3 GetZAxis(const Matrix4x4& matrix) { return { matrix.matrix[0][2], matrix.matrix[1][2], matrix.matrix[2][2] }; };
+	Vector3 GetZAxis() { return { matrix[2][0], matrix[2][1], matrix[2][2] }; };
+	static Vector3 GetZAxis(const Matrix4x4& matrix) { return { matrix.matrix[2][0], matrix.matrix[2][1], matrix.matrix[2][2] }; };
 
 	static Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
 	static Matrix4x4 MakeAffineMatrix(const Transform& transform);
