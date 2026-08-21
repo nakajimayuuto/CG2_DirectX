@@ -60,6 +60,8 @@ void Player::Initialize() {
 	LightManager::GetInstance()->GetLightData("player_light")->intensity = 1.0f;
 
 	tutorialTimer_ = 0.0f;
+
+	isImmune_ = false;
 }
 
 void Player::InitializeFloatingGimmick() {
@@ -774,7 +776,6 @@ void Player::AttackThreeUpdate() {
 }
 
 void Player::BehaviorDashInitialize() {
-
 	//transform_.rotate.y = targetRotateY;
 }
 
@@ -1039,6 +1040,10 @@ void Player::ApplyGlobalVariables() {
 }
 
 void Player::OnCollision([[maybe_unused]] Collider* other) {
+	if (isImmune_) {
+		return;
+	}
+
 	//behaviorRequest_ = Behavior::kJump;
 	if (other->GetCollisionAttribute() == CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy)) {
 		if (isDash_) {

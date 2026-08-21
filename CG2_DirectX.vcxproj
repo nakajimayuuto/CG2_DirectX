@@ -22,6 +22,8 @@
     <ClCompile Include="GamePhase.cpp" />
     <ClCompile Include="HPGauge.cpp" />
     <ClCompile Include="Managers\DifficultyManager.cpp" />
+    <ClCompile Include="MirrorHalberd.cpp" />
+    <ClCompile Include="PauseMenu.cpp" />
     <ClCompile Include="ProjectileManager.cpp" />
     <ClCompile Include="ContactRecord.cpp" />
     <ClCompile Include="Engine\Math\Beats.cpp" />
@@ -112,6 +114,8 @@
     <ClInclude Include="GamePhase.h" />
     <ClInclude Include="HPGauge.h" />
     <ClInclude Include="Managers\DifficultyManager.h" />
+    <ClInclude Include="MirrorHalberd.h" />
+    <ClInclude Include="PauseMenu.h" />
     <ClInclude Include="ProjectileManager.h" />
     <ClInclude Include="ContactRecord.h" />
     <ClInclude Include="Engine\Math\Beats.h" />

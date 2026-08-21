@@ -8,6 +8,7 @@
 #include "../Renderer/Renderer.h"
 #include "../Math/Collision.h"
 #include "../Math/Easing.h"
+#include "../SystemFile/DeltaTime.h"
 
 Camera* Camera::GetInstance() {
 	static Camera instance;
@@ -54,6 +55,39 @@ void Camera::Initialize() {
 	spriteTransform.Initialize();
 	spriteTransform.translate.x = 640.0f;
 	spriteTransform.translate.y = 360.0f;
+
+	ShakeInitialize();
+}
+
+void Camera::ShakeInitialize() {
+	shakePosition_ = { 0.0f,0.0f,0.0f };
+
+	shakeAmplitude_ = { 0.0f,0.0f };
+	shakeTimerMax_ = 0;
+	shakeTimer_ = 0.0f;
+	isShaking_ = false;
+	shakeType = ShakeType::FIXED_TIME;
+}
+
+void Camera::CreateShake(Vector2 amplitude, float timerMax) {
+	shakeAmplitude_ = amplitude;
+	shakeTimerMax_ = timerMax;
+	shakeTimer_ = 0.0f;
+	isShaking_ = true;
+	shakeType = ShakeType::FIXED_TIME;
+}
+
+void Camera::SetContinuationShake(Vector2 amplitude, bool isShake) {
+	shakeAmplitude_ = amplitude;
+	isShaking_ = isShake;
+
+	if (isShake) {
+		shakeType = ShakeType::CONTINUATION;
+	} else {
+		shakeType = ShakeType::FIXED_TIME;
+		shakePosition_.x = 0.0f;
+		shakePosition_.y = 0.0f;
+	}
 }
 
 void Camera::CreateResource() {
@@ -64,12 +98,6 @@ void Camera::CreateResource() {
 	// 単位行列を書き込んでおく.
 	cameraData_->worldPosition = { 0.0f,0.0f,0.0f };
 }
-
-void Camera::GetFLog() {
-	GameSystem::Log(std::format("Right   : {},{},{}", right.x, right.y, right.z));
-	GameSystem::Log(std::format("Up      : {},{},{}", up.x, up.y, up.z));
-	GameSystem::Log(std::format("Forward : {},{},{}", forward.x, forward.y, forward.z));
-};
 
 bool Camera::IsInCameraFrustum(const Vector3& point, float radius) {
 	for (int i = 0; i < 6; i++) {
@@ -109,10 +137,12 @@ void Camera::Update() {
 		return;
 	}
 
-	cameraData_->worldPosition = translate_;
-	matrix_ = Matrix4x4::MakeAffineMatrix(scale_, rotate_, translate_);
+	ShakeUpdate();
 
-	gameCameraMatrix_ = Matrix4x4::MakeAffineMatrix(scale_, rotate_, translate_);
+	cameraData_->worldPosition = translate_;
+	matrix_ = Matrix4x4::MakeAffineMatrix(scale_, rotate_, translate_ + shakePosition_);
+
+	gameCameraMatrix_ = Matrix4x4::MakeAffineMatrix(scale_, rotate_, translate_ + shakePosition_);
 	FrustumUpdate();
 }
 
@@ -167,12 +197,49 @@ void Camera::DebugUpdate() {
 	//matrix_ *= Matrix4x4::MakeTranslateMatrix(debugTranslate_);
 }
 
+void Camera::ShakeUpdate() {
+	if (!isShaking_) {
+		return;
+	}
+
+	Vector3 newShakePos = {0.0f,0.0f,0.0f};
+
+	if (shakeType == ShakeType::FIXED_TIME) {
+
+		Vector2 shakePositionMax;
+		Vector2 shakePositionMin;
+		shakeTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
+		shakePositionMin.x = Easing(-shakeAmplitude_.x,0.0f, shakeTimer_, static_cast<float>(shakeTimerMax_), EaseType::kEaseInOut);
+		shakePositionMin.y = Easing(-shakeAmplitude_.y, 0.0f,shakeTimer_, static_cast<float>(shakeTimerMax_), EaseType::kEaseInOut);
+		shakePositionMax.x = Easing( shakeAmplitude_.x, 0.0f,shakeTimer_, static_cast<float>(shakeTimerMax_), EaseType::kEaseInOut);
+		shakePositionMax.y = Easing( shakeAmplitude_.y, 0.0f,shakeTimer_, static_cast<float>(shakeTimerMax_), EaseType::kEaseInOut);
+
+		newShakePos.x = Random::GetInstance()->RandomFloat(shakePositionMin.x, shakePositionMax.x);
+		newShakePos.y = Random::GetInstance()->RandomFloat(shakePositionMin.y, shakePositionMax.y);
+
+		if (shakeTimer_ >= shakeTimerMax_) {
+			isShaking_ = false;
+			newShakePos.x = 0.0f;
+			newShakePos.y = 0.0f;
+		}
+
+	} else {
+
+		newShakePos.x = Random::GetInstance()->RandomFloat(-shakeAmplitude_.x, shakeAmplitude_.x);
+		newShakePos.y = Random::GetInstance()->RandomFloat(-shakeAmplitude_.y, shakeAmplitude_.y);
+		//shakePosition_ = random.RandomVector2(shakeAmplitude_ * -1.0f, shakeAmplitude_);
+	}
+
+	Matrix4x4 cameraRotateMatrix = Matrix4x4::MakeRotateYMatrix(rotate_.y);
+	shakePosition_ = cameraRotateMatrix.TransformNomal(newShakePos);
+}
+
 void Camera::FrustumUpdate() {
 
 	Vector3 cameraPos = translate_;
-	right = gameCameraMatrix_.GetXAxis().Normalize();
-	up = gameCameraMatrix_.GetYAxis().Normalize();
-	forward = gameCameraMatrix_.GetZAxis().Normalize();
+	Vector3 right = gameCameraMatrix_.GetXAxis().Normalize();
+	Vector3 up = gameCameraMatrix_.GetYAxis().Normalize();
+	Vector3 forward = gameCameraMatrix_.GetZAxis().Normalize();
 
 	float aspect =
 		windowWidth_ / windowHeight_;
@@ -253,17 +320,6 @@ void Camera::FrustumUpdate() {
 	planes_[4].SetPlane(nearVertex_.rightTop, nearVertex_.leftTop, farVertex_.leftTop);
 	// bottom
 	planes_[5].SetPlane(farVertex_.rightBottom, farVertex_.leftBottom, nearVertex_.leftBottom);
-
-	ImGui::Begin("Frustm");
-	ImGui::Text("Right   : %f %f %f",
-		right.x, right.y, right.z);
-
-	ImGui::Text("Up      : %f %f %f",
-		up.x, up.y, up.z);
-
-	ImGui::Text("Forward : %f %f %f",
-		forward.x, forward.y, forward.z);
-	ImGui::End();
 }
 
 void Camera::Draw() {

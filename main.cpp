@@ -24,8 +24,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	SceneManager::GetInstance()->Initialize();
-	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.1f;
-	LightManager::GetInstance()->GetDirectionalLightData()->color = {1.0f,0.5f,0.5f,1.0f};
 	// ウィンドウのxボタンが押されるまでループ.
 	while (system->ProcessMessage()) {
 		if (system->BeginFrame()) {
@@ -83,6 +81,7 @@ void LoadDatas() {
 	TextureManager::GetInstance()->RegisterTexture("bullet_bounce", "Resource/Bullet/bullet_bounce.png");
 	TextureManager::GetInstance()->RegisterTexture("wall_soul", "Resource/wall/wall_soul.png");
 	TextureManager::GetInstance()->RegisterTexture("door", "Resource/wall/door.png");
+	TextureManager::GetInstance()->RegisterTexture("halberd_soul", "Resource/Halberd/halberd_soul.png");
 
 	TextureManager::GetInstance()->RegisterTexture("effect_plane", "Resource/effects/effect_plane.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_fire", "Resource/effects/effect_fire.png");
@@ -120,6 +119,14 @@ void LoadDatas() {
 	TextureManager::GetInstance()->RegisterTexture("difficulty_hard_outline", "Resource/UI/difficulty_hard_outline.png");
 	TextureManager::GetInstance()->RegisterTexture("ui_return", "Resource/UI/return.png");
 	TextureManager::GetInstance()->RegisterTexture("play_guid", "Resource/UI/play_guid.png");
+
+	TextureManager::GetInstance()->RegisterTexture("pause", "Resource/UI/pause.png");
+	TextureManager::GetInstance()->RegisterTexture("return_to_game", "Resource/UI/pause_return_to_game.png");
+	TextureManager::GetInstance()->RegisterTexture("retry", "Resource/UI/pause_retry.png");
+	TextureManager::GetInstance()->RegisterTexture("return_to_tutorial", "Resource/UI/pause_return_to_tutorial.png");
+	TextureManager::GetInstance()->RegisterTexture("retry_phase2", "Resource/UI/pause_retry_phase2.png");
+	TextureManager::GetInstance()->RegisterTexture("retry_last_jarona", "Resource/UI/pause_retry_last_jarona.png");
+	TextureManager::GetInstance()->RegisterTexture("return_to_title", "Resource/UI/pause_return_to_title.png");
 
 	SoundManager::GetInstance()->RegisterSound("test", "Resource/free_k.wav");
 	SoundManager::GetInstance()->RegisterSound("snd_select", "Resource/Sound/snd_select.mp3");

@@ -96,9 +96,21 @@ void Boss::Initialize() {
 
 	GameCamera::GetInstance()->SetEnemyTransform(&transform_);
 
+	halberdLeft_ = std::make_unique<MirrorHalberd>();
+	halberdLeft_->Initialize();
+
+	halberdRight_ = std::make_unique<MirrorHalberd>();
+	halberdRight_->Initialize();
+
+
 	Phase1Initialize();
 
-	phase_ = Phase::kPhase1;
+
+	if (gGamePhase == GamePhase::kBossPhase2) {
+		phase_ = Phase::kPhase2;
+	} else {
+		phase_ = Phase::kPhase1;
+	}
 
 	LightManager::GetInstance()->CreatePointLight("boss_light");
 	LightManager::GetInstance()->GetLightData("boss_light")->color = { 0.5f,0.5f,1.0f,1.0f };
@@ -111,7 +123,14 @@ void Boss::Initialize() {
 
 	if (gGamePhase == GamePhase::kGameStartAnim) {
 		StartAnimInitialize();
+	} else if (gGamePhase == GamePhase::kBossPhaseChangeAnim) {
+		PhaseChangeAnimInitialize();
+	} else if (gGamePhase == GamePhase::kBossLastJaronaAnim) {
+
 	}
+
+	isChangePhase_ = false;
+	isImmune_ = false;
 
 #ifdef _DEBUG
 	useDebugUpdateStop = true;
@@ -172,7 +191,10 @@ void Boss::Update() {
 		EffectUpdate();
 		return;
 	} else if (gGamePhase == GamePhase::kBossPhaseChangeAnim) {
+		PhaseChangeAnimationUpdate();
+
 		EffectUpdate();
+		return;
 	} else if (gGamePhase == GamePhase::kBossLastJaronaAnim) {
 		EffectUpdate();
 
@@ -365,6 +387,8 @@ void Boss::ClearAttackDatas() {
 }
 
 void Boss::HalberdStanceUpdate() {
+	halberdRight_->Update();
+	halberdLeft_->Update();
 	switch (currentDistance_) {
 	case Boss::DistanceName::kNear:
 		basicHalberdPos = kBasicHalberdNearPos;
@@ -390,6 +414,8 @@ void Boss::Draw() {
 	renderer->DrawModel(halberdTransform_, &halberdModel_, true);
 	renderer->DrawShadow(halberdTransform_, &halberdModel_, { 0.0f,0.0f,0.0f,1.0f });
 
+	halberdRight_->Draw();
+	halberdLeft_->Draw();
 #ifdef _DEBUG
 
 	for (Vector3& pos : anchorPoints_) {
@@ -406,6 +432,10 @@ void Boss::Draw() {
 }
 
 void Boss::OnCollision(Collider* other) {
+	if (isImmune_) {
+		return;
+	}
+
 	if (other->GetCollisionAttribute() == CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayer)) {
 		return;
 	}
@@ -475,6 +505,7 @@ void Boss::OnCollision(Collider* other) {
 		if (currentHP_ < (maxHP_ / 2.0f)) {
 			DeltaTime::GetInstance()->SetHitStop(0.5f);
 			phase_ = Phase::kPhase2;
+			isChangePhase_ = true;
 		}
 	}
 }
@@ -1383,6 +1414,27 @@ void Boss::StartAnimInitialize() {
 	hpGauge->SetScale({ 0.0f, 1.0f });
 }
 
+void Boss::PhaseChangeAnimInitialize(){
+	GameCamera::GetInstance()->Reset();
+	//GameCamera::GetInstance()->SetPosition({0.0f,3.2f,-70.0f});
+	//GameCamera::GetInstance()->SetRotate({0.0f,0.0f,0.0f});
+	AnimInitialize();
+
+	animCameraCenterTransform_.Initialize();
+	animCameraTransform_.Initialize();
+	animCameraTransform_.translate.y = kBasicPositionY + 10.0f;
+	animCameraTransform_.translate.z = -30.0f;
+	animCameraTransform_.SetParent(&animCameraCenterTransform_);
+	halberdTransform_.rotate = kAnimPhaseChangeStartHalberdRotate;
+	halberdTransform_.translate = kAnimPhaseChangeStartHalberdPos;
+	transform_.translate = { 0.0f,kBasicPositionY,0.0f };
+	transform_.rotate.y = Radian(0.0f);
+	hpGauge->SetScale({ 0.0f, 1.0f });
+	preCameraTransform_ = GameCamera::GetInstance()->GetTransform();
+	GameCamera::GetInstance()->SetPosition({});
+	animTimerMax_ = kAnimPhaseChangeCameraRotateTimerMax;
+}
+
 void Boss::AnimInitialize() {
 	animPhase_ = 0;
 	animTimer_ = 0.0f;
@@ -1482,10 +1534,13 @@ void Boss::StartAnimationUpdate() {
 
 		if (animTimer_ >= animTimerMax_) {
 			NextAnimPhase(kAnimStartAttackBlankTimerMax);
+			Camera::GetInstance()->CreateShake({ 0.5f,0.5f }, kAnimStartAttackBlankTimerMax);
+			InputManager::GetInstance()->SetVibration(1.0f, 1.0f, kAnimStartAttackBlankTimerMax);
 		}
 		break;
 	case 12:
 		hpGauge->SetScale({ Easing(0.0f, 1.0f, animTimer_, kAnimStartNameShowTimerMax, EaseType::kEaseOut), 1.0f });
+		camera->SetPosition(Easing(kAnimStartAttackCameraPos, kAnimStartNameShowCameraPos, animTimer_, animTimerMax_, EaseType::kConstant));
 
 		if (animTimer_ >= animTimerMax_) {
 			NextAnimPhase(kAnimStartFinishTimerMax);
@@ -1500,6 +1555,136 @@ void Boss::StartAnimationUpdate() {
 
 		if (animTimer_ >= animTimerMax_) {
 			gGamePhase = GamePhase::kBossPhase1;
+		}
+		break;
+	}
+}
+
+void Boss::PhaseChangeAnimationUpdate() {
+	GameCamera* camera = GameCamera::GetInstance();
+
+	animTimer_ += deltaTime_;
+	switch (animPhase_) {
+	case 0:
+		animCameraTransform_.translate.y = Easing(kBasicPositionY + 10.0f,kBasicPositionY, animTimer_, animTimerMax_, EaseType::kConstant);
+		animCameraCenterTransform_.rotate.y = Easing(0.0f,Radian(360.0f),animTimer_,animTimerMax_,EaseType::kEaseInOut);
+		camera->SetRotate({ Easing(Radian(20.0f),0.0f,animTimer_,animTimerMax_,EaseType::kConstant),Easing(0.0f,Radian(360.0f),animTimer_,animTimerMax_,EaseType::kEaseInOut),0.0f });
+		camera->SetPosition(animCameraTransform_.GetWorldPosition());
+
+		
+		if (animTimer_ >= animTimerMax_) {
+			NextAnimPhase(kAnimPhaseChangeCameraMoveTimerMax);
+		}
+		break;
+	case 1:
+		animCameraTransform_.translate.z = Easing(-30.0f,kAnimPhaseChangeCameraMovePosZ_, animTimer_, animTimerMax_, EaseType::kEaseInOut);
+
+		camera->SetPosition(animCameraTransform_.GetWorldPosition());
+		if (animTimer_ >= animTimerMax_) {
+			NextAnimPhase(kAnimPhaseChangeHalSpawnTimerMax);
+		}
+		break;
+	case 2:
+		halberdTransform_.translate = Easing(kAnimPhaseChangeStartHalberdPos, kAnimPhaseChangeHalSpawnHalberdPos, animTimer_, animTimerMax_, EaseType::kEaseInOut);
+		camera->SetPosition(Easing(animCameraTransform_.GetWorldPosition(), kAnimPhaseChangeHalSpawnCameraPos, animTimer_, animTimerMax_, EaseType::kEaseInOut));
+		if (animTimer_ >= animTimerMax_) {
+			NextAnimPhase(kAnimPhaseChangeHalRotate90degTimerMax);
+		}
+		break;
+	case 3:
+		halberdTransform_.rotate.y = Easing(0.0f,Radian(90.0f),animTimer_,animTimerMax_,EaseType::kEaseIn);
+		if (animTimer_ >= animTimerMax_) {
+			halberdRight_->SetIsActive(true);
+			halberdRight_->SetPosition( {0.0f,9.0f ,-2.0f });
+			halberdRight_->SetRotate({0.0f,Radian(90.0f) ,0.0f});
+			NextAnimPhase(kAnimPhaseChangeHalRotate270degTimerMax);
+		}
+		break;
+	case 4:
+		halberdTransform_.rotate.y = Easing(Radian(90.0f), Radian(270.0f), animTimer_, animTimerMax_, EaseType::kConstant);
+		halberdRight_->SetPosition(Easing({ 0.0f,9.0f ,-2.0f }, kAnimPhaseChangeHalSpawnHalberdRightPos, animTimer_, animTimerMax_, EaseType::kEaseOut));
+		if (animTimer_ >= animTimerMax_) {
+			halberdLeft_->SetIsActive(true);
+			halberdLeft_->SetPosition({ 0.0f,9.0f ,-2.0f });
+			halberdLeft_->SetRotate({ 0.0f,Radian(270.0f) ,0.0f });
+			NextAnimPhase(kAnimPhaseChangeHalRotate360degTimerMax);
+		}
+		break;
+	case 5:
+		halberdTransform_.rotate.y = Easing(Radian(270.0f), Radian(360.0f), animTimer_, animTimerMax_, EaseType::kEaseOut);
+		halberdLeft_->SetPosition(Easing({ 0.0f,9.0f ,-2.0f }, kAnimPhaseChangeHalSpawnHalberdLeftPos, animTimer_, animTimerMax_, EaseType::kEaseOut));
+		if (animTimer_ >= animTimerMax_) {
+			NextAnimPhase(kAnimPhaseChangeCameraHalRotateTimerMax);
+			animCameraTransform_.translate = kAnimPhaseChangeHalSpawnCameraPos;
+		}
+		break;
+	case 6:
+		animCameraCenterTransform_.rotate.y = Easing(0.0f, Radian(360.0f), animTimer_, animTimerMax_, EaseType::kEaseInOut);
+		animCameraTransform_.translate.y = Easing(kAnimPhaseChangeHalSpawnCameraPos.y, kBasicPositionY, animTimer_, animTimerMax_, EaseType::kEaseInOut);
+		camera->SetPosition(animCameraTransform_.GetWorldPosition());
+		camera->SetRotate({0.0f,Easing(0.0f,Radian(360.0f),animTimer_,animTimerMax_,EaseType::kEaseInOut),0.0f });
+		halberdRight_->SetRotateY(Easing(Radian(90.0f),kAnimPhaseChangeCameraHalRotateHalberdRightRotateY, animTimer_, animTimerMax_, EaseType::kEaseInOut));
+		halberdLeft_->SetRotateY(Easing(Radian(-90.0f), kAnimPhaseChangeCameraHalRotateHalberdLeftRotateY, animTimer_, animTimerMax_, EaseType::kEaseInOut));
+		
+		halberdTransform_.translate = Easing( kAnimPhaseChangeHalSpawnHalberdPos,kAnimPhaseChangeCameraHalRotateHalberdPos, animTimer_, animTimerMax_, EaseType::kEaseInOut);
+		halberdRight_->SetPosition(Easing(kAnimPhaseChangeHalSpawnHalberdRightPos,kAnimPhaseChangeCameraHalRotateHalberdRightPos, animTimer_, animTimerMax_, EaseType::kEaseInOut));
+		halberdLeft_->SetPosition(Easing(kAnimPhaseChangeHalSpawnHalberdLeftPos,kAnimPhaseChangeCameraHalRotateHalberdLeftPos, animTimer_, animTimerMax_, EaseType::kEaseInOut));
+
+		
+		if (animTimer_ >= animTimerMax_) {
+			NextAnimPhase(kAnimPhaseChangeCameraHalRotateBlankTimerMax);
+		}
+		break;
+	case 7:
+		if (animTimer_ >= animTimerMax_) {
+			NextAnimPhase(kAnimPhaseChangeJumpTimerMax);
+		}
+		break;
+	case 8:
+		transform_.rotate = Easing({0.0f,0.0f,0.0f}, { 0.0f,Radian(360.0f),0.0f }, animTimer_, animTimerMax_, EaseType::kEaseOut);
+		transform_.translate.y = Easing(kBasicPositionY, kAnimPhaseChangeJumpPosY, animTimer_, animTimerMax_, EaseType::kEaseOut);
+		camera->SetPosition(Easing(animCameraTransform_.GetWorldPosition(), kAnimPhaseChangeJumpCameraPos, animTimer_, animTimerMax_, EaseType::kEaseOut));
+		camera->SetRotate(Easing({ 0.0f,0.0f,0.0f }, kAnimPhaseChangeJumpCameraRotate, animTimer_, animTimerMax_, EaseType::kEaseOut));
+		halberdRight_->SetPosition(Easing(kAnimPhaseChangeCameraHalRotateHalberdRightPos, kAnimPhaseChangeJumpHalberdRightPos, animTimer_, animTimerMax_, EaseType::kEaseOut));
+		halberdLeft_->SetPosition(Easing(kAnimPhaseChangeCameraHalRotateHalberdLeftPos, kAnimPhaseChangeJumpHalberdLeftPos, animTimer_, animTimerMax_, EaseType::kEaseOut));
+
+		if (animTimer_ >= animTimerMax_) {
+			NextAnimPhase(kAnimPhaseChangeJumpBlankTimerMax);
+		}
+		break;
+	case 9:
+		if (animTimer_ >= animTimerMax_) {
+			NextAnimPhase(kAnimPhaseChangeAttackTimerMax);
+			transform_.rotate = { 0.0f,0.0f,0.0f };
+		}
+		break;
+	case 10:
+		transform_.translate.y = Easing(kAnimPhaseChangeJumpPosY, kBasicPositionY, animTimer_, animTimerMax_, EaseType::kEaseOut);
+		halberdTransform_.rotate = Easing({0.0f,0.0f,0.0f}, kAnimPhaseChangeAttackHalberdRotate, animTimer_, animTimerMax_, EaseType::kEaseOut);
+		halberdTransform_.translate = Easing(kAnimPhaseChangeCameraHalRotateHalberdPos, kAnimPhaseChangeAttackHalberdPos, animTimer_, animTimerMax_, EaseType::kEaseOut);
+		camera->SetPosition(Easing(kAnimPhaseChangeJumpCameraPos, kAnimPhaseChangeAttackCameraPos, animTimer_, animTimerMax_, EaseType::kEaseOut));
+		camera->SetRotate(Easing(kAnimPhaseChangeJumpCameraRotate, kAnimPhaseChangeAttackCameraRotate, animTimer_, animTimerMax_, EaseType::kEaseOut));
+		halberdRight_->SetPosition(Easing(kAnimPhaseChangeJumpHalberdRightPos, kAnimPhaseChangeAttackHalberdRightPos, animTimer_, animTimerMax_, EaseType::kEaseOut));
+		halberdRight_->SetRotateX(Easing(0.0f, kAnimPhaseChangeAttackHalberdRotate.x, animTimer_, animTimerMax_, EaseType::kEaseOut));
+		halberdLeft_->SetPosition(Easing(kAnimPhaseChangeJumpHalberdLeftPos, kAnimPhaseChangeAttackHalberdLeftPos, animTimer_, animTimerMax_, EaseType::kEaseOut));
+		halberdLeft_->SetRotateX(Easing(0.0f, kAnimPhaseChangeAttackHalberdRotate.x, animTimer_, animTimerMax_, EaseType::kEaseOut));
+
+
+
+		if (animTimer_ >= animTimerMax_) {
+			NextAnimPhase(kAnimPhaseChangeAttackBlankTimerMax);
+			Camera::GetInstance()->CreateShake({ 0.5f,0.5f }, kAnimPhaseChangeAttackBlankTimerMax);
+			InputManager::GetInstance()->SetVibration(1.0f, 1.0f, kAnimPhaseChangeAttackBlankTimerMax);
+			currentHP_ = maxHP_ / 2.0f;
+		}
+		break;
+	case 11:
+		hpGauge->SetScale({ Easing(0.0f, 1.0f, animTimer_, kAnimPhaseChangeNameShowTimerMax, EaseType::kEaseOut), 1.0f });
+		camera->SetPosition(Easing(kAnimPhaseChangeAttackCameraPos, kAnimPhaseChangeNameShowCameraPos, animTimer_, animTimerMax_, EaseType::kConstant));
+
+		if (animTimer_ >= animTimerMax_) {
+			NextAnimPhase(kAnimStartFinishTimerMax);
+			transform_.rotate = { 0.0f,0.0f,0.0f };
 		}
 		break;
 	}

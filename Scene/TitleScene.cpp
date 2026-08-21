@@ -1,7 +1,7 @@
 #include "TitleScene.h"
 
 void TitleScene::Initialize() {
-	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.01f;
+	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.05f;
 	LightManager::GetInstance()->GetDirectionalLightData()->color = { 0.5f,0.5f,1.0f,1.0f };
 	LightManager::GetInstance()->ClearLight();
 
@@ -112,6 +112,8 @@ void TitleScene::PhaseSelect() {
 
 void TitleScene::TitleUpdate() {
 	if (TriggerSubmit()) {
+		SoundManager::GetInstance()->SoundPlay(sndSelect_, 1.0f, 0.5f, SoundType::kSoundEffect);
+		InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.5f);
 		currentMenuSelectNum_ = 0;
 		//currentPhase_ = TitlePhase::kMenuSelect;
 		currentPhase_ = TitlePhase::kDifficultySelect;
@@ -121,8 +123,7 @@ void TitleScene::TitleUpdate() {
 void TitleScene::MenuUpdate() {
 	if (TriggerDown()) {
 		currentMenuSelectNum_++;
-		currentDifficultySelectNum_ = static_cast<int32_t>(DifficultyManager::GetInstance()->GetCurrentDifficulty());
-		SoundManager::GetInstance()->SoundPlay(sndSelect_,1.0f,0.5f,SoundType::kSoundEffect);
+		SoundManager::GetInstance()->SoundPlay(sndSelect_, 1.0f, 0.5f, SoundType::kSoundEffect);
 		if (currentMenuSelectNum_ > 2) {
 			currentMenuSelectNum_ = 2;
 		}
@@ -139,6 +140,7 @@ void TitleScene::MenuUpdate() {
 	switch (currentMenuSelectNum_) {
 	case 0:
 		if (TriggerSubmit()) {
+			currentDifficultySelectNum_ = static_cast<int32_t>(DifficultyManager::GetInstance()->GetCurrentDifficulty());
 			currentPhase_ = TitlePhase::kDifficultySelect;
 			SoundManager::GetInstance()->SoundPlay(sndSelect_, 1.0f, 0.5f, SoundType::kSoundEffect);
 		}
@@ -175,6 +177,7 @@ void TitleScene::DiffucltyUpdate() {
 	}
 
 	if (TriggerSubmit()) {
+		InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.5f);
 		SoundManager::GetInstance()->SoundPlay(sndSelect_, 1.0f, 0.5f, SoundType::kSoundEffect);
 		switch (currentDifficultySelectNum_) {
 		case 0:

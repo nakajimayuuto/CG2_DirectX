@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <winuser.h>
 #include "../Engine/SystemFile/ImGui.h"
+#include "../Engine/SystemFile/DeltaTime.h"
+#include "../Engine/Math/Easing.h"
 
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")
@@ -237,6 +239,30 @@ float InputGamePad::GetPreRightStickInclination() const {
 	result.x = static_cast<float>(preState_.Gamepad.sThumbRX) / 32768.0f;
 	result.y = static_cast<float>(preState_.Gamepad.sThumbRY) / 32768.0f;
 	return result.Length();
+}
+
+void InputGamePad::SetVibration(float left, float right){
+	XINPUT_VIBRATION vibration{};
+	
+	if (left > 1.0f) {
+		left = 1.0f;
+	} else if (left < 0.0f){
+		left = 0.0f;
+	}
+	
+	if (right > 1.0f) {
+		right = 1.0f;
+	} else if (right < 0.0f){
+		right = 0.0f;
+	}
+
+	vibration.wLeftMotorSpeed = static_cast<WORD>(65535.0f * left);
+	vibration.wRightMotorSpeed = static_cast<WORD>(65535.0f * right);
+
+	XInputSetState(
+		padNo_,
+		&vibration
+	);
 }
 
 bool InputGamePad::IsOperationDevice() {
@@ -541,6 +567,61 @@ void InputManager::Update() {
 #endif // _DEBUG
 
 	gamePad_.Update();
+	VibrationUpdate();
+}
+
+void InputManager::SetVibration(float left, float right, float duration){
+	if (vibrationType_ == VibrationType::CONTINUATION) {
+		return;
+	}
+
+	leftVibrationMag_ = left;
+	rightVibrationMag_ = right;
+	vibrationTimerMax_ = duration;
+	vibrationTimer_ = 0.0f;
+	isVibration_ = true;
+	vibrationType_ = VibrationType::FIXED_TIME;
+}
+
+void InputManager::SetContinuationVibration(float left, float right, bool isVibration){
+	leftVibrationMag_ = left;
+	rightVibrationMag_ = right;
+	isVibration_ = isVibration;
+
+	if (isVibration_) {
+		vibrationType_ = VibrationType::CONTINUATION;
+		gamePad_.SetVibration(left,right);
+	} else {
+		vibrationType_ = VibrationType::FIXED_TIME;
+		leftVibrationMag_ = 0.0f;
+		rightVibrationMag_ = 0.0f;
+		gamePad_.SetVibration(0.0f,0.0f);
+	}
+}
+
+void InputManager::VibrationUpdate(){
+	if (!isVibration_) {
+		return;
+	}
+
+	if (vibrationType_ == VibrationType::FIXED_TIME) {
+
+		float left;
+		float right;
+		vibrationTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
+		left = Easing(leftVibrationMag_, 0.0f, vibrationTimer_, vibrationTimerMax_, EaseType::kEaseInOut);
+		right = Easing(rightVibrationMag_, 0.0f, vibrationTimer_, vibrationTimerMax_, EaseType::kEaseInOut);
+
+		if (vibrationTimer_ >= vibrationTimerMax_) {
+			isVibration_ = false;
+			leftVibrationMag_ = 0.0f;
+			rightVibrationMag_ = 0.0f;
+			gamePad_.SetVibration(0.0f,0.0f);
+		} else {
+			gamePad_.SetVibration(left,right);
+		}
+
+	}
 }
 
 void InputManager::OperationModeCheck() {

@@ -59,6 +59,8 @@ public:
 
 	void TutorialWallClamp();
 
+	void SetIsImmune(bool isImmune) { isImmune_ = isImmune; };
+
 	void SetTutorialMinClamp(float positionZ) { tutorialClampMinPosZ_ = positionZ; };
 	void SetTutorialMaxClamp(float positionZ) { tutorialClampMaxPosZ_ = positionZ; };
 private:
@@ -104,6 +106,8 @@ private:
 	bool isAttack_;
 	bool isDash_;
 	bool isJump_;
+
+	bool isImmune_;
 
 	std::unique_ptr<HPGauge> hpGauge_;
 

@@ -6,8 +6,11 @@ GameScene::~GameScene() {
 }
 
 void GameScene::Initialize() {
-	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.1f;
-	LightManager::GetInstance()->GetDirectionalLightData()->color = { 1.0f,0.5f,0.5f,1.0f };
+	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.15f;
+	LightManager::GetInstance()->GetDirectionalLightData()->direction = { 0.0f,-1.0f,0.0f };
+	LightManager::GetInstance()->GetDirectionalLightData()->color = { 1.0f,1.0f,1.0f,1.0f };
+	//LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.1f;
+	//LightManager::GetInstance()->GetDirectionalLightData()->color = { 1.0f,0.5f,0.5f,1.0f };
 	TutorialManager::GetInstance()->Initialize();
 
 
@@ -17,6 +20,14 @@ void GameScene::Initialize() {
 	player_ = std::make_unique<Player>();
 	player_->Initialize();
 	player_->SetStartPosition({ 0.0f,1.0f,-375.0f });
+
+	if (gGamePhase == GamePhase::kBossLastJaronaAnim) {
+		player_->SetStartPosition({ 0.0f,1.0f,-50.0f });
+	} else if (gGamePhase == GamePhase::kBossPhaseChangeAnim) {
+		player_->SetStartPosition({ 0.0f,1.0f,-50.0f });
+	} else if (gGamePhase == GamePhase::kGameStartAnim) {
+		player_->SetStartPosition({ 0.0f,1.0f,-50.0f });
+	}
 
 	skydome_ = std::make_unique<Skydome>();
 	skydome_->Initialize();
@@ -58,6 +69,9 @@ void GameScene::Initialize() {
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
 	useSkipStart_ = false;
 	useSkipEnd_ = false;
+
+	pauseMenu_ = std::make_unique<PauseMenu>();
+	pauseMenu_->Initialize();
 	//gGamePhase = GamePhase::kBossLastJarona;
 }
 
@@ -90,6 +104,36 @@ void GameScene::Update() {
 		gGamePhase = GamePhase::kTutorial;
 	}
 
+	if (pauseMenu_->GetIsActive()) {
+		pauseMenu_->Update();
+		worldFrameEmitter_->Update();
+		worldBigFrameEmitter_->Update();
+		fade_->Update();
+
+		Camera::GetInstance()->Update();
+		return;
+	} else {
+		if (InputManager::GetInstance()->TriggerPadButton(INPUT_START) || InputManager::GetInstance()->TriggerKey(DIK_P)) {
+			pauseMenu_->ShowMenu();
+		}
+	}
+
+	if (boss_->GetIsChangePhase()) {
+		boss_->SetIsImmune(true);
+		player_->SetIsImmune(true);
+		boss_->SetIsChangePhase(false);
+		fade_->Start(Fade::Status::FadeOut, 1.0f);
+	}
+
+	if (gGamePhase == GamePhase::kBossPhase1) {
+		if (boss_->GetPhase() == Boss::Phase::kPhase2) {
+			if (fade_->isFinished()) {
+				gGamePhase = GamePhase::kBossPhaseChangeAnim;
+				SceneManager::GetInstance()->ReloadScene();
+			}
+		}
+	}
+
 	player_->Update();
 
 	boss_->SetTargetIsAttact(player_->GetIsAttack());
@@ -105,7 +149,6 @@ void GameScene::Update() {
 	worldBigFrameEmitter_->Update();
 
 	AnimSkipUpdate();
-
 	fade_->Update();
 	TutorialUpdate();
 
@@ -151,6 +194,7 @@ void GameScene::Draw() {
 	Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 500.0f,200.0f,0.0f }), "play_guid", { 1.0f,1.0f,1.0f,1.0f });
 
 	fade_->Draw();
+	pauseMenu_->Draw();
 }
 
 void GameScene::CheckAllCollisions() {
@@ -165,23 +209,27 @@ void GameScene::AnimSkipUpdate() {
 		return;
 	}
 
-	//if (gGamePhase == GamePhase::kTutorial) {
-		if (InputManager::GetInstance()->IsGamePadConnect()) {
-			if (InputManager::GetInstance()->TriggerPadButton(INPUT_START)) {
-				fade_->SetColor({ 0.0f,0.0f,0.0f });
-				fade_->Start(Fade::Status::FadeOut, 1.0f);
-				useSkipStart_ = true;
-			}
-		} else {
-			if (InputManager::GetInstance()->TriggerKey(DIK_P)) {
-				fade_->SetColor({ 0.0f,0.0f,0.0f });
-				fade_->Start(Fade::Status::FadeOut, 1.0f);
-				useSkipStart_ = true;
-			}
-		}
-
-		AnimSkipFadeUpdate();
+	if (!fade_->isFinished()) {
 		return;
+	}
+
+	//if (gGamePhase == GamePhase::kTutorial) {
+	if (InputManager::GetInstance()->IsGamePadConnect()) {
+		if (InputManager::GetInstance()->PressPadButton(INPUT_L1) && InputManager::GetInstance()->PressPadButton(INPUT_L1)) {
+			fade_->SetColor({ 0.0f,0.0f,0.0f });
+			fade_->Start(Fade::Status::FadeOut, 1.0f);
+			useSkipStart_ = true;
+		}
+	} else {
+		if (InputManager::GetInstance()->TriggerKey(DIK_O)) {
+			fade_->SetColor({ 0.0f,0.0f,0.0f });
+			fade_->Start(Fade::Status::FadeOut, 1.0f);
+			useSkipStart_ = true;
+		}
+	}
+
+	AnimSkipFadeUpdate();
+	return;
 	//}
 
 	//if (InputManager::GetInstance()->IsGamePadConnect()) {
@@ -212,15 +260,18 @@ void GameScene::AnimSkipFadeUpdate() {
 			case kTutorial:
 				break;
 			case kGameStartAnim:
+				break;
+			case kBossPhase1:
 				player_->Initialize();
 				player_->SetStartPosition({ 0.0f,1.0f,-50.0f });
 				boss_->Initialize();
 				break;
-			case kBossPhase1:
-				break;
 			case kBossPhaseChangeAnim:
 				break;
 			case kBossPhase2:
+				player_->Initialize();
+				player_->SetStartPosition({ 0.0f,1.0f,-50.0f });
+				boss_->Initialize();
 				break;
 			case kBossLastJaronaAnim:
 				break;

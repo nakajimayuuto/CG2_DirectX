@@ -5,12 +5,16 @@
 #include <cstdint>
 #include <xinput.h>
 #include "../Engine/Math/Vector2.h"
+#include "../Engine/Math/Easing.h"
 
 enum class OperationMode {
 	KeyBoard,
 	Pad,
 };
-
+enum class VibrationType {
+	FIXED_TIME,
+	CONTINUATION,
+};
 /*
 enum PadButtoms {
 	INPUT_A = XINPUT_GAMEPAD_A,
@@ -156,6 +160,8 @@ public:
 	
 	XINPUT_STATE GetPreXInputState() { return preState_; };
 
+	void SetVibration(float left, float right);
+
 	bool IsOperationDevice();
 private:
 	BYTE GetButtonPress(PadButtons button)const;
@@ -277,7 +283,13 @@ public:
 	void SetIsCursorFixed(bool isCursorFixed) {mouse_.SetIsCursorFixed(isCursorFixed); }
 
 	void SetIsCursorVisible(bool isCursorVisible) { mouse_.SetIsCursorVisible(isCursorVisible); }
+
+	void SetVibration(float left, float right,float duration);
+
+	void SetContinuationVibration(float left,float right,bool isVibration);
 private:
+	void VibrationUpdate();
+
 	void OperationModeCheck();
 private:
 	bool isDebugCursorMovingAllow_ = false;
@@ -286,5 +298,12 @@ private:
 	InputMouse mouse_;
 	InputGamePad gamePad_;
 	OperationMode operationMode_ = OperationMode::KeyBoard;
+
+	float leftVibrationMag_;
+	float rightVibrationMag_;
+	float vibrationTimer_;
+	float vibrationTimerMax_;
+	bool isVibration_; // シェイクしているかどうか.
+	VibrationType vibrationType_; // シェイクのタイプ.
 };
 

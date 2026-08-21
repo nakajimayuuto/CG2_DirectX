@@ -23,6 +23,8 @@ public:
 
 	void SetGameTimeSpeed(float speed) { gameTimeSpeed_ = speed; };
 
+	float GetGameTimeSpeed() { return gameTimeSpeed_; };
+
 	void SetHitStop(float stopTime) { 
 		stopTimer_ = stopTime; isHitStop_ = true; 
 	};

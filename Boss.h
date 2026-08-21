@@ -1,6 +1,7 @@
 #pragma once
 #include "Satlib.h"
 #include "HPGauge.h"
+#include "MirrorHalberd.h"
 class Boss : public Collider {
 public:
 	enum class Phase {
@@ -28,6 +29,14 @@ public:
 	Vector3 GetWorldPosition() override { return transform_.GetAffineMatrix().GetMatrixToTranslate(); };
 
 	void OnCollision([[maybe_unused]] Collider* other)override;
+
+	bool GetIsChangePhase() { return isChangePhase_; };
+
+	void SetIsChangePhase(bool isChangePhase) { isChangePhase_ = isChangePhase; };
+
+	void SetIsImmune(bool isImmune) { isImmune_ = isImmune; };
+
+	Phase GetPhase() { return phase_; };
 private:
 	void SlashEffectCreate(Transform* targetTransform, uint32_t num);
 
@@ -69,6 +78,11 @@ private:
 		float magnification = 1.0f;
 	};
 
+	std::unique_ptr<MirrorHalberd> halberdLeft_;
+	std::unique_ptr<MirrorHalberd> halberdRight_;
+
+	bool isImmune_;
+
 	Model model_;
 	Model halberdModel_;
 
@@ -94,6 +108,8 @@ private:
 
 	bool isAttack_;
 
+	bool isChangePhase_;
+
 	Phase phase_;
 
 	std::unique_ptr<Emitter> emitter_;
@@ -116,6 +132,9 @@ private:
 
 	void WarpInitialize();
 	void WarpUpdate();
+
+	void DownInitialize();
+	void DownUpdate();
 
 	void BulletInitialize();
 	void BulletUpdate();
@@ -424,12 +443,16 @@ private:
 	static inline uint32_t kNearThirdAttackRadiusLoopCount = 4;
 public:
 	void StartAnimInitialize();
+
+	void PhaseChangeAnimInitialize();
 private:
 	void AnimInitialize();
 
 	void NextAnimPhase(float timerMax);
 
 	void StartAnimationUpdate();
+
+	void PhaseChangeAnimationUpdate();
 private:
 	// 全体で使う.
 	uint32_t animPhase_ = 0;
@@ -477,12 +500,77 @@ private:
 	static inline Vector3 kAnimStartJumpHalberdPos = { 0.0f,3.0f ,-2.0f };
 	static inline Vector3 kAnimStartJumpHalberdRotate = { Radian(0.0f),Radian(0.0f),Radian(0.0f) };
 
-	static inline Vector3 kAnimStartAttackCameraPos = { 0.0f,0.5f ,-25.0f };
+	static inline Vector3 kAnimStartAttackCameraPos = { 0.0f,0.5f ,-23.0f };
 	static inline Vector3 kAnimStartAttackCameraRotate = { Radian(-10.0f),0.0f,0.0f };
 	static inline Vector3 kAnimStartAttackHalberdPos = { 0.0f,-1.0f ,-4.0f };
 	static inline Vector3 kAnimStartAttackHalberdRotate = { Radian(-120.0f),Radian(0.0f),Radian(0.0f) };
 
+	static inline Vector3 kAnimStartNameShowCameraPos = { 0.0f,0.5f ,-25.0f };
+
 	static inline Vector3 kAnimStartFinishHalberdPos = { -2.0f,2.0f ,-2.0f };
 	static inline Vector3 kAnimStartFinishHalberdRotate = { Radian(0.0f),Radian(0.0f),Radian(-30.0f) };
+
+	Transform animCameraCenterTransform_;
+	Transform animCameraTransform_;
+
+	// PhaseChangeAnim
+	static inline float kAnimPhaseChangeCameraRotateTimerMax = 3.0f; // 回転しながらカメラが下りてくる.
+	static inline float kAnimPhaseChangeCameraMoveTimerMax = 0.5f; // カメラを近づける.
+	static inline float kAnimPhaseChangeHalSpawnTimerMax = 0.7f; // ハルバードが現れる.
+	static inline float kAnimPhaseChangeHalRotate90degTimerMax = 0.15f; // ハルバードが回る.
+	static inline float kAnimPhaseChangeHalRotate270degTimerMax = 0.15f; // ハルバードが回る.
+	static inline float kAnimPhaseChangeHalRotate360degTimerMax = 0.15f; // ハルバードが回る.
+	static inline float kAnimPhaseChangeCameraHalRotateTimerMax = 3.0f; // 回転しながらカメラが下りてくる.
+	static inline float kAnimPhaseChangeCameraHalRotateBlankTimerMax = 0.5f; // 回転しながらカメラが下りてくる.
+
+	static inline float kAnimPhaseChangeJumpTimerMax = 0.5f; // 飛び上がる.
+	static inline float kAnimPhaseChangeJumpBlankTimerMax = 0.5f; // 飛び上がり余白.
+	static inline float kAnimPhaseChangeAttackTimerMax = 0.2f; // 叩きつけ.
+	static inline float kAnimPhaseChangeAttackBlankTimerMax = 2.0f; // 叩きつけの余白.
+	static inline float kAnimPhaseChangeNameShowTimerMax = 0.5f; // 叩きつけで名前出る.
+	static inline float kAnimPhaseChangeFinishTimerMax = 0.5f; // 叩きつけの余白.
+
+
+
+
+
+
+	static inline Vector3 kAnimPhaseChangeStartHalberdRotate = { 0.0f,Radian(0.0f),0.0f };
+	static inline Vector3 kAnimPhaseChangeStartHalberdPos = { 0.0f,-10.0f ,-2.0f };
+
+	static inline float kAnimPhaseChangeCameraMovePosZ_ = -20.0f;
+	static inline Vector3 kAnimPhaseChangeHalSpawnHalberdPos = { 0.0f,7.0f ,-2.0f };
+	static inline Vector3 kAnimPhaseChangeHalSpawnCameraPos = { 0.0f,11.5f ,-20.0f };
+	static inline Vector3 kAnimPhaseChangeHalSpawnHalberdRightPos = { -2.0f,9.0f ,-2.0f };
+	static inline Vector3 kAnimPhaseChangeHalSpawnHalberdLeftPos = { 2.0f,9.0f ,-2.0f };
+
+
+	static inline Vector3 kAnimPhaseChangeCameraHalRotateHalberdPos = { 0.0f,3.0f ,-2.0f };
+	static inline Vector3 kAnimPhaseChangeCameraHalRotateHalberdLeftPos = { 2.0f,5.0f ,-2.0f };
+	static inline Vector3 kAnimPhaseChangeCameraHalRotateHalberdRightPos = { -2.0f,5.0f ,-2.0f };
+
+	static inline float kAnimPhaseChangeCameraHalRotateHalberdLeftRotateY = Radian(-30.0f);
+	static inline float kAnimPhaseChangeCameraHalRotateHalberdRightRotateY = Radian(30.0f);
+	static inline Vector3 kAnimPhaseChangeJumpCameraRotate = { Radian(-15.0f),0.0f,0.0f };
+
+
+	static inline float kAnimPhaseChangeJumpPosY = 7.0f;
+	static inline Vector3 kAnimPhaseChangeJumpCameraPos = { 0.0f,3.4f ,-23.0f };
+	static inline Vector3 kAnimPhaseChangeJumpHalberdLeftPos = { 2.0f,9.0f ,-2.0f };
+	static inline Vector3 kAnimPhaseChangeJumpHalberdRightPos = { -2.0f,9.0f ,-2.0f };
+
+	static inline Vector3 kAnimPhaseChangeAttackCameraPos = { 0.0f,0.5f ,-23.0f };
+	static inline Vector3 kAnimPhaseChangeAttackCameraRotate = { Radian(-10.0f),0.0f,0.0f };
+	static inline Vector3 kAnimPhaseChangeAttackHalberdPos = { 0.0f,-1.0f ,-4.0f };
+	static inline Vector3 kAnimPhaseChangeAttackHalberdRotate = { Radian(-120.0f),Radian(0.0f),Radian(0.0f) };
+
+
+	static inline Vector3 kAnimPhaseChangeAttackHalberdLeftPos = { 2.5f,1.0f ,-3.0f };
+	static inline Vector3 kAnimPhaseChangeAttackHalberdRightPos = { -2.5f,1.0f ,-3.0f };
+
+	static inline Vector3 kAnimPhaseChangeNameShowCameraPos = { 0.0f,0.5f ,-25.0f };
+
+	static inline Vector3 kAnimPhaseChangeFinishHalberdPos = { -2.0f,2.0f ,-2.0f };
+	static inline Vector3 kAnimPhaseChangeFinishHalberdRotate = { Radian(0.0f),Radian(0.0f),Radian(-30.0f) };
 };
 

@@ -202,6 +202,9 @@
     <Filter Include="ソース ファイル\Fade">
       <UniqueIdentifier>{42a1fabf-f152-4e62-98dc-369db65b5a9f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\PauseMenu">
+      <UniqueIdentifier>{561c0cc8-ab3a-4957-99a1-7d68f89e4cea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -386,6 +389,12 @@
     </ClCompile>
     <ClCompile Include="Fade.cpp">
       <Filter>ソース ファイル\Fade</Filter>
+    </ClCompile>
+    <ClCompile Include="PauseMenu.cpp">
+      <Filter>ソース ファイル\PauseMenu</Filter>
+    </ClCompile>
+    <ClCompile Include="MirrorHalberd.cpp">
+      <Filter>ソース ファイル\Boss</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -586,6 +595,12 @@
     </ClInclude>
     <ClInclude Include="Fade.h">
       <Filter>ソース ファイル\Fade</Filter>
+    </ClInclude>
+    <ClInclude Include="PauseMenu.h">
+      <Filter>ソース ファイル\PauseMenu</Filter>
+    </ClInclude>
+    <ClInclude Include="MirrorHalberd.h">
+      <Filter>ソース ファイル\Boss</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

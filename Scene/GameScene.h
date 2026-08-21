@@ -8,6 +8,7 @@
 #include "../GameCamera.h"
 #include "../Boss.h"
 #include "../Fade.h"
+#include "../PauseMenu.h"
 class TutorialObject {
 public:
 	bool isWall_ = true;
@@ -102,6 +103,7 @@ private:
 	std::unique_ptr<Emitter> worldFrameEmitter_;
 	std::unique_ptr<Emitter> worldBigFrameEmitter_;
 
+	std::unique_ptr<PauseMenu> pauseMenu_;
 	std::unique_ptr<Fade> fade_;
 	float startFade_;
 	bool useSkipStart_;
