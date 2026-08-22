@@ -20,10 +20,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ParticleManager::GetInstance()->Initialize();
 	LoadDatas();
 
-
-
-
 	SceneManager::GetInstance()->Initialize();
+
+
+
 	// ウィンドウのxボタンが押されるまでループ.
 	while (system->ProcessMessage()) {
 		if (system->BeginFrame()) {

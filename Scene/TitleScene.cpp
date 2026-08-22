@@ -197,7 +197,7 @@ void TitleScene::DiffucltyUpdate() {
 			break;
 		default:
 			break;
-		}
+		}	
 		isSubmit_ = true;
 		fade_->Start(Fade::Status::FadeOut, 1.0f);
 	}

@@ -18,11 +18,12 @@ void SceneManager::Initialize() {
 	CollisionManager::GetInstance()->CollisionAttributeInitialize();
 	currentScene_ = std::make_unique<TitleScene>();
 	sceneName_ = SceneName::kTitleScene;
-	//#ifdef _DEBUG
-	//Debug::GetInstance()->LoadDebugSettings();
-	//currentScene_ = std::make_unique<GameScene>();
-	//sceneName_ = SceneName::kGameScene;
-	//#endif // _DEBUG
+	#ifdef _DEBUG
+	Debug::GetInstance()->LoadDebugSettings();
+	currentScene_ = std::make_unique<GameScene>();
+	sceneName_ = SceneName::kGameScene;
+	gGamePhase = GamePhase::kBossPhase1;
+	#endif // _DEBUG
 
 	currentScene_->Initialize();
 }

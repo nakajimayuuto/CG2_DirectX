@@ -128,6 +128,16 @@ void Boss::Initialize() {
 
 	if (gGamePhase == GamePhase::kBossPhase2) {
 		phase_ = Phase::kPhase2;
+
+		currentHP_ = maxHP_ / 2.0f;
+		GameCamera::GetInstance()->SetRotate({0.0f,0.0f,0.0f});
+		halberdRight_->SetPosition(kAnimPhaseChangeFinishHalberdRightPos);
+		halberdRight_->SetRotate({0.0f,0.0f,0.0f});
+		halberdLeft_->SetPosition(kAnimPhaseChangeFinishHalberdLeftPos);
+		halberdRight_->SetRotate({0.0f,0.0f,0.0f});
+		halberdRight_->SetIsActive(true);
+		halberdLeft_->SetIsActive(true);
+		
 		Phase1Initialize();
 	} else {
 		phase_ = Phase::kPhase1;
@@ -460,6 +470,9 @@ void Boss::HalberdStanceUpdate() {
 }
 
 void Boss::Phase2HalberdFarAttackUpdate() {
+	if (useDebugUpdateStop) {
+		return;
+	}
 	Vector3 direction;
 	halberdLeftAttackTimer_ += deltaTime_;
 	halberdRightAttackTimer_ += deltaTime_;
@@ -478,9 +491,9 @@ void Boss::Phase2HalberdFarAttackUpdate() {
 	if (halberdRightAttackTimer_ >= kHalberdFarAttackTimerMax_) {
 		direction = (targetTransform_->translate - halberdRight_->GetTransform().GetWorldPosition()).Normalize();
 		if (Random::GetInstance()->Probability(33.0f)) {
-			ProjectileManager::GetInstance()->CreateBullet(halberdLeft_->GetTransform(), direction * 10.0f, BulletType::kBounce, kCollisionEnemyAttack, 10.0f, 3.0f);
+			ProjectileManager::GetInstance()->CreateBullet(halberdRight_->GetTransform(), direction * 10.0f, BulletType::kBounce, kCollisionEnemyAttack, 10.0f, 3.0f);
 		} else {
-			ProjectileManager::GetInstance()->CreateBullet(halberdLeft_->GetTransform(), direction * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, 10.0f, 3.0f);
+			ProjectileManager::GetInstance()->CreateBullet(halberdRight_->GetTransform(), direction * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, 10.0f, 3.0f);
 		}
 		halberdRightAttackTimer_ = 0.0f;
 	}
