@@ -60,6 +60,7 @@ private:
 		kPowerSlasher,
 		kFangAttack,
 		kNearAttack,
+		kDown,
 		kCountMax,
 		kFireBulletShot,
 
@@ -113,6 +114,10 @@ private:
 	Phase phase_;
 
 	std::unique_ptr<Emitter> emitter_;
+
+	std::unique_ptr<Emitter> downEmitter_;
+
+	float debugHpScale_;
 private:
 	void SetAttackData(Attacks attackName, float weight, DistanceName name);
 
@@ -123,6 +128,8 @@ private:
 	void Phase1Initialize();
 
 	void HalberdStanceUpdate();
+
+	void Phase2HalberdFarAttackUpdate();
 
 	void AttackInitialize();
 	void AttackUpdate();
@@ -441,6 +448,36 @@ private:
 	static inline float kNearThirdAttackRadiusNum = 30;
 	static inline float kNearThirdAttackRadius = 20.0f;
 	static inline uint32_t kNearThirdAttackRadiusLoopCount = 4;
+
+	// Down
+	static inline float kDonwStartTimer = 0.5f;
+	static inline float kDonwStayTimer = 5.0f;
+	static inline float kDonwFinsihTimer = 0.5f;
+
+	float donwAnimHalberdVelocityY_;
+	Vector3 downAnimHalberdRotate_;
+	Vector3 downAnimHalberdPos_;
+
+	static inline Vector3 kDownHalberdPos_ = {-2.0f,-1.0f,0.0f};
+	static inline Vector3 kDownHalberdRotate_ = { Radian(30.0f),Radian(0.0f),0.0f };
+
+	static inline float kDownStartPosY = 7.0f;
+	static inline float kDownStayRotateX = Radian(270.0f);
+	static inline float kDownStayPosY = 0.6f;
+
+	// halberdFarAttack
+	float basicHalberdLeftRotateX;
+	float basicHalberdRightRotateX;
+
+	float halberdLeftAttackTimer_;
+	float halberdRightAttackTimer_;
+
+	static inline float kHalberdFarAttackTimerMax_ = 3.0f;
+
+	static inline float kBasicHalberdFarLeftRotateX = Radian(-90.0f);
+	static inline float kBasicHalberdFarRightRotateX = Radian(-90.0f);
+	static inline float kBasicHalberdNormalLeftRotateX = 0.0f;
+	static inline float kBasicHalberdNormalRightRotateX = 0.0f;
 public:
 	void StartAnimInitialize();
 
@@ -541,13 +578,13 @@ private:
 	static inline float kAnimPhaseChangeCameraMovePosZ_ = -20.0f;
 	static inline Vector3 kAnimPhaseChangeHalSpawnHalberdPos = { 0.0f,7.0f ,-2.0f };
 	static inline Vector3 kAnimPhaseChangeHalSpawnCameraPos = { 0.0f,11.5f ,-20.0f };
-	static inline Vector3 kAnimPhaseChangeHalSpawnHalberdRightPos = { -2.0f,9.0f ,-2.0f };
-	static inline Vector3 kAnimPhaseChangeHalSpawnHalberdLeftPos = { 2.0f,9.0f ,-2.0f };
+	static inline Vector3 kAnimPhaseChangeHalSpawnHalberdRightPos = { -2.0f,7.0f ,-2.0f };
+	static inline Vector3 kAnimPhaseChangeHalSpawnHalberdLeftPos = { 2.0f,7.0f ,-2.0f };
 
 
 	static inline Vector3 kAnimPhaseChangeCameraHalRotateHalberdPos = { 0.0f,3.0f ,-2.0f };
-	static inline Vector3 kAnimPhaseChangeCameraHalRotateHalberdLeftPos = { 2.0f,5.0f ,-2.0f };
-	static inline Vector3 kAnimPhaseChangeCameraHalRotateHalberdRightPos = { -2.0f,5.0f ,-2.0f };
+	static inline Vector3 kAnimPhaseChangeCameraHalRotateHalberdLeftPos = { 2.0f,3.0f ,-2.0f };
+	static inline Vector3 kAnimPhaseChangeCameraHalRotateHalberdRightPos = { -2.0f,3.0f ,-2.0f };
 
 	static inline float kAnimPhaseChangeCameraHalRotateHalberdLeftRotateY = Radian(-30.0f);
 	static inline float kAnimPhaseChangeCameraHalRotateHalberdRightRotateY = Radian(30.0f);
@@ -556,8 +593,8 @@ private:
 
 	static inline float kAnimPhaseChangeJumpPosY = 7.0f;
 	static inline Vector3 kAnimPhaseChangeJumpCameraPos = { 0.0f,3.4f ,-23.0f };
-	static inline Vector3 kAnimPhaseChangeJumpHalberdLeftPos = { 2.0f,9.0f ,-2.0f };
-	static inline Vector3 kAnimPhaseChangeJumpHalberdRightPos = { -2.0f,9.0f ,-2.0f };
+	static inline Vector3 kAnimPhaseChangeJumpHalberdLeftPos = { 2.0f,7.0f ,-2.0f };
+	static inline Vector3 kAnimPhaseChangeJumpHalberdRightPos = { -2.0f,7.0f ,-2.0f };
 
 	static inline Vector3 kAnimPhaseChangeAttackCameraPos = { 0.0f,0.5f ,-23.0f };
 	static inline Vector3 kAnimPhaseChangeAttackCameraRotate = { Radian(-10.0f),0.0f,0.0f };
@@ -565,12 +602,14 @@ private:
 	static inline Vector3 kAnimPhaseChangeAttackHalberdRotate = { Radian(-120.0f),Radian(0.0f),Radian(0.0f) };
 
 
-	static inline Vector3 kAnimPhaseChangeAttackHalberdLeftPos = { 2.5f,1.0f ,-3.0f };
-	static inline Vector3 kAnimPhaseChangeAttackHalberdRightPos = { -2.5f,1.0f ,-3.0f };
+	static inline Vector3 kAnimPhaseChangeAttackHalberdLeftPos = { 2.5f,-1.0f ,-3.0f };
+	static inline Vector3 kAnimPhaseChangeAttackHalberdRightPos = { -2.5f,-1.0f ,-3.0f };
 
 	static inline Vector3 kAnimPhaseChangeNameShowCameraPos = { 0.0f,0.5f ,-25.0f };
 
 	static inline Vector3 kAnimPhaseChangeFinishHalberdPos = { -2.0f,2.0f ,-2.0f };
+	static inline Vector3 kAnimPhaseChangeFinishHalberdLeftPos = { 3.0f,2.0f ,-2.0f };
+	static inline Vector3 kAnimPhaseChangeFinishHalberdRightPos = { -3.0f,2.0f ,-2.0f };
 	static inline Vector3 kAnimPhaseChangeFinishHalberdRotate = { Radian(0.0f),Radian(0.0f),Radian(-30.0f) };
 };
 

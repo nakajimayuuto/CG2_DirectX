@@ -14,7 +14,7 @@ void MirrorHalberd::Initialize() {
 	SetDebugColor({ 1.0f,1.0f,1.0f,1.0f });
 	SetDamage(10.0f);
 	SetDamageCoolTime(3.0f);
-	SetActive(true);
+	isColliderActive_ = false;
 
 	isActive_ = false;
 }
@@ -29,11 +29,10 @@ void MirrorHalberd::Update() {
 }
 
 void MirrorHalberd::Draw() {
-	DrawCollider();
 	if (!isActive_) {
 		return;
 	}
-
+	DrawCollider();
 
 	Renderer* renderer = Renderer::GetInstance();
 	renderer->DrawModel(transform_, &halberdModel_, true);

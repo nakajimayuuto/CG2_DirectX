@@ -22,7 +22,7 @@ void HPGauge::Draw() {
 	newNewSize.x = size_.x * Easing(0.0f,1.0f,*targetHP_,maxHP_,EaseType::kConstant);
 	Transform2D newTransform;
 	newTransform = transform_;
-	newTransform.translate.x = newTransform.translate.x - size_.x * Easing(0.5f, 0.0f, *targetHP_, maxHP_, EaseType::kConstant);
+	newTransform.translate.x = newTransform.translate.x - (size_.x * Easing(0.5f, 0.0f, *targetHP_, maxHP_, EaseType::kConstant) * transform_.scale.x);
 
 	Renderer::GetInstance()->DrawSprite(transform_.GetTransformValue(), newSize, "white_template", {0.0f,0.0f,0.0f,alpha_});
 	Renderer::GetInstance()->DrawSprite(transform_.GetTransformValue(), size_, "white_template", {1.0f,0.1f,0.1f,alpha_ });

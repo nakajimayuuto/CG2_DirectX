@@ -90,6 +90,7 @@ void LoadDatas() {
 	TextureManager::GetInstance()->RegisterTexture("effect_big_blue_fire", "Resource/effects/effect_big_blue_fire.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_slash", "Resource/effects/effect_slash.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_cross", "Resource/effects/effect_cross.png");
+	TextureManager::GetInstance()->RegisterTexture("effect_star", "Resource/effects/effect_star.png");
 	ParticleManager::GetInstance()->CreateNewParticles("normal",TextureManager::GetInstance()->GetTextureInfo("effect_plane"), BillboardType::kAllAxis,Particles::Move::kNormal);
 	ParticleManager::GetInstance()->CreateNewParticles("fire",TextureManager::GetInstance()->GetTextureInfo("effect_fire"), BillboardType::kAllAxis,Particles::Move::kFire);
 	ParticleManager::GetInstance()->SetParticleSize("fire", {0.2f,0.2f,0.2f});
@@ -103,6 +104,8 @@ void LoadDatas() {
 	ParticleManager::GetInstance()->SetParticleSize("big_fire", { 0.5f,0.5f,0.5f });
 	ParticleManager::GetInstance()->CreateNewParticles("big_blue_fire", TextureManager::GetInstance()->GetTextureInfo("effect_big_blue_fire"), BillboardType::kAllAxis, Particles::Move::kFire);
 	ParticleManager::GetInstance()->SetParticleSize("big_blue_fire", { 0.5f,0.5f,0.5f });
+	ParticleManager::GetInstance()->CreateNewParticles("star", TextureManager::GetInstance()->GetTextureInfo("effect_star"), BillboardType::kAllAxis, Particles::Move::kFire);
+	ParticleManager::GetInstance()->SetParticleSize("star", { 0.5f,0.5f,0.5f });
 
 
 
@@ -127,6 +130,13 @@ void LoadDatas() {
 	TextureManager::GetInstance()->RegisterTexture("retry_phase2", "Resource/UI/pause_retry_phase2.png");
 	TextureManager::GetInstance()->RegisterTexture("retry_last_jarona", "Resource/UI/pause_retry_last_jarona.png");
 	TextureManager::GetInstance()->RegisterTexture("return_to_title", "Resource/UI/pause_return_to_title.png");
+
+	TextureManager::GetInstance()->RegisterTexture("attack_to_x", "Resource/UI/attack_to_x.png");
+	TextureManager::GetInstance()->RegisterTexture("dash_to_x", "Resource/UI/dash_to_x.png");
+	TextureManager::GetInstance()->RegisterTexture("jump_to_a", "Resource/UI/jump_to_a.png");
+	TextureManager::GetInstance()->RegisterTexture("move_to_l", "Resource/UI/move_to_l.png");
+	TextureManager::GetInstance()->RegisterTexture("play_guid_tutorial_attack", "Resource/UI/play_guid_tutorial_attack.png");
+	TextureManager::GetInstance()->RegisterTexture("play_guid_tutorial_dash", "Resource/UI/play_guid_tutorial_dash.png");
 
 	SoundManager::GetInstance()->RegisterSound("test", "Resource/free_k.wav");
 	SoundManager::GetInstance()->RegisterSound("snd_select", "Resource/Sound/snd_select.mp3");

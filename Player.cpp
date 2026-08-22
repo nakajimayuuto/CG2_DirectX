@@ -62,6 +62,10 @@ void Player::Initialize() {
 	tutorialTimer_ = 0.0f;
 
 	isImmune_ = false;
+
+	isDeath_ = false;
+
+	deathTimer_ = 0.0f;
 }
 
 void Player::InitializeFloatingGimmick() {
@@ -329,6 +333,11 @@ void Player::BehaviorRootInitialize() {
 
 void Player::BehaviorRootUpdate() {
 	isMoving_ = false;
+
+	if (isDeath_) {
+		UpdateFloatingGimmick();
+		return;
+	}
 
 	velocity_ = { 0.0f,0.0f,0.0f };
 	InputManager* input = InputManager::GetInstance();
@@ -1040,7 +1049,7 @@ void Player::ApplyGlobalVariables() {
 }
 
 void Player::OnCollision([[maybe_unused]] Collider* other) {
-	if (isImmune_) {
+	if (isImmune_ || isDeath_) {
 		return;
 	}
 
@@ -1064,6 +1073,7 @@ void Player::OnCollision([[maybe_unused]] Collider* other) {
 
 		if (currentHP_ < 0.0f) {
 			currentHP_ = 0.0f;
+			isDeath_ = true;
 		}
 	}
 }

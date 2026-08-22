@@ -137,9 +137,9 @@ void GameScene::Update() {
 	player_->Update();
 
 	boss_->SetTargetIsAttact(player_->GetIsAttack());
-
-	boss_->Update();
-
+	if (gGamePhase != GamePhase::kTutorial) {
+		boss_->Update();
+	}
 	ProjectileManager::GetInstance()->Update();
 
 	GameCamera::GetInstance()->Update();
@@ -185,13 +185,16 @@ void GameScene::Draw() {
 
 	TutorialDraw();
 
-	ParticleManager::GetInstance()->Draw();
 
 	if (gGamePhase != GamePhase::kTutorial && gGamePhase != GamePhase::kBossLastJarona && gGamePhase != GamePhase::kGameClearStage && gGamePhase != GamePhase::kBossLastJaronaAnim) {
 		Renderer::GetInstance()->DrawBox(Transform::GetInitialValue({ 10.0f,10.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,5.0f,-75.0f }), "door", { 1.0f,1.0f,1.0f,1.0f });
 	}
 
-	Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 500.0f,200.0f,0.0f }), "play_guid", { 1.0f,1.0f,1.0f,1.0f });
+	ParticleManager::GetInstance()->Draw();
+
+	if (gGamePhase != GamePhase::kTutorial) {
+		Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 500.0f,200.0f,0.0f }), "play_guid", { 1.0f,1.0f,1.0f,1.0f });
+	}
 
 	fade_->Draw();
 	pauseMenu_->Draw();
@@ -213,7 +216,6 @@ void GameScene::AnimSkipUpdate() {
 		return;
 	}
 
-	//if (gGamePhase == GamePhase::kTutorial) {
 	if (InputManager::GetInstance()->IsGamePadConnect()) {
 		if (InputManager::GetInstance()->PressPadButton(INPUT_L1) && InputManager::GetInstance()->PressPadButton(INPUT_L1)) {
 			fade_->SetColor({ 0.0f,0.0f,0.0f });
@@ -260,6 +262,9 @@ void GameScene::AnimSkipFadeUpdate() {
 			case kTutorial:
 				break;
 			case kGameStartAnim:
+				player_->Initialize();
+				player_->SetStartPosition({ 0.0f,1.0f,-50.0f });
+				boss_->Initialize();
 				break;
 			case kBossPhase1:
 				player_->Initialize();
@@ -335,6 +340,42 @@ void GameScene::TutorialUpdate() {
 void GameScene::TutorialDraw() {
 	if (gGamePhase != GamePhase::kTutorial) {
 		return;
+	}
+
+	switch (TutorialManager::GetInstance()->GetCurrentFlagName()) {
+	case TutorialManager::TutorialFlagName::kFirstJump:
+		Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,-200.0f,0.0f }), "jump_to_a", { 1.0f,1.0f,1.0f,1.0f });
+		break;
+	case TutorialManager::TutorialFlagName::kMoveTest:
+		Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,-200.0f,0.0f }), "move_to_l", { 1.0f,1.0f,1.0f,1.0f });
+		Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 500.0f,200.0f,0.0f }), "play_guid_tutorial_attack", { 1.0f,1.0f,1.0f,1.0f });
+		break;
+	case TutorialManager::TutorialFlagName::kAttackTest:
+		Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,-200.0f,0.0f }), "attack_to_x", { 1.0f,1.0f,1.0f,1.0f });
+		Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 500.0f,200.0f,0.0f }), "play_guid_tutorial_dash", { 1.0f,1.0f,1.0f,1.0f });
+		break;
+	case TutorialManager::TutorialFlagName::kDashToJump:
+		Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,-200.0f,0.0f }), "jump_to_a", { 1.0f,1.0f,1.0f,1.0f });
+		Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 500.0f,200.0f,0.0f }), "play_guid", { 1.0f,1.0f,1.0f,1.0f });
+		break;
+	case TutorialManager::TutorialFlagName::kDashToAttack:
+		Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,-200.0f,0.0f }), "dash_to_x", { 1.0f,1.0f,1.0f,1.0f });
+		Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 500.0f,200.0f,0.0f }), "play_guid", { 1.0f,1.0f,1.0f,1.0f });
+		break;
+	case TutorialManager::TutorialFlagName::kDashJumpTest:
+		if (player_->GetTransform()->translate.z >= -275.0f) {
+			Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,-200.0f,0.0f }), "jump_to_a", { 1.0f,1.0f,1.0f,1.0f });
+		}
+		Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 500.0f,200.0f,0.0f }), "play_guid", { 1.0f,1.0f,1.0f,1.0f });
+		break;
+	case TutorialManager::TutorialFlagName::kFinaleTest:
+		Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 500.0f,200.0f,0.0f }), "play_guid", { 1.0f,1.0f,1.0f,1.0f });
+		break;
+	case TutorialManager::TutorialFlagName::kFinaleAnim:
+		Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 500.0f,200.0f,0.0f }), "play_guid", { 1.0f,1.0f,1.0f,1.0f });
+		break;
+	default:
+		break;
 	}
 
 	tutorialAttackWall_->Draw();

@@ -16,12 +16,19 @@ public:
 	void SetRotateY(float rotateY) { transform_.rotate.y = rotateY; };
 	void SetRotateZ(float rotateZ) { transform_.rotate.z = rotateZ; };
 
+	void SetTransform(const Transform& transform) { transform_ = transform; };
+
 	void SetIsActive(bool isActive) { isActive_ = isActive; };
 
 	bool GetIsActive() { return isActive_; };
+	bool GetIsColliderActive() { return isColliderActive_; };
 
 	Vector3 GetPosition() { return transform_.translate; };
 	Vector3 GetRotate() { return transform_.rotate; };
+
+	Transform GetTransform() { return transform_; };
+
+	void SetParent(Transform* transform) { transform_.SetParent(transform); };
 private:
 	Model halberdModel_;
 

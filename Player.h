@@ -109,6 +109,10 @@ private:
 
 	bool isImmune_;
 
+	bool isDeath_;
+	float deathTimer_;
+	static inline float deathTimerMax = 1.0f;
+
 	std::unique_ptr<HPGauge> hpGauge_;
 
 	float currentHP_;
