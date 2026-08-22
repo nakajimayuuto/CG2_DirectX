@@ -47,6 +47,8 @@ public:
 	void SetFieldIsActive(const std::string& name, bool isActive);
 
 	Particles* GetParticles(const std::string& name);
+
+	void ClearParticles();
 private:
 	void CheckCollision();
 private:

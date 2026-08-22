@@ -8,6 +8,7 @@ public:
 		kPhase1,
 		kPhase2,
 		kPhase3,
+		kFinished,
 	};
 
 	~Boss();
@@ -61,6 +62,7 @@ private:
 		kFangAttack,
 		kNearAttack,
 		kDown,
+		kSuperDown,
 		kCountMax,
 		kFireBulletShot,
 
@@ -118,6 +120,8 @@ private:
 	std::unique_ptr<Emitter> downEmitter_;
 
 	float debugHpScale_;
+
+	float movingRadius_ = 72.0f;
 private:
 	void SetAttackData(Attacks attackName, float weight, DistanceName name);
 
@@ -126,6 +130,7 @@ private:
 	void ClearAttackDatas();
 
 	void Phase1Initialize();
+	void Phase2Initialize();
 
 	void HalberdStanceUpdate();
 
@@ -142,6 +147,9 @@ private:
 
 	void DownInitialize();
 	void DownUpdate();
+
+	void SuperDownInitialize();
+	void SuperDownUpdate();
 
 	void BulletInitialize();
 	void BulletUpdate();
@@ -292,19 +300,17 @@ private:
 	Vector3 movingBulletTargetPos;
 
 	// Wave.
-	static inline float kWaveStartGapTimerMax = 0.3f;
-	static inline float kWaveSpinTimerMax = 0.3f;
-	static inline float kWaveAttackTimerMax = 0.3f;
+	static inline float kWaveStartGapTimerMax = 0.7f;
+	static inline float kWaveStayTimerMax = 0.2f;
+	static inline float kWaveAttackTimerMax = 0.1f;
 	static inline float kWaveAttackGapTimerMax = 0.7f;
 	static inline float kWaveFinishedGapTimerMax = 0.3f;
 
 	static inline float kWaveAnimPositionY = 8.0f;
-	static inline Vector3 kWaveHalberdPos = { -0.5f,3.5f,0.0f };
 	static inline Vector3 kWaveHalberdStartRotate = { 0.0f,0.0f,0.0f };
-	static inline Vector3 kWaveHalberdSpinPos = { 0.0f,3.5f,0.0f };
-	static inline float kWaveAttackPositionY = 2.5f;
-	static inline Vector3 kWaveHalberdAttackPos = { 0.0f,1.0f,-1.0f };
-	static inline float kWaveAttackRotateX = -Radian(150.0f);
+	static inline Vector3 kWaveHalberdStayPos = { 0.0f,5.0f,-3.0f };
+	static inline Vector3 kWaveHalberdAttackRotate = { Radian(-150.0f),0.0f,0.0f};
+	static inline Vector3 kWaveHalberdAttackPos = { 0.0f,-2.0f,-4.0f };
 
 	// 目の前でハルバード回転
 	// 
@@ -338,10 +344,11 @@ private:
 
 	// PowerSlasher.
 	static inline float kPowerSlasherStartGapTimerMax = 0.2f;
-	static inline float kPowerSlasherStayTimerMax = 0.7f;
+	static inline float kPowerSlasherStayTimerMax = 1.3f;
+	static inline float kPowerSlasherStayBlankTimerMax = 0.2f;
 	static inline float kPowerSlasherDashTimerMax = 1.0f;
 	static inline float kPowerSlasherDashToSlashTimerMax = 0.3f;
-	static inline float kPowerSlasherSlashStayTimerMax = 0.5f;
+	static inline float kPowerSlasherSlashStayTimerMax = 1.2f;
 	static inline float kPowerSlasherFinishedGapTimerMax = 0.3f;
 
 	Transform powerSlasherHalberdCenter_;

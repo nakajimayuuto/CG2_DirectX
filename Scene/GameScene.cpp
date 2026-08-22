@@ -13,6 +13,7 @@ void GameScene::Initialize() {
 	//LightManager::GetInstance()->GetDirectionalLightData()->color = { 1.0f,0.5f,0.5f,1.0f };
 	TutorialManager::GetInstance()->Initialize();
 
+	ParticleManager::GetInstance()->ClearParticles();
 
 	LightManager::GetInstance()->ClearLight();
 	Camera::GetInstance()->SetPosition({ 0.0f,2.0f,-30.0f });
@@ -119,16 +120,33 @@ void GameScene::Update() {
 	}
 
 	if (boss_->GetIsChangePhase()) {
-		boss_->SetIsImmune(true);
-		player_->SetIsImmune(true);
-		boss_->SetIsChangePhase(false);
-		fade_->Start(Fade::Status::FadeOut, 1.0f);
+		if (gGamePhase == GamePhase::kBossPhase1) {
+			boss_->SetIsImmune(true);
+			player_->SetIsImmune(true);
+			boss_->SetIsChangePhase(false);
+			fade_->Start(Fade::Status::FadeOut, 1.0f);
+		} else if (gGamePhase == GamePhase::kBossPhase2) {
+			boss_->SetIsImmune(true);
+			player_->SetIsImmune(true);
+			boss_->SetIsChangePhase(false);
+			fade_->Start(Fade::Status::FadeOut, 2.0f);
+		}
 	}
 
 	if (gGamePhase == GamePhase::kBossPhase1) {
 		if (boss_->GetPhase() == Boss::Phase::kPhase2) {
 			if (fade_->isFinished()) {
 				gGamePhase = GamePhase::kBossPhaseChangeAnim;
+				SceneManager::GetInstance()->ReloadScene();
+			}
+		}
+	}
+
+	if (gGamePhase == GamePhase::kBossPhase2) {
+		if (boss_->GetPhase() == Boss::Phase::kFinished) {
+			if (fade_->isFinished()) {
+				DeltaTime::GetInstance()->SetGameTimeSpeed(1.0f);
+				gGamePhase = GamePhase::kBossLastJaronaAnim;
 				SceneManager::GetInstance()->ReloadScene();
 			}
 		}

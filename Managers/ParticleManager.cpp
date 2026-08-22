@@ -219,3 +219,9 @@ Particles* ParticleManager::GetParticles(const std::string& name){
 #endif // _DEBUG
 	return it->second;
 }
+
+void ParticleManager::ClearParticles(){
+	for (std::pair<std::string, Particles*> particles : particles_) {
+		particles.second->ClearParticle();
+	}
+}

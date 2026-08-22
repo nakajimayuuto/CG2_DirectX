@@ -14,6 +14,7 @@ public:
 
 	float GetDeltaTime() const { return deltaTime; };
 	float GetGameTime() const { return gameTime; };
+	float GetGameTimePerFrame() const { return gameTime * 60.0f; };
 
 	float GetDeltaTimePerFrame() const { return deltaTime * 60.0f; };
 

@@ -62,6 +62,8 @@ public:
 	void SetSize(const Vector3 size) { size_ = size; };
 
 	void CheckCollision(const Field& field);
+
+	void ClearParticle() { particleData_.clear(); };
 private:
 	void MoveNormal();
 	void MoveFire();
