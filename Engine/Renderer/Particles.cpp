@@ -238,6 +238,12 @@ void Particles::MakeNewParticle(const Vector3& position) {
 		newParticleData.velocity = {0.0f,0.0f,0.0f};
 		newParticleData.lifeTime = 0.5f;
 		break;
+	case Particles::Move::kExplode:
+		newParticleData.velocity = Random::GetInstance()->RandomVector3({ -1.0f,-1.0f,-1.0f }, { 1.0f,1.0f,1.0f });
+		newParticleData.velocity = newParticleData.velocity.Normalize() * 3.0f;
+		newParticleData.color.SetColorWithoutAlpha(Random::GetInstance()->RandomVector3({ 0.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }), 1.0f);
+		newParticleData.lifeTime = Random::GetInstance()->RandomFloat(1.0f, 3.0f);
+		break;
 	case Particles::Move::kNormal:
 	default:
 		newParticleData.velocity = Random::GetInstance()->RandomVector3({ -1.0f,-1.0f,-1.0f }, { 1.0f,1.0f,1.0f });
@@ -260,13 +266,24 @@ void Particles::Update() {
 	case Particles::Move::kSlash:
 		MoveNormal();
 		break;
+	case Particles::Move::kExplode:
+		MoveExplode();
+		break;
 	}	
 }
 
 void Particles::MoveNormal(){
 	for (ParticleData& particle : particleData_) {
-		particle.transform.translate += particle.velocity * DeltaTime::GetInstance()->GetGameTime();
-		particle.currentTime += DeltaTime::GetInstance()->GetGameTime();
+		particle.transform.translate += particle.velocity * DeltaTime::GetInstance()->GetDeltaTime();
+		particle.currentTime += DeltaTime::GetInstance()->GetDeltaTime();
+		particle.color.w = Easing(1.0f, 0.0f, particle.currentTime, particle.lifeTime, EaseType::kConstant);
+	}
+}
+
+void Particles::MoveExplode(){
+	for (ParticleData& particle : particleData_) {
+		particle.transform.translate += Easing(particle.velocity, {0.0f,0.0f,0.0f}, particle.currentTime, particle.lifeTime, EaseType::kConstant) * DeltaTime::GetInstance()->GetDeltaTime();
+		particle.currentTime += DeltaTime::GetInstance()->GetDeltaTime();
 		particle.color.w = Easing(1.0f, 0.0f, particle.currentTime, particle.lifeTime, EaseType::kConstant);
 	}
 }
@@ -274,7 +291,7 @@ void Particles::MoveNormal(){
 void Particles::CheckCollision(const Field& field) {
 	for (std::list<ParticleData>::iterator particleIterator = particleData_.begin(); particleIterator != particleData_.end(); ++particleIterator) {
 		if (Collision::AABBToPoint(field.GetArea(), (*particleIterator).transform.translate)) {
-			(*particleIterator).velocity += field.GetAcceleration() * DeltaTime::GetInstance()->GetGameTime();
+			(*particleIterator).velocity += field.GetAcceleration() * DeltaTime::GetInstance()->GetDeltaTime();
 		}
 	}
 }
@@ -408,7 +425,7 @@ void Emitter::Update() {
 		return;
 	}
 
-	frequencyTime_ += DeltaTime::GetInstance()->GetGameTime();
+	frequencyTime_ += DeltaTime::GetInstance()->GetDeltaTime();
 
 	if (frequency_ <= frequencyTime_) {
 			CreateParticle();

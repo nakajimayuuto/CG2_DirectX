@@ -118,7 +118,8 @@ void GameCamera::FollowedUpdate() {
 
 	transform_.translate = interOffsetTarget_;
 
-	if (gGamePhase == GamePhase::kTutorial || gGamePhase == GamePhase::kBossLastJarona || gGamePhase == GamePhase::kGameClearStage) {
+	//if (gGamePhase == GamePhase::kTutorial || gGamePhase == GamePhase::kBossLastJarona || gGamePhase == GamePhase::kGameClearStage) {
+	if (gGamePhase == GamePhase::kTutorial) {
 		TutorialWallClamp();
 	} else {
 		FollowedWallClamp();

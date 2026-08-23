@@ -26,6 +26,8 @@ public:
 
 	float GetGameTimeSpeed() { return gameTimeSpeed_; };
 
+	bool GetIsHitStop() { return isHitStop_; };
+
 	void SetHitStop(float stopTime) { 
 		stopTimer_ = stopTime; isHitStop_ = true; 
 	};

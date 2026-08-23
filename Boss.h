@@ -38,6 +38,10 @@ public:
 	void SetIsImmune(bool isImmune) { isImmune_ = isImmune; };
 
 	Phase GetPhase() { return phase_; };
+
+	bool GetIsDeath() { return isDeath_; };
+
+	void EffectUpdate();
 private:
 	void SlashEffectCreate(Transform* targetTransform, uint32_t num);
 
@@ -47,8 +51,6 @@ private:
 	void DistanceCheckUpdate();
 
 	void RootUpdate();
-
-	void EffectUpdate();
 private:
 	enum class Attacks {
 		kWarp,
@@ -122,6 +124,8 @@ private:
 	float debugHpScale_;
 
 	float movingRadius_ = 72.0f;
+
+	bool isDeath_;
 private:
 	void SetAttackData(Attacks attackName, float weight, DistanceName name);
 
@@ -489,6 +493,8 @@ public:
 	void StartAnimInitialize();
 
 	void PhaseChangeAnimInitialize();
+
+	void DeathAnimInitialize();
 private:
 	void AnimInitialize();
 
@@ -497,6 +503,8 @@ private:
 	void StartAnimationUpdate();
 
 	void PhaseChangeAnimationUpdate();
+
+	void DeathAnimationUpdate();
 private:
 	// 全体で使う.
 	uint32_t animPhase_ = 0;
@@ -574,11 +582,6 @@ private:
 	static inline float kAnimPhaseChangeNameShowTimerMax = 0.5f; // 叩きつけで名前出る.
 	static inline float kAnimPhaseChangeFinishTimerMax = 0.5f; // 叩きつけの余白.
 
-
-
-
-
-
 	static inline Vector3 kAnimPhaseChangeStartHalberdRotate = { 0.0f,Radian(0.0f),0.0f };
 	static inline Vector3 kAnimPhaseChangeStartHalberdPos = { 0.0f,-10.0f ,-2.0f };
 
@@ -618,5 +621,53 @@ private:
 	static inline Vector3 kAnimPhaseChangeFinishHalberdLeftPos = { 3.0f,2.0f ,-2.0f };
 	static inline Vector3 kAnimPhaseChangeFinishHalberdRightPos = { -3.0f,2.0f ,-2.0f };
 	static inline Vector3 kAnimPhaseChangeFinishHalberdRotate = { Radian(0.0f),Radian(0.0f),Radian(-30.0f) };
+
+
+	// DeathAnim
+	static inline float kAnimDeathCameraRotateTimerMax = 5.0f; // 回転しながらカメラが下りてくる.
+	static inline float kAnimDeathCameraStayTimerMax = 0.5f; // 死亡確定.
+	static inline float kAnimDeathScaleTimerMax = 0.1f; // 膨張.
+	static inline float kAnimDeathExplodeTimerMax = 1.0f; // 爆発.
+	static inline float kAnimDeathExplodeBlankTimerMax = 5.0f; // 爆発.
+	static inline float kAnimDeathFinishTimerMax = 2.0f; // フィニッシュ.
+
+	static inline Vector3 kAnimDeathStartHalberdRotate = { 0.0f,Radian(0.0f),0.0f };
+	static inline Vector3 kAnimDeathStartHalberdPos = { 0.0f,-10.0f ,-2.0f };
+
+	static inline float kAnimDeathCameraMovePosZ_ = -20.0f;
+	static inline Vector3 kAnimDeathHalSpawnHalberdPos = { 0.0f,7.0f ,-2.0f };
+	static inline Vector3 kAnimDeathHalSpawnCameraPos = { 0.0f,11.5f ,-20.0f };
+	static inline Vector3 kAnimDeathHalSpawnHalberdRightPos = { -2.0f,7.0f ,-2.0f };
+	static inline Vector3 kAnimDeathHalSpawnHalberdLeftPos = { 2.0f,7.0f ,-2.0f };
+
+
+	static inline Vector3 kAnimDeathCameraHalRotateHalberdPos = { 0.0f,3.0f ,-2.0f };
+	static inline Vector3 kAnimDeathCameraHalRotateHalberdLeftPos = { 2.0f,3.0f ,-2.0f };
+	static inline Vector3 kAnimDeathCameraHalRotateHalberdRightPos = { -2.0f,3.0f ,-2.0f };
+
+	static inline float kAnimDeathCameraHalRotateHalberdLeftRotateY = Radian(-30.0f);
+	static inline float kAnimDeathCameraHalRotateHalberdRightRotateY = Radian(30.0f);
+	static inline Vector3 kAnimDeathJumpCameraRotate = { Radian(-15.0f),0.0f,0.0f };
+
+
+	static inline float kAnimDeathJumpPosY = 7.0f;
+	static inline Vector3 kAnimDeathJumpCameraPos = { 0.0f,3.4f ,-23.0f };
+	static inline Vector3 kAnimDeathJumpHalberdLeftPos = { 2.0f,7.0f ,-2.0f };
+	static inline Vector3 kAnimDeathJumpHalberdRightPos = { -2.0f,7.0f ,-2.0f };
+
+	static inline Vector3 kAnimDeathAttackCameraPos = { 0.0f,0.5f ,-23.0f };
+	static inline Vector3 kAnimDeathAttackCameraRotate = { Radian(-10.0f),0.0f,0.0f };
+	static inline Vector3 kAnimDeathAttackHalberdPos = { 0.0f,-1.0f ,-4.0f };
+	static inline Vector3 kAnimDeathAttackHalberdRotate = { Radian(-120.0f),Radian(0.0f),Radian(0.0f) };
+
+	static inline Vector3 kAnimDeathAttackHalberdLeftPos = { 2.5f,-1.0f ,-3.0f };
+	static inline Vector3 kAnimDeathAttackHalberdRightPos = { -2.5f,-1.0f ,-3.0f };
+
+	static inline Vector3 kAnimDeathNameShowCameraPos = { 0.0f,0.5f ,-25.0f };
+
+	static inline Vector3 kAnimDeathFinishHalberdPos = { -2.0f,2.0f ,-2.0f };
+	static inline Vector3 kAnimDeathFinishHalberdLeftPos = { 3.0f,2.0f ,-2.0f };
+	static inline Vector3 kAnimDeathFinishHalberdRightPos = { -3.0f,2.0f ,-2.0f };
+	static inline Vector3 kAnimDeathFinishHalberdRotate = { Radian(0.0f),Radian(0.0f),Radian(-30.0f) };
 };
 

@@ -106,7 +106,8 @@ void LoadDatas() {
 	ParticleManager::GetInstance()->SetParticleSize("big_blue_fire", { 0.5f,0.5f,0.5f });
 	ParticleManager::GetInstance()->CreateNewParticles("star", TextureManager::GetInstance()->GetTextureInfo("effect_star"), BillboardType::kAllAxis, Particles::Move::kFire);
 	ParticleManager::GetInstance()->SetParticleSize("star", { 0.5f,0.5f,0.5f });
-
+	ParticleManager::GetInstance()->CreateNewParticles("death_cross", TextureManager::GetInstance()->GetTextureInfo("effect_cross"), BillboardType::kAllAxis, Particles::Move::kExplode);
+	ParticleManager::GetInstance()->SetParticleSize("death_cross", { 0.2f,0.2f,0.2f });
 
 
 	TextureManager::GetInstance()->RegisterTexture("press_a", "Resource/UI/press_a.png");
@@ -122,6 +123,8 @@ void LoadDatas() {
 	TextureManager::GetInstance()->RegisterTexture("difficulty_hard_outline", "Resource/UI/difficulty_hard_outline.png");
 	TextureManager::GetInstance()->RegisterTexture("ui_return", "Resource/UI/return.png");
 	TextureManager::GetInstance()->RegisterTexture("play_guid", "Resource/UI/play_guid.png");
+	TextureManager::GetInstance()->RegisterTexture("gameover", "Resource/UI/gameover.png");
+	TextureManager::GetInstance()->RegisterTexture("gameclear", "Resource/UI/gameclear.png");
 
 	TextureManager::GetInstance()->RegisterTexture("pause", "Resource/UI/pause.png");
 	TextureManager::GetInstance()->RegisterTexture("return_to_game", "Resource/UI/pause_return_to_game.png");

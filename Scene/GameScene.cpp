@@ -6,6 +6,7 @@ GameScene::~GameScene() {
 }
 
 void GameScene::Initialize() {
+	DeltaTime::GetInstance()->SetGameTimeSpeed(1.0f);
 	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.15f;
 	LightManager::GetInstance()->GetDirectionalLightData()->direction = { 0.0f,-1.0f,0.0f };
 	LightManager::GetInstance()->GetDirectionalLightData()->color = { 1.0f,1.0f,1.0f,1.0f };
@@ -73,7 +74,12 @@ void GameScene::Initialize() {
 
 	pauseMenu_ = std::make_unique<PauseMenu>();
 	pauseMenu_->Initialize();
+
+	gameOverMenu_ = std::make_unique<GameOverMenu>();
+	gameOverMenu_->Initialize();
 	//gGamePhase = GamePhase::kBossLastJarona;
+
+	isBossDeath_ = false;
 }
 
 void GameScene::Update() {
@@ -105,6 +111,20 @@ void GameScene::Update() {
 		gGamePhase = GamePhase::kTutorial;
 	}
 
+	if (gameOverMenu_->GetIsActive()) {
+		if (gameOverMenu_->GetCanGameUpdate()) {
+			gameOverMenu_->Update();
+			worldFrameEmitter_->Update();
+			worldBigFrameEmitter_->Update();
+			fade_->Update();
+
+			Camera::GetInstance()->Update();
+			return;
+		} else {
+			gameOverMenu_->Update();
+		}
+	} 
+
 	if (pauseMenu_->GetIsActive()) {
 		pauseMenu_->Update();
 		worldFrameEmitter_->Update();
@@ -114,22 +134,37 @@ void GameScene::Update() {
 		Camera::GetInstance()->Update();
 		return;
 	} else {
-		if (InputManager::GetInstance()->TriggerPadButton(INPUT_START) || InputManager::GetInstance()->TriggerKey(DIK_P)) {
-			pauseMenu_->ShowMenu();
+		if (!gameOverMenu_->GetIsActive()) {
+			if (InputManager::GetInstance()->TriggerPadButton(INPUT_START) || InputManager::GetInstance()->TriggerKey(DIK_P)) {
+				pauseMenu_->ShowMenu();
+			}
 		}
 	}
+
 
 	if (boss_->GetIsChangePhase()) {
 		if (gGamePhase == GamePhase::kBossPhase1) {
 			boss_->SetIsImmune(true);
 			player_->SetIsImmune(true);
 			boss_->SetIsChangePhase(false);
+			fade_->SetColor({0.0f,0.0f,0.0f,});
 			fade_->Start(Fade::Status::FadeOut, 1.0f);
 		} else if (gGamePhase == GamePhase::kBossPhase2) {
 			boss_->SetIsImmune(true);
 			player_->SetIsImmune(true);
 			boss_->SetIsChangePhase(false);
+			fade_->SetColor({ 0.0f,0.0f,0.0f, });
 			fade_->Start(Fade::Status::FadeOut, 2.0f);
+		} else if (gGamePhase == GamePhase::kBossLastJaronaAnim) {
+			if (!isBossDeath_) {
+				if (fade_->isFinished()) {
+					boss_->SetIsImmune(true);
+					player_->SetIsImmune(true);
+					fade_->SetColor({ 0.0f,0.0f,0.0f, });
+					fade_->Start(Fade::Status::FadeOut, 2.0f);
+					isBossDeath_ = true;
+				}
+			}
 		}
 	}
 
@@ -152,12 +187,57 @@ void GameScene::Update() {
 		}
 	}
 
-	player_->Update();
-
-	boss_->SetTargetIsAttact(player_->GetIsAttack());
-	if (gGamePhase != GamePhase::kTutorial) {
-		boss_->Update();
+	if (gGamePhase == GamePhase::kBossLastJaronaAnim) {
+		if (boss_->GetPhase() == Boss::Phase::kFinished) {
+			if (fade_->isFinished()) {
+				if (boss_->GetIsChangePhase()) {
+					DeltaTime::GetInstance()->SetGameTimeSpeed(1.0f);
+					gGamePhase = GamePhase::kBossLastJaronaAnim;
+					SceneManager::GetInstance()->ChengeScene(SceneName::kTitleScene);
+				}
+			}
+		}
 	}
+
+	
+	player_->Update();
+	if (gameOverMenu_->GetIsActive()) {
+		boss_->EffectUpdate();
+	} else {
+		boss_->SetTargetIsAttact(player_->GetIsAttack());
+		if (gGamePhase != GamePhase::kTutorial) {
+			boss_->Update();
+		}
+
+		if (boss_->GetIsDeath()) {
+			if (gameclearTimer_ >= gameclearTimerMax_) {
+				gameclearTimer_ = gameclearTimerMax_;
+			} else {
+				gameclearTimer_ += DeltaTime::GetInstance()->GetGameTime();
+			}
+		}
+
+	}
+
+	if (player_->GetIsDeath()) {
+		if ((!gameOverMenu_->GetIsActive())) {
+			gameOverMenu_->ShowMenu();
+			//if (!DeltaTime::GetInstance()->GetIsHitStop()) {
+			//	if (gameoverTimer_ >= gameoverMenuTimerMax_) {
+			//		gameoverTimer_ = gameoverMenuTimerMax_;
+			//		gameOverMenu_->ShowMenu();
+			//		DeltaTime::GetInstance()->SetGameTimeSpeed(0.0f);
+			//	} else if (gameoverTimer_ >= gameoverMenuTimerMax_) {
+			//		gameoverTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
+			//		DeltaTime::GetInstance()->SetGameTimeSpeed(0.0f);
+			//	} else {
+			//		gameoverTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
+			//		DeltaTime::GetInstance()->SetGameTimeSpeed(Easing(1.0f, 0.0f, gameoverTimer_, gameoverTimerMax_, EaseType::kConstant));
+			//	}
+			//}
+		}
+	}
+
 	ProjectileManager::GetInstance()->Update();
 
 	GameCamera::GetInstance()->Update();
@@ -204,7 +284,8 @@ void GameScene::Draw() {
 	TutorialDraw();
 
 
-	if (gGamePhase != GamePhase::kTutorial && gGamePhase != GamePhase::kBossLastJarona && gGamePhase != GamePhase::kGameClearStage && gGamePhase != GamePhase::kBossLastJaronaAnim) {
+	//if (gGamePhase != GamePhase::kTutorial && gGamePhase != GamePhase::kBossLastJarona && gGamePhase != GamePhase::kGameClearStage && gGamePhase != GamePhase::kBossLastJaronaAnim) {
+	if (gGamePhase != GamePhase::kTutorial) {
 		Renderer::GetInstance()->DrawBox(Transform::GetInitialValue({ 10.0f,10.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,5.0f,-75.0f }), "door", { 1.0f,1.0f,1.0f,1.0f });
 	}
 
@@ -214,8 +295,19 @@ void GameScene::Draw() {
 		Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 500.0f,200.0f,0.0f }), "play_guid", { 1.0f,1.0f,1.0f,1.0f });
 	}
 
+	if (boss_->GetIsDeath()) {
+		Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue(Easing({ 100.0f,100.0f,100.0f }, {1.0f,1.0f,1.0f},gameclearTimer_,gameclearTimerMax_,EaseType::kEaseOut), { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "gameclear", { 1.0f,1.0f,1.0f,Easing(0.0f,1.0f, gameoverTimer_, gameoverTimerMax_, EaseType::kEaseOut) });
+	}
+
+	if (player_->GetIsDeath()) {
+		if (!DeltaTime::GetInstance()->GetIsHitStop()) {
+			Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue(Easing({ 100.0f,100.0f,100.0f }, { 1.0f,1.0f,1.0f }, gameoverTimer_, gameoverTimerMax_, EaseType::kEaseOut), { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "gameover", { 1.0f,1.0f,1.0f,Easing(0.0f,1.0f, gameoverTimer_, gameoverTimerMax_, EaseType::kEaseOut) });
+		}
+	}
+
 	fade_->Draw();
 	pauseMenu_->Draw();
+	gameOverMenu_->Draw();
 }
 
 void GameScene::CheckAllCollisions() {
@@ -225,8 +317,7 @@ void GameScene::CheckAllCollisions() {
 void GameScene::AnimSkipUpdate() {
 	if (gGamePhase != GamePhase::kTutorial &&
 		gGamePhase != GamePhase::kGameStartAnim &&
-		gGamePhase != GamePhase::kBossPhaseChangeAnim &&
-		gGamePhase != GamePhase::kBossLastJaronaAnim) {
+		gGamePhase != GamePhase::kBossPhaseChangeAnim) {
 		return;
 	}
 

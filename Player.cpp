@@ -273,7 +273,8 @@ void Player::Update() {
 
 	transform_.rotate.y = std::fmod(transform_.rotate.y, Radian(360.0f));
 
-	if (gGamePhase == GamePhase::kTutorial || gGamePhase == GamePhase::kBossLastJarona || gGamePhase == GamePhase::kGameClearStage) {
+	//if (gGamePhase == GamePhase::kTutorial || gGamePhase == GamePhase::kBossLastJarona || gGamePhase == GamePhase::kGameClearStage) {
+	if (gGamePhase == GamePhase::kTutorial) {
 		TutorialWallClamp();
 	} else {
 		CircleWallClamp();
@@ -1019,11 +1020,13 @@ void Player::Draw() {
 	dashT.Initialize();
 	dashT.SetParent(&transformModel);
 	dashT.rotate.x = Radian(90.0f);
-	if (behavior_ == Behavior::kDash) {
-		Renderer::GetInstance()->DrawShadow(dashT, &model_, { 0.4f,0.4f,1.0f,1.0f });
-	} else {
-		Renderer::GetInstance()->DrawModel(transformModel, &model_, false);
-		Renderer::GetInstance()->DrawShadow(transformModel, &model_, { 0.0f,0.0f,0.0f,1.0f });
+	if (!isDeath_ || DeltaTime::GetInstance()->GetIsHitStop()) {
+		if (behavior_ == Behavior::kDash) {
+			Renderer::GetInstance()->DrawShadow(dashT, &model_, { 0.4f,0.4f,1.0f,1.0f });
+		} else {
+			Renderer::GetInstance()->DrawModel(transformModel, &model_, false);
+			Renderer::GetInstance()->DrawShadow(transformModel, &model_, { 0.0f,0.0f,0.0f,1.0f });
+		}
 	}
 
 	//particles_->Draw();
@@ -1073,7 +1076,10 @@ void Player::OnCollision([[maybe_unused]] Collider* other) {
 
 		if (currentHP_ < 0.0f) {
 			currentHP_ = 0.0f;
-			isDeath_ = true;
+			isDeath_ = true; 
+			for (uint32_t i = 0; i < 30; i++) {
+				ParticleManager::GetInstance()->SpawnParticles("death_cross", transform_.GetWorldPosition());
+			}
 		}
 	}
 }

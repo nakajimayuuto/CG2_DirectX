@@ -11,7 +11,14 @@ enum GamePhase {
 	kGameClearStage,
 };
 
+enum GameProgress {
+	kPhase1Clear,
+	kPhase2Clear,
+};
+
 inline GamePhase gGamePhase;
+
+inline GameProgress gGameProgress;
 
 
 class TutorialManager {

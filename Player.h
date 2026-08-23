@@ -63,6 +63,8 @@ public:
 
 	void SetTutorialMinClamp(float positionZ) { tutorialClampMinPosZ_ = positionZ; };
 	void SetTutorialMaxClamp(float positionZ) { tutorialClampMaxPosZ_ = positionZ; };
+
+	bool GetIsDeath() { return isDeath_; };
 private:
 	void SlashEffectCreate(Transform* targetTransform, uint32_t num);
 

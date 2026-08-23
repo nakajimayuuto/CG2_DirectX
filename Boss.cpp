@@ -38,6 +38,7 @@ Boss::~Boss() {
 
 void Boss::Initialize() {
 	model_.Initialize("boss");
+	model_.SetBlendMode(BlendMode::kNormalCullNone);
 	halberdModel_.Initialize("halberd");
 	anchorPointCenter_ = Vector3(0.0f, kBasicPositionY, 0.0f);
 	anchorPoints_.push_back(anchorPointCenter_);
@@ -164,12 +165,14 @@ void Boss::Initialize() {
 	} else if (gGamePhase == GamePhase::kBossPhaseChangeAnim) {
 		PhaseChangeAnimInitialize();
 	} else if (gGamePhase == GamePhase::kBossLastJaronaAnim) {
-
+		DeathAnimInitialize();
 	}
 
 	isChangePhase_ = false;
 	isImmune_ = false;
 	debugHpScale_ = 1.0f;
+
+	isDeath_ = false;
 #ifdef _DEBUG
 	useDebugUpdateStop = true;
 #endif // _DEBUG
@@ -257,8 +260,10 @@ void Boss::Update() {
 		EffectUpdate();
 		return;
 	} else if (gGamePhase == GamePhase::kBossLastJaronaAnim) {
-		EffectUpdate();
+		DeathAnimationUpdate();
 
+		EffectUpdate();
+		return;
 	}
 
 	DistanceCheckUpdate();
@@ -627,6 +632,7 @@ void Boss::OnCollision(Collider* other) {
 			DeltaTime::GetInstance()->SetHitStop(0.5f);
 			phase_ = Phase::kPhase2;
 			isChangePhase_ = true;
+			gGameProgress = GameProgress::kPhase2Clear;
 		}
 	}
 
@@ -1691,6 +1697,25 @@ void Boss::PhaseChangeAnimInitialize() {
 	animTimerMax_ = kAnimPhaseChangeCameraRotateTimerMax;
 }
 
+void Boss::DeathAnimInitialize(){
+	GameCamera::GetInstance()->Reset();
+	AnimInitialize();
+
+	animCameraCenterTransform_.Initialize();
+	animCameraTransform_.Initialize();
+	animCameraTransform_.translate.y = kBasicPositionY + 10.0f;
+	animCameraTransform_.translate.z = -30.0f;
+	animCameraTransform_.SetParent(&animCameraCenterTransform_);
+	halberdTransform_.rotate = kBasicHalberdFarRotate;
+	halberdTransform_.translate = kBasicHalberdFarPos;
+	transform_.translate = { 0.0f,kBasicPositionY,0.0f };
+	transform_.rotate.y = Radian(0.0f);
+	hpGauge->SetScale({ 0.0f, 1.0f });
+	preCameraTransform_ = GameCamera::GetInstance()->GetTransform();
+	GameCamera::GetInstance()->SetPosition({});
+	animTimerMax_ = kAnimDeathCameraRotateTimerMax;
+}
+
 void Boss::AnimInitialize() {
 	animPhase_ = 0;
 	animTimer_ = 0.0f;
@@ -1956,6 +1981,61 @@ void Boss::PhaseChangeAnimationUpdate() {
 		if (animTimer_ >= animTimerMax_) {
 			gGamePhase = GamePhase::kBossPhase2;
 			phase_ = Phase::kPhase2;
+		}
+		break;
+	}
+}
+
+void Boss::DeathAnimationUpdate(){
+	GameCamera* camera = GameCamera::GetInstance();
+
+	animTimer_ += deltaTime_;
+	switch (animPhase_) {
+	case 0:
+		animCameraTransform_.translate.y = Easing(kBasicPositionY + 10.0f, kBasicPositionY + 5, animTimer_, animTimerMax_, EaseType::kConstant);
+		animCameraTransform_.translate.z = Easing(-30.0f, -10.0f, animTimer_, animTimerMax_, EaseType::kConstant);
+		animCameraCenterTransform_.rotate.y = Easing(0.0f, Radian(360.0f), animTimer_, animTimerMax_, EaseType::kEaseInOut);
+		camera->SetRotate({Radian(20.0f),Easing(0.0f,Radian(360.0f),animTimer_,animTimerMax_,EaseType::kEaseInOut),0.0f });
+		camera->SetPosition(animCameraTransform_.GetWorldPosition());
+		transform_.rotate.x = Easing(0.0f, Radian(20.0f), animTimer_, animTimerMax_, EaseType::kEaseInOut);
+
+		if (animTimer_ >= animTimerMax_) {
+			NextAnimPhase(kAnimDeathCameraStayTimerMax);
+		}
+		break;
+	case 1:
+		if (animTimer_ >= animTimerMax_) {
+			NextAnimPhase(kAnimDeathScaleTimerMax);
+		}
+		break;
+	case 2:
+		transform_.scale = Easing({ 1.0f,1.0f,1.0f }, {0.0f,0.0f,0.0f}, animTimer_, animTimerMax_, EaseType::kEaseIn);
+		if (animTimer_ >= animTimerMax_) {
+			NextAnimPhase(kAnimDeathExplodeTimerMax);
+			for (uint32_t i = 0; i < 30; i++) {
+				ParticleManager::GetInstance()->SpawnParticles("death_cross",transform_.GetWorldPosition());
+			}
+		}
+		break;
+	case 3:
+		animCameraTransform_.translate.y = Easing( kBasicPositionY + 5, kBasicPositionY, animTimer_, animTimerMax_, EaseType::kEaseOut);
+		animCameraTransform_.translate.z = Easing(-10.0f, -40.0f, animTimer_, animTimerMax_ + kAnimDeathExplodeBlankTimerMax, EaseType::kEaseOut);
+		camera->SetPosition(animCameraTransform_.GetWorldPosition());
+		camera->SetRotate({ Easing(Radian(20.0f),0.0f,animTimer_,animTimerMax_,EaseType::kEaseOut),0.0f,0.0f });
+
+		if (animTimer_ >= animTimerMax_) {
+			NextAnimPhase(kAnimDeathExplodeBlankTimerMax);
+			isDeath_ = true;
+		}
+		break;
+	case 4:
+		animCameraTransform_.translate.z = Easing(-10.0f, -40.0f, animTimer_ + kAnimDeathExplodeTimerMax, animTimerMax_ + kAnimDeathExplodeTimerMax, EaseType::kEaseOut);
+		camera->SetPosition(animCameraTransform_.GetWorldPosition());
+
+		if (animTimer_ >= animTimerMax_) {
+			isChangePhase_ = true;
+			phase_ = Phase::kFinished;
+			NextAnimPhase(kAnimDeathExplodeBlankTimerMax);
 		}
 		break;
 	}

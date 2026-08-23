@@ -39,6 +39,7 @@ public:
 		kNormal,
 		kFire,
 		kSlash,
+		kExplode,
 	};
 
 	~Particles();
@@ -66,7 +67,10 @@ public:
 	void ClearParticle() { particleData_.clear(); };
 private:
 	void MoveNormal();
+
 	void MoveFire();
+
+	void MoveExplode();
 private:
 	Vector3 size_;
 

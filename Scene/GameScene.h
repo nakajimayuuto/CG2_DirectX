@@ -104,6 +104,7 @@ private:
 	std::unique_ptr<Emitter> worldBigFrameEmitter_;
 
 	std::unique_ptr<PauseMenu> pauseMenu_;
+	std::unique_ptr<GameOverMenu> gameOverMenu_;
 	std::unique_ptr<Fade> fade_;
 	float startFade_;
 	bool useSkipStart_;
@@ -117,4 +118,13 @@ private:
 
 	float tutorialTimer_;
 	float tutorialTimerMax_ = 1.0f;
+
+	float gameclearTimer_;
+	float gameclearTimerMax_ = 0.5f;
+
+	float gameoverTimer_;
+	float gameoverTimerMax_ = 0.5f;
+	float gameoverMenuTimerMax_ = 1.5f;
+
+	bool isBossDeath_;
 };
