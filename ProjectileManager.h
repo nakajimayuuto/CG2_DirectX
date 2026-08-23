@@ -61,7 +61,28 @@ private:
 };
 
 class Explode : Collider {
+public:
+	/// <summary>
+	/// 初期化.
+	/// </summary>
+	/// <param name="transform">トランスフォーム</param>
+	/// <param name="radius">爆発の半径</param>
+	/// <param name="colliderName"></param>
+	void Initialize(const Transform& transform, float radius, CollisionAttributeName colliderName, float damage, float damageCoolTime);
 
+	void Update();
+
+	bool GetIsActive() { return isActive_; };
+private:
+	uint32_t phase_;
+	float lifeTimer_ = 0.0f;
+	float lifeTimeMax_ = 0.0f;
+	static inline float kStartTimeMax = 0.1f;
+	static inline float kStayTimeMax = 0.4f;
+
+	float maxColliderRadius_;
+
+	bool isActive_;
 };
 
 class Spike : Collider {
@@ -144,10 +165,13 @@ public:
 	void CreateWave(const Transform& transform, float speed, float height,float time, CollisionAttributeName colliderName, float damage, float damageCoolTime);
 
 	void CreateSpike(const Transform& transform, uint32_t size, CollisionAttributeName colliderName, float damage, float damageCoolTime);
+
+	void CreateExplode(const Transform& transform, float radius, CollisionAttributeName colliderName, float damage, float damageCoolTime);
 private:
 	std::vector<std::unique_ptr<Bullet>> bullets;
 	std::vector<std::unique_ptr<Wave>> waves;
 	std::vector<std::unique_ptr<Spike>> spikes;
+	std::vector<std::unique_ptr<Explode>> explodes;
 	std::vector<std::string> lightNames_;
 	const uint32_t kBulletLightMax_ = 30;
 };

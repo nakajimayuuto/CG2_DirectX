@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Boss.cpp" />
+    <ClCompile Include="BossPhase2Attack.cpp" />
     <ClCompile Include="BossWarp.cpp" />
     <ClCompile Include="Engine\Renderer\TextRenderer.cpp" />
     <ClCompile Include="Fade.cpp" />

@@ -396,6 +396,9 @@
     <ClCompile Include="MirrorHalberd.cpp">
       <Filter>ソース ファイル\Boss</Filter>
     </ClCompile>
+    <ClCompile Include="BossPhase2Attack.cpp">
+      <Filter>ソース ファイル\Boss</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">

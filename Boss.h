@@ -63,6 +63,13 @@ private:
 		kPowerSlasher,
 		kFangAttack,
 		kNearAttack,
+		kPhase2BounsShot,
+		kPhase2DiffusionShot,
+		kPhase2MovingShot,
+		kPhase2WaveShot,
+		kPhase2SpinningHalberd,
+		kPhase2PowerSlasher,
+		kPhase2FangAttack,
 		kDown,
 		kSuperDown,
 		kCountMax,
@@ -132,6 +139,14 @@ private:
 	void AttackSelect(std::vector<AttackData> attackDatas);
 
 	void ClearAttackDatas();
+
+	Vector3 GetBulletDire() {
+		Vector3 targetPos = { 0.0f,0.0f,-1.0f };
+		if ((targetTransform_->translate - transform_.translate).Length() != 0.0f) {
+			targetPos = targetTransform_->translate + Vector3(0.0f, 1.2f, 0.0f);
+		}
+		return  (targetPos - transform_.translate).Normalize();
+	};
 
 	void Phase1Initialize();
 	void Phase2Initialize();
@@ -221,6 +236,12 @@ private:
 	std::unique_ptr<Collider> attackTempCollider_;
 	Transform attackTempTransform_;
 
+
+	static inline Vector3 kBasicHalberdLeftPos = { 3.0f,2.0f ,-2.0f };
+	static inline Vector3 kBasicHalberdRightPos = { -3.0f,2.0f ,-2.0f };
+	Vector3 basicHalberdLeftRotate = { 0.0f,0.0f,0.0f };
+	Vector3 basicHalberdRightRotate = { 0.0f,0.0f,0.0f };
+
 	// ダメージ処理.
 	float damageCoolTimer_;
 	uint32_t damageCountFirst_;
@@ -252,6 +273,8 @@ private:
 	static inline float kWaveDamage = 15.0f;
 	static inline float kNearDamage = 10.0f;
 	static inline float kNearThirdDamage = 30.0f;
+
+#pragma region Phase1攻撃
 
 	// Warp
 	static inline float kWarpEnterTimerMax = 0.5f;
@@ -313,18 +336,8 @@ private:
 	static inline float kWaveAnimPositionY = 8.0f;
 	static inline Vector3 kWaveHalberdStartRotate = { 0.0f,0.0f,0.0f };
 	static inline Vector3 kWaveHalberdStayPos = { 0.0f,5.0f,-3.0f };
-	static inline Vector3 kWaveHalberdAttackRotate = { Radian(-150.0f),0.0f,0.0f};
+	static inline Vector3 kWaveHalberdAttackRotate = { Radian(-150.0f),0.0f,0.0f };
 	static inline Vector3 kWaveHalberdAttackPos = { 0.0f,-2.0f,-4.0f };
-
-	// 目の前でハルバード回転
-	// 
-	// 上に飛ばす
-	// 地面に突き刺す
-	// 後隙
-	//みたいな感じ
-
-
-	//Transform halberdModelTransform;
 
 	// SpiningHalberd.
 	static inline float kSpinningStartGapTimerMax = 0.2f;
@@ -370,19 +383,6 @@ private:
 	static inline float kPowerSlasherNearSlashRadius = 3.0f;
 	static inline float kPowerSlasherSlashRadius = (kPowerSlasherSpeed * kPowerSlasherDashToSlashTimerMax);
 
-	//// FangAttack(なんか攻撃作っていくうちにアニメーションのコスト高くなってくな).
-	//// ハルバード上投げ.
-	//static inline float kFangAttackStartGapTimerMax = 0.3f;
-	//// ジャンプする.
-	//static inline float kFangAttackJumpTimerMax = 0.3f;
-	//// 回収.
-	//static inline float kFangAttackStayTimerMax = 0.3f;
-	//// 急降下.
-	//static inline float kFangAttackFallingTimerMax = 0.3f;
-	//// 攻撃の隙.
-	//static inline float kFangAttackAttackGapTimerMax = 0.3f;
-	//// 元の見た目に戻る.
-	//static inline float kFangAttackFinishedGapTimerMax = 0.3f;
 
 	// FangAttack(Waveの奴を上手く改変してWaveを全く新しいアニメーションにする)
 	static inline float kFangAttackStartGapTimerMax = 0.3f;
@@ -469,7 +469,7 @@ private:
 	Vector3 downAnimHalberdRotate_;
 	Vector3 downAnimHalberdPos_;
 
-	static inline Vector3 kDownHalberdPos_ = {-2.0f,-1.0f,0.0f};
+	static inline Vector3 kDownHalberdPos_ = { -2.0f,-1.0f,0.0f };
 	static inline Vector3 kDownHalberdRotate_ = { Radian(30.0f),Radian(0.0f),0.0f };
 
 	static inline float kDownStartPosY = 7.0f;
@@ -489,6 +489,185 @@ private:
 	static inline float kBasicHalberdFarRightRotateX = Radian(-90.0f);
 	static inline float kBasicHalberdNormalLeftRotateX = 0.0f;
 	static inline float kBasicHalberdNormalRightRotateX = 0.0f;
+
+
+
+
+
+
+#pragma endregion Phase1攻撃
+	//=================================================================================================================
+	//=================================================================================================================
+	//=================================================================================================================
+	//=================================================================================================================
+	//=================================================================================================================
+private:
+
+	void Phase2BounsInitialize();
+	void Phase2BounsUpdate();
+
+	void Phase2DiffusionBulletInitialize();
+	void Phase2DiffusionBulletUpdate();
+
+	void Phase2MovingBulletInitialize();
+	void Phase2MovingBulletUpdate();
+
+	void Phase2WaveInitialize();
+	void Phase2WaveUpdate();
+
+	void Phase2SpinningInitialize();
+	void Phase2SpinningUpdate();
+
+	void Phase2PowerSlasherInitialize();
+	void Phase2PowerSlasherUpdate();
+
+	void Phase2FangAttackInitialize();
+	void Phase2FangAttackUpdate();
+	void Phase2FangAttackFangCreate();
+
+private:
+
+	static inline float kPhase2BulletDamage = 10.0f;
+	static inline float kPhase2FireBulletDamage = 50.0f;
+	static inline float kPhase2FireTrajectoryDamage = 15.0f;
+	static inline float kPhase2SlasherDamage = 25.0f;
+	static inline float kPhase2SpinDamage = 5.0f;
+	static inline float kPhase2FangDamage = 15.0f;
+	static inline float kPhase2WaveDamage = 15.0f;
+	static inline float kPhase2NearDamage = 10.0f;
+	static inline float kPhase2NearThirdDamage = 30.0f;
+
+	Transform bounceLeftHal_;
+	Transform bounceRightHal_;
+
+	// 強化 BounsShot.
+	static inline float kPhase2BounsStartGapTimerMax = 0.7f;
+	static inline float kPhase2BounsStayTimerMax = 0.2f;
+	static inline float kPhase2BounsSpinTimerMax = 0.5f;
+	static inline float kPhase2BounsFinishedGapTimerMax = 0.5f;
+
+	static inline float kPhase2BounsAnimPositionY = 5.0f;
+	static inline Vector3 kPhase2BounsHalberdStartPos = { -0.5f,3.5f,0.0f };
+	static inline Vector3 kPhase2BounsHalberdStartRotate = { 0.0f,0.0f,0.0f };
+	static inline Vector3 kPhase2BounsHalberdSpinPos = { -3.0f,0.0f,0.0f };
+	static inline Vector3 kPhase2BounsHalberdSpinRotate = { 0.0f,0.0f,Radian(90.0f) };
+	static inline Vector3 kPhase2BounsRightHalberdSpinPos = { -3.0f,0.0f,0.0f };
+	static inline Vector3 kPhase2BounsRightHalberdSpinRotate = { 0.0f,0.0f,Radian(90.0f) };
+	static inline Vector3 kPhase2BounsLeftHalberdSpinPos = { 3.0f,0.0f,0.0f };
+	static inline Vector3 kPhase2BounsLeftHalberdSpinRotate = { 0.0f,0.0f,Radian(-90.0f) };
+
+	// 強化 DiffusionShot.
+	static inline float kPhase2DiffusionBulletStartGapTimerMax = 0.2f;
+	static inline float kPhase2DiffusionBulletSpinStartTimerMax = 0.6f;
+	static inline float kPhase2DiffusionBulletSpinTimerMax = 0.2f;
+	static inline float kPhase2DiffusionBulletSpinEndTimerMax = 0.6f;
+	static inline float kPhase2DiffusionBulletFinishedGapTimerMax = 0.5f;
+
+	static inline Vector3 kPhase2DiffusionBulletHalberdStartPos = { 0.0f,0.0f,-2.0f };
+	static inline Vector3 kPhase2DiffusionBulletHalberdStartRotate = { 0.0f,0.0f,0.0f };
+	static inline Vector3 kPhase2DiffusionBulletHalberdSpinRotate = { 0.0f,0.0f,Radian(360.0f) * 3.0f };
+	static inline float kPhase2DiffusionBulletAnimPositionZ = 1.0f;
+
+	// 強化 MovingShot.
+	static inline float kPhase2MovingBulletStartGapTimerMax = 0.2f;
+	static inline float kPhase2MovingBulletStayTimerMax = 0.2f;
+	static inline float kPhase2MovingBulletShotGapTimerMax = 0.1f;
+	static inline float kPhase2MovingBulletFinishedGapTimerMax = 0.3f;
+	static inline float kPhase2MovingBulletFinishedTimerMax = 2.0f;
+
+	static inline Vector3 kPhase2MovingBulletHalberdPos = { -2.0f,0.0f,-3.0f };
+	static inline float kPhase2MovingBulletAnchorRadius = 40.0f;
+
+
+	// Wave.
+	Transform waveSpinHalTransform_;
+	float waveSpinHalRotateY_;
+
+	static inline float kPhase2WaveStartGapTimerMax = 0.7f;
+	static inline float kPhase2WaveStayTimerMax = 0.2f;
+	static inline float kPhase2WaveAttackTimerMax = 0.1f;
+	static inline float kPhase2WaveAttackGapTimerMax = 0.7f;
+	static inline float kPhase2WaveFinishedGapTimerMax = 0.3f;
+
+	static inline float kPhase2WaveAnimPositionY = 8.0f;
+	static inline float kPhase2WaveSpinHalPositionY = 5.0f;
+	static inline Vector3 kPhase2WaveHalberdStartRotate = { 0.0f,0.0f,0.0f };
+	static inline Vector3 kPhase2WaveHalberdLeftStartPos = { 10.0f,2.0f,-2.0f };
+	static inline Vector3 kPhase2WaveHalberdRightStartPos = { -10.0f,2.0f,-2.0f };
+	static inline Vector3 kPhase2WaveHalberdStayPos = { 0.0f,5.0f,-3.0f };
+	static inline Vector3 kPhase2WaveHalberdAttackRotate = { Radian(-150.0f),0.0f,0.0f };
+	static inline Vector3 kPhase2WaveHalberdAttackPos = { 0.0f,-2.0f,-4.0f };
+	static inline float kPhase2WaveSpinHalAttackPositionY = -2.0f;
+
+	// SpiningHalberd.
+	static inline float kPhase2SpinningStartGapTimerMax = 0.2f;
+	static inline float kPhase2SpinningStayTimerMax = 0.3f;
+	static inline float kPhase2SpinningSpinStartTimerMax = 0.2f;
+	static inline float kPhase2SpinningSpinTimerMax = 1.6f;
+	static inline float kPhase2SpinningSpinFinnishedTimerMax = 0.2f;
+	static inline float kPhase2SpinningSpinGapTimerMax = 0.7f;
+	static inline float kPhase2SpinningFinishedGapTimerMax = 0.3f;
+
+	static inline float kPhase2SpinningBounsTimerMax = 0.25f;
+
+	float spinningBounsTimer_;
+
+	static inline float kPhase2SpinningComplateRate = 0.25f;
+	static inline float kPhase2SpinningSpeed = 15.0f;
+	static inline Vector3 kPhase2SpinningHalberdStartPos = { -3.0f,0.0f,0.0f };
+	static inline Vector3 kPhase2SpinningHalberdStartRotate = { 0.0f,0.0f,Radian(90.0f) };
+	static inline float kPhase2SpinningStartRotateY = Radian(30.0f);
+	static inline Vector3 kPhase2SpinningHalberdSpinGapPos = { 2.0f,0.0f,-2.0f };
+	static inline Vector3 kPhase2SpinningHalberdSpinGapRotate = { -Radian(180.0f),0.0f,Radian(90.0f) };
+	static inline  float kPhase2SpinningSpinGapRotateY = -Radian(30.0f);
+
+	// PowerSlasher.
+	static inline float kPhase2PowerSlasherStartGapTimerMax = 0.2f;
+	static inline float kPhase2PowerSlasherStayTimerMax = 1.3f;
+	static inline float kPhase2PowerSlasherStayBlankTimerMax = 0.2f;
+	static inline float kPhase2PowerSlasherDashTimerMax = 1.0f;
+	static inline float kPhase2PowerSlasherDashToSlashTimerMax = 0.3f;
+	static inline float kPhase2PowerSlasherSlashStayTimerMax = 1.2f;
+	static inline float kPhase2PowerSlasherFinishedGapTimerMax = 0.3f;
+
+	float powerSlasherRotateY_;
+	Vector3 powerSlasherDirection_;
+
+	static inline float kPhase2PowerSlasherSpeed = 40.0f;
+	static inline Vector3 kPhase2PowerSlasherHalberdStartPos = { 1.0f,0.0f,-1.0f };
+	static inline Vector3 kPhase2PowerSlasherHalberdStartRotate = { 0.0f,0.0f,-Radian(60.0f) };
+	static inline float kPhase2PowerSlasherModelStartRotateY = -Radian(30.0f);
+	static inline Vector3 kPhase2PowerSlasherHalberdAttackPos = { 2.0f,0.0f,0.0f };
+	static inline Vector3 kPhase2PowerSlasherHalberdAttackRotate = { 0.0f,0.0f,-Radian(90.0f) };
+	static inline Vector3 kPhase2PowerSlasherHalberdFinishedPos = { 2.0f,0.0f,0.0f };
+	static inline Vector3 kPhase2PowerSlasherHalberdFinishedRotate = { 0.0f,0.0f,-Radian(90.0f) };
+	static inline float kPhase2PowerSlasherModelFinishedRotateY = Radian(30.0f);
+
+	static inline float kPhase2PowerSlasherNearSlashRadius = 3.0f;
+	static inline float kPhase2PowerSlasherSlashRadius = (kPhase2PowerSlasherSpeed * kPhase2PowerSlasherDashToSlashTimerMax);
+
+
+	// FangAttack(Waveの奴を上手く改変してWaveを全く新しいアニメーションにする)
+	static inline float kPhase2FangAttackStartGapTimerMax = 0.3f;
+	static inline float kPhase2FangAttackSpinTimerMax = 0.3f;
+	static inline float kPhase2FangAttackAttackTimerMax = 0.3f;
+	static inline float kPhase2FangAttackAttackGapTimerMax = 0.7f;
+	static inline float kPhase2FangAttackFinishedGapTimerMax = 0.3f;
+
+	static inline float kPhase2FangAttackAnimPositionY = 8.0f;
+	static inline Vector3 kPhase2FangAttackHalberdPos = { -0.5f,2.5f,0.0f };
+	static inline Vector3 kPhase2FangAttackHalberdStartRotate = { 0.0f,0.0f,0.0f };
+	static inline Vector3 kPhase2FangAttackHalberdSpinPos = { 0.0f,2.5f,0.0f };
+	static inline float kPhase2FangAttackAttackPositionY = 2.5f;
+	static inline Vector3 kPhase2FangAttackHalberdAttackPos = { 0.0f,1.0f,-0.6f };
+	static inline float kPhase2FangAttackAttackRotateX = -Radian(150.0f);
+
+	static inline float kPhase2FangAttackRadius = 20.0f;
+	static inline uint32_t kPhase2FangAttackLoopCount = 8;
+	static inline uint32_t kPhase2FangAttackRadiusNum = 100;
+
+
+
 public:
 	void StartAnimInitialize();
 
@@ -531,7 +710,7 @@ private:
 	static inline float kAnimStartFinishTimerMax = 0.5f; // 叩きつけの余白.
 
 
-	static inline Vector3 kAnimStartHalberdRotate = {0.0f,Radian(-90.0f),0.0f};
+	static inline Vector3 kAnimStartHalberdRotate = { 0.0f,Radian(-90.0f),0.0f };
 	static inline Vector3 kAnimStartHalberdPos = { 0.0f,-10.0f ,-2.0f };
 
 	static inline Vector3 kAnimStartCameraMovePos = { 0.0f,3.0f ,-10.0f };
@@ -541,10 +720,10 @@ private:
 
 	static inline Vector3 kAnimStartHalberdSetRotate = { Radian(30.0f),Radian(-90.0f),0.0f };
 	static inline Vector3 kAnimStartHalberdSetPos = { -2.0f,1.0f ,-2.0f };
-	static inline Vector3 kAnimStartHalberdSetCameraPos = {1.0f,4.5f ,-12.0f };
+	static inline Vector3 kAnimStartHalberdSetCameraPos = { 1.0f,4.5f ,-12.0f };
 
-	static inline Vector3 kAnimStartEyeGrownRotate = {0.0f,Radian(315.0f) ,0.0f};
-	static inline Vector3 kAnimStartEyeGrownCameraPos = {1.0f,4.5f ,-15.0f };
+	static inline Vector3 kAnimStartEyeGrownRotate = { 0.0f,Radian(315.0f) ,0.0f };
+	static inline Vector3 kAnimStartEyeGrownCameraPos = { 1.0f,4.5f ,-15.0f };
 
 	static inline float kAnimStartJumpPosY = 7.0f;
 	static inline Vector3 kAnimStartJumpCameraPos = { 0.0f,3.4f ,-23.0f };
@@ -618,8 +797,6 @@ private:
 	static inline Vector3 kAnimPhaseChangeNameShowCameraPos = { 0.0f,0.5f ,-25.0f };
 
 	static inline Vector3 kAnimPhaseChangeFinishHalberdPos = { -2.0f,2.0f ,-2.0f };
-	static inline Vector3 kAnimPhaseChangeFinishHalberdLeftPos = { 3.0f,2.0f ,-2.0f };
-	static inline Vector3 kAnimPhaseChangeFinishHalberdRightPos = { -3.0f,2.0f ,-2.0f };
 	static inline Vector3 kAnimPhaseChangeFinishHalberdRotate = { Radian(0.0f),Radian(0.0f),Radian(-30.0f) };
 
 
@@ -666,8 +843,6 @@ private:
 	static inline Vector3 kAnimDeathNameShowCameraPos = { 0.0f,0.5f ,-25.0f };
 
 	static inline Vector3 kAnimDeathFinishHalberdPos = { -2.0f,2.0f ,-2.0f };
-	static inline Vector3 kAnimDeathFinishHalberdLeftPos = { 3.0f,2.0f ,-2.0f };
-	static inline Vector3 kAnimDeathFinishHalberdRightPos = { -3.0f,2.0f ,-2.0f };
 	static inline Vector3 kAnimDeathFinishHalberdRotate = { Radian(0.0f),Radian(0.0f),Radian(-30.0f) };
 };
 

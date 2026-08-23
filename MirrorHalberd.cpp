@@ -20,7 +20,7 @@ void MirrorHalberd::Initialize() {
 }
 
 void MirrorHalberd::Update() {
-	SetActive(isActive_);
+	//SetActive(isActive_);
 	if (!isActive_) {
 		return;
 	}

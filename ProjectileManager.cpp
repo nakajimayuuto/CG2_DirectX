@@ -7,6 +7,8 @@ ProjectileManager* ProjectileManager::GetInstance() {
 void ProjectileManager::Initialize() {
 	bullets.clear();
 	waves.clear();
+	spikes.clear();
+	explodes.clear();
 
 	for (uint32_t i = 0; i < kBulletLightMax_; i++) {
 		lightNames_.push_back(std::format("bullet_{}", i));
@@ -75,6 +77,22 @@ void ProjectileManager::Update() {
 
 	for (auto& spike : spikes) {
 		CollisionManager::GetInstance()->AddColliderList(reinterpret_cast<Collider*>(spike.get()));
+	}
+
+	for (auto& explode : explodes) {
+		explode->Update();
+	}
+
+	for (auto it = explodes.begin(); it != explodes.end(); ) {
+		if (!(*it)->GetIsActive()) {
+			it = explodes.erase(it);
+		} else {
+			++it;
+		}
+	}
+
+	for (auto& explode : explodes) {
+		CollisionManager::GetInstance()->AddColliderList(reinterpret_cast<Collider*>(explode.get()));
 	}
 }
 
@@ -148,6 +166,13 @@ void ProjectileManager::CreateSpike(const Transform& transform, uint32_t size, C
 	spikes.push_back(std::move(spike));
 }
 
+void ProjectileManager::CreateExplode(const Transform& transform, float radius, CollisionAttributeName colliderName, float damage, float damageCoolTime){
+	std::unique_ptr<Explode> explode;
+	 explode = std::make_unique<Explode>();
+	 explode->Initialize(transform, radius, colliderName, damage, damageCoolTime);
+	 explodes.push_back(std::move(explode));
+}
+
 void (Bullet::* Bullet::pInitializeFunc[])() = {
 		&Bullet::NormalInitialize,
 		&Bullet::BounsInitialize,
@@ -189,6 +214,13 @@ void Bullet::Update() {
 	(this->*pUpdateFunc[static_cast<size_t>(type_)])();
 
 	if (lifeTimer_ >= lifeTimeMax_) {
+		switch (type_){
+		case BulletType::kBounce:
+			ProjectileManager::GetInstance()->CreateExplode(transform_,colliderRadius_ * 2.0f, kCollisionEnemyAttack,15.0f,3.0f);
+			break;
+		default:
+			break;
+		}
 		isActive_ = false;
 	}
 }
@@ -203,7 +235,7 @@ void Bullet::Draw() {
 
 void Bullet::NormalInitialize() {
 	emitter_ = std::make_unique<Emitter>();
-	emitter_->Initialize(transform_,1,0.1f);
+	emitter_->Initialize(transform_, 1, 0.1f);
 	emitter_->SetParticle(ParticleManager::GetInstance()->GetParticles("cross"));
 	transform_.rotate.y = std::atan2(velocity_.x, velocity_.z);
 }
@@ -224,7 +256,7 @@ void Bullet::BounsInitialize() {
 	modelTransform_.Initialize();
 	modelTransform_.ClearParent();
 	modelTransform_.scale = { 0.8f,0.8f,0.8f };
-	velocity_.y = 1.0f;
+	//velocity_.y = 1.0f;
 
 	lifeTimeMax_ = 5.0f;
 }
@@ -232,8 +264,9 @@ void Bullet::BounsInitialize() {
 void Bullet::BounsUpdate() {
 	velocity_.y -= gravityAcceleration_ * DeltaTime::GetInstance()->GetGameTime();
 	transform_.translate += velocity_ * DeltaTime::GetInstance()->GetGameTime();
-
+	colliderDimensionType_ = ColliderDimensionType::k3D;
 	if (transform_.GetWorldPosition().y - (colliderRadius_ / 2.0f) <= 0.0f) {
+		colliderDimensionType_ = ColliderDimensionType::k2D;
 		transform_.translate.y = (colliderRadius_ / 2.0f);
 
 		Vector3 reflected = velocity_.Reflect({ 0.0f,1.0f,0.0f });
@@ -330,7 +363,7 @@ void Spike::Initialize(const Transform& transform, uint32_t size, CollisionAttri
 	switch (sizeIndex) {
 	case 1:
 		colliderSize_ = kBasicSpikeSize;
-		modelTransform_.scale = {1.0f,1.0f,1.0f};
+		modelTransform_.scale = { 1.0f,1.0f,1.0f };
 		break;
 	case 2:
 		colliderSize_ = kBasicSpikeSize * 1.5f;
@@ -390,4 +423,56 @@ void Spike::Update() {
 void Spike::Draw() {
 	//Renderer::GetInstance()->DrawBoxWireFrame(GetOBB(), { 1.0f,0.0f,0.0f,1.0f });
 	model_.Draw(modelTransform_);
+}
+
+void Explode::Initialize(const Transform& transform, float radius, CollisionAttributeName colliderName, float damage, float damageCoolTime) {
+
+	transform_.Initialize();
+	transform_.translate = transform.GetWorldPosition();
+	transform_.translate.y = 0.0f;
+	maxColliderRadius_ = radius;
+	colliderRadius_ = 0.0f;
+	collisionAttribute_ = CollisionManager::GetInstance()->GetCollisionAttribute(colliderName);
+	isActive_ = true;
+	lifeTimer_ = 0.0f;
+	colliderType_ = ColliderType::kSphere;
+	colliderDimensionType_ = ColliderDimensionType::kAll;
+	lifeTimeMax_ = kStartTimeMax;
+	colliderColor_ = { 1.0f,0.0f,0.0f,1.0f };
+
+	for (uint32_t i = 0; i < 30; i++) {
+		ParticleManager::GetInstance()->SpawnParticles("death_cross", transform_.GetWorldPosition());
+	}
+
+	phase_ = 0;
+
+	damage_ = damage;
+	damageCoolTime_ = damageCoolTime;
+}
+
+void Explode::Update() {
+	lifeTimer_ += DeltaTime::GetInstance()->GetGameTime();
+
+	switch (phase_){
+	case 0:
+		colliderRadius_ = Easing(0.0f,maxColliderRadius_,lifeTimer_,lifeTimeMax_,EaseType::kEaseIn);
+
+		if (lifeTimer_ >= lifeTimeMax_) {
+			lifeTimer_ = 0;
+			phase_++;
+			lifeTimeMax_ = kStayTimeMax;
+		}
+		break;
+	case 1:
+		colliderRadius_ = maxColliderRadius_;
+		if (lifeTimer_ >= lifeTimeMax_) {
+			lifeTimer_ = 0;
+			isActive_ = false;
+		}
+		break;
+	default:
+		break;
+	}
+
+	DrawCollider();
 }

@@ -77,7 +77,7 @@ private:
 	Move moveType_;
 
 	uint32_t modelMax_;
-	static inline const uint32_t kNumMaxInstance = 100;
+	static inline const uint32_t kNumMaxInstance = 1000;
 
 	Material* materialData_;
 	bool isVisible_;
