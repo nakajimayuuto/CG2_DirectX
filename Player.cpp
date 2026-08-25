@@ -12,7 +12,7 @@ void Player::Initialize() {
 	currentHP_ = maxHP_;
 
 	hpGauge_ = std::make_unique<HPGauge>();
-	hpGauge_->Initialize(&currentHP_, maxHP_, { 200.0f,30.0f });
+	hpGauge_->Initialize(&currentHP_, maxHP_, { 200.0f,20.0f });
 	hpGauge_->SetPosition({ -500.0f,300.0f });
 
 	// 後々削除
@@ -898,7 +898,7 @@ void Player::BehaviorDashAttackUpdate() {
 		}
 		break;
 	default:
-		colliderDimensionType_ = ColliderDimensionType::k2D;
+		//colliderDimensionType_ = ColliderDimensionType::k2D;
 		attackCollider_.SetActive(true);
 		Vector3 accelerationVector = { 0.0f,-kGravityAcceleration,0.0f };
 		velocity_ += accelerationVector * DeltaTime::GetInstance()->GetGameTime();
@@ -1030,8 +1030,9 @@ void Player::Draw() {
 	}
 
 	//particles_->Draw();
-
-	hpGauge_->Draw();
+	if (gGamePhase != GamePhase::kBossLastJaronaAnim) {
+		hpGauge_->Draw();
+	}
 
 	DrawCollider();
 }

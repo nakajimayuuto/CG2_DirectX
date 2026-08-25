@@ -118,6 +118,10 @@ void TitleScene::TitleUpdate() {
 		//currentPhase_ = TitlePhase::kMenuSelect;
 		currentPhase_ = TitlePhase::kDifficultySelect;
 	}
+
+	if (TriggerChancel()) {
+		Environment::GetInstance()->GameFinished();
+	}
 }
 
 void TitleScene::MenuUpdate() {
@@ -331,6 +335,16 @@ bool TitleScene::TriggerSubmit() {
 		}
 	} else {
 		if (InputManager::GetInstance()->TriggerKey(DIK_SPACE) || InputManager::GetInstance()->TriggerKey(DIK_Z)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool TitleScene::TriggerChancel(){
+	if (InputManager::GetInstance()->IsGamePadConnect()) {
+		if (InputManager::GetInstance()->TriggerPadButton(PadButtons::INPUT_START)) {
 			return true;
 		}
 	}

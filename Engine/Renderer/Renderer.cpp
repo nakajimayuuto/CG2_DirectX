@@ -939,6 +939,7 @@ void Renderer::DrawTorus(const Transform& transform, float majorRadius, float mi
 	newElement->wvpData_->World = worldMatrix;
 	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
 	newElement->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+	newElement->materialData_->color = color;
 	/*=============================================================
 	三角形の描画のコマンド.
 	=============================================================*/

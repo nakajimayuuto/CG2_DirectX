@@ -24,6 +24,8 @@ private:
 	bool TriggerDown();
 
 	bool TriggerSubmit();
+
+	bool TriggerChancel();
 private:
 	bool preStickUpUse_;
 	bool preStickDownUse_;

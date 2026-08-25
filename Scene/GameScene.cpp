@@ -12,6 +12,10 @@ void GameScene::Initialize() {
 	LightManager::GetInstance()->GetDirectionalLightData()->color = { 1.0f,1.0f,1.0f,1.0f };
 	//LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.1f;
 	//LightManager::GetInstance()->GetDirectionalLightData()->color = { 1.0f,0.5f,0.5f,1.0f };
+	if (gGamePhase == GamePhase::kBossPhase2) {
+		LightManager::GetInstance()->GetDirectionalLightData()->color = { 1.0f,0.7f,0.7f,1.0f };
+	}
+
 	TutorialManager::GetInstance()->Initialize();
 
 	ParticleManager::GetInstance()->ClearParticles();
@@ -213,7 +217,7 @@ void GameScene::Update() {
 			if (gameclearTimer_ >= gameclearTimerMax_) {
 				gameclearTimer_ = gameclearTimerMax_;
 			} else {
-				gameclearTimer_ += DeltaTime::GetInstance()->GetGameTime();
+				gameclearTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
 			}
 		}
 
@@ -277,7 +281,7 @@ void GameScene::Draw() {
 
 	ProjectileManager::GetInstance()->Draw();
 
-
+	
 	player_->Draw();
 	boss_->Draw();
 
@@ -291,12 +295,12 @@ void GameScene::Draw() {
 
 	ParticleManager::GetInstance()->Draw();
 
-	if (gGamePhase != GamePhase::kTutorial) {
+	if (gGamePhase != GamePhase::kTutorial && gGamePhase != GamePhase::kBossLastJaronaAnim) {
 		Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 500.0f,200.0f,0.0f }), "play_guid", { 1.0f,1.0f,1.0f,1.0f });
 	}
 
 	if (boss_->GetIsDeath()) {
-		Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue(Easing({ 100.0f,100.0f,100.0f }, {1.0f,1.0f,1.0f},gameclearTimer_,gameclearTimerMax_,EaseType::kEaseOut), { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "gameclear", { 1.0f,1.0f,1.0f,Easing(0.0f,1.0f, gameoverTimer_, gameoverTimerMax_, EaseType::kEaseOut) });
+		Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue(Easing({ 100.0f,100.0f,100.0f }, {1.0f,1.0f,1.0f},gameclearTimer_,gameclearTimerMax_,EaseType::kEaseOut), { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "gameclear", { 1.0f,1.0f,1.0f,Easing(0.0f,1.0f, gameclearTimer_, gameclearTimerMax_, EaseType::kEaseOut) });
 	}
 
 	if (player_->GetIsDeath()) {
@@ -383,6 +387,7 @@ void GameScene::AnimSkipFadeUpdate() {
 			case kBossPhaseChangeAnim:
 				break;
 			case kBossPhase2:
+				LightManager::GetInstance()->GetDirectionalLightData()->color = {1.0f,0.7f,0.7f,1.0f};
 				player_->Initialize();
 				player_->SetStartPosition({ 0.0f,1.0f,-50.0f });
 				boss_->Initialize();

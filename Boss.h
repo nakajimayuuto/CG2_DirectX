@@ -20,7 +20,11 @@ public:
 
 	Transform* GetTransform() { return &transform_; };
 
-	void SetTargetTransform(Transform* transform) { targetTransform_ = transform; };
+	void SetTargetTransform(Transform* transform) { 
+		targetTransform_ = transform; 
+		halberdLeft_->SetTargetTransform(transform);
+		halberdRight_->SetTargetTransform(transform);
+	};
 
 	void SetTargetIsAttact(bool isAttack) { isAttack_ = isAttack; };
 
@@ -72,6 +76,11 @@ private:
 		kPhase2FangAttack,
 		kDown,
 		kSuperDown,
+		kLastDown,
+		kSpecialAttack,
+		kThreeWayWave,
+		kAutoHalberd,
+		kInfinitySlasher,
 		kCountMax,
 		kFireBulletShot,
 
@@ -81,6 +90,7 @@ private:
 		kNear,
 		kMiddle,
 		kFar,
+		kAutoHalberd,
 	};
 
 	struct AttackData {
@@ -92,6 +102,15 @@ private:
 
 	std::unique_ptr<MirrorHalberd> halberdLeft_;
 	std::unique_ptr<MirrorHalberd> halberdRight_;
+
+	float bossNameScaleX_;
+
+	bool isDownThreeWayShot_;
+	bool isDownAutoHalberd_;
+	bool isDownInfinitySlasher_;
+	uint32_t downSpecialAttackCount_;
+
+	float downDamageMangification_;
 
 	bool isImmune_;
 
@@ -127,6 +146,9 @@ private:
 	std::unique_ptr<Emitter> emitter_;
 
 	std::unique_ptr<Emitter> downEmitter_;
+
+	std::string bossName_;
+	std::string bossNameMirror_;
 
 	float debugHpScale_;
 
@@ -170,6 +192,9 @@ private:
 	void SuperDownInitialize();
 	void SuperDownUpdate();
 
+	void LastDownInitialize();
+	void LastDownUpdate();
+
 	void BulletInitialize();
 	void BulletUpdate();
 
@@ -204,6 +229,7 @@ private:
 	std::vector<AttackData> nearAttackDatas_;
 	std::vector<AttackData> middleAttackDatas_;
 	std::vector<AttackData> farAttackDatas_;
+	std::vector<AttackData> autoHalberdAttackDatas_;
 private:
 	//Debug.
 	bool useDebugUpdateStop = false;
@@ -251,6 +277,9 @@ private:
 
 
 	// 攻撃全般.
+	float damageAmountRecord_;
+
+
 	Attacks currentAttack_ = Attacks::kWarp; // 現在の攻撃.
 	std::optional<Attacks> attackRequest_ = std::nullopt; // 次の攻撃リクエスト.
 	bool isPlayAttack_ = false; // 攻撃中か.
@@ -463,6 +492,7 @@ private:
 	// Down
 	static inline float kDonwStartTimer = 0.5f;
 	static inline float kDonwStayTimer = 5.0f;
+	static inline float kSuperDonwStayTimer = 7.0f;
 	static inline float kDonwFinsihTimer = 0.5f;
 
 	float donwAnimHalberdVelocityY_;
@@ -525,8 +555,21 @@ private:
 	void Phase2FangAttackUpdate();
 	void Phase2FangAttackFangCreate();
 
-private:
+	void SpecialAttackInitialize();
+	void SpecialAttackUpdate();
 
+	void ThreeWayWaveInitialize();
+	void ThreeWayWaveUpdate();
+
+	void AutoHalberdInitialize();
+	void AutoHalberdUpdate();
+	void AutoAttackSelect();
+
+	void InfinitySlasherInitialize();
+	void InfinitySlasherUpdate();
+
+private:
+#pragma region Phase2攻撃
 	static inline float kPhase2BulletDamage = 10.0f;
 	static inline float kPhase2FireBulletDamage = 50.0f;
 	static inline float kPhase2FireTrajectoryDamage = 15.0f;
@@ -665,9 +708,87 @@ private:
 	static inline float kPhase2FangAttackRadius = 20.0f;
 	static inline uint32_t kPhase2FangAttackLoopCount = 8;
 	static inline uint32_t kPhase2FangAttackRadiusNum = 100;
+#pragma endregion Phase2攻撃
+
+	// SpecialAttack
+
+	uint32_t specialAttackCount_;
+
+	// PhaseWarp
+	static inline float kSpecialAttackWarpEnterTimerMax = 0.5f;
+	static inline float kSpecialAttackWarpFinishedTimerMax = 0.5f;
+	static inline float kSpecialAttackChargeStartTimerMax = 2.0f;
+	static inline float kSpecialAttackFlashTimerMax = 0.3f;
 
 
+	// ThreeWayWave.
+	float preWaveSpinHalRotateY_;
 
+	static inline float kThreeWayWaveStartGapTimerMax = 0.7f;
+	static inline float kThreeWayWaveStayTimerMax = 0.2f;
+	static inline float kThreeWayWaveAttackTimerMax = 0.1f;
+	static inline float kThreeWayWaveAttackGapTimerMax = 0.7f;
+	static inline float kThreeWayWaveHalAttackGapTimerMax = 2.0f;
+	static inline float kThreeWayWaveFinishedGapTimerMax = 0.3f;
+
+	static inline float kThreeWayWaveAnimPositionY = 8.0f;
+	static inline float kThreeWayWaveSpinHalPositionY = 5.0f;
+	static inline Vector3 kThreeWayWaveHalberdStartRotate = { 0.0f,0.0f,0.0f };
+	static inline Vector3 kThreeWayWaveHalberdLeftStartPos = { 20.0f,2.0f,-2.0f };
+	static inline Vector3 kThreeWayWaveHalberdRightStartPos = { -20.0f,2.0f,-2.0f };
+	static inline Vector3 kThreeWayWaveHalberdStayPos = { 0.0f,5.0f,-3.0f };
+	static inline Vector3 kThreeWayWaveHalberdAttackRotate = { Radian(-150.0f),0.0f,0.0f };
+	static inline Vector3 kThreeWayWaveHalberdAttackPos = { 0.0f,-2.0f,-4.0f };
+	static inline float kThreeWayWaveSpinHalAttackPositionY = -2.0f;
+
+	static inline uint32_t kThreeWayWaveCountMax_ = 6;
+
+	// AutoHalberd
+	static inline float kAutoHalberdStartGapTimerMax = 0.3f;
+	static inline float kAutoHalberdFinishTimerMax = 20.0f;
+	static inline float kAutoHalberdFinishGapTimerMax = 0.5f;
+
+	float autoHalberdFinishTimer_;
+
+	bool autoHalberdStop_;
+
+	uint32_t autoHalberdAttackPhase_;
+	Attacks autoHalberdAttack_;
+
+	// InfinitySlasher.
+	static inline float kInfinitySlasherStartGapTimerMax = 0.5f;
+	static inline float kInfinitySlasherHalRotateTimerMax = 5.0f;
+	static inline float kInfinitySlasherStayTimerMax = 1.3f;
+	static inline float kInfinitySlasherStayBlankTimerMax = 0.2f;
+	static inline float kInfinitySlasherDashTimerMax = 1.0f;
+	static inline float kInfinitySlasherDashToSlashTimerMax = 0.3f;
+	static inline float kInfinitySlasherSlashStayTimerMax = 1.2f;
+	static inline float kInfinitySlasherFinishedGapTimerMax = 0.3f;
+
+	uint32_t infinitySlasherSlashCount_;
+	static inline uint32_t kInfinitySlasherSlashCountMax = 4;
+	uint32_t infinitySlasherSlashPhaseCount_;
+	static inline uint32_t kInfinitySlasherSlashPhaseCountMax = 2;
+	Transform infinitySlasherHalberdCenter_;
+	float preInfinitySlasherHalCenterRotateY_;
+
+	static inline float kInfinitySlasherSpeed = 40.0f;
+	static inline Vector3 kInfinitySlasherHalLeftStartPos = { 40.0f,2.0f,-2.0f };
+	static inline Vector3 kInfinitySlasherHalRightStartPos = { -40.0f,2.0f,-2.0f };
+	static inline float kInfinitySlasherHalCenterStartPosY = 6.0f;
+	static inline Vector3 kInfinitySlasherHalberdStartPos = { 1.0f,0.0f,-1.0f };
+	static inline Vector3 kInfinitySlasherHalberdStartRotate = { 0.0f,0.0f,-Radian(60.0f) };
+	static inline float kInfinitySlasherModelStartRotateY = -Radian(30.0f);
+	static inline Vector3 kInfinitySlasherHalberdAttackPos = { 2.0f,0.0f,0.0f };
+	static inline Vector3 kInfinitySlasherHalberdAttackRotate = { 0.0f,0.0f,-Radian(90.0f) };
+	static inline Vector3 kInfinitySlasherHalberdFinishedPos = { 2.0f,0.0f,0.0f };
+	static inline Vector3 kInfinitySlasherHalberdFinishedRotate = { 0.0f,0.0f,-Radian(90.0f) };
+	static inline float kInfinitySlasherModelFinishedRotateY = Radian(30.0f);
+
+	static inline float kInfinitySlasherNearSlashRadius = 3.0f;
+	static inline float kInfinitySlasherSlashRadius = (kInfinitySlasherSpeed * kInfinitySlasherDashToSlashTimerMax);
+
+	static inline float kInfinitySlasherHalberdJugdeRadius = 5.0f;
 public:
 	void StartAnimInitialize();
 
@@ -685,6 +806,7 @@ private:
 
 	void DeathAnimationUpdate();
 private:
+#pragma region Anim
 	// 全体で使う.
 	uint32_t animPhase_ = 0;
 	float animTimer_;
@@ -844,5 +966,6 @@ private:
 
 	static inline Vector3 kAnimDeathFinishHalberdPos = { -2.0f,2.0f ,-2.0f };
 	static inline Vector3 kAnimDeathFinishHalberdRotate = { Radian(0.0f),Radian(0.0f),Radian(-30.0f) };
+#pragma endregion Anim
 };
 

@@ -25,6 +25,7 @@ void SceneManager::Initialize() {
 	sceneName_ = SceneName::kGameScene;
 	gGamePhase = GamePhase::kBossPhase2;
 	gGameProgress = GameProgress::kPhase2Clear;
+	DifficultyManager::GetInstance()->SetCurrentDifficulty(Difficulty::kDifficultyHard);
 	#endif // _DEBUG
 
 	currentScene_->Initialize();
@@ -33,6 +34,14 @@ void SceneManager::Initialize() {
 void SceneManager::Update() {
 	if (InputManager::GetInstance()->TriggerKey(DIK_ESCAPE)) {
 		Environment::GetInstance()->GameFinished();
+	}
+
+	if (InputManager::GetInstance()->TriggerKey(DIK_F11)) {
+		if (Environment::GetInstance()->GetWindowMode() == WindowMode::kFullscreen) {
+			Environment::GetInstance()->SetWindowMode(WindowMode::kWindowed);
+		} else {
+			Environment::GetInstance()->SetWindowMode(WindowMode::kFullscreen);
+		}
 	}
 
 	ChangeSceneUpdate();

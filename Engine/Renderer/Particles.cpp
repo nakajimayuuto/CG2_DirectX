@@ -224,6 +224,7 @@ void Particles::Initialize(const TextureInfo& info) {
 void Particles::MakeNewParticle(const Vector3& position) {
 	ParticleData newParticleData;
 		newParticleData.transform.Initialize();
+		newParticleData.targetTransform.Initialize();
 		newParticleData.transform.translate = position;
 		newParticleData.transform.scale = size_;
 		newParticleData.currentTime = 0;
@@ -243,6 +244,19 @@ void Particles::MakeNewParticle(const Vector3& position) {
 		newParticleData.velocity = newParticleData.velocity.Normalize() * 3.0f;
 		newParticleData.color.SetColorWithoutAlpha(Random::GetInstance()->RandomVector3({ 0.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }), 1.0f);
 		newParticleData.lifeTime = Random::GetInstance()->RandomFloat(1.0f, 3.0f);
+		break;
+	case Particles::Move::kExplodeMonochrome:
+		newParticleData.velocity = Random::GetInstance()->RandomVector3({ -1.0f,-1.0f,-1.0f }, { 1.0f,1.0f,1.0f });
+		newParticleData.velocity = newParticleData.velocity.Normalize() * 3.0f;
+		newParticleData.color.InitializeColor();
+		newParticleData.lifeTime = Random::GetInstance()->RandomFloat(1.0f, 3.0f);
+		break;
+	case Particles::Move::kCharge:
+		newParticleData.velocity = Random::GetInstance()->RandomVector3({ -1.0f,-1.0f,-1.0f }, { 1.0f,1.0f,1.0f });
+		newParticleData.velocity = newParticleData.transform.translate + (newParticleData.velocity.Normalize() * 10.0f);
+		newParticleData.color.InitializeColor();
+		newParticleData.lifeTime = Random::GetInstance()->RandomFloat(1.0f, 3.0f);
+		newParticleData.targetTransform = newParticleData.transform;
 		break;
 	case Particles::Move::kNormal:
 	default:
@@ -267,7 +281,11 @@ void Particles::Update() {
 		MoveNormal();
 		break;
 	case Particles::Move::kExplode:
+	case Particles::Move::kExplodeMonochrome:
 		MoveExplode();
+		break;
+	case Particles::Move::kCharge:
+		MoveCharge();
 		break;
 	}	
 }
@@ -284,6 +302,14 @@ void Particles::MoveExplode(){
 	for (ParticleData& particle : particleData_) {
 		particle.transform.translate += Easing(particle.velocity, {0.0f,0.0f,0.0f}, particle.currentTime, particle.lifeTime, EaseType::kConstant) * DeltaTime::GetInstance()->GetDeltaTime();
 		particle.currentTime += DeltaTime::GetInstance()->GetDeltaTime();
+		particle.color.w = Easing(1.0f, 0.0f, particle.currentTime, particle.lifeTime, EaseType::kConstant);
+	}
+}
+
+void Particles::MoveCharge(){
+	for (ParticleData& particle : particleData_) {
+		particle.currentTime += DeltaTime::GetInstance()->GetDeltaTime();
+		particle.transform.translate = Easing(particle.velocity, particle.targetTransform.translate, particle.currentTime, particle.lifeTime, EaseType::kEaseIn);
 		particle.color.w = Easing(1.0f, 0.0f, particle.currentTime, particle.lifeTime, EaseType::kConstant);
 	}
 }

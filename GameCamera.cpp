@@ -9,6 +9,7 @@ void GameCamera::Initialize() {
 	transform_.Initialize();
 	isMove_ = false;
 	isDash_ = false;
+	isAutoHalAttack_ = false;
 
 	angleDirection_ = 0.0f;
 
@@ -76,7 +77,24 @@ void GameCamera::FollowedUpdate() {
 			targetEaseTimer_ -= DeltaTime::GetInstance()->GetGameTime();
 		}
 		//} else if((static_cast<Vector3>(targetEnemy_->translate) - static_cast<Vector3>(target_->translate)).Length() < 30.0f){
+	} else if (isAutoHalAttack_) {
+		Camera::GetInstance()->SetFovY(Lerp(Camera::GetInstance()->GetFovY(), kNormalFovY, 0.05f));
+		if (dashEaseTimer_ <= 0.0f) {
+			dashEaseTimer_ = 0.0f;
+		} else {
+			dashEaseTimer_ -= DeltaTime::GetInstance()->GetGameTime();
+		}
+
+		if (targetEaseTimer_ <= 0.0f) {
+			targetEaseTimer_ = 0.0f;
+		} else {
+			targetEaseTimer_ -= DeltaTime::GetInstance()->GetGameTime();
+		}
+
 	} else {
+		//destinationAngleY_ = destinationTargetAngleY_;// LerpShortAngle(destinationAngleY_, destinationPlayerAngleY_, kCompletionRate);
+
+
 		if (dashEaseTimer_ <= 0.0f) {
 			dashEaseTimer_ = 0.0f;
 		} else {
@@ -89,21 +107,7 @@ void GameCamera::FollowedUpdate() {
 			targetEaseTimer_ += DeltaTime::GetInstance()->GetGameTime();
 		}
 		Camera::GetInstance()->SetFovY(Lerp(Camera::GetInstance()->GetFovY(), kNormalFovY, 0.05f));
-		//} else {
-		//	//destinationAngleY_ = destinationTargetAngleY_;// LerpShortAngle(destinationAngleY_, destinationPlayerAngleY_, kCompletionRate);
-		//	Camera::GetInstance()->SetFovY(Lerp(Camera::GetInstance()->GetFovY(), kNormalFovY, 0.05f));
-		//	if (dashEaseTimer_ <= 0.0f) {
-		//		dashEaseTimer_ = 0.0f;
-		//	} else {
-		//		dashEaseTimer_ -= DeltaTime::GetInstance()->GetGameTime();
-		//	}
-		//
-		//	if (targetEaseTimer_ <= 0.0f) {
-		//		targetEaseTimer_ = 0.0f;
-		//	} else {
-		//		targetEaseTimer_ -= DeltaTime::GetInstance()->GetGameTime();
-		//	}
-		//	//destinationAngleY_ = std::atan2(targetEnemy_->translate.x - transform_.translate.x, targetEnemy_->translate.z - transform_.translate.z);
+		//destinationAngleY_ = std::atan2(targetEnemy_->translate.x - transform_.translate.x, targetEnemy_->translate.z - transform_.translate.z);
 	}
 
 	if (gGamePhase != GamePhase::kTutorial) {

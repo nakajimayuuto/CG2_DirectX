@@ -13,6 +13,7 @@
 
 struct ParticleData {
 	Transform transform;
+	Transform targetTransform;
 	Vector3 velocity;
 	Vector4 color;
 	float lifeTime;
@@ -40,6 +41,8 @@ public:
 		kFire,
 		kSlash,
 		kExplode,
+		kExplodeMonochrome,
+		kCharge,
 	};
 
 	~Particles();
@@ -71,6 +74,8 @@ private:
 	void MoveFire();
 
 	void MoveExplode();
+
+	void MoveCharge();
 private:
 	Vector3 size_;
 

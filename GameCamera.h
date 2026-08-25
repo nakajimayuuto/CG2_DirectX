@@ -21,6 +21,7 @@ public:
 
 	void SetTargetIsMove(bool isMove) { isMove_ = isMove; };
 	void SetTargetIsDash(bool isDash) { isDash_ = isDash; };
+	void SetTargetIsAutoHalAttack(bool isAutoHalAttack) { isAutoHalAttack_ = isAutoHalAttack; };
 
 	void Reset();
 private:
@@ -75,6 +76,7 @@ private:
 
 	bool isMove_;
 	bool isDash_;
+	bool isAutoHalAttack_;
 
 	float preTargetRotateY_;
 

@@ -22,6 +22,11 @@ void (Boss::* Boss::pInitializeFunc[])() = {
 		&Boss::Phase2FangAttackInitialize,
 		&Boss::DownInitialize,
 		&Boss::SuperDownInitialize,
+		&Boss::SuperDownInitialize,
+		&Boss::SpecialAttackInitialize,
+		&Boss::ThreeWayWaveInitialize,
+		&Boss::AutoHalberdInitialize,
+		&Boss::InfinitySlasherInitialize,
 };
 
 void (Boss::* Boss::pUpdateFunc[])() = {
@@ -44,6 +49,11 @@ void (Boss::* Boss::pUpdateFunc[])() = {
 		&Boss::Phase2FangAttackUpdate,
 		&Boss::DownUpdate,
 		&Boss::SuperDownUpdate,
+		&Boss::SuperDownUpdate,
+		&Boss::SpecialAttackUpdate,
+		&Boss::ThreeWayWaveUpdate,
+		&Boss::AutoHalberdUpdate,
+		&Boss::InfinitySlasherUpdate,
 };
 
 Boss::~Boss() {
@@ -106,57 +116,71 @@ void Boss::Initialize() {
 	switch (DifficultyManager::GetInstance()->GetCurrentDifficulty()) {
 	case kDifficultyEasy:
 		maxHP_ = 1500.0f;
+		bossName_ = "name_easy";
+		bossNameMirror_ = "name_easy_mirror";
 		break;
 	case kDifficultyNormal:
 		maxHP_ = 3000.0f;
+		bossName_ = "name_normal";
+		bossNameMirror_ = "name_normal_mirror";
 		break;
 	case kDifficultyHard:
 		maxHP_ = 10000.0f;
+		bossName_ = "name_hard";
+		bossNameMirror_ = "name_hard_mirror";
 		break;
 	case kDifficultyHell:
 		maxHP_ = 100000.0f;
+		bossName_ = "name_hard";
+		bossNameMirror_ = "name_hard_mirror";
 		break;
 	default:
 		maxHP_ = 3000.0f;
+		bossName_ = "name_normal";
+		bossNameMirror_ = "name_normal_mirror";
 		break;
 	}
 	currentHP_ = maxHP_;
 
 	hpGauge = std::make_unique<HPGauge>();
-	hpGauge->Initialize(&currentHP_, maxHP_, { 800.0f,60.0f });
-	hpGauge->SetPosition({ 0.0f,-300.0f });
+	hpGauge->Initialize(&currentHP_, maxHP_, { 800.0f,30.0f });
+	hpGauge->SetPosition({ 0.0f,-270.0f });
 	hpGauge->SetScale({ 1.0f, 1.0f });
+	bossNameScaleX_ = 1.0f;
 
 	DifficultyManager::GetInstance()->SetBossHPData(&currentHP_, maxHP_);
 
 	GameCamera::GetInstance()->SetEnemyTransform(&transform_);
 
 	halberdLeft_ = std::make_unique<MirrorHalberd>();
-	halberdLeft_->Initialize();
+	halberdLeft_->Initialize(MirrorHalberd::HalberdName::kLeft);
 	halberdLeft_->SetParent(&transform_);
+	halberdLeft_->SetBossTransform(&transform_);
 
 	halberdRight_ = std::make_unique<MirrorHalberd>();
-	halberdRight_->Initialize();
+	halberdRight_->Initialize(MirrorHalberd::HalberdName::kRight);
 	halberdRight_->SetParent(&transform_);
+	halberdRight_->SetBossTransform(&transform_);
 
 	halberdLeftAttackTimer_ = 0.0f;
 	halberdRightAttackTimer_ = kHalberdFarAttackTimerMax_ / 2.0f;
 
 
-	if (gGamePhase == GamePhase::kBossPhase2) {
+	if (gGamePhase == GamePhase::kBossPhase2 || gGamePhase == GamePhase::kBossPhaseChangeAnim) {
 		phase_ = Phase::kPhase2;
 
 		currentHP_ = maxHP_ / 2.0f;
-		GameCamera::GetInstance()->SetRotate({0.0f,0.0f,0.0f});
+		GameCamera::GetInstance()->SetRotate({ 0.0f,0.0f,0.0f });
 		halberdRight_->SetPosition(kBasicHalberdRightPos);
-		halberdRight_->SetRotate({0.0f,0.0f,0.0f});
+		halberdRight_->SetRotate({ 0.0f,0.0f,0.0f });
 		halberdLeft_->SetPosition(kBasicHalberdLeftPos);
-		halberdRight_->SetRotate({0.0f,0.0f,0.0f});
+		halberdLeft_->SetRotate({ 0.0f,0.0f,0.0f });
 		halberdRight_->SetIsActive(true);
 		halberdLeft_->SetIsActive(true);
 		halberdRight_->SetActive(false);
 		halberdLeft_->SetActive(false);
-		
+		halberdLeft_->SetTargetTransform(targetTransform_);
+		halberdRight_->SetTargetTransform(targetTransform_);
 		Phase2Initialize();
 	} else {
 		phase_ = Phase::kPhase1;
@@ -184,6 +208,8 @@ void Boss::Initialize() {
 		DeathAnimInitialize();
 	}
 
+	damageAmountRecord_ = 0.0f;
+
 	isChangePhase_ = false;
 	isImmune_ = false;
 	debugHpScale_ = 1.0f;
@@ -193,6 +219,13 @@ void Boss::Initialize() {
 	useDebugUpdateStop = true;
 #endif // _DEBUG
 
+	isDownThreeWayShot_ = false;
+	isDownAutoHalberd_ = false;
+	isDownInfinitySlasher_ = false;
+
+	downSpecialAttackCount_ = 0;
+
+	downDamageMangification_ = 1.0f;
 }
 
 void Boss::SetAttackData(Attacks attackName, float weight, DistanceName name) {
@@ -210,6 +243,9 @@ void Boss::SetAttackData(Attacks attackName, float weight, DistanceName name) {
 		break;
 	case Boss::DistanceName::kFar:
 		farAttackDatas_.push_back(newData);
+		break;
+	case Boss::DistanceName::kAutoHalberd:
+		autoHalberdAttackDatas_.push_back(newData);
 		break;
 	}
 }
@@ -240,6 +276,7 @@ void Boss::Phase2Initialize() {
 	nearAttackDatas_.clear();
 	middleAttackDatas_.clear();
 	farAttackDatas_.clear();
+	autoHalberdAttackDatas_.clear();
 
 	SetAttackData(Attacks::kBulletShot, 1.0f, DistanceName::kFar);
 	SetAttackData(Attacks::kPhase2DiffusionShot, 0.5f, DistanceName::kFar);
@@ -256,6 +293,11 @@ void Boss::Phase2Initialize() {
 	SetAttackData(Attacks::kPhase2MovingShot, 0.3f, DistanceName::kNear);
 	SetAttackData(Attacks::kPowerSlasher, 0.1f, DistanceName::kNear);
 
+	SetAttackData(Attacks::kBulletShot, 1.0f, DistanceName::kAutoHalberd);
+	SetAttackData(Attacks::kDiffusionShot, 0.5f, DistanceName::kAutoHalberd);
+	SetAttackData(Attacks::kPhase2MovingShot, 0.5f, DistanceName::kAutoHalberd);
+	SetAttackData(Attacks::kWaveShot, 0.5f, DistanceName::kAutoHalberd);
+
 }
 
 void Boss::Update() {
@@ -264,6 +306,9 @@ void Boss::Update() {
 	difficultyMagnificationTime = DifficultyManager::GetInstance()->GetSpeedMagnification();
 
 	deltaTime_ = DeltaTime::GetInstance()->GetGameTime();
+
+	halberdLeft_->SetGameTime(deltaTime_ * difficultyMagnificationTime * dopamineSpeed_);
+	halberdRight_->SetGameTime(deltaTime_ * difficultyMagnificationTime * dopamineSpeed_);
 
 	if (gGamePhase == GamePhase::kGameStartAnim) {
 		StartAnimationUpdate();
@@ -286,6 +331,37 @@ void Boss::Update() {
 
 	HalberdStanceUpdate();
 
+	downSpecialAttackCount_ = 0;
+	if (isDownThreeWayShot_) {
+		downSpecialAttackCount_++;
+	}
+	if (isDownAutoHalberd_) {
+		downSpecialAttackCount_++;
+	}
+	if (isDownInfinitySlasher_) {
+		downSpecialAttackCount_++;
+	}
+
+	switch (downSpecialAttackCount_){
+	case 0:
+		downDamageMangification_ = 1.0f;
+		break;
+	case 1:
+		downDamageMangification_ = 1.25f;
+		break;
+	case 2:
+		downDamageMangification_ = 1.5f;
+		break;
+	case 3:
+		downDamageMangification_ = 2.0f;
+		break;
+	default:
+		downDamageMangification_ = 1.0f;
+		break;
+	}
+
+	halberdLeft_->SetTargetIsAttact(isAttack_);
+	halberdRight_->SetTargetIsAttact(isAttack_);
 	if (!isAttack_) {
 		damageCountFirst_ = 0;
 		damageCountSecond_ = 0;
@@ -320,6 +396,15 @@ void Boss::Update() {
 		hpGauge->SetPosition({ 0.0f,-300.0f });
 	}
 	ImGui::Text("");
+	if (isPlayAttack_) {
+		ImGui::Text("currentAttack : %s", magic_enum::enum_name(currentAttack_).data());
+	} else {
+		ImGui::Text("currentAttack : None");
+	}
+	if (ImGui::Button("AttackFinnish")) {
+		AttackFinished();
+	}
+	ImGui::Text("");
 	for (Attacks attack : magic_enum::enum_values<Attacks>()) {
 		if (static_cast<size_t>(attack) == std::size(pUpdateFunc)) {
 			break;
@@ -332,8 +417,8 @@ void Boss::Update() {
 
 	transform_.rotate = Radian(imRotate);
 
-	ImGui::SliderFloat("gaugeScale", &debugHpScale_, 0.0f, 1.0f);
-	hpGauge->SetScale({ debugHpScale_, 1.0f });
+	//ImGui::SliderFloat("gaugeScale", &debugHpScale_, 0.0f, 1.0f);
+	//hpGauge->SetScale({ debugHpScale_, 1.0f });
 
 	ImGui::End();
 #endif // _DEBUG
@@ -395,16 +480,35 @@ void Boss::RootUpdate() {
 	if (attackCoolTimer_ >= attackCoolTimeMax_) {
 		attackCoolTimeMax_ = 2.0f;
 		attackCoolTimer_ = 0.0f;
-		switch (currentDistance_) {
-		case Boss::DistanceName::kNear:
-			AttackSelect(nearAttackDatas_);
-			break;
-		case Boss::DistanceName::kMiddle:
-			AttackSelect(middleAttackDatas_);
-			break;
-		case Boss::DistanceName::kFar:
-			AttackSelect(farAttackDatas_);
-			break;
+
+		if (gGamePhase == GamePhase::kBossPhase2) {
+			if (Random::GetInstance()->Probability(Easing(0.0f,100.0f,damageAmountRecord_,maxHP_ / 4.0f,EaseType::kConstant))) {
+				attackRequest_ = Attacks::kSpecialAttack;
+			} else {
+				switch (currentDistance_) {
+				case Boss::DistanceName::kNear:
+					AttackSelect(nearAttackDatas_);
+					break;
+				case Boss::DistanceName::kMiddle:
+					AttackSelect(middleAttackDatas_);
+					break;
+				case Boss::DistanceName::kFar:
+					AttackSelect(farAttackDatas_);
+					break;
+				}
+			}
+		} else {
+			switch (currentDistance_) {
+			case Boss::DistanceName::kNear:
+				AttackSelect(nearAttackDatas_);
+				break;
+			case Boss::DistanceName::kMiddle:
+				AttackSelect(middleAttackDatas_);
+				break;
+			case Boss::DistanceName::kFar:
+				AttackSelect(farAttackDatas_);
+				break;
+			}
 		}
 	}
 }
@@ -570,12 +674,19 @@ void Boss::Draw() {
 
 	DrawCollider();
 
-	if (gGamePhase != GamePhase::kTutorial && gGamePhase != GamePhase::kGameClearStage) {
+	if (gGamePhase != GamePhase::kTutorial && gGamePhase != GamePhase::kBossLastJaronaAnim && gGamePhase != GamePhase::kGameClearStage) {
 		hpGauge->Draw();
+		if (gGamePhase == GamePhase::kBossPhase2 || gGamePhase == GamePhase::kBossPhaseChangeAnim) {
+			renderer->DrawSprite(Transform::GetInitialValue(Vector3(bossNameScaleX_, 1.0f, 1.0f) * 0.5f, { 0.0f,0.0f,0.0f }, { 0.0f,-320.0f,0.0f }), bossNameMirror_, { 1.0f,1.0f,1.0f,1.0f });
+		} else {
+			renderer->DrawSprite(Transform::GetInitialValue(Vector3(bossNameScaleX_, 1.0f, 1.0f) * 0.5f, { 0.0f,0.0f,0.0f }, { 0.0f,-320.0f,0.0f }), bossName_, { 1.0f,1.0f,1.0f,1.0f });
+		}
 	}
 }
 
 void Boss::OnCollision(Collider* other) {
+	float preHP = currentHP_;
+
 	if (isImmune_) {
 		return;
 	}
@@ -587,7 +698,7 @@ void Boss::OnCollision(Collider* other) {
 	switch (other->GetDamageType()) {
 	case 1:
 		if (damageCountFirst_ <= 0) {
-			currentHP_ -= other->GetDamage();
+			currentHP_ -= other->GetDamage() * downDamageMangification_;
 
 			DeltaTime::GetInstance()->SetHitStop(0.05f);
 
@@ -597,7 +708,7 @@ void Boss::OnCollision(Collider* other) {
 	case 2:
 		if (damageCountSecond_ <= 1) {
 			if (damageCoolTimer_ <= 0.0f) {
-				currentHP_ -= other->GetDamage();
+				currentHP_ -= other->GetDamage() * downDamageMangification_;
 
 				DeltaTime::GetInstance()->SetHitStop(0.05f);
 
@@ -610,7 +721,7 @@ void Boss::OnCollision(Collider* other) {
 	case 3:
 		if (damageCountThird_ <= 4) {
 			if (damageCoolTimer_ <= 0.0f) {
-				currentHP_ -= other->GetDamage();
+				currentHP_ -= other->GetDamage() * downDamageMangification_;
 				DeltaTime::GetInstance()->SetHitStop(0.05f);
 
 				damageCoolTimer_ = other->GetDamageCoolTime();
@@ -619,7 +730,14 @@ void Boss::OnCollision(Collider* other) {
 				if (damageCountFirst_ >= 1) {
 					if (damageCountSecond_ >= 2) {
 						if (damageCountThird_ == 4) {
-							if (currentAttack_ != Attacks::kDown && currentAttack_ != Attacks::kSuperDown) {
+							if (currentAttack_ != Attacks::kDown
+								&& currentAttack_ != Attacks::kWarp
+								&& currentAttack_ != Attacks::kSuperDown
+								&& currentAttack_ != Attacks::kSpecialAttack
+								&& currentAttack_ != Attacks::kThreeWayWave
+								&& currentAttack_ != Attacks::kAutoHalberd
+								&& currentAttack_ != Attacks::kInfinitySlasher
+								) {
 								DeltaTime::GetInstance()->SetHitStop(0.2f);
 								AttackFinished();
 								attackRequest_ = Attacks::kDown;
@@ -638,13 +756,23 @@ void Boss::OnCollision(Collider* other) {
 		break;
 	default:
 		if (damageCoolTimer_ <= 0.0f) {
-			currentHP_ -= other->GetDamage();
+			currentHP_ -= other->GetDamage() * downDamageMangification_;
 
 			DeltaTime::GetInstance()->SetHitStop(0.05f);
 
 			damageCoolTimer_ = other->GetDamageCoolTime();
 		}
 		break;
+	}
+
+	if (currentAttack_ == Attacks::kThreeWayWave) {
+		if (isPlayAttack_) {
+			DeltaTime::GetInstance()->SetHitStop(0.5f);
+			AttackFinished();
+			attackRequest_ = Attacks::kSuperDown;
+			isDownThreeWayShot_ = true;
+			AttackInitialize();
+		}
 	}
 
 	if (phase_ == Phase::kPhase1) {
@@ -661,7 +789,7 @@ void Boss::OnCollision(Collider* other) {
 			currentHP_ = 1.0f;
 			AttackFinished();
 			DeltaTime::GetInstance()->SetHitStop(0.5f);
-			attackRequest_ = Attacks::kSuperDown;
+			attackRequest_ = Attacks::kLastDown;
 			phase_ = Phase::kPhase3;
 			AttackInitialize();
 
@@ -677,6 +805,8 @@ void Boss::OnCollision(Collider* other) {
 			isChangePhase_ = true;
 		}
 	}
+
+	damageAmountRecord_ += preHP - currentHP_;
 }
 
 void Boss::SlashEffectCreate(Transform* targetTransform, uint32_t num) {
@@ -689,6 +819,7 @@ void Boss::SlashEffectCreate(Transform* targetTransform, uint32_t num) {
 		ParticleManager::GetInstance()->SpawnParticles("cross", effectCreate.GetWorldPosition());
 	}
 }
+
 Vector3 Boss::GetMoveAnchorPointFindAll() {
 	float maxLength = 0.0f;
 	Vector3 newPos = { 0.0f,0.0f,0.0f };
@@ -746,9 +877,35 @@ void Boss::AttackUpdate() {
 	(this->*pUpdateFunc[static_cast<size_t>(currentAttack_)])();
 
 	currentAttackTimer_ += deltaTime_ * difficultyMagnificationTime * dopamineSpeed_;
+
+	if (currentAttack_ == Attacks::kAutoHalberd) {
+		if (halberdLeft_->GetIsDeath() && halberdRight_->GetIsDeath()) {
+			if (isPlayAttack_) {
+				autoHalberdStop_ = true;
+				isDownAutoHalberd_ = true;
+				DeltaTime::GetInstance()->SetHitStop(0.5f);
+				halberdLeft_->AutoAttackStop();
+				halberdRight_->AutoAttackStop();
+				AttackFinished();
+				attackRequest_ = Attacks::kSuperDown;
+				AttackInitialize();
+			}
+		}
+	}
 }
 
 void Boss::AttackFinished() {
+	if (currentAttack_ == Attacks::kAutoHalberd && !autoHalberdStop_) {
+		isColliderActive_ = true;
+		autoHalberdAttackPhase_ = 0;
+		currentAttackTimer_ = 0.0f; // 攻撃のタイマー.
+		kMaxAttackTimer = kAutoHalberdStartGapTimerMax; // 攻撃のタイマー最大値.
+		currentAttackPhase = 0; // 攻撃のフェーズ.
+		SetCurrentDistanceHalberdTransform();
+		return;
+	}
+
+	autoHalberdStop_ = false;
 	isPlayAttack_ = false;
 	isColliderActive_ = true;
 	attackRequest_ = std::nullopt;
@@ -868,7 +1025,86 @@ void Boss::DownUpdate() {
 	downEmitter_->DebugDraw();
 }
 
-void Boss::SuperDownInitialize(){
+void Boss::SuperDownInitialize() {
+	kMaxAttackTimer = kDonwStartTimer;
+	donwAnimHalberdVelocityY_ = 2.0f;
+	downAnimHalberdRotate_ = halberdTransform_.rotate;
+	downAnimHalberdPos_ = halberdTransform_.translate;
+	halberdTransform_.SetParent(&transform_);
+	modelTransform_.rotate = { 0.0f,0.0f,0.0f };
+	modelTransform_.scale = { 1.0f,1.0f,1.0f };
+	transform_.scale = { 1.0f,1.0f,1.0f };
+
+	halberdLeft_->SetPosition(kBasicHalberdLeftPos);
+	halberdLeft_->SetRotate({ 0.0f,0.0f,0.0f });
+	halberdLeft_->SetParent(&transform_);
+	halberdRight_->SetPosition(kBasicHalberdRightPos);
+	halberdRight_->SetRotate({ 0.0f,0.0f,0.0f });
+	halberdRight_->SetParent(&transform_);
+
+	currentHP_ -= maxHP_ / 20.0f;
+	if (currentHP_ < 1.0f) {
+		currentHP_ = 1.0f;
+		DeltaTime::GetInstance()->SetHitStop(0.5f);
+		attackRequest_ = Attacks::kLastDown;
+		phase_ = Phase::kPhase3;
+		AttackInitialize();
+
+	}
+}
+
+void Boss::SuperDownUpdate() {
+	Transform emitterTransform;
+	switch (currentAttackPhase) {
+	case 0:
+		transform_.translate.y = Easing(kBasicPositionY, kDownStartPosY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		transform_.rotate.x = Easing(0.0f, kDownStayRotateX / 2.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+
+		destinationHalberdTransform_.translate = Easing(downAnimHalberdPos_, kDownHalberdPos_, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		destinationHalberdTransform_.rotate = Easing(downAnimHalberdRotate_, kDownHalberdRotate_, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kDonwStartTimer);
+		}
+		break;
+	case 1:
+		transform_.translate.y = Easing(kDownStartPosY, kDownStayPosY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		transform_.rotate.x = Easing(kDownStayRotateX / 2.0f, kDownStayRotateX, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kSuperDonwStayTimer);
+		}
+		break;
+	case 2: // 攻撃の前隙.
+		emitterTransform = transform_;
+		emitterTransform.scale = { kBasicColliderSize.x * 3.0f,0.5f,kBasicColliderSize.z * 3.0f };
+		emitterTransform.translate.y += colliderSize_.y;
+		downEmitter_->SetTransform(emitterTransform);
+		downEmitter_->Update();
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kDonwFinsihTimer);
+			downAnimHalberdPos_ = destinationHalberdTransform_.translate;
+		}
+		break;
+	case 3:
+		transform_.translate.y = Easing(kDownStayPosY, kBasicPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+		destinationHalberdTransform_.translate = Easing(kDownHalberdPos_, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+		destinationHalberdTransform_.rotate = Easing(kDownHalberdRotate_, basicHalberdRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+		transform_.rotate.x = Easing(kDownStayRotateX, Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			AttackFinished();
+			damageAmountRecord_ = 0.0f;
+			transform_.rotate.x = 0.0f;
+			attackRequest_ = Attacks::kWarp;
+			AttackInitialize();
+		}
+		break;
+	}
+	downEmitter_->DebugDraw();
+}
+
+void Boss::LastDownInitialize() {
 	kMaxAttackTimer = kDonwStartTimer;
 	donwAnimHalberdVelocityY_ = 2.0f;
 	downAnimHalberdRotate_ = halberdTransform_.rotate;
@@ -887,7 +1123,7 @@ void Boss::SuperDownInitialize(){
 	halberdRight_->SetParent(&transform_);
 }
 
-void Boss::SuperDownUpdate(){
+void Boss::LastDownUpdate() {
 	Transform emitterTransform;
 	switch (currentAttackPhase) {
 	case 0:
@@ -916,7 +1152,7 @@ void Boss::SuperDownUpdate(){
 		emitterTransform.translate.y += colliderSize_.y;
 		downEmitter_->SetTransform(emitterTransform);
 		downEmitter_->Update();
-		
+
 		break;
 	}
 	downEmitter_->DebugDraw();
@@ -938,7 +1174,7 @@ void Boss::BulletUpdate() {
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kBulletStayTimerMax);
 			if ((targetTransform_->translate - halberdTransform_.GetWorldPosition()).Length() != 0.0f) {
-				bulletShotDirectionTemp_ = (targetTransform_->translate - halberdTransform_.GetWorldPosition()).Normalize();
+				bulletShotDirectionTemp_ = GetBulletDire();
 			}
 		}
 		break;
@@ -1151,7 +1387,7 @@ void Boss::WaveUpdate() {
 		break;
 	case 4: // 見た目を戻す.
 		destinationHalberdTransform_.translate = Easing(kWaveHalberdAttackPos, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
-		destinationHalberdTransform_.rotate = Easing( kWaveHalberdAttackPos, basicHalberdRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+		destinationHalberdTransform_.rotate = Easing(kWaveHalberdAttackPos, basicHalberdRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			AttackFinished();
 			modelTransform_.rotate.y = 0.0f;
@@ -1221,7 +1457,7 @@ void Boss::SpinningUpdate() {
 		effectTransform.scale = kBasicHalberdColliderSize;
 		effectTransform.translate.y = 0.0f;
 		SlashEffectCreate(&effectTransform, 3);
-		transform_.rotate.y = Easing(preTransform_.rotate.y + kSpinningStartRotateY, preTransform_.rotate.y + kSpinningSpinGapRotateY - (Radian(360.0f) * 10.0f * difficultyMagnificationTime * dopamineSpeed_) , currentAttackTimer_, kMaxAttackTimer * difficultyMagnificationTime * dopamineSpeed_, EaseType::kConstant);
+		transform_.rotate.y = Easing(preTransform_.rotate.y + kSpinningStartRotateY, preTransform_.rotate.y + kSpinningSpinGapRotateY - (Radian(360.0f) * 10.0f * difficultyMagnificationTime * dopamineSpeed_), currentAttackTimer_, kMaxAttackTimer * difficultyMagnificationTime * dopamineSpeed_, EaseType::kConstant);
 		if (currentAttackTimer_ >= kMaxAttackTimer * difficultyMagnificationTime * dopamineSpeed_) {
 			NextAttackPhase(kSpinningSpinFinnishedTimerMax);
 			transform_.rotate.y = preTransform_.rotate.y + kSpinningSpinGapRotateY;
@@ -1698,6 +1934,7 @@ void Boss::StartAnimInitialize() {
 	halberdTransform_.translate = kAnimStartHalberdPos;
 	transform_.rotate.y = Radian(180.0f);
 	hpGauge->SetScale({ 0.0f, 1.0f });
+	bossNameScaleX_ = 0.0f;
 }
 
 void Boss::PhaseChangeAnimInitialize() {
@@ -1715,13 +1952,18 @@ void Boss::PhaseChangeAnimInitialize() {
 	halberdTransform_.translate = kAnimPhaseChangeStartHalberdPos;
 	transform_.translate = { 0.0f,kBasicPositionY,0.0f };
 	transform_.rotate.y = Radian(0.0f);
+	bossNameScaleX_ = 0.0f;
 	hpGauge->SetScale({ 0.0f, 1.0f });
 	preCameraTransform_ = GameCamera::GetInstance()->GetTransform();
 	GameCamera::GetInstance()->SetPosition({});
 	animTimerMax_ = kAnimPhaseChangeCameraRotateTimerMax;
+	halberdRight_->SetIsActive(false);
+	halberdLeft_->SetIsActive(false);
+	halberdRight_->SetActive(false);
+	halberdLeft_->SetActive(false);
 }
 
-void Boss::DeathAnimInitialize(){
+void Boss::DeathAnimInitialize() {
 	GameCamera::GetInstance()->Reset();
 	AnimInitialize();
 
@@ -1846,7 +2088,8 @@ void Boss::StartAnimationUpdate() {
 		}
 		break;
 	case 12:
-		hpGauge->SetScale({ Easing(0.0f, 1.0f, animTimer_, kAnimStartNameShowTimerMax, EaseType::kEaseOut), 1.0f });
+		bossNameScaleX_ = Easing(0.0f, 1.0f, animTimer_, kAnimPhaseChangeNameShowTimerMax, EaseType::kEaseOut);
+		hpGauge->SetScale({ bossNameScaleX_, 1.0f });
 		camera->SetPosition(Easing(kAnimStartAttackCameraPos, kAnimStartNameShowCameraPos, animTimer_, animTimerMax_, EaseType::kConstant));
 
 		if (animTimer_ >= animTimerMax_) {
@@ -1926,6 +2169,7 @@ void Boss::PhaseChangeAnimationUpdate() {
 		}
 		break;
 	case 6:
+		LightManager::GetInstance()->GetDirectionalLightData()->color.SetColorWithoutAlpha(Easing({ 1.0f,1.0f,1.0f }, { 1.0f,0.7f,0.7f }, animTimer_, animTimerMax_, EaseType::kEaseInOut), 1.0f);;
 		animCameraCenterTransform_.rotate.y = Easing(0.0f, Radian(360.0f), animTimer_, animTimerMax_, EaseType::kEaseInOut);
 		animCameraTransform_.translate.y = Easing(kAnimPhaseChangeHalSpawnCameraPos.y, kBasicPositionY, animTimer_, animTimerMax_, EaseType::kEaseInOut);
 		camera->SetPosition(animCameraTransform_.GetWorldPosition());
@@ -1984,7 +2228,8 @@ void Boss::PhaseChangeAnimationUpdate() {
 		}
 		break;
 	case 11:
-		hpGauge->SetScale({ Easing(0.0f, 1.0f, animTimer_, kAnimPhaseChangeNameShowTimerMax, EaseType::kEaseOut), 1.0f });
+		bossNameScaleX_ = Easing(0.0f, 1.0f, animTimer_, kAnimPhaseChangeNameShowTimerMax, EaseType::kEaseOut);
+		hpGauge->SetScale({ bossNameScaleX_, 1.0f });
 		camera->SetPosition(Easing(kAnimPhaseChangeAttackCameraPos, kAnimPhaseChangeNameShowCameraPos, animTimer_, animTimerMax_, EaseType::kConstant));
 
 		if (animTimer_ >= animTimerMax_) {
@@ -2012,7 +2257,7 @@ void Boss::PhaseChangeAnimationUpdate() {
 	}
 }
 
-void Boss::DeathAnimationUpdate(){
+void Boss::DeathAnimationUpdate() {
 	GameCamera* camera = GameCamera::GetInstance();
 
 	animTimer_ += deltaTime_;
@@ -2021,7 +2266,7 @@ void Boss::DeathAnimationUpdate(){
 		animCameraTransform_.translate.y = Easing(kBasicPositionY + 10.0f, kBasicPositionY + 5, animTimer_, animTimerMax_, EaseType::kConstant);
 		animCameraTransform_.translate.z = Easing(-30.0f, -10.0f, animTimer_, animTimerMax_, EaseType::kConstant);
 		animCameraCenterTransform_.rotate.y = Easing(0.0f, Radian(360.0f), animTimer_, animTimerMax_, EaseType::kEaseInOut);
-		camera->SetRotate({Radian(20.0f),Easing(0.0f,Radian(360.0f),animTimer_,animTimerMax_,EaseType::kEaseInOut),0.0f });
+		camera->SetRotate({ Radian(20.0f),Easing(0.0f,Radian(360.0f),animTimer_,animTimerMax_,EaseType::kEaseInOut),0.0f });
 		camera->SetPosition(animCameraTransform_.GetWorldPosition());
 		transform_.rotate.x = Easing(0.0f, Radian(20.0f), animTimer_, animTimerMax_, EaseType::kEaseInOut);
 
@@ -2035,16 +2280,16 @@ void Boss::DeathAnimationUpdate(){
 		}
 		break;
 	case 2:
-		transform_.scale = Easing({ 1.0f,1.0f,1.0f }, {0.0f,0.0f,0.0f}, animTimer_, animTimerMax_, EaseType::kEaseIn);
+		transform_.scale = Easing({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, animTimer_, animTimerMax_, EaseType::kEaseIn);
 		if (animTimer_ >= animTimerMax_) {
 			NextAnimPhase(kAnimDeathExplodeTimerMax);
 			for (uint32_t i = 0; i < 30; i++) {
-				ParticleManager::GetInstance()->SpawnParticles("death_cross",transform_.GetWorldPosition());
+				ParticleManager::GetInstance()->SpawnParticles("death_cross", transform_.GetWorldPosition());
 			}
 		}
 		break;
 	case 3:
-		animCameraTransform_.translate.y = Easing( kBasicPositionY + 5, kBasicPositionY, animTimer_, animTimerMax_, EaseType::kEaseOut);
+		animCameraTransform_.translate.y = Easing(kBasicPositionY + 5, kBasicPositionY, animTimer_, animTimerMax_, EaseType::kEaseOut);
 		animCameraTransform_.translate.z = Easing(-10.0f, -40.0f, animTimer_, animTimerMax_ + kAnimDeathExplodeBlankTimerMax, EaseType::kEaseOut);
 		camera->SetPosition(animCameraTransform_.GetWorldPosition());
 		camera->SetRotate({ Easing(Radian(20.0f),0.0f,animTimer_,animTimerMax_,EaseType::kEaseOut),0.0f,0.0f });

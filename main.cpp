@@ -21,7 +21,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	LoadDatas();
 
 	SceneManager::GetInstance()->Initialize();
-
+	Environment::GetInstance()->SetWindowMode(WindowMode::kFullscreen);
 
 
 	// ウィンドウのxボタンが押されるまでループ.
@@ -36,7 +36,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			SceneManager::GetInstance()->Update();
 #ifdef _DEBUG
 			ImGui::Begin("aa");
-			ImGui::DragFloat("intensity", &LightManager::GetInstance()->GetDirectionalLightData()->intensity,0.01f,0.0f,1.0f);
+			ImGui::DragFloat("intensity", &LightManager::GetInstance()->GetDirectionalLightData()->intensity,0.01f,0.0f,200.0f);
 
 			ImGui::End();
 #endif // _DEBUG
@@ -105,9 +105,13 @@ void LoadDatas() {
 	ParticleManager::GetInstance()->CreateNewParticles("big_blue_fire", TextureManager::GetInstance()->GetTextureInfo("effect_big_blue_fire"), BillboardType::kAllAxis, Particles::Move::kFire);
 	ParticleManager::GetInstance()->SetParticleSize("big_blue_fire", { 0.5f,0.5f,0.5f });
 	ParticleManager::GetInstance()->CreateNewParticles("star", TextureManager::GetInstance()->GetTextureInfo("effect_star"), BillboardType::kAllAxis, Particles::Move::kFire);
-	ParticleManager::GetInstance()->SetParticleSize("star", { 0.5f,0.5f,0.5f });
+	ParticleManager::GetInstance()->SetParticleSize("star", { 0.2f,0.2f,0.2f });
 	ParticleManager::GetInstance()->CreateNewParticles("death_cross", TextureManager::GetInstance()->GetTextureInfo("effect_cross"), BillboardType::kAllAxis, Particles::Move::kExplode);
 	ParticleManager::GetInstance()->SetParticleSize("death_cross", { 0.2f,0.2f,0.2f });
+	ParticleManager::GetInstance()->CreateNewParticles("explode", TextureManager::GetInstance()->GetTextureInfo("effect_cross"), BillboardType::kAllAxis, Particles::Move::kExplodeMonochrome);
+	ParticleManager::GetInstance()->SetParticleSize("explode", { 0.2f,0.2f,0.2f });
+	ParticleManager::GetInstance()->CreateNewParticles("charge", TextureManager::GetInstance()->GetTextureInfo("effect_cross"), BillboardType::kAllAxis, Particles::Move::kCharge);
+	ParticleManager::GetInstance()->SetParticleSize("charge", { 0.2f,0.2f,0.2f });
 
 
 	TextureManager::GetInstance()->RegisterTexture("press_a", "Resource/UI/press_a.png");
@@ -140,6 +144,20 @@ void LoadDatas() {
 	TextureManager::GetInstance()->RegisterTexture("move_to_l", "Resource/UI/move_to_l.png");
 	TextureManager::GetInstance()->RegisterTexture("play_guid_tutorial_attack", "Resource/UI/play_guid_tutorial_attack.png");
 	TextureManager::GetInstance()->RegisterTexture("play_guid_tutorial_dash", "Resource/UI/play_guid_tutorial_dash.png");
+
+	TextureManager::GetInstance()->RegisterTexture("name_easy", "Resource/UI/boss_name_easy.png");
+	TextureManager::GetInstance()->RegisterTexture("name_easy_mirror", "Resource/UI/boss_name_easy_mirror.png");
+	TextureManager::GetInstance()->RegisterTexture("name_normal", "Resource/UI/boss_name_normal.png");
+	TextureManager::GetInstance()->RegisterTexture("name_normal_mirror", "Resource/UI/boss_name_normal_mirror.png");
+	TextureManager::GetInstance()->RegisterTexture("name_hard", "Resource/UI/boss_name_hard.png");
+	TextureManager::GetInstance()->RegisterTexture("name_hard_mirror", "Resource/UI/boss_name_hard_mirror.png");
+	TextureManager::GetInstance()->RegisterTexture("name_left_halberd", "Resource/UI/left_halberd_name.png");
+	TextureManager::GetInstance()->RegisterTexture("name_right_halberd", "Resource/UI/right_halberd_name.png");
+
+	SoundManager::GetInstance()->RegisterSound("mus_phase1_intro", "Resource/Sound/mus_phase1_intro.mp3");
+	SoundManager::GetInstance()->RegisterSound("mus_phase1", "Resource/Sound/mus_phase1.mp3");
+	SoundManager::GetInstance()->RegisterSound("mus_phase2_intro", "Resource/Sound/mus_phase2_intro.mp3");
+	SoundManager::GetInstance()->RegisterSound("mus_phase2", "Resource/Sound/mus_phase2.mp3");
 
 	SoundManager::GetInstance()->RegisterSound("test", "Resource/free_k.wav");
 	SoundManager::GetInstance()->RegisterSound("snd_select", "Resource/Sound/snd_select.mp3");

@@ -25,7 +25,7 @@ void ProjectileManager::Update() {
 
 	for (auto& bullet : bullets) {
 		bullet->Update();
-
+#ifndef _DEBUG
 		if (bullet->GetType() == BulletType::kNormal) {
 			if (currentLightNum_ < kBulletLightMax_) {
 				LightManager::GetInstance()->SetLightPos(lightNames_[currentLightNum_], bullet->GetTransform().GetWorldPosition());
@@ -33,6 +33,7 @@ void ProjectileManager::Update() {
 				currentLightNum_++;
 			}
 		}
+#endif // _DEBUG
 	}
 
 	for (auto it = bullets.begin(); it != bullets.end(); ) {
@@ -303,7 +304,7 @@ void Bullet::SpikeUpdate() {
 void Wave::Initialize(const Transform& transform, float speed, float height, float time, CollisionAttributeName colliderName, float damage, float damageCoolTime) {
 	heightMax_ = height;
 	height_ = heightMax_;
-	transform_.scale = { 1.0f,1000.0f / heightMax_,1.0f };
+	transform_.scale = { 1.0f,1000.0f,1.0f };
 	colliderMinorRadius_ = heightMax_ * 0.001f;
 	transform_.rotate = { 0.0f,0.0f,0.0f };
 	transform_.translate = transform.GetWorldPosition();
@@ -334,6 +335,7 @@ void Wave::Update() {
 	if (!isTimeInf_) {
 		height_ = Easing(heightMax_, 0.0f, lifeTimer_, lifeTimeMax_, EaseType::kEaseIn);
 		colliderMinorRadius_ = height_ * 0.001f;
+		//transform_.scale = { 1.0f,Easing(1000.0f, 1.0f, lifeTimer_, lifeTimeMax_, EaseType::kEaseIn) / heightMax_,1.0f };
 	}
 
 	if (lifeTimer_ >= lifeTimeMax_) {
@@ -342,7 +344,7 @@ void Wave::Update() {
 }
 
 void Wave::Draw() {
-	Renderer::GetInstance()->DrawTorus(transform_, colliderRadius_, colliderMinorRadius_, "white_template", { 1.0f,0.0f,0.0f,1.0f });
+	Renderer::GetInstance()->DrawTorus(transform_, colliderRadius_, colliderMinorRadius_, "white_template", { 1.0f,0.7f,0.7f,1.0f });
 }
 
 void Spike::Initialize(const Transform& transform, uint32_t size, CollisionAttributeName colliderName, float damage, float damageCoolTime) {
@@ -441,7 +443,7 @@ void Explode::Initialize(const Transform& transform, float radius, CollisionAttr
 	colliderColor_ = { 1.0f,0.0f,0.0f,1.0f };
 
 	for (uint32_t i = 0; i < 30; i++) {
-		ParticleManager::GetInstance()->SpawnParticles("death_cross", transform_.GetWorldPosition());
+		ParticleManager::GetInstance()->SpawnParticles("explode", transform_.GetWorldPosition());
 	}
 
 	phase_ = 0;
