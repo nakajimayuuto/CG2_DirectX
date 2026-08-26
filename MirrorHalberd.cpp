@@ -279,6 +279,7 @@ void MirrorHalberd::WaveUpdate() {
 		transform_.translate.y = Easing(kWaveHalberdStayPos.y, kWaveHalberdAttackPos.y, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kWaveAttackGapTimerMax);
+			SoundManager::GetInstance()->SoundPlay("snd_wave_shot", 1.0f, 0.25f, kSoundEffect);
 			ProjectileManager::GetInstance()->CreateWave(transform_, 25.0f, 1.0f, -1.0f, kCollisionEnemyAttack, 15.0f, 3.0f);
 		}
 		break;
@@ -333,6 +334,8 @@ void MirrorHalberd::FangAttackUpdate() {
 		transform_.translate.y = Easing(kFangAttackAnimPositionY, kFangAttackAttackPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		modelTransform_.rotate.x = Easing(0.0f, kFangAttackAttackRotateX, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			SoundManager::GetInstance()->SoundPlay("snd_near_attack", 1.0f, 0.25f, kSoundEffect);
+			SoundManager::GetInstance()->SoundPlay("snd_wave_shot", 1.0f, 0.25f, kSoundEffect);
 			NextAttackPhase(kFangAttackAttackGapTimerMax);
 			FangAttackFangCreate();
 
@@ -384,6 +387,7 @@ void MirrorHalberd::BulletUpdate() {
 	case 1: // 攻撃の前隙.
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kBulletAttackGapTimerMax);
+			SoundManager::GetInstance()->SoundPlay("snd_bullet_shot", 1.0f, 0.25f, kSoundEffect);
 			ProjectileManager::GetInstance()->CreateBullet(transform_, bulletShotDirectionTemp_ * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, 10.0f, 3.0f);
 		}
 		break;
@@ -418,6 +422,7 @@ void MirrorHalberd::DiffusionBulletUpdate() {
 		modelTransform_.rotate = Easing(kDiffusionBulletHalberdStartRotate, kDiffusionBulletHalberdSpinRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kDiffusionBulletBackTimerMax);
+			SoundManager::GetInstance()->SoundPlay("snd_bullet_shot", 1.0f, 0.25f, kSoundEffect);
 			ProjectileManager::GetInstance()->CreateDiffusionBullet(transform_, GetBulletDire() * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, 10.0f, 3.0f, Radian(15.0f), 3);
 
 		}

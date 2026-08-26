@@ -49,9 +49,6 @@ private:
 	static inline float kRotateAngleSpeed = Radian(15.0f);
 
 	bool isSubmit_;
-
-	SoundData sndSelect_;
-
 	TitlePhase currentPhase_;
 
 	int32_t currentMenuSelectNum_;

@@ -54,9 +54,11 @@ public:
 				attackCount_++;
 				timer_ = timerMax_;
 				color_ = { 1.0f,0.0f,0.0f,1.0f };
+				SoundManager::GetInstance()->SoundPlay("snd_boss_damage", 1.0f, 0.25f, kSoundEffect);
 
 				if (attackCount_ > attackCountMax_) {
 					isActive_ = false;
+					SoundManager::GetInstance()->SoundPlay("snd_explode_mini", 1.0f, 0.25f, kSoundEffect);
 				}
 			}
 
@@ -110,6 +112,7 @@ private:
 	bool useSkipStart_;
 	bool useSkipEnd_;
 private:
+	void TutorialInitialize();
 	void TutorialUpdate();
 	void TutorialDraw();
 private:
@@ -127,4 +130,10 @@ private:
 	float gameoverMenuTimerMax_ = 1.5f;
 
 	bool isBossDeath_;
+	bool isBGMStart_;
+private:
+	SoundData musPhase1_;
+	SoundData musPhase1Intro_;
+	SoundData musPhase2_;
+	SoundData musPhase2Intro_;
 };

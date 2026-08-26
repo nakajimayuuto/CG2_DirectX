@@ -31,9 +31,12 @@ void PauseMenu::Update() {
 		return;
 	}
 
-	if (input->TriggerKey(DIK_P) || input->TriggerPadButton(PadButtons::INPUT_START)) {
-		DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
-		isActive_ = false;
+	if (!isFinish_) {
+		if (input->TriggerKey(DIK_P) || input->TriggerPadButton(PadButtons::INPUT_START)) {
+			SoundManager::GetInstance()->SoundPlay("snd_select", 1.0f, 0.5f, SoundType::kSoundEffect);
+			DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
+			isActive_ = false;
+		}
 	}
 
 	if (isFinish_) {
@@ -97,12 +100,14 @@ void PauseMenu::Update() {
 	}
 
 	if (TriggerDown()) {
+		SoundManager::GetInstance()->SoundPlay("snd_select", 1.0f, 0.5f, SoundType::kSoundEffect);
 		currentSelect_++;
 		if (currentSelect_ > maxSelect_ + 2) {
 			currentSelect_ = maxSelect_ + 2;
 		}
 	}
 	if (TriggerUp()) {
+		SoundManager::GetInstance()->SoundPlay("snd_select", 1.0f, 0.5f, SoundType::kSoundEffect);
 		currentSelect_--;
 
 		if (currentSelect_ < 0) {
@@ -111,6 +116,7 @@ void PauseMenu::Update() {
 	}
 
 	if (TriggerSubmit()) {
+		SoundManager::GetInstance()->SoundPlay("snd_select", 1.0f, 0.5f, SoundType::kSoundEffect);
 		isFinish_ = true;
 
 		switch (currentSelect_) {
@@ -487,6 +493,7 @@ void GameOverMenu::Draw() {
 }
 
 void GameOverMenu::ShowMenu() {
+	SoundManager::GetInstance()->SoundPlay("snd_near_attack", 1.0f, 0.25f, kSoundEffect);
 	isActive_ = true;
 	isFinish_ = false;
 	canGameUpdate_ = false;

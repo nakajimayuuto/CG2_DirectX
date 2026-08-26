@@ -109,10 +109,17 @@ SoundData SoundManager::LoadTest(const std::string& fileName) {
 
 	WAVEFORMATEX* waveFormat = nullptr;
 
-	MFCreateWaveFormatExFromMFMediaType(
+	hr = MFCreateWaveFormatExFromMFMediaType(
 		currentType.Get(),
 		&waveFormat,
 		nullptr);
+
+	assert(SUCCEEDED(hr));
+	assert(waveFormat != nullptr);
+	assert(waveFormat->nChannels > 0);
+	assert(waveFormat->nSamplesPerSec > 0);
+	assert(waveFormat->nBlockAlign > 0);
+	assert(waveFormat->wBitsPerSample > 0);
 
 	// 音声データの取得
 	DWORD flags = 0;
@@ -355,23 +362,24 @@ void SoundManager::SoundPlay(const SoundData& soundData, float speed, float volu
 		buf.LoopCount = XAUDIO2_LOOP_INFINITE;
 	}
 
-	// 波形データの再生.
-	result = pSourceVoice->SubmitSourceBuffer(&buf);
-	result = pSourceVoice->Start();
+// 波形データの再生.
+result = pSourceVoice->SubmitSourceBuffer(&buf);
+result = pSourceVoice->Start();
+result = pSourceVoice->SetVolume(volume);
 
-	playSoundDatas_[handle] = new PlaySoundData();
+playSoundDatas_[handle] = new PlaySoundData();
 
-	playSoundDatas_[handle]->buffer = buf;
-	playSoundDatas_[handle]->voice = pSourceVoice;
-	playSoundDatas_[handle]->canLoop = canLoop;
-	playSoundDatas_[handle]->currentSpeed = speed;
-	playSoundDatas_[handle]->volume = volume;
-	playSoundDatas_[handle]->type_ = type;
+playSoundDatas_[handle]->buffer = buf;
+playSoundDatas_[handle]->voice = pSourceVoice;
+playSoundDatas_[handle]->canLoop = canLoop;
+playSoundDatas_[handle]->currentSpeed = speed;
+playSoundDatas_[handle]->volume = volume;
+playSoundDatas_[handle]->type_ = type;
 }
 
-void SoundManager::SoundPlay(const std::string& soundData, float speed, float volume, SoundType type, bool canLoop, std::string handle){
-	SoundData a = SoundManager::GetInstance()->GetSoundData(soundData);
-	SoundPlay(a,speed,volume,type,canLoop,handle);
+void SoundManager::SoundPlay(const std::string& soundData, float speed, float volume, SoundType type, bool canLoop, std::string handle) {
+	//SoundData a = SoundManager::GetInstance()->GetSoundData(soundData);
+	SoundPlay(sounds_[soundData], speed, volume, type, canLoop, handle);
 }
 
 void SoundManager::SoundPlay(const SoundData& soundData, float speed, float volume, SoundType type) {
@@ -402,14 +410,14 @@ void SoundManager::SoundPlay(const SoundData& soundData, float speed, float volu
 	soundNum_++;
 }
 
-void SoundManager::SoundPlay(const std::string& soundData, float speed, float volume, SoundType type){
-	SoundData a = SoundManager::GetInstance()->GetSoundData(soundData);
-	SoundPlay(a, speed, volume, type);
+void SoundManager::SoundPlay(const std::string& soundData, float speed, float volume, SoundType type) {
+	//SoundData a = SoundManager::GetInstance()->GetSoundData(soundData);
+	SoundPlay(sounds_[soundData], speed, volume, type);
 }
 
 void SoundManager::SoundPause(std::string handle) {
 	auto it = playSoundDatas_.find(handle);
-	if (it != playSoundDatas_.end()) {
+	if (it == playSoundDatas_.end()) {
 		return;
 	}
 
@@ -418,7 +426,7 @@ void SoundManager::SoundPause(std::string handle) {
 
 void SoundManager::SoundResume(std::string handle) {
 	auto it = playSoundDatas_.find(handle);
-	if (it != playSoundDatas_.end()) {
+	if (it == playSoundDatas_.end()) {
 		return;
 	}
 
@@ -439,7 +447,7 @@ void SoundManager::SoundStop(std::string handle) {
 bool SoundManager::IsFinishedSound(std::string handle) {
 	auto it = playSoundDatas_.find(handle);
 	if (it == playSoundDatas_.end()) {
-		return false;
+		return true;
 	}
 
 	XAUDIO2_VOICE_STATE state;
@@ -451,7 +459,24 @@ bool SoundManager::IsFinishedSound(std::string handle) {
 	}
 
 	return false;
-};
+}
+void SoundManager::ResetBGM() {
+	for (auto it = playSoundDatas_.begin(); it != playSoundDatas_.end(); )
+	{
+		if (it->second->type_ != SoundType::kBGM)
+		{
+			++it;
+			continue;
+		}
+
+		it->second->voice->Stop();
+		it->second->voice->FlushSourceBuffers();
+
+		delete it->second;
+		it = playSoundDatas_.erase(it);
+	}
+
+}
 
 void SoundManager::SoundPlayWave(const SoundData& soundData) {
 

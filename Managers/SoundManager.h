@@ -144,6 +144,8 @@ public:
 
 	bool IsFinishedSound(std::string handle);
 
+	void ResetBGM();
+
 	//void SoundPlayWave(IXAudio2* xAudio2, const SoundData& soundData);
 	void SoundPlayWave(const SoundData& soundData);
 private:

@@ -20,12 +20,12 @@ void SceneManager::Initialize() {
 	sceneName_ = SceneName::kTitleScene;
 	gGameProgress = GameProgress::kPhase1Clear;
 	#ifdef _DEBUG
-	Debug::GetInstance()->LoadDebugSettings();
-	currentScene_ = std::make_unique<GameScene>();
-	sceneName_ = SceneName::kGameScene;
-	gGamePhase = GamePhase::kBossPhase2;
+	//Debug::GetInstance()->LoadDebugSettings();
+	//currentScene_ = std::make_unique<GameScene>();
+	//sceneName_ = SceneName::kGameScene;
+	//gGamePhase = GamePhase::kBossPhase2;
 	gGameProgress = GameProgress::kPhase2Clear;
-	DifficultyManager::GetInstance()->SetCurrentDifficulty(Difficulty::kDifficultyHard);
+	//DifficultyManager::GetInstance()->SetCurrentDifficulty(Difficulty::kDifficultyHard);
 	#endif // _DEBUG
 
 	currentScene_->Initialize();

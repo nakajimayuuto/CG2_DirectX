@@ -43,6 +43,7 @@ void Boss::Phase2BounsUpdate() {
 		destinationHalberdTransform_.translate = Easing(kPhase2BounsHalberdStartPos, kPhase2BounsHalberdSpinPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		destinationHalberdTransform_.rotate = Easing(kPhase2BounsHalberdStartRotate, kPhase2BounsHalberdSpinRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			SoundManager::GetInstance()->SoundPlay("snd_attack_wind", 1.0f, 0.25f, kSoundEffect);
 			NextAttackPhase(kPhase2BounsSpinTimerMax);
 			randomRadian = Radian(Random::GetInstance()->RandomFloat(0.0f, 359.0f));
 			ProjectileManager::GetInstance()->CreateDiffusionBullet(transform_, Vector3(RadianToVector(randomRadian).x, 0.1f, RadianToVector(randomRadian).y) * 10.0f, BulletType::kBounce, kCollisionEnemyAttack, 10.0f, 3.0f, Radian(45.0f), 8);
@@ -54,6 +55,7 @@ void Boss::Phase2BounsUpdate() {
 
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			SoundManager::GetInstance()->SoundPlay("snd_attack_wind", 1.0f, 0.25f, kSoundEffect);
 			NextAttackPhase(kPhase2BounsSpinTimerMax);
 			randomRadian = Radian(Random::GetInstance()->RandomFloat(0.0f, 359.0f));
 			ProjectileManager::GetInstance()->CreateDiffusionBullet(transform_, Vector3(RadianToVector(randomRadian).x, 0.15f, RadianToVector(randomRadian).y) * 10.0f, BulletType::kBounce, kCollisionEnemyAttack, 10.0f, 3.0f, Radian(45.0f), 8);
@@ -66,6 +68,7 @@ void Boss::Phase2BounsUpdate() {
 		destinationHalberdTransform_.rotate = Easing(kPhase2BounsHalberdSpinRotate, basicHalberdRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			SoundManager::GetInstance()->SoundPlay("snd_attack_wind", 1.0f, 0.25f, kSoundEffect);
 			NextAttackPhase(kPhase2BounsSpinTimerMax);
 			randomRadian = Radian(Random::GetInstance()->RandomFloat(0.0f, 359.0f));
 			ProjectileManager::GetInstance()->CreateDiffusionBullet(transform_, Vector3(RadianToVector(randomRadian).x, 0.2f, RadianToVector(randomRadian).y) * 10.0f, BulletType::kBounce, kCollisionEnemyAttack, 10.0f, 3.0f, Radian(45.0f), 8);
@@ -106,6 +109,7 @@ void Boss::Phase2DiffusionBulletUpdate() {
 		destinationHalberdTransform_.rotate = Easing(basicHalberdRotate, kPhase2DiffusionBulletHalberdStartRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			SoundManager::GetInstance()->SoundPlay("snd_attack_wind", 1.0f, 0.25f, kSoundEffect);
 			NextAttackPhase(kPhase2DiffusionBulletSpinStartTimerMax);
 		}
 		break;
@@ -113,6 +117,7 @@ void Boss::Phase2DiffusionBulletUpdate() {
 		destinationHalberdTransform_.rotate = Easing(kPhase2DiffusionBulletHalberdStartRotate, kPhase2DiffusionBulletHalberdSpinRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kPhase2DiffusionBulletSpinTimerMax / 2.0f);
+			SoundManager::GetInstance()->SoundPlay("snd_bullet_shot", 1.0f, 0.25f, kSoundEffect);
 			ProjectileManager::GetInstance()->CreateDiffusionBullet(halberdTransform_, GetBulletDire() * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, 10.0f, 3.0f, Radian(10.0f), 3);
 
 		}
@@ -128,6 +133,7 @@ void Boss::Phase2DiffusionBulletUpdate() {
 		destinationHalberdTransform_.rotate = Easing(kPhase2DiffusionBulletHalberdSpinRotate / 2.0f, kPhase2DiffusionBulletHalberdSpinRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kConstant);
 		modelTransform_.translate.z = Easing(kPhase2DiffusionBulletAnimPositionZ, 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			SoundManager::GetInstance()->SoundPlay("snd_bullet_shot", 1.0f, 0.25f, kSoundEffect);
 			ProjectileManager::GetInstance()->CreateDiffusionBullet(halberdTransform_, GetBulletDire() * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, 10.0f, 3.0f, Radian(10.0f), 4);
 			NextAttackPhase(kPhase2DiffusionBulletSpinTimerMax / 2.0f);
 		}
@@ -143,6 +149,7 @@ void Boss::Phase2DiffusionBulletUpdate() {
 		destinationHalberdTransform_.rotate = Easing(kPhase2DiffusionBulletHalberdSpinRotate / 2.0f, kPhase2DiffusionBulletHalberdSpinRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kConstant);
 		modelTransform_.translate.z = Easing(kPhase2DiffusionBulletAnimPositionZ, 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			SoundManager::GetInstance()->SoundPlay("snd_bullet_shot", 1.0f, 0.25f, kSoundEffect);
 			ProjectileManager::GetInstance()->CreateDiffusionBullet(halberdTransform_, GetBulletDire() * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, 10.0f, 3.0f, Radian(10.0f), 5);
 			NextAttackPhase(kPhase2DiffusionBulletSpinTimerMax / 2.0f);
 		}
@@ -202,6 +209,7 @@ void Boss::Phase2MovingBulletUpdate() {
 			if ((targetTransform_->translate - destinationHalberdTransform_.GetWorldPosition()).Length() != 0.0f) {
 				direction = (targetTransform_->translate - destinationHalberdTransform_.GetWorldPosition()).Normalize();
 			}
+			SoundManager::GetInstance()->SoundPlay("snd_bullet_shot", 1.0f, 0.25f, kSoundEffect);
 			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, direction * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, 10.0f, 0.5f);
 		}
 		break;
@@ -211,6 +219,7 @@ void Boss::Phase2MovingBulletUpdate() {
 			if ((targetTransform_->translate - destinationHalberdTransform_.GetWorldPosition()).Length() != 0.0f) {
 				direction = (targetTransform_->translate - destinationHalberdTransform_.GetWorldPosition()).Normalize();
 			}
+			SoundManager::GetInstance()->SoundPlay("snd_bullet_shot", 1.0f, 0.25f, kSoundEffect);
 			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, direction * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, 10.0f, 0.5f);
 		}
 		break;
@@ -285,6 +294,7 @@ void Boss::Phase2WaveUpdate() {
 		//waveSpinHalTransform_.translate.y = Easing(kPhase2WaveSpinHalPositionY, kPhase2WaveSpinHalAttackPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kPhase2WaveAttackGapTimerMax);
+			SoundManager::GetInstance()->SoundPlay("snd_wave_shot", 1.0f, 0.25f, kSoundEffect);
 			ProjectileManager::GetInstance()->CreateWave(destinationHalberdTransform_, 25.0f, 1.0f, -1.0f, kCollisionEnemyAttack, 15.0f, 3.0f);
 		}
 		break;
@@ -306,6 +316,7 @@ void Boss::Phase2WaveUpdate() {
 					waveSpinHalRotateY_ -= Radian(-360.0f);
 				}
 			}
+			SoundManager::GetInstance()->SoundPlay("snd_wave_shot", 1.0f, 0.25f, kSoundEffect);
 			ProjectileManager::GetInstance()->CreateWave(halberdLeft_->GetTransform(), 15.0f, 1.0f, 3.0f, kCollisionEnemyAttack, 10.0f, 3.0f);
 			ProjectileManager::GetInstance()->CreateWave(halberdRight_->GetTransform(), 15.0f, 1.0f, 3.0f, kCollisionEnemyAttack, 10.0f, 3.0f);
 
@@ -340,6 +351,7 @@ void Boss::Phase2WaveUpdate() {
 }
 
 void Boss::Phase2SpinningInitialize() {
+	spinningBounsTimer_ = 0.0f;
 	kMaxAttackTimer = kPhase2SpinningStartGapTimerMax;
 	attackTempTransform_.translate = { 1.0f,0.0f,0.0f };
 	attackTempTransform_.SetParent(&transform_);
@@ -384,6 +396,12 @@ void Boss::Phase2SpinningUpdate() {
 		}
 		break;
 	case 2: // 回転し初め.
+		spinningBounsTimer_ += deltaTime_ * difficultyMagnificationTime * dopamineSpeed_;
+		if (spinningBounsTimer_ >= kPhase2SpinningBounsTimerMax * difficultyMagnificationTime * dopamineSpeed_) {
+			SoundManager::GetInstance()->SoundPlay("snd_attack_wind", 1.0f, 0.25f, kSoundEffect);
+			spinningBounsTimer_ -= kPhase2SpinningBounsTimerMax;
+		}
+		
 		effectTransform = attackTempTransform_;
 		effectTransform.scale = kBasicHalberdColliderSize;
 		effectTransform.translate.y = 0.0f;
@@ -401,6 +419,7 @@ void Boss::Phase2SpinningUpdate() {
 		effectTransform.translate.y = 0.0f;
 		SlashEffectCreate(&effectTransform, 3);
 		if (spinningBounsTimer_ >= kPhase2SpinningBounsTimerMax * difficultyMagnificationTime * dopamineSpeed_) {
+			SoundManager::GetInstance()->SoundPlay("snd_attack_wind", 1.0f, 0.25f, kSoundEffect);
 			ProjectileManager::GetInstance()->CreateBullet(transform_, { 0.0f,Random::GetInstance()->RandomFloat(7.0f,10.0f),0.0f }, BulletType::kBounce, kCollisionEnemyAttack, 10.0f, 3.0f);
 			spinningBounsTimer_ -= kPhase2SpinningBounsTimerMax;
 		}
@@ -506,6 +525,8 @@ void Boss::Phase2PowerSlasherUpdate() {
 			// プレイヤーの位置によって攻撃が変わる.
 			if (lenght.Length() < kPhase2PowerSlasherNearSlashRadius) {
 				// 敵に近い位置なら2に遷移.
+				SoundManager::GetInstance()->SoundPlay("snd_near_attack", 1.0f, 0.25f, kSoundEffect);
+				SoundManager::GetInstance()->SoundPlay("snd_attack_wind", 1.0f, 0.25f, kSoundEffect);
 				NextAttackPhase(kPhase2PowerSlasherDashToSlashTimerMax);
 				powerSlasherRotateY_ = atan2(transform_.translate.x - targetTransform_->translate.x, transform_.translate.z - targetTransform_->translate.z);
 				powerSlasherDirection_ = Vector3(transform_.translate.x - targetTransform_->translate.x, 0.0f, transform_.translate.z - targetTransform_->translate.z);
@@ -526,6 +547,7 @@ void Boss::Phase2PowerSlasherUpdate() {
 		SlashEffectCreate(&attackTempTransform_, 3);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			// 7(後隙)に遷移.
+			SoundManager::GetInstance()->SoundPlay("snd_bullet_shot", 1.0f, 0.25f, kSoundEffect);
 			ProjectileManager::GetInstance()->CreateDiffusionBullet(halberdTransform_, -powerSlasherDirection_.Normalize() * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, 10.0f, 3.0f, Radian(10.0f), 5);
 			currentAttackPhase++;
 			currentAttackPhase++;
@@ -558,6 +580,8 @@ void Boss::Phase2PowerSlasherUpdate() {
 		destinationHalberdTransform_.rotate = Easing(kPhase2PowerSlasherHalberdStartRotate, kPhase2PowerSlasherHalberdAttackRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kPhase2PowerSlasherDashToSlashTimerMax);
+			SoundManager::GetInstance()->SoundPlay("snd_near_attack", 1.0f, 0.25f, kSoundEffect);
+			SoundManager::GetInstance()->SoundPlay("snd_attack_wind", 1.0f, 0.25f, kSoundEffect);
 			direction.x = targetTransform_->translate.x - transform_.translate.x;
 			direction.y = targetTransform_->translate.z - transform_.translate.z;
 			powerSlasherRotateY_ = atan2(transform_.translate.x - targetTransform_->translate.x, transform_.translate.z - targetTransform_->translate.z);
@@ -578,6 +602,7 @@ void Boss::Phase2PowerSlasherUpdate() {
 		SlashEffectCreate(&attackTempTransform_, 3);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			SoundManager::GetInstance()->SoundPlay("snd_bullet_shot", 1.0f, 0.25f, kSoundEffect);
 			ProjectileManager::GetInstance()->CreateDiffusionBullet(halberdTransform_, -powerSlasherDirection_.Normalize() * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, 10.0f, 3.0f, Radian(10.0f), 5);
 			NextAttackPhase(kPhase2PowerSlasherSlashStayTimerMax);
 		}
@@ -657,7 +682,7 @@ void Boss::Phase2FangAttackUpdate() {
 		destinationHalberdTransform_.translate = Easing(kPhase2FangAttackHalberdSpinPos, kPhase2FangAttackHalberdAttackPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kPhase2FangAttackAttackGapTimerMax);
-			FangAttackFangCreate();
+			Phase2FangAttackFangCreate();
 
 		}
 		break;
@@ -697,7 +722,8 @@ void Boss::Phase2FangAttackFangCreate() {
 			}
 		}
 	} else {
-		ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, Vector3(-RadianToVector(rotateY).x, 0.0f, RadianToVector(rotateY).y) * 20.0f, BulletType::kSpike, kCollisionEnemyAttack, 15.0f, 3.0f);
+		//ProjectileManager::GetInstance()->CreateDiffusionBullet(halberdTransform_, Vector3(-RadianToVector(rotateY).x, 0.0f, RadianToVector(rotateY).y) * 20.0f, BulletType::kSpike, kCollisionEnemyAttack, 15.0f, 3.0f,Radian(15.0f),3);
+		ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, Vector3(-RadianToVector(rotateY).x, 0.0f, RadianToVector(rotateY).y) * 10.0f, BulletType::kSlowSpike, kCollisionEnemyAttack, 15.0f, 3.0f);
 	}
 }
 
@@ -731,6 +757,7 @@ void Boss::SpecialAttackUpdate() {
 		transform_.scale = Easing({ 0.0f,2.0f,0.0f }, { 1.0f,1.0f,1.0f }, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			SoundManager::GetInstance()->SoundPlay("snd_special_attack", 1.0f, 0.25f, kSoundEffect);
 			NextAttackPhase(kSpecialAttackChargeStartTimerMax);
 		}
 		break;
@@ -756,6 +783,7 @@ void Boss::SpecialAttackUpdate() {
 		//transform_.scale = Easing(, { 1.0f,1.0f,1.0f }, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		LightManager::GetInstance()->GetDirectionalLightData()->intensity = Easing(10.0f, 300.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			SoundManager::GetInstance()->SoundPlay("snd_shine", 1.0f, 0.25f, kSoundEffect);
 			NextAttackPhase(kSpecialAttackFlashTimerMax);
 		}
 		break;
@@ -866,6 +894,7 @@ void Boss::ThreeWayWaveUpdate() {
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kThreeWayWaveHalAttackGapTimerMax);
+			SoundManager::GetInstance()->SoundPlay("snd_wave_shot", 1.0f, 0.25f, kSoundEffect);
 			ProjectileManager::GetInstance()->CreateWave(destinationHalberdTransform_, 25.0f, 1.0f, 2.0f, kCollisionEnemyAttack, 15.0f, 3.0f);
 		}
 		break;
@@ -893,6 +922,7 @@ void Boss::ThreeWayWaveUpdate() {
 					waveSpinHalRotateY_ -= Radian(-360.0f);
 				}
 			}
+			SoundManager::GetInstance()->SoundPlay("snd_wave_shot", 1.0f, 0.25f, kSoundEffect);
 			ProjectileManager::GetInstance()->CreateWave(halberdLeft_->GetTransform(), 25.0f, 1.0f, 2.0f, kCollisionEnemyAttack, 5.0f, 3.0f);
 			ProjectileManager::GetInstance()->CreateWave(halberdRight_->GetTransform(), 25.0f, 1.0f, 2.0f, kCollisionEnemyAttack, 5.0f, 3.0f);
 
@@ -921,6 +951,7 @@ void Boss::ThreeWayWaveUpdate() {
 		destinationHalberdTransform_.translate = Easing(kThreeWayWaveHalberdStayPos, kThreeWayWaveHalberdAttackPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			NextAttackPhase(kThreeWayWaveHalAttackGapTimerMax);
+			SoundManager::GetInstance()->SoundPlay("snd_wave_shot", 1.0f, 0.25f, kSoundEffect);
 			ProjectileManager::GetInstance()->CreateWave(destinationHalberdTransform_, 25.0f, 1.0f, 2.0f, kCollisionEnemyAttack, 15.0f, 3.0f);
 		}
 		break;
@@ -1091,6 +1122,8 @@ void Boss::InfinitySlasherUpdate() {
 
 	switch (currentAttackPhase) {
 	case 0: // ハルバードを構える.
+		halberdLeft_->SetRotate(Easing(basicHalberdLeftRotate, { 0.0f,0.0f,0.0f }, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn));
+		halberdRight_->SetRotate(Easing(basicHalberdRightRotate, { 0.0f,0.0f,0.0f }, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn));
 		destinationHalberdTransform_.translate = Easing(basicHalberdPos, kInfinitySlasherHalberdStartPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		destinationHalberdTransform_.rotate = Easing(basicHalberdRotate, kInfinitySlasherHalberdStartRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		modelTransform_.rotate.y = Easing(0.0f, kInfinitySlasherModelStartRotateY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
@@ -1122,6 +1155,7 @@ void Boss::InfinitySlasherUpdate() {
 		infinitySlasherHalberdCenter_.translate.y = Easing(kInfinitySlasherHalCenterStartPosY, 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			SoundManager::GetInstance()->SoundPlay("snd_wave_shot", 1.0f, 0.25f, kSoundEffect);
 			// 敵から離れた位置なら3に遷移.
 			NextAttackPhase(kInfinitySlasherDashTimerMax);
 			currentAttackPhase = 10;
@@ -1170,6 +1204,8 @@ void Boss::InfinitySlasherUpdate() {
 		destinationHalberdTransform_.translate = Easing(kInfinitySlasherHalberdStartPos, kInfinitySlasherHalberdAttackPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		destinationHalberdTransform_.rotate = Easing(kInfinitySlasherHalberdStartRotate, kInfinitySlasherHalberdAttackRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			SoundManager::GetInstance()->SoundPlay("snd_near_attack", 1.0f, 0.25f, kSoundEffect);
+			SoundManager::GetInstance()->SoundPlay("snd_attack_wind", 1.0f, 0.25f, kSoundEffect);
 			NextAttackPhase(kInfinitySlasherDashToSlashTimerMax);
 		}
 		break;
@@ -1250,6 +1286,8 @@ void Boss::InfinitySlasherUpdate() {
 		destinationHalberdTransform_.translate = Easing(kInfinitySlasherHalberdStartPos, kInfinitySlasherHalberdAttackPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		destinationHalberdTransform_.rotate = Easing(kInfinitySlasherHalberdStartRotate, kInfinitySlasherHalberdAttackRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			SoundManager::GetInstance()->SoundPlay("snd_near_attack", 1.0f, 0.25f, kSoundEffect);
+			SoundManager::GetInstance()->SoundPlay("snd_attack_wind", 1.0f, 0.25f, kSoundEffect);
 			NextAttackPhase(kInfinitySlasherDashToSlashTimerMax);
 			direction.x = targetTransform_->translate.x - transform_.translate.x;
 			direction.y = targetTransform_->translate.z - transform_.translate.z;
@@ -1265,6 +1303,7 @@ void Boss::InfinitySlasherUpdate() {
 		SlashEffectCreate(&attackTempTransform_, 3);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			SoundManager::GetInstance()->SoundPlay("snd_bullet_shot", 1.0f, 0.25f, kSoundEffect);
 			ProjectileManager::GetInstance()->CreateDiffusionBullet(halberdTransform_, -powerSlasherDirection_.Normalize() * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, 10.0f, 3.0f, Radian(10.0f), 5);
 			NextAttackPhase(kInfinitySlasherSlashStayTimerMax);
 			if (infinitySlasherSlashPhaseCount_ >= kInfinitySlasherSlashPhaseCountMax - 1) {
@@ -1316,6 +1355,7 @@ void Boss::InfinitySlasherUpdate() {
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			// 敵から離れた位置なら3に遷移.
+			SoundManager::GetInstance()->SoundPlay("snd_wave_shot", 1.0f, 0.25f, kSoundEffect);
 			NextAttackPhase(kInfinitySlasherDashTimerMax);
 			currentAttackPhase = 10;
 			infinitySlasherSlashCount_ = 0;

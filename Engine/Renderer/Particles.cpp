@@ -242,7 +242,7 @@ void Particles::MakeNewParticle(const Vector3& position) {
 	case Particles::Move::kExplode:
 		newParticleData.velocity = Random::GetInstance()->RandomVector3({ -1.0f,-1.0f,-1.0f }, { 1.0f,1.0f,1.0f });
 		newParticleData.velocity = newParticleData.velocity.Normalize() * 3.0f;
-		newParticleData.color.SetColorWithoutAlpha(Random::GetInstance()->RandomVector3({ 0.0f,0.0f,0.0f }, { 1.0f,1.0f,1.0f }), 1.0f);
+		newParticleData.color = { 0.7f,0.9f,1.0f,1.0f };
 		newParticleData.lifeTime = Random::GetInstance()->RandomFloat(1.0f, 3.0f);
 		break;
 	case Particles::Move::kExplodeMonochrome:

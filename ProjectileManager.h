@@ -4,6 +4,7 @@ enum class BulletType {
 	kNormal,
 	kBounce,
 	kSpike,
+	kSlowSpike,
 	kFire,
 };
 
@@ -20,6 +21,8 @@ public:
 	BulletType GetType() { return type_; };
 
 	Transform GetTransform() { return transform_; };
+
+	void SetDiffusionAmount(uint32_t diffusionAmount) {diffusionAmount_ = diffusionAmount;};
 private:
 	static void (Bullet::* pInitializeFunc[])();
 	static void (Bullet::* pUpdateFunc[])();
@@ -33,11 +36,16 @@ private:
 	void SpikeInitialize();
 	void SpikeUpdate();
 
+	void SlowSpikeInitialize();
+	void SlowSpikeUpdate();
+
 private:
 	Transform modelTransform_;
 	Model model_;
 	Vector3 velocity_;
 	BulletType type_;
+	
+	uint32_t diffusionAmount_;
 
 	float lifeTimer_ = 0.0f;
 	float lifeTimeMax_ = 3.0f;
@@ -58,6 +66,10 @@ private:
 	float spikeCreateTimer_;
 	static inline float kSpikeCreateRate = 0.1f;
 	static inline Vector3 kRadnomsize_ = { 2.0f,0.0f,2.0f };
+
+	float spikeRotatePosX_;
+	float spikeRotateY_;
+	static inline float kSpikeRotateSpeed = Radian(22.5f);
 };
 
 class Explode : Collider {
@@ -140,6 +152,29 @@ private:
 	bool isActive_;
 };
 
+enum class TutorialObstaclesType {
+	kBullet,
+	kSpike,
+};
+
+class TutorialObstacles :Collider {
+public:
+	void Initialize(const Transform& transform, CollisionAttributeName colliderName, float damage, float damageCoolTime, TutorialObstaclesType type);
+
+	void Update();
+
+	void Draw();
+
+	bool GetIsActive() { return isActive_; };
+private:
+	Transform modelTransform_;
+	TutorialObstaclesType type_;
+	static inline Vector3 kBasicSpikeSize = { 0.4f, 1.0f, 0.4f };
+	Model model_;
+	bool isActive_;
+	static inline float kModelRotateSpeed = Radian(90.0f);
+};
+
 class ProjectileManager {
 public:
 	static ProjectileManager* GetInstance();
@@ -151,6 +186,7 @@ public:
 	void Draw();
 
 	void CreateBullet(const Transform& transform, const Vector3& velocity, BulletType type, CollisionAttributeName colliderName,float damage,float damageCoolTime);
+	void CreateBullet(const Transform& transform, const Vector3& velocity, BulletType type, CollisionAttributeName colliderName,float damage,float damageCoolTime,uint32_t diffusionAmount);
 
 	/// <summary>
 	///  Y軸基準で拡散するよ。別に他の軸ができないわけじゃないんですよ。ただ今回のゲームだとつかわないしいいかなって(震え).
@@ -167,11 +203,14 @@ public:
 	void CreateSpike(const Transform& transform, uint32_t size, CollisionAttributeName colliderName, float damage, float damageCoolTime);
 
 	void CreateExplode(const Transform& transform, float radius, CollisionAttributeName colliderName, float damage, float damageCoolTime);
+
+	void CreateTutorialObstacle(const Vector3& position, TutorialObstaclesType type);
 private:
 	std::vector<std::unique_ptr<Bullet>> bullets;
 	std::vector<std::unique_ptr<Wave>> waves;
 	std::vector<std::unique_ptr<Spike>> spikes;
 	std::vector<std::unique_ptr<Explode>> explodes;
+	std::vector<std::unique_ptr<TutorialObstacles>> tutorials;
 	std::vector<std::string> lightNames_;
 	const uint32_t kBulletLightMax_ = 30;
 };

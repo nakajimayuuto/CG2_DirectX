@@ -1,6 +1,8 @@
 #include "TitleScene.h"
 
 void TitleScene::Initialize() {
+	SoundManager::GetInstance()->ResetBGM();
+	SoundManager::GetInstance()->SoundPlay("mus_title",1.0f,0.25f,kBGM,true,"mus_title");
 	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.05f;
 	LightManager::GetInstance()->GetDirectionalLightData()->color = { 0.5f,0.5f,1.0f,1.0f };
 	LightManager::GetInstance()->ClearLight();
@@ -40,8 +42,6 @@ void TitleScene::Initialize() {
 			easeTimer_[static_cast<size_t>(i)] = 1.0f;
 		}
 	}
-
-	sndSelect_ = SoundManager::GetInstance()->GetSoundData("snd_select");
 
 	LightManager::GetInstance()->CreatePointLight("halberd_title_light");
 	LightManager::GetInstance()->GetLightData("halberd_title_light")->color = { 1.0f,1.0f,1.0f,1.0f };
@@ -112,7 +112,7 @@ void TitleScene::PhaseSelect() {
 
 void TitleScene::TitleUpdate() {
 	if (TriggerSubmit()) {
-		SoundManager::GetInstance()->SoundPlay(sndSelect_, 1.0f, 0.5f, SoundType::kSoundEffect);
+		SoundManager::GetInstance()->SoundPlay("snd_select", 1.0f, 0.5f, SoundType::kSoundEffect);
 		InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.5f);
 		currentMenuSelectNum_ = 0;
 		//currentPhase_ = TitlePhase::kMenuSelect;
@@ -127,7 +127,7 @@ void TitleScene::TitleUpdate() {
 void TitleScene::MenuUpdate() {
 	if (TriggerDown()) {
 		currentMenuSelectNum_++;
-		SoundManager::GetInstance()->SoundPlay(sndSelect_, 1.0f, 0.5f, SoundType::kSoundEffect);
+		SoundManager::GetInstance()->SoundPlay("snd_select", 1.0f, 0.5f, SoundType::kSoundEffect);
 		if (currentMenuSelectNum_ > 2) {
 			currentMenuSelectNum_ = 2;
 		}
@@ -135,7 +135,7 @@ void TitleScene::MenuUpdate() {
 	if (TriggerUp()) {
 		currentMenuSelectNum_--;
 
-		SoundManager::GetInstance()->SoundPlay(sndSelect_, 1.0f, 0.5f, SoundType::kSoundEffect);
+		SoundManager::GetInstance()->SoundPlay("snd_select", 1.0f, 0.5f, SoundType::kSoundEffect);
 		if (currentMenuSelectNum_ < 0) {
 			currentMenuSelectNum_ = 0;
 		}
@@ -146,7 +146,7 @@ void TitleScene::MenuUpdate() {
 		if (TriggerSubmit()) {
 			currentDifficultySelectNum_ = static_cast<int32_t>(DifficultyManager::GetInstance()->GetCurrentDifficulty());
 			currentPhase_ = TitlePhase::kDifficultySelect;
-			SoundManager::GetInstance()->SoundPlay(sndSelect_, 1.0f, 0.5f, SoundType::kSoundEffect);
+			SoundManager::GetInstance()->SoundPlay("snd_select", 1.0f, 0.5f, SoundType::kSoundEffect);
 		}
 		break;
 	case 1:
@@ -154,7 +154,7 @@ void TitleScene::MenuUpdate() {
 	case 2:
 		if (TriggerSubmit()) {
 			currentPhase_ = TitlePhase::kTitle;
-			SoundManager::GetInstance()->SoundPlay(sndSelect_, 1.0f, 0.5f, SoundType::kSoundEffect);
+			SoundManager::GetInstance()->SoundPlay("snd_select", 1.0f, 0.5f, SoundType::kSoundEffect);
 		}
 		break;
 	default:
@@ -165,7 +165,7 @@ void TitleScene::MenuUpdate() {
 void TitleScene::DiffucltyUpdate() {
 	if (TriggerDown()) {
 		currentDifficultySelectNum_++;
-		SoundManager::GetInstance()->SoundPlay(sndSelect_, 1.0f, 0.5f, SoundType::kSoundEffect);
+		SoundManager::GetInstance()->SoundPlay("snd_select", 1.0f, 0.5f, SoundType::kSoundEffect);
 
 		if (currentDifficultySelectNum_ > 3) {
 			currentDifficultySelectNum_ = 3;
@@ -173,7 +173,7 @@ void TitleScene::DiffucltyUpdate() {
 	}
 	if (TriggerUp()) {
 		currentDifficultySelectNum_--;
-		SoundManager::GetInstance()->SoundPlay(sndSelect_, 1.0f, 0.5f, SoundType::kSoundEffect);
+		SoundManager::GetInstance()->SoundPlay("snd_select", 1.0f, 0.5f, SoundType::kSoundEffect);
 
 		if (currentDifficultySelectNum_ < 0) {
 			currentDifficultySelectNum_ = 0;
@@ -182,7 +182,7 @@ void TitleScene::DiffucltyUpdate() {
 
 	if (TriggerSubmit()) {
 		InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.5f);
-		SoundManager::GetInstance()->SoundPlay(sndSelect_, 1.0f, 0.5f, SoundType::kSoundEffect);
+		SoundManager::GetInstance()->SoundPlay("snd_select", 1.0f, 0.5f, SoundType::kSoundEffect);
 		switch (currentDifficultySelectNum_) {
 		case 0:
 			DifficultyManager::GetInstance()->SetCurrentDifficulty(Difficulty::kDifficultyEasy);

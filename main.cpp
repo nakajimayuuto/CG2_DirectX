@@ -21,7 +21,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	LoadDatas();
 
 	SceneManager::GetInstance()->Initialize();
+#ifndef _DEBUG
 	Environment::GetInstance()->SetWindowMode(WindowMode::kFullscreen);
+#endif // _DEBUG
+
 
 
 	// ウィンドウのxボタンが押されるまでループ.
@@ -144,6 +147,10 @@ void LoadDatas() {
 	TextureManager::GetInstance()->RegisterTexture("move_to_l", "Resource/UI/move_to_l.png");
 	TextureManager::GetInstance()->RegisterTexture("play_guid_tutorial_attack", "Resource/UI/play_guid_tutorial_attack.png");
 	TextureManager::GetInstance()->RegisterTexture("play_guid_tutorial_dash", "Resource/UI/play_guid_tutorial_dash.png");
+	TextureManager::GetInstance()->RegisterTexture("tutorial_attack_info", "Resource/UI/tutorial_attack_info.png");
+	TextureManager::GetInstance()->RegisterTexture("tutorial_damage_info", "Resource/UI/tutorial_damage_info.png");
+	TextureManager::GetInstance()->RegisterTexture("skip_to_lr", "Resource/UI/skip_to_lr.png");
+	TextureManager::GetInstance()->RegisterTexture("pause_to_hamburger", "Resource/UI/pause_to_hamburger.png");
 
 	TextureManager::GetInstance()->RegisterTexture("name_easy", "Resource/UI/boss_name_easy.png");
 	TextureManager::GetInstance()->RegisterTexture("name_easy_mirror", "Resource/UI/boss_name_easy_mirror.png");
@@ -154,12 +161,28 @@ void LoadDatas() {
 	TextureManager::GetInstance()->RegisterTexture("name_left_halberd", "Resource/UI/left_halberd_name.png");
 	TextureManager::GetInstance()->RegisterTexture("name_right_halberd", "Resource/UI/right_halberd_name.png");
 
-	SoundManager::GetInstance()->RegisterSound("mus_phase1_intro", "Resource/Sound/mus_phase1_intro.mp3");
-	SoundManager::GetInstance()->RegisterSound("mus_phase1", "Resource/Sound/mus_phase1.mp3");
-	SoundManager::GetInstance()->RegisterSound("mus_phase2_intro", "Resource/Sound/mus_phase2_intro.mp3");
-	SoundManager::GetInstance()->RegisterSound("mus_phase2", "Resource/Sound/mus_phase2.mp3");
+	SoundManager::GetInstance()->RegisterSound("mus_phase1_intro", "Resource/Sound/mus_phase1_intro.wav");
+	SoundManager::GetInstance()->RegisterSound("mus_phase1", "Resource/Sound/mus_phase1.wav");
+	SoundManager::GetInstance()->RegisterSound("mus_phase2_intro", "Resource/Sound/mus_phase2_intro.wav");
+	SoundManager::GetInstance()->RegisterSound("mus_phase2", "Resource/Sound/mus_phase2.wav");
+	SoundManager::GetInstance()->RegisterSound("mus_title", "Resource/Sound/mus_title.mp3");
 
 	SoundManager::GetInstance()->RegisterSound("test", "Resource/free_k.wav");
 	SoundManager::GetInstance()->RegisterSound("snd_select", "Resource/Sound/snd_select.mp3");
+
+	SoundManager::GetInstance()->RegisterSound("snd_near_attack", "Resource/Sound/snd_attack_near.mp3");
+	SoundManager::GetInstance()->RegisterSound("snd_near_attack_third", "Resource/Sound/snd_attack_near_third.wav");
+	SoundManager::GetInstance()->RegisterSound("snd_bullet_shot", "Resource/Sound/snd_bullet_shot.mp3");
+	SoundManager::GetInstance()->RegisterSound("snd_wave_shot", "Resource/Sound/snd_wave_shot.mp3");
+	SoundManager::GetInstance()->RegisterSound("snd_parry", "Resource/Sound/snd_parry.mp3");
+	SoundManager::GetInstance()->RegisterSound("snd_attack_wind", "Resource/Sound/snd_attack_wind.wav");
+	SoundManager::GetInstance()->RegisterSound("snd_shine", "Resource/Sound/snd_shine.wav");
+	SoundManager::GetInstance()->RegisterSound("snd_explode", "Resource/Sound/snd_explode.wav");
+	SoundManager::GetInstance()->RegisterSound("snd_explode_mini", "Resource/Sound/snd_explode_mini.wav");
+	SoundManager::GetInstance()->RegisterSound("snd_boss_damage", "Resource/Sound/snd_boss_damage.mp3");
+	SoundManager::GetInstance()->RegisterSound("snd_player_damage", "Resource/Sound/snd_player_damage.mp3");
+	SoundManager::GetInstance()->RegisterSound("snd_special_attack", "Resource/Sound/snd_special_attack.mp3");
+	SoundManager::GetInstance()->RegisterSound("snd_step", "Resource/Sound/snd_step.wav");
+	SoundManager::GetInstance()->RegisterSound("snd_drill", "Resource/Sound/snd_drill.mp3");
 
 }

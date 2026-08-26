@@ -36,7 +36,7 @@ void Player::Initialize() {
 		CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemyAttack)
 		);
 
-	BehaviorAttackInitialize();
+	//BehaviorAttackInitialize();
 
 	DifficultyManager::GetInstance()->SetPlayerHPData(&currentHP_, maxHP_);
 
@@ -505,7 +505,7 @@ void Player::CheckTutorialFlag() {
 			}
 			break;
 		case TutorialManager::TutorialFlagName::kFinaleTest:
-			tutorialClampMaxPosZ_ = -265.0f;
+			tutorialClampMaxPosZ_ = -258.0f;
 			tutorialUsableMove_ = true;
 			tutorialUsableJump_ = true;
 			tutorialUsableDash_ = true;
@@ -596,6 +596,7 @@ void Player::AttackFirstInitialize() {
 	attackCollider_.SetDamageCoolTime(0.1f);
 	attackCollider_.SetDamageType(1);
 	attackCollider_.SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack));
+	SoundManager::GetInstance()->SoundPlay("snd_attack_wind", 1.0f, 0.25f, kSoundEffect);
 }
 
 void Player::AttackFirstUpdate() {
@@ -669,6 +670,7 @@ void Player::AttackSecondInitialize() {
 	attackCollider_.SetDamageCoolTime(0.05f);
 	attackCollider_.SetDamageType(2);
 	attackCollider_.SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack));
+	SoundManager::GetInstance()->SoundPlay("snd_attack_wind", 1.0f, 0.25f, kSoundEffect);
 }
 
 void Player::AttackSecondUpdate() {
@@ -742,6 +744,7 @@ void Player::AttackThreeInitialize() {
 	attackCollider_.SetDamageCoolTime(0.02f);
 	attackCollider_.SetDamageType(3);
 	attackCollider_.SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack));
+	SoundManager::GetInstance()->SoundPlay("snd_near_attack", 1.0f, 0.25f, kSoundEffect);
 }
 
 void Player::AttackThreeUpdate() {
@@ -834,6 +837,7 @@ void Player::BehaviorDashUpdate() {
 
 void Player::BehaviorJumpInitialize() {
 	velocity_.y = kJumpFirstSpeed_;
+	SoundManager::GetInstance()->SoundPlay("snd_step", 1.0f, 0.25f, kSoundEffect);
 
 
 }
@@ -851,10 +855,12 @@ void Player::BehaviorJumpUpdate() {
 	if (transform_.translate.y <= kTranslateBlankY) {
 		transform_.translate.y = kTranslateBlankY;
 		behaviorRequest_ = Behavior::kRoot;
+		SoundManager::GetInstance()->SoundPlay("snd_step", 1.0f, 0.25f, kSoundEffect);
 	}
 
 	if (tutorialUsableDash_) {
 		if (GetAttackButtonTrigger()) {
+			SoundManager::GetInstance()->SoundPlay("snd_shine", 1.0f, 0.25f, kSoundEffect);
 			behaviorRequest_ = Behavior::kDashAttack;
 		}
 	}
@@ -894,6 +900,7 @@ void Player::BehaviorDashAttackUpdate() {
 			Matrix4x4 rotateMatrix = Matrix4x4::MakeRotateMatrix(transform_.rotate);
 			velocity_ = rotateMatrix.TransformNomal(move);
 			velocity_.y = 0.0f;
+			SoundManager::GetInstance()->SoundPlay("snd_attack_wind", 1.0f, 0.25f, kSoundEffect);
 
 		}
 		break;
@@ -908,6 +915,7 @@ void Player::BehaviorDashAttackUpdate() {
 
 		if (transform_.translate.y <= 0.0f) {
 			transform_.translate.y = 0.0f;
+			SoundManager::GetInstance()->SoundPlay("snd_drill", 1.0f, 0.25f, kSoundEffect);
 			behaviorRequest_ = Behavior::kDash;
 			transformModel.rotate.x = 0.0f;
 			transformModel.rotate.z = 0.0f;
@@ -921,6 +929,7 @@ void Player::BehaviorDashAttackUpdate() {
 }
 
 void Player::BehaviorDashJumpAttackInitialize() {
+	SoundManager::GetInstance()->SoundPlay("snd_drill", 1.0f, 0.25f, kSoundEffect);
 	if (TutorialManager::GetInstance()->GetCurrentFlagName() != TutorialManager::TutorialFlagName::kDashJumpTest) {
 		if (GetDownPress()) {
 			velocity_ *= -1.0f;
@@ -997,10 +1006,12 @@ void Player::BehaviorFallUpdate() {
 	if (transform_.translate.y <= kTranslateBlankY) {
 		transform_.translate.y = kTranslateBlankY;
 		behaviorRequest_ = Behavior::kRoot;
+		SoundManager::GetInstance()->SoundPlay("snd_step", 1.0f, 0.25f, kSoundEffect);
 	}
 
 	if (tutorialUsableDash_) {
 		if (GetAttackButtonTrigger()) {
+			SoundManager::GetInstance()->SoundPlay("snd_shine", 1.0f, 0.25f, kSoundEffect);
 			behaviorRequest_ = Behavior::kDashAttack;
 		}
 	}
@@ -1074,6 +1085,7 @@ void Player::OnCollision([[maybe_unused]] Collider* other) {
 		} else {
 			damageCoolTimer_ = other->GetDamageCoolTime();
 		}
+		SoundManager::GetInstance()->SoundPlay("snd_player_damage", 1.0f, 0.25f, kSoundEffect);
 
 		if (currentHP_ < 0.0f) {
 			currentHP_ = 0.0f;
