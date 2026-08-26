@@ -386,7 +386,7 @@ void GameScene::AnimSkipUpdate() {
 				useSkipStart_ = true;
 			}
 		} else {
-			if (InputManager::GetInstance()->TriggerKey(DIK_O)) {
+			if (InputManager::GetInstance()->TriggerKey(DIK_LSHIFT) || InputManager::GetInstance()->TriggerKey(DIK_Q)) {
 				fade_->SetColor({ 0.0f,0.0f,0.0f });
 				fade_->Start(Fade::Status::FadeOut, 1.0f);
 				useSkipStart_ = true;
@@ -411,6 +411,7 @@ void GameScene::AnimSkipFadeUpdate() {
 				player_->Initialize();
 				player_->SetStartPosition({ 0.0f,1.0f,-50.0f });
 				boss_->Initialize();
+				GameCamera::GetInstance()->SetRotate({0.0f,0.0f,0.0f});
 				SoundManager::GetInstance()->SoundPlay("mus_phase1_intro", 1.0f, 0.25f, kBGM, false, "mus_phase1_intro");
 				SoundManager::GetInstance()->SoundPause("mus_phase1_intro");
 				ProjectileManager::GetInstance()->Initialize();
@@ -419,6 +420,7 @@ void GameScene::AnimSkipFadeUpdate() {
 				player_->Initialize();
 				player_->SetStartPosition({ 0.0f,1.0f,-50.0f });
 				boss_->Initialize();
+				GameCamera::GetInstance()->SetRotate({ 0.0f,0.0f,0.0f });
 				SoundManager::GetInstance()->SoundResume("mus_phase1_intro");
 				break;
 			case kBossPhaseChangeAnim:
@@ -428,6 +430,7 @@ void GameScene::AnimSkipFadeUpdate() {
 				player_->Initialize();
 				player_->SetStartPosition({ 0.0f,1.0f,-50.0f });
 				boss_->Initialize();
+				GameCamera::GetInstance()->SetRotate({ 0.0f,0.0f,0.0f });
 				break;
 			case kBossLastJaronaAnim:
 				break;

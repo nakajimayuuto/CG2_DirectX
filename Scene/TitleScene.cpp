@@ -350,6 +350,10 @@ bool TitleScene::TriggerChancel() {
 		if (InputManager::GetInstance()->TriggerPadButton(PadButtons::INPUT_START)) {
 			return true;
 		}
+	} else {
+		if (InputManager::GetInstance()->TriggerKey(DIK_LSHIFT) || InputManager::GetInstance()->TriggerKey(DIK_Q)) {
+			return true;
+		}
 	}
 
 	return false;

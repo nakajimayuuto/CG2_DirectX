@@ -151,7 +151,7 @@ void Camera::DebugUpdate() {
 	bool useMoving = false;
 	Vector3 move = { 0.0f,0.0f,0.0f };
 	InputManager* input = InputManager::GetInstance();
-	if(input->IsGamePadConnect()) {
+	if (input->IsGamePadConnect()) {
 		move = { input->GetLeftStickDirection().x, 0.0f, input->GetLeftStickDirection().y };
 
 		debugTransformCenter_.rotate.x += -input->GetRightStickDirection().y * Radian(1.0f);
@@ -202,17 +202,17 @@ void Camera::ShakeUpdate() {
 		return;
 	}
 
-	Vector3 newShakePos = {0.0f,0.0f,0.0f};
+	Vector3 newShakePos = { 0.0f,0.0f,0.0f };
 
 	if (shakeType == ShakeType::FIXED_TIME) {
 
 		Vector2 shakePositionMax;
 		Vector2 shakePositionMin;
 		shakeTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
-		shakePositionMin.x = Easing(-shakeAmplitude_.x,0.0f, shakeTimer_, static_cast<float>(shakeTimerMax_), EaseType::kEaseInOut);
-		shakePositionMin.y = Easing(-shakeAmplitude_.y, 0.0f,shakeTimer_, static_cast<float>(shakeTimerMax_), EaseType::kEaseInOut);
-		shakePositionMax.x = Easing( shakeAmplitude_.x, 0.0f,shakeTimer_, static_cast<float>(shakeTimerMax_), EaseType::kEaseInOut);
-		shakePositionMax.y = Easing( shakeAmplitude_.y, 0.0f,shakeTimer_, static_cast<float>(shakeTimerMax_), EaseType::kEaseInOut);
+		shakePositionMin.x = Easing(-shakeAmplitude_.x, 0.0f, shakeTimer_, static_cast<float>(shakeTimerMax_), EaseType::kEaseInOut);
+		shakePositionMin.y = Easing(-shakeAmplitude_.y, 0.0f, shakeTimer_, static_cast<float>(shakeTimerMax_), EaseType::kEaseInOut);
+		shakePositionMax.x = Easing(shakeAmplitude_.x, 0.0f, shakeTimer_, static_cast<float>(shakeTimerMax_), EaseType::kEaseInOut);
+		shakePositionMax.y = Easing(shakeAmplitude_.y, 0.0f, shakeTimer_, static_cast<float>(shakeTimerMax_), EaseType::kEaseInOut);
 
 		newShakePos.x = Random::GetInstance()->RandomFloat(shakePositionMin.x, shakePositionMax.x);
 		newShakePos.y = Random::GetInstance()->RandomFloat(shakePositionMin.y, shakePositionMax.y);
@@ -382,11 +382,15 @@ Matrix4x4 Camera::GetVPVMatrix(Matrix4x4 matrix) {
 }
 
 void Camera::ChangeCameraMode() {
+#ifdef _DEBUG
+
+
 	if (useDebugCamera_) {
 		useDebugCamera_ = false;
 	} else {
 		useDebugCamera_ = true;
 	}
+#endif // _DEBUG
 }
 
 void Camera::RegisterGlobalVariables() {

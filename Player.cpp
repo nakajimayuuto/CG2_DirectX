@@ -147,6 +147,8 @@ float Player::GetDirectionYPress() {
 }
 
 void Player::FloatingAccelerationChange() {
+	return;
+
 	InputManager* input = InputManager::GetInstance();
 	Vector3 acceleration = { 0.0f,0.0f,0.0f };
 	if (input->IsGamePadConnect()) {
@@ -929,12 +931,40 @@ void Player::BehaviorDashAttackUpdate() {
 }
 
 void Player::BehaviorDashJumpAttackInitialize() {
+	InputManager* input = InputManager::GetInstance();
+	Vector3 direction = {0.0f,0.0f,0.0f};
 	SoundManager::GetInstance()->SoundPlay("snd_drill", 1.0f, 1.0f, kSoundEffect);
 	if (TutorialManager::GetInstance()->GetCurrentFlagName() != TutorialManager::TutorialFlagName::kDashJumpTest) {
-		if (GetDownPress()) {
-			velocity_ *= -1.0f;
-			transform_.rotate.y -= Radian(180.0f);
+		if (input->IsGamePadConnect()) {
+			direction = { input->GetLeftStickDirection().x,0.0f,input->GetLeftStickDirection().y };
+		} else {
+			if (input->PressKey(DIK_W)) {
+				direction.z += 1.0f;
+			}
+			if (input->PressKey(DIK_S)) {
+				direction.z -= 1.0f;
+			}
+			if (input->PressKey(DIK_D)) {
+				direction.x += 1.0f;
+			}
+			if (input->PressKey(DIK_A)) {
+				direction.x -= 1.0f;
+			}
 		}
+		direction = direction.Normalize();
+		float direY = std::atan2(direction.x, direction.z);
+		direY = Degree(direY);
+		//if (GetDownPress()) {
+		//velocity_ *= -1.0f;
+		transform_.rotate.y += Radian(direY);
+		Vector3 move = { 0.0f,0.0f,kDashSpeed };
+
+		Matrix4x4 rotateMatrix = Matrix4x4::MakeRotateMatrix(transform_.rotate);
+
+		move = rotateMatrix.TransformNomal(move);
+
+		velocity_ = move;
+		//}
 	}
 
 
@@ -1092,7 +1122,7 @@ void Player::OnCollision([[maybe_unused]] Collider* other) {
 
 		if (currentHP_ < 0.0f) {
 			currentHP_ = 0.0f;
-			isDeath_ = true; 
+			isDeath_ = true;
 			for (uint32_t i = 0; i < 30; i++) {
 				ParticleManager::GetInstance()->SpawnParticles("death_cross", transform_.GetWorldPosition());
 			}
