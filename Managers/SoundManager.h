@@ -158,5 +158,7 @@ private:
 	std::map<uint32_t, PlaySoundData*> soundOneTimeDatas_;
 
 	uint32_t soundNum_ = 0;
+
+	static inline float kBGMVolume_ = 1.0f;// 1.0f;
 };
 

@@ -361,20 +361,24 @@ void SoundManager::SoundPlay(const SoundData& soundData, float speed, float volu
 		buf.LoopBegin = 0;
 		buf.LoopCount = XAUDIO2_LOOP_INFINITE;
 	}
+	float newVolume = volume;
 
-// 波形データの再生.
-result = pSourceVoice->SubmitSourceBuffer(&buf);
-result = pSourceVoice->Start();
-result = pSourceVoice->SetVolume(volume);
+	if (type == kBGM) {
+		newVolume = newVolume * kBGMVolume_;
+	}
+	// 波形データの再生.
+	result = pSourceVoice->SubmitSourceBuffer(&buf);
+	result = pSourceVoice->Start();
+	result = pSourceVoice->SetVolume(newVolume);
 
-playSoundDatas_[handle] = new PlaySoundData();
+	playSoundDatas_[handle] = new PlaySoundData();
 
-playSoundDatas_[handle]->buffer = buf;
-playSoundDatas_[handle]->voice = pSourceVoice;
-playSoundDatas_[handle]->canLoop = canLoop;
-playSoundDatas_[handle]->currentSpeed = speed;
-playSoundDatas_[handle]->volume = volume;
-playSoundDatas_[handle]->type_ = type;
+	playSoundDatas_[handle]->buffer = buf;
+	playSoundDatas_[handle]->voice = pSourceVoice;
+	playSoundDatas_[handle]->canLoop = canLoop;
+	playSoundDatas_[handle]->currentSpeed = speed;
+	playSoundDatas_[handle]->volume = newVolume;
+	playSoundDatas_[handle]->type_ = type;
 }
 
 void SoundManager::SoundPlay(const std::string& soundData, float speed, float volume, SoundType type, bool canLoop, std::string handle) {
@@ -399,6 +403,7 @@ void SoundManager::SoundPlay(const SoundData& soundData, float speed, float volu
 	// 波形データの再生.
 	result = pSourceVoice->SubmitSourceBuffer(&buf);
 	result = pSourceVoice->Start();
+	result = pSourceVoice->SetVolume(volume);
 	soundOneTimeDatas_[soundNum_] = new PlaySoundData();
 	soundOneTimeDatas_[soundNum_]->buffer = buf;
 	soundOneTimeDatas_[soundNum_]->voice = pSourceVoice;

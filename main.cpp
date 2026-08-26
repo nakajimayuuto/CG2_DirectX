@@ -61,21 +61,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 }
 
 void LoadDatas() {
-	TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resource/uvChecker.png");
-	TextureManager::GetInstance()->RegisterTexture("reticle", "Resource/reticle.png");
-	ModelManager::GetInstance()->RegisterObj("skydome", "Resource/skydome", "skydome.obj");
-	ModelManager::GetInstance()->RegisterObj("creeking", "Resource/creeking", "creeking.obj");
+	//TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resource/uvChecker.png");
+	//TextureManager::GetInstance()->RegisterTexture("reticle", "Resource/reticle.png");
+	//ModelManager::GetInstance()->RegisterObj("skydome", "Resource/skydome", "skydome.obj");
+	//ModelManager::GetInstance()->RegisterObj("creeking", "Resource/creeking", "creeking.obj");
 	ModelManager::GetInstance()->RegisterObj("boss", "Resource/boss", "boss_ghost.obj", false);
 	ModelManager::GetInstance()->RegisterObj("ground", "Resource/Ground", "ground.obj");
 	ModelManager::GetInstance()->RegisterObj("celling", "Resource/Ground", "celling.obj");
-	ModelManager::GetInstance()->RegisterObj("player", "Resource/player_hovering_mode", "player.obj");
 	ModelManager::GetInstance()->RegisterObj("drill_ghost", "Resource/drill_ghost", "drill_ghost.obj", false);
 	ModelManager::GetInstance()->RegisterObj("halberd", "Resource/halberd", "halberd.obj", false);
-	ModelManager::GetInstance()->RegisterObj("player_right_arm", "Resource/player_hovering_mode/right_arm", "right_arm.obj");
-	ModelManager::GetInstance()->RegisterObj("player_left_arm", "Resource/player_hovering_mode/left_arm", "left_arm.obj");
-	ModelManager::GetInstance()->RegisterObj("player_head", "Resource/player_hovering_mode/head", "head.obj");
-	ModelManager::GetInstance()->RegisterObj("hammer_of_justice", "Resource/Hammer", "hammer_of_justice_uv.obj");
-	ModelManager::GetInstance()->RegisterObj("enemy", "Resource/enemy", "enemy.obj");
 	ModelManager::GetInstance()->RegisterObj("wall", "Resource/wall", "wall.obj");
 	ModelManager::GetInstance()->RegisterObj("bullet_crystal", "Resource/Bullet", "bullet_crystal.obj");
 	ModelManager::GetInstance()->RegisterObj("spike", "Resource/Spike", "spike.obj");

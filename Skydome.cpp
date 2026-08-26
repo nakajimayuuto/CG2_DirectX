@@ -1,11 +1,11 @@
 #include "Skydome.h"
 
 void Skydome::Initialize() {
-	transform_.Initialize();
-	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("skydome"));
-	model_.SetLightingType(LightingType::kNone);
-
-	color_ = { 1.0f,1.0f,1.0f,1.0f };
+	//transform_.Initialize();
+	//model_.Initialize(ModelManager::GetInstance()->GetModelInfo("skydome"));
+	//model_.SetLightingType(LightingType::kNone);
+	//
+	//color_ = { 1.0f,1.0f,1.0f,1.0f };
 }
 
 void Skydome::Update() {
@@ -19,16 +19,16 @@ void Skydome::Update() {
 	ImGui::End();
 #endif // _DEBUG
 
-	color_ = {
-	LightManager::GetInstance()->GetDirectionalLightData()->intensity,
-	LightManager::GetInstance()->GetDirectionalLightData()->intensity,
-	LightManager::GetInstance()->GetDirectionalLightData()->intensity,
-	1.0f
-	};
-
-	model_.SetColor(color_);
+	//color_ = {
+	//LightManager::GetInstance()->GetDirectionalLightData()->intensity,
+	//LightManager::GetInstance()->GetDirectionalLightData()->intensity,
+	//LightManager::GetInstance()->GetDirectionalLightData()->intensity,
+	//1.0f
+	//};
+	//
+	//model_.SetColor(color_);
 }
 
 void Skydome::Draw() {
-	Renderer::GetInstance()->DrawModel(transform_, &model_,false);
+	//Renderer::GetInstance()->DrawModel(transform_, &model_,false);
 }

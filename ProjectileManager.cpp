@@ -250,7 +250,7 @@ void Bullet::Update() {
 		switch (type_) {
 		case BulletType::kBounce:
 			if (diffusionAmount_ == 0) {
-				SoundManager::GetInstance()->SoundPlay("snd_explode_mini", 1.0f, 0.001f, kSoundEffect);
+				SoundManager::GetInstance()->SoundPlay("snd_explode_mini", 1.0f, 0.5f, kSoundEffect);
 			}
 			ProjectileManager::GetInstance()->CreateExplode(transform_, colliderRadius_ * 2.0f, kCollisionEnemyAttack, 15.0f, 3.0f);
 			break;

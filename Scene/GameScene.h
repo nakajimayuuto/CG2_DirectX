@@ -54,11 +54,14 @@ public:
 				attackCount_++;
 				timer_ = timerMax_;
 				color_ = { 1.0f,0.0f,0.0f,1.0f };
-				SoundManager::GetInstance()->SoundPlay("snd_boss_damage", 1.0f, 0.25f, kSoundEffect);
+				SoundManager::GetInstance()->SoundPlay("snd_boss_damage", 1.0f, 1.0f, kSoundEffect);
 
 				if (attackCount_ > attackCountMax_) {
 					isActive_ = false;
-					SoundManager::GetInstance()->SoundPlay("snd_explode_mini", 1.0f, 0.25f, kSoundEffect);
+					SoundManager::GetInstance()->SoundPlay("snd_explode_mini", 1.0f, 1.0f, kSoundEffect);
+					for (uint32_t i = 0; i < 10; i++) {
+						ParticleManager::GetInstance()->SpawnParticles("death_cross", transform_.GetWorldPosition());
+					}
 				}
 			}
 
@@ -69,7 +72,6 @@ public:
 		} else {
 			collider_.SetOnCollision(false);
 			timer_ -= DeltaTime::GetInstance()->GetGameTime();
-			color_ = { 1.0f,0.0f,0.0f,1.0f };
 		}
 	}
 
