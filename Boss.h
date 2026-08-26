@@ -279,6 +279,8 @@ private:
 	// 攻撃全般.
 	float damageAmountRecord_;
 
+	bool useSpecialAttack_;
+
 
 	Attacks currentAttack_ = Attacks::kWarp; // 現在の攻撃.
 	std::optional<Attacks> attackRequest_ = std::nullopt; // 次の攻撃リクエスト.

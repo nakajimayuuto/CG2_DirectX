@@ -801,11 +801,13 @@ void Boss::SpecialAttackUpdate() {
 			}
 
 			if (!isDownAutoHalberd_) {
-				newAttackData.attackName = Attacks::kAutoHalberd;
-				newAttackData.weight = 1.0f;
-				newAttackData.continuousCount = 0;
-				newAttackData.magnification = 1.0f;
-				specialAttackData.push_back(newAttackData);
+				if (DifficultyManager::GetInstance()->GetCurrentDifficulty() == Difficulty::kDifficultyHard) {
+					newAttackData.attackName = Attacks::kAutoHalberd;
+					newAttackData.weight = 1.0f;
+					newAttackData.continuousCount = 0;
+					newAttackData.magnification = 1.0f;
+					specialAttackData.push_back(newAttackData);
+				}
 			}
 
 			if (!isDownInfinitySlasher_) {
@@ -1388,7 +1390,7 @@ void Boss::InfinitySlasherUpdate() {
 		}
 		break;
 	case 41: // 見た目を戻す.
-		hpGauge->SetBackColor(Easing({ 0.3f,0.3f,0.3f },  { 1.0f,0.1f,0.1f }, currentAttackTimer_, kMaxAttackTimer, EaseType::kConstant));
+		hpGauge->SetBackColor(Easing({ 0.3f,0.3f,0.3f }, { 1.0f,0.1f,0.1f }, currentAttackTimer_, kMaxAttackTimer, EaseType::kConstant));
 		hpGauge->SetColor(Easing({ 0.7f, 0.7f, 0.7f }, { 1.0f,1.0f,0.1f }, currentAttackTimer_, kMaxAttackTimer, EaseType::kConstant));
 		powerSlasherHalberdCenter_.rotate.y = Easing(Radian(180.0f), 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		powerSlasherHalberdCenter_.translate = Easing(preTransform_.translate, transform_.translate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);

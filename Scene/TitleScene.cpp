@@ -2,7 +2,7 @@
 
 void TitleScene::Initialize() {
 	SoundManager::GetInstance()->ResetBGM();
-	SoundManager::GetInstance()->SoundPlay("mus_title",1.0f,0.25f,kBGM,true,"mus_title");
+	SoundManager::GetInstance()->SoundPlay("mus_title", 1.0f, 0.25f, kBGM, true, "mus_title");
 	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.05f;
 	LightManager::GetInstance()->GetDirectionalLightData()->color = { 0.5f,0.5f,1.0f,1.0f };
 	LightManager::GetInstance()->ClearLight();
@@ -201,7 +201,8 @@ void TitleScene::DiffucltyUpdate() {
 			break;
 		default:
 			break;
-		}	
+		}
+		gGamePhase = GamePhase::kTutorial;
 		isSubmit_ = true;
 		fade_->Start(Fade::Status::FadeOut, 1.0f);
 	}
@@ -344,7 +345,7 @@ bool TitleScene::TriggerSubmit() {
 	return false;
 }
 
-bool TitleScene::TriggerChancel(){
+bool TitleScene::TriggerChancel() {
 	if (InputManager::GetInstance()->IsGamePadConnect()) {
 		if (InputManager::GetInstance()->TriggerPadButton(PadButtons::INPUT_START)) {
 			return true;

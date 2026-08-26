@@ -208,6 +208,12 @@ void Boss::Initialize() {
 		DeathAnimInitialize();
 	}
 
+	if (DifficultyManager::GetInstance()->GetCurrentDifficulty() == Difficulty::kDifficultyEasy) {
+		useSpecialAttack_ = false;
+	} else {
+		useSpecialAttack_ = true;
+	}
+
 	damageAmountRecord_ = 0.0f;
 
 	isChangePhase_ = false;
@@ -262,13 +268,17 @@ void Boss::Phase1Initialize() {
 
 	SetAttackData(Attacks::kBounsShot, 0.5f, DistanceName::kMiddle);
 	SetAttackData(Attacks::kFangAttack, 0.5f, DistanceName::kMiddle);
-	SetAttackData(Attacks::kPowerSlasher, 0.3f, DistanceName::kMiddle);
-	SetAttackData(Attacks::kSpinningHalberd, 0.5f, DistanceName::kMiddle);
+	if (DifficultyManager::GetInstance()->GetCurrentDifficulty() != Difficulty::kDifficultyEasy) {
+		SetAttackData(Attacks::kPowerSlasher, 0.3f, DistanceName::kMiddle);
+		SetAttackData(Attacks::kSpinningHalberd, 0.5f, DistanceName::kMiddle);
+	}
 	SetAttackData(Attacks::kWaveShot, 0.6f, DistanceName::kMiddle);
 
 	SetAttackData(Attacks::kNearAttack, 0.7f, DistanceName::kNear);
 	SetAttackData(Attacks::kMovingShot, 0.3f, DistanceName::kNear);
-	SetAttackData(Attacks::kPowerSlasher, 0.1f, DistanceName::kNear);
+	if (DifficultyManager::GetInstance()->GetCurrentDifficulty() == Difficulty::kDifficultyHard) {
+		SetAttackData(Attacks::kPowerSlasher, 0.1f, DistanceName::kNear);
+	}
 
 }
 
@@ -278,20 +288,58 @@ void Boss::Phase2Initialize() {
 	farAttackDatas_.clear();
 	autoHalberdAttackDatas_.clear();
 
-	SetAttackData(Attacks::kBulletShot, 1.0f, DistanceName::kFar);
-	SetAttackData(Attacks::kPhase2DiffusionShot, 0.5f, DistanceName::kFar);
-	SetAttackData(Attacks::kPhase2MovingShot, 0.5f, DistanceName::kFar);
-	SetAttackData(Attacks::kPhase2WaveShot, 0.5f, DistanceName::kFar);
 
-	SetAttackData(Attacks::kPhase2BounsShot, 0.5f, DistanceName::kMiddle);
-	SetAttackData(Attacks::kFangAttack, 0.5f, DistanceName::kMiddle);
-	SetAttackData(Attacks::kPhase2PowerSlasher, 0.5f, DistanceName::kMiddle);
-	SetAttackData(Attacks::kPhase2SpinningHalberd, 0.5f, DistanceName::kMiddle);
-	SetAttackData(Attacks::kPhase2WaveShot, 0.5f, DistanceName::kMiddle);
+	switch (DifficultyManager::GetInstance()->GetCurrentDifficulty()){
+	case Difficulty::kDifficultyEasy:
+		SetAttackData(Attacks::kBulletShot, 1.0f, DistanceName::kFar);
+		SetAttackData(Attacks::kPhase2MovingShot, 0.5f, DistanceName::kFar);
+		SetAttackData(Attacks::kDiffusionShot, 0.5f, DistanceName::kFar);
+		SetAttackData(Attacks::kWaveShot, 0.5f, DistanceName::kFar);
 
-	SetAttackData(Attacks::kNearAttack, 0.7f, DistanceName::kNear);
-	SetAttackData(Attacks::kPhase2MovingShot, 0.3f, DistanceName::kNear);
-	SetAttackData(Attacks::kPowerSlasher, 0.1f, DistanceName::kNear);
+
+		SetAttackData(Attacks::kBounsShot, 0.5f, DistanceName::kMiddle);
+		SetAttackData(Attacks::kFangAttack, 0.5f, DistanceName::kMiddle);
+		SetAttackData(Attacks::kPowerSlasher, 0.5f, DistanceName::kMiddle);
+		SetAttackData(Attacks::kSpinningHalberd, 0.5f, DistanceName::kMiddle);
+		SetAttackData(Attacks::kWaveShot, 0.5f, DistanceName::kMiddle);
+
+		SetAttackData(Attacks::kNearAttack, 0.7f, DistanceName::kNear);
+		SetAttackData(Attacks::kMovingShot, 0.3f, DistanceName::kNear);
+		break;
+	case Difficulty::kDifficultyNormal:
+		SetAttackData(Attacks::kBulletShot, 1.0f, DistanceName::kFar);
+		SetAttackData(Attacks::kPhase2MovingShot, 0.5f, DistanceName::kFar);
+		SetAttackData(Attacks::kPhase2DiffusionShot, 0.5f, DistanceName::kFar);
+		SetAttackData(Attacks::kWaveShot, 0.5f, DistanceName::kFar);
+
+		SetAttackData(Attacks::kPhase2BounsShot, 0.5f, DistanceName::kMiddle);
+		SetAttackData(Attacks::kPhase2FangAttack, 0.5f, DistanceName::kMiddle);
+		SetAttackData(Attacks::kPhase2PowerSlasher, 0.5f, DistanceName::kMiddle);
+		SetAttackData(Attacks::kSpinningHalberd, 0.5f, DistanceName::kMiddle);
+		SetAttackData(Attacks::kWaveShot, 0.5f, DistanceName::kMiddle);
+
+		SetAttackData(Attacks::kNearAttack, 0.7f, DistanceName::kNear);
+		SetAttackData(Attacks::kPhase2MovingShot, 0.3f, DistanceName::kNear);
+		SetAttackData(Attacks::kPowerSlasher, 0.1f, DistanceName::kNear);
+		break;
+	case Difficulty::kDifficultyHard:
+		SetAttackData(Attacks::kBulletShot, 1.0f, DistanceName::kFar);
+		SetAttackData(Attacks::kPhase2MovingShot, 0.5f, DistanceName::kFar);
+		SetAttackData(Attacks::kPhase2DiffusionShot, 0.5f, DistanceName::kFar);
+		SetAttackData(Attacks::kPhase2WaveShot, 0.5f, DistanceName::kFar);
+
+		SetAttackData(Attacks::kPhase2BounsShot, 0.5f, DistanceName::kMiddle);
+		SetAttackData(Attacks::kPhase2FangAttack, 0.5f, DistanceName::kMiddle);
+		SetAttackData(Attacks::kPhase2PowerSlasher, 0.5f, DistanceName::kMiddle);
+		SetAttackData(Attacks::kPhase2SpinningHalberd, 0.5f, DistanceName::kMiddle);
+		SetAttackData(Attacks::kPhase2WaveShot, 0.5f, DistanceName::kMiddle);
+
+		SetAttackData(Attacks::kNearAttack, 0.7f, DistanceName::kNear);
+		SetAttackData(Attacks::kPhase2MovingShot, 0.3f, DistanceName::kNear);
+		SetAttackData(Attacks::kPowerSlasher, 0.1f, DistanceName::kNear);
+		break;
+	}
+	
 
 	SetAttackData(Attacks::kBulletShot, 1.0f, DistanceName::kAutoHalberd);
 	SetAttackData(Attacks::kDiffusionShot, 0.5f, DistanceName::kAutoHalberd);
@@ -351,9 +399,13 @@ void Boss::Update() {
 		break;
 	case 2:
 		downDamageMangification_ = 1.5f;
+		if (DifficultyManager::GetInstance()->GetCurrentDifficulty() == Difficulty::kDifficultyNormal) {
+			useSpecialAttack_ = false;
+		}
 		break;
 	case 3:
 		downDamageMangification_ = 2.0f;
+		useSpecialAttack_ = false;
 		break;
 	default:
 		downDamageMangification_ = 1.0f;
@@ -482,8 +534,22 @@ void Boss::RootUpdate() {
 		attackCoolTimer_ = 0.0f;
 
 		if (gGamePhase == GamePhase::kBossPhase2) {
-			if (Random::GetInstance()->Probability(Easing(0.0f, 100.0f, damageAmountRecord_, maxHP_ / 4.0f, EaseType::kConstant))) {
-				attackRequest_ = Attacks::kSpecialAttack;
+			if (useSpecialAttack_) {
+				if (Random::GetInstance()->Probability(Easing(0.0f, 100.0f, damageAmountRecord_, maxHP_ / 4.0f, EaseType::kConstant))) {
+					attackRequest_ = Attacks::kSpecialAttack;
+				} else {
+					switch (currentDistance_) {
+					case Boss::DistanceName::kNear:
+						AttackSelect(nearAttackDatas_);
+						break;
+					case Boss::DistanceName::kMiddle:
+						AttackSelect(middleAttackDatas_);
+						break;
+					case Boss::DistanceName::kFar:
+						AttackSelect(farAttackDatas_);
+						break;
+					}
+				}
 			} else {
 				switch (currentDistance_) {
 				case Boss::DistanceName::kNear:
@@ -2356,7 +2422,7 @@ void Boss::DeathAnimationUpdate() {
 		transform_.scale = Easing({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, animTimer_, animTimerMax_, EaseType::kEaseIn);
 		if (animTimer_ >= animTimerMax_) {
 			NextAnimPhase(kAnimDeathExplodeTimerMax);
-			SoundManager::GetInstance()->SoundPlay("snd_explode",1.0f,0.25f,kSoundEffect);
+			SoundManager::GetInstance()->SoundPlay("snd_explode", 1.0f, 0.25f, kSoundEffect);
 			for (uint32_t i = 0; i < 30; i++) {
 				ParticleManager::GetInstance()->SpawnParticles("death_cross", transform_.GetWorldPosition());
 			}
