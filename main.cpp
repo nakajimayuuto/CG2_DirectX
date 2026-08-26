@@ -161,6 +161,9 @@ void LoadDatas() {
 	TextureManager::GetInstance()->RegisterTexture("name_left_halberd", "Resource/UI/left_halberd_name.png");
 	TextureManager::GetInstance()->RegisterTexture("name_right_halberd", "Resource/UI/right_halberd_name.png");
 
+	TextureManager::GetInstance()->RegisterTexture("end_to_hamburger", "Resource/UI/end_to_hamburger.png");
+	TextureManager::GetInstance()->RegisterTexture("title", "Resource/UI/title.png");
+
 	SoundManager::GetInstance()->RegisterSound("mus_phase1_intro", "Resource/Sound/mus_phase1_intro.wav");
 	SoundManager::GetInstance()->RegisterSound("mus_phase1", "Resource/Sound/mus_phase1.wav");
 	SoundManager::GetInstance()->RegisterSound("mus_phase2_intro", "Resource/Sound/mus_phase2_intro.wav");

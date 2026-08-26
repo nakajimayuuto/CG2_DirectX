@@ -220,6 +220,7 @@ void TitleScene::Draw() {
 	Renderer::GetInstance()->DrawShadow(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "halberd", { 0.0f,0.0f,0.0f,1.0f });
 
 	ParticleManager::GetInstance()->Draw();
+	Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { Easing(0.0f,-800.0f,easeTimer_[static_cast<size_t>(TitlePhase::kTitle)],kUIAnimEaseTimerMax_,EaseType::kEaseIn),-200.0f,0.0f }), "title", { 1.0f,1.0f,1.0f,1.0f });
 
 	Renderer::GetInstance()->DrawSprite(
 		Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,Radian(-5.0f) },
@@ -233,12 +234,13 @@ void TitleScene::Draw() {
 		)
 		, Vector2(20.0f, 1000.0f), "white_template", { 0.0f,0.0f,0.0f,1.0f });
 
-	Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,335.0f,0.0f }), Vector2(1280.0f, 50.0f), "white_template", { 0.0f,0.0f,0.0f,1.0f });
 	Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,-335.0f,0.0f }), Vector2(1280.0f, 50.0f), "white_template", { 0.0f,0.0f,0.0f,1.0f });
 
 	// pressA
-	Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,Easing(kPressAPosY,460.0f,easeTimer_[static_cast<size_t>(TitlePhase::kTitle)],kUIAnimEaseTimerMax_,EaseType::kEaseIn),0.0f }), "press_a", { 1.0f,1.0f,1.0f,1.0f });
+	Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,Easing(kPressAPosY,420.0f,easeTimer_[static_cast<size_t>(TitlePhase::kTitle)],kUIAnimEaseTimerMax_,EaseType::kEaseIn),0.0f }), "press_a", { 1.0f,1.0f,1.0f,1.0f });
+	Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,Easing(kPressAPosY + 80.0f,500.0f,easeTimer_[static_cast<size_t>(TitlePhase::kTitle)],kUIAnimEaseTimerMax_,EaseType::kEaseIn),0.0f }), "end_to_hamburger", { 1.0f,1.0f,1.0f,1.0f });
 
+	Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,335.0f,0.0f }), Vector2(1280.0f, 50.0f), "white_template", { 0.0f,0.0f,0.0f,1.0f });
 	// difficulty
 	Renderer::GetInstance()->DrawSprite(
 		Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f },

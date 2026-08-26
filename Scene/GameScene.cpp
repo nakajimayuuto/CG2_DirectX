@@ -66,11 +66,11 @@ void GameScene::Initialize() {
 	// 第一形態.
 	//worldFrameEmitter_->Initialize(Transform::GetInitialValue({ 150.0f,10.0f,150.0f }, { 0.0f,0.0f,0.0f }, {0.0f,5.0f,0.0f}), 10, 0.1f);
 	// 第二形態.
-	worldFrameEmitter_->Initialize(Transform::GetInitialValue({ 150.0f,10.0f,150.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,5.0f,0.0f }), 30, 0.1f);
+	worldFrameEmitter_->Initialize(Transform::GetInitialValue({ 150.0f,20.0f,150.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,10.0f,0.0f }), 30, 0.1f);
 
 	worldBigFrameEmitter_ = std::make_unique<Emitter>();
 	worldBigFrameEmitter_->SetParticle(ParticleManager::GetInstance()->GetParticles("big_fire"));
-	worldBigFrameEmitter_->Initialize(Transform::GetInitialValue({ 150.0f,10.0f,150.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,5.0f,0.0f }), 5, 0.2f);
+	worldBigFrameEmitter_->Initialize(Transform::GetInitialValue({ 150.0f,20.0f,150.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,10.0f,0.0f }), 5, 0.2f);
 
 	tutorialAttackWall_ = std::make_unique<TutorialObject>();
 	tutorialAttackWall_->Initialize(1.0f);
@@ -333,14 +333,17 @@ void GameScene::Draw() {
 
 	ParticleManager::GetInstance()->Draw();
 
-	if (gGamePhase != GamePhase::kTutorial && gGamePhase != GamePhase::kBossLastJaronaAnim) {
+	if (gGamePhase != GamePhase::kTutorial && 
+		gGamePhase != GamePhase::kGameStartAnim && 
+		gGamePhase != GamePhase::kBossPhaseChangeAnim && 
+		gGamePhase != GamePhase::kBossLastJaronaAnim) {
 		renderer->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 500.0f,200.0f,0.0f }), "play_guid", { 1.0f,1.0f,1.0f,1.0f });
 	}
 
 	
 
 	if (gGamePhase == GamePhase::kGameStartAnim || gGamePhase == GamePhase::kBossPhaseChangeAnim) {
-		renderer->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 170.0f,300.0f,0.0f }), "skip_to_lr", { 1.0f,1.0f,1.0f,1.0f });
+		renderer->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 440.0f,300.0f,0.0f }), "skip_to_lr", { 1.0f,1.0f,1.0f,1.0f });
 	} else if (gGamePhase != GamePhase::kTutorial && gGamePhase != GamePhase::kBossLastJaronaAnim) {
 		renderer->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 265.0f,300.0f,0.0f }), "pause_to_hamburger", { 1.0f,1.0f,1.0f,1.0f });
 	}

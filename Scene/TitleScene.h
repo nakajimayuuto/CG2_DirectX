@@ -59,6 +59,6 @@ private:
 	static inline float kUIAnimEaseTimerMax_ = 0.5f;
 	std::array<float, static_cast<size_t>(TitlePhase::kCount)> easeTimer_;
 
-	static inline float kPressAPosY = 200.0f;
+	static inline float kPressAPosY = 180.0f;
 	static inline float kMenuPosX = -400.0f;
 };

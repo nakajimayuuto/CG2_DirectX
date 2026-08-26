@@ -1041,7 +1041,9 @@ void Player::Draw() {
 	}
 
 	//particles_->Draw();
-	if (gGamePhase != GamePhase::kBossLastJaronaAnim) {
+	if (gGamePhase != GamePhase::kGameStartAnim &&
+		gGamePhase != GamePhase::kBossPhaseChangeAnim &&
+		gGamePhase != GamePhase::kBossLastJaronaAnim) {
 		hpGauge_->Draw();
 	}
 
