@@ -184,5 +184,6 @@ void LoadDatas() {
 	SoundManager::GetInstance()->RegisterSound("snd_special_attack", "Resource/Sound/snd_special_attack.mp3");
 	SoundManager::GetInstance()->RegisterSound("snd_step", "Resource/Sound/snd_step.wav");
 	SoundManager::GetInstance()->RegisterSound("snd_drill", "Resource/Sound/snd_drill.mp3");
+	SoundManager::GetInstance()->RegisterSound("snd_parry", "Resource/Sound/snd_parry.mp3");
 
 }

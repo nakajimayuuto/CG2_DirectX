@@ -686,6 +686,15 @@ void Boss::Draw() {
 
 void Boss::OnCollision(Collider* other) {
 	float preHP = currentHP_;
+	float tempMag = 1.0f;
+	std::string sndName = "snd_boss_damage";
+
+	if (isPlayAttack_) {
+		if (currentAttack_ == Attacks::kAutoHalberd || currentAttack_ == Attacks::kInfinitySlasher) {
+			tempMag = 0.0f;
+			sndName = "snd_parry";
+		}
+	}
 
 	if (isImmune_) {
 		return;
@@ -698,37 +707,37 @@ void Boss::OnCollision(Collider* other) {
 	switch (other->GetDamageType()) {
 	case 1:
 		if (damageCountFirst_ <= 0) {
-			currentHP_ -= other->GetDamage() * downDamageMangification_;
+			currentHP_ -= other->GetDamage() * downDamageMangification_ * tempMag;
 
 			DeltaTime::GetInstance()->SetHitStop(0.05f);
 
 			damageCountFirst_++;
-			SoundManager::GetInstance()->SoundPlay("snd_boss_damage", 1.0f, 0.25f, kSoundEffect);
+			SoundManager::GetInstance()->SoundPlay(sndName, 1.0f, 0.25f, kSoundEffect);
 		}
 		break;
 	case 2:
 		if (damageCountSecond_ <= 1) {
 			if (damageCoolTimer_ <= 0.0f) {
-				currentHP_ -= other->GetDamage() * downDamageMangification_;
+				currentHP_ -= other->GetDamage() * downDamageMangification_ * tempMag;
 
 				DeltaTime::GetInstance()->SetHitStop(0.05f);
 
 				damageCoolTimer_ = other->GetDamageCoolTime();
 
 				damageCountSecond_++;
-				SoundManager::GetInstance()->SoundPlay("snd_boss_damage", 1.0f, 0.25f, kSoundEffect);
+				SoundManager::GetInstance()->SoundPlay(sndName, 1.0f, 0.25f, kSoundEffect);
 			}
 		}
 		break;
 	case 3:
 		if (damageCountThird_ <= 4) {
 			if (damageCoolTimer_ <= 0.0f) {
-				currentHP_ -= other->GetDamage() * downDamageMangification_;
+				currentHP_ -= other->GetDamage() * downDamageMangification_ * tempMag;
 				DeltaTime::GetInstance()->SetHitStop(0.05f);
 
 				damageCoolTimer_ = other->GetDamageCoolTime();
 				damageCountThird_++;
-				SoundManager::GetInstance()->SoundPlay("snd_boss_damage", 1.0f, 0.25f, kSoundEffect);
+				SoundManager::GetInstance()->SoundPlay(sndName, 1.0f, 0.25f, kSoundEffect);
 
 				if (damageCountFirst_ >= 1) {
 					if (damageCountSecond_ >= 2) {
@@ -759,12 +768,12 @@ void Boss::OnCollision(Collider* other) {
 		break;
 	default:
 		if (damageCoolTimer_ <= 0.0f) {
-			currentHP_ -= other->GetDamage() * downDamageMangification_;
+			currentHP_ -= other->GetDamage() * downDamageMangification_ * tempMag;
 
 			DeltaTime::GetInstance()->SetHitStop(0.05f);
 
 			damageCoolTimer_ = other->GetDamageCoolTime();
-			SoundManager::GetInstance()->SoundPlay("snd_boss_damage", 1.0f, 0.25f, kSoundEffect);
+			SoundManager::GetInstance()->SoundPlay(sndName, 1.0f, 0.25f, kSoundEffect);
 		}
 		break;
 	}
@@ -1035,6 +1044,8 @@ void Boss::DownUpdate() {
 }
 
 void Boss::SuperDownInitialize() {
+	hpGauge->SetColor({ 1.0f,1.0f,0.1f });
+	hpGauge->SetBackColor({ 1.0f,0.1f,0.1f });
 	SoundManager::GetInstance()->SoundPlay("snd_parry", 1.0f, 0.25f, kSoundEffect);
 	kMaxAttackTimer = kDonwStartTimer;
 	donwAnimHalberdVelocityY_ = 2.0f;
@@ -2022,6 +2033,9 @@ void Boss::DeathAnimInitialize() {
 	preCameraTransform_ = GameCamera::GetInstance()->GetTransform();
 	GameCamera::GetInstance()->SetPosition({});
 	animTimerMax_ = kAnimDeathCameraRotateTimerMax;
+
+	animDeathExplodeTimer_ = 0.0f;
+	animDeatExplodeCount_ = 0;
 }
 
 void Boss::AnimInitialize() {
@@ -2124,6 +2138,7 @@ void Boss::StartAnimationUpdate() {
 		camera->SetRotate(Easing(kAnimStartJumpCameraRotate, kAnimStartAttackCameraRotate, animTimer_, animTimerMax_, EaseType::kEaseOut));
 
 		if (animTimer_ >= animTimerMax_) {
+			SoundManager::GetInstance()->SoundPlay("snd_wave_shot", 1.0f, 0.25f, kSoundEffect);
 			NextAnimPhase(kAnimStartAttackBlankTimerMax);
 			Camera::GetInstance()->CreateShake({ 0.5f,0.5f }, kAnimStartAttackBlankTimerMax);
 			InputManager::GetInstance()->SetVibration(1.0f, 1.0f, kAnimStartAttackBlankTimerMax);
@@ -2265,6 +2280,7 @@ void Boss::PhaseChangeAnimationUpdate() {
 
 
 		if (animTimer_ >= animTimerMax_) {
+			SoundManager::GetInstance()->SoundPlay("snd_wave_shot", 1.0f, 0.25f, kSoundEffect);
 			NextAnimPhase(kAnimPhaseChangeAttackBlankTimerMax);
 			Camera::GetInstance()->CreateShake({ 0.5f,0.5f }, kAnimPhaseChangeAttackBlankTimerMax);
 			InputManager::GetInstance()->SetVibration(1.0f, 1.0f, kAnimPhaseChangeAttackBlankTimerMax);
@@ -2303,10 +2319,23 @@ void Boss::PhaseChangeAnimationUpdate() {
 
 void Boss::DeathAnimationUpdate() {
 	GameCamera* camera = GameCamera::GetInstance();
-
+	Vector3 random = { 0.0f,0.0f,0.0f };
 	animTimer_ += deltaTime_;
 	switch (animPhase_) {
 	case 0:
+		if (animDeatExplodeCount_ < kAnimDeathExplodeCountMax) {
+			animDeathExplodeTimer_ += deltaTime_;
+			if (animDeathExplodeTimer_ >= kAnimDeathExplodeRate) {
+				SoundManager::GetInstance()->SoundPlay("snd_explode_mini", 1.0f, 0.25f, kSoundEffect);
+				random = Random::GetInstance()->RandomVector3({ -3.0f,-3.0f,-3.0f }, { 3.0f,3.0f,3.0f });
+				for (uint32_t i = 0; i < 10; i++) {
+					ParticleManager::GetInstance()->SpawnParticles("death_cross", transform_.GetWorldPosition() + random);
+				}
+				animDeatExplodeCount_++;
+				animDeathExplodeTimer_ -= kAnimDeathExplodeRate;
+			}
+		}
+
 		animCameraTransform_.translate.y = Easing(kBasicPositionY + 10.0f, kBasicPositionY + 5, animTimer_, animTimerMax_, EaseType::kConstant);
 		animCameraTransform_.translate.z = Easing(-30.0f, -10.0f, animTimer_, animTimerMax_, EaseType::kConstant);
 		animCameraCenterTransform_.rotate.y = Easing(0.0f, Radian(360.0f), animTimer_, animTimerMax_, EaseType::kEaseInOut);

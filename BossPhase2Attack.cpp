@@ -401,7 +401,7 @@ void Boss::Phase2SpinningUpdate() {
 			SoundManager::GetInstance()->SoundPlay("snd_attack_wind", 1.0f, 0.25f, kSoundEffect);
 			spinningBounsTimer_ -= kPhase2SpinningBounsTimerMax;
 		}
-		
+
 		effectTransform = attackTempTransform_;
 		effectTransform.scale = kBasicHalberdColliderSize;
 		effectTransform.translate.y = 0.0f;
@@ -791,7 +791,7 @@ void Boss::SpecialAttackUpdate() {
 		//transform_.scale = Easing(, { 1.0f,1.0f,1.0f }, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		LightManager::GetInstance()->GetDirectionalLightData()->intensity = Easing(300.0f, 0.15f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
-			
+
 			if (!isDownThreeWayShot_) {
 				newAttackData.attackName = Attacks::kThreeWayWave;
 				newAttackData.weight = 1.0f;
@@ -799,7 +799,7 @@ void Boss::SpecialAttackUpdate() {
 				newAttackData.magnification = 1.0f;
 				specialAttackData.push_back(newAttackData);
 			}
-			
+
 			if (!isDownAutoHalberd_) {
 				newAttackData.attackName = Attacks::kAutoHalberd;
 				newAttackData.weight = 1.0f;
@@ -807,7 +807,7 @@ void Boss::SpecialAttackUpdate() {
 				newAttackData.magnification = 1.0f;
 				specialAttackData.push_back(newAttackData);
 			}
-			
+
 			if (!isDownInfinitySlasher_) {
 				newAttackData.attackName = Attacks::kInfinitySlasher;
 				newAttackData.weight = 1.0f;
@@ -819,7 +819,7 @@ void Boss::SpecialAttackUpdate() {
 			AttackFinished();
 			if (specialAttackData.empty()) {
 				attackRequest_ = Attacks::kWarp;
-			}else{
+			} else {
 				AttackSelect(specialAttackData);
 			}
 			//attackRequest_ = Attacks::kInfinitySlasher;
@@ -991,6 +991,8 @@ void Boss::ThreeWayWaveUpdate() {
 }
 
 void Boss::AutoHalberdInitialize() {
+	hpGauge->SetBackColor({ 0.3f, 0.3f, 0.3f });
+	hpGauge->SetColor({ 0.7f,0.7f,0.7f });
 	autoHalberdStop_ = false;
 	kMaxAttackTimer = kAutoHalberdStartGapTimerMax;
 	autoHalberdAttack_ = Attacks::kWarp;
@@ -1045,6 +1047,8 @@ void Boss::AutoHalberdUpdate() {
 		}
 		break;
 	case 3:
+		hpGauge->SetBackColor(Easing({ 0.3f,0.3f,0.3f }, { 1.0f,0.1f,0.1f }, currentAttackTimer_, kMaxAttackTimer, EaseType::kConstant));
+		hpGauge->SetColor(Easing({ 0.7f,0.7f,0.7f }, { 1.0f,1.0f,0.1f }, currentAttackTimer_, kMaxAttackTimer, EaseType::kConstant));
 		halberdLeft_->SetPosition(Easing({ 0.0f,0.0f,0.0f }, kBasicHalberdLeftPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut));
 		halberdRight_->SetPosition(Easing({ 0.0f,0.0f,0.0f }, kBasicHalberdRightPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut));
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
@@ -1122,6 +1126,8 @@ void Boss::InfinitySlasherUpdate() {
 
 	switch (currentAttackPhase) {
 	case 0: // ハルバードを構える.
+		hpGauge->SetColor(Easing({ 1.0f,1.0f,0.1f }, { 0.7f,0.7f,0.7f }, currentAttackTimer_, kMaxAttackTimer, EaseType::kConstant));
+		hpGauge->SetBackColor(Easing({ 1.0f,0.1f,0.1f }, { 0.3f,0.3f,0.3f }, currentAttackTimer_, kMaxAttackTimer, EaseType::kConstant));
 		halberdLeft_->SetRotate(Easing(basicHalberdLeftRotate, { 0.0f,0.0f,0.0f }, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn));
 		halberdRight_->SetRotate(Easing(basicHalberdRightRotate, { 0.0f,0.0f,0.0f }, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn));
 		destinationHalberdTransform_.translate = Easing(basicHalberdPos, kInfinitySlasherHalberdStartPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
@@ -1186,7 +1192,7 @@ void Boss::InfinitySlasherUpdate() {
 			// 突進時間が終了したら11に遷移.
 			NextAttackPhase(kInfinitySlasherDashToSlashTimerMax);
 		}
-		
+
 		if ((transform_.GetWorldPosition() - halberdLeft_->GetWorldPosition()).Length() <= kInfinitySlasherHalberdJugdeRadius ||
 			(transform_.GetWorldPosition() - halberdRight_->GetWorldPosition()).Length() <= kInfinitySlasherHalberdJugdeRadius) {
 			DeltaTime::GetInstance()->SetHitStop(0.5f);
@@ -1373,7 +1379,7 @@ void Boss::InfinitySlasherUpdate() {
 		infinitySlasherHalberdCenter_.translate.y = Easing(kInfinitySlasherHalCenterStartPosY, kBasicPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		halberdLeft_->SetPosition(Easing(kInfinitySlasherHalLeftStartPos, kBasicHalberdLeftPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut));
 		halberdRight_->SetPosition(Easing(kInfinitySlasherHalRightStartPos, kBasicHalberdRightPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut));
-		halberdLeft_->SetRotate(Easing({ -Radian(180.0f),0.0f,0.0f },basicHalberdLeftRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn));
+		halberdLeft_->SetRotate(Easing({ -Radian(180.0f),0.0f,0.0f }, basicHalberdLeftRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn));
 		halberdRight_->SetRotate(Easing({ -Radian(180.0f),0.0f,0.0f }, basicHalberdRightRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn));
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
@@ -1382,6 +1388,8 @@ void Boss::InfinitySlasherUpdate() {
 		}
 		break;
 	case 41: // 見た目を戻す.
+		hpGauge->SetBackColor(Easing({ 0.3f,0.3f,0.3f },  { 1.0f,0.1f,0.1f }, currentAttackTimer_, kMaxAttackTimer, EaseType::kConstant));
+		hpGauge->SetColor(Easing({ 0.7f, 0.7f, 0.7f }, { 1.0f,1.0f,0.1f }, currentAttackTimer_, kMaxAttackTimer, EaseType::kConstant));
 		powerSlasherHalberdCenter_.rotate.y = Easing(Radian(180.0f), 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		powerSlasherHalberdCenter_.translate = Easing(preTransform_.translate, transform_.translate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		modelTransform_.rotate.y = Easing(kInfinitySlasherModelFinishedRotateY, 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);

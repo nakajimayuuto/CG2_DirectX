@@ -929,6 +929,12 @@ private:
 	static inline float kAnimDeathExplodeTimerMax = 1.0f; // 爆発.
 	static inline float kAnimDeathExplodeBlankTimerMax = 5.0f; // 爆発.
 	static inline float kAnimDeathFinishTimerMax = 2.0f; // フィニッシュ.
+	
+	float animDeathExplodeTimer_;
+	float animDeatExplodeCount_;
+	static inline float kAnimDeathExplodeRate = 1.0f;
+	static inline float kAnimDeathExplodeCountMax = 3;
+
 
 	static inline Vector3 kAnimDeathStartHalberdRotate = { 0.0f,Radian(0.0f),0.0f };
 	static inline Vector3 kAnimDeathStartHalberdPos = { 0.0f,-10.0f ,-2.0f };

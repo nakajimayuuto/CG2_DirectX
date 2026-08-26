@@ -582,6 +582,7 @@ void MirrorHalberd::OnCollision(Collider* other) {
 
 	if (currentHP_ <= 0.0f) {
 
+		SoundManager::GetInstance()->SoundPlay("snd_explode_mini", 1.0f, 0.25f, kSoundEffect);
 		DeltaTime::GetInstance()->SetHitStop(0.5f);
 		RespawnInitialize();
 	}
