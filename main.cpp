@@ -165,15 +165,10 @@ void LoadDatas() {
 	TextureManager::GetInstance()->RegisterTexture("end_to_hamburger", "Resource/UI/end_to_hamburger.png");
 	TextureManager::GetInstance()->RegisterTexture("title", "Resource/UI/title.png");
 
-	TextureManager::GetInstance()->RegisterTexture("numbers", "Resource/UI/numbers.png");
 	ParticleManager::GetInstance()->CreateNewParticles("normal", TextureManager::GetInstance()->GetTextureInfo("effect_plane"), BillboardType::kAllAxis, Particles::Move::kNormal);
 	ParticleManager::GetInstance()->CreateNewParticles("fire", TextureManager::GetInstance()->GetTextureInfo("effect_fire"), BillboardType::kAllAxis, Particles::Move::kFire);
 
-	for (uint32_t i = 0; i < 10; i++) {
-		ParticleManager::GetInstance()->CreateNewParticles(std::format("number_{}", i), TextureManager::GetInstance()->GetTextureInfo("numbers"), BillboardType::kAllAxis, Particles::Move::kNumber);
-		ParticleManager::GetInstance()->SetParticleSize(std::format("number_{}", i), { 0.2f,0.2f,0.2f });
-		ParticleManager::GetInstance()->SetParticleUVTransform(std::format("number_{}", i), Transform::GetInitialValue({ 0.1f ,1.0f,0.0f}, {0.0f,0.0f,0.0f}, {0.1f * static_cast<float>(i),0.0f,0.0f}));
-	}
+	
 
 
 

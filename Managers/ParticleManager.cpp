@@ -9,6 +9,12 @@ void ParticleManager::Initialize() {
 	particles_.clear();
 	emitters_.clear();
 	fields_.clear();
+	TextureManager::GetInstance()->RegisterTexture("numbers", "Resource/UI/numbers.png");
+	for (uint32_t i = 0; i < 10; i++) {
+		ParticleManager::GetInstance()->CreateNewParticles(std::format("number_{}", i), TextureManager::GetInstance()->GetTextureInfo("numbers"), BillboardType::kAllAxis, Particles::Move::kNumber);
+		ParticleManager::GetInstance()->SetParticleSize(std::format("number_{}", i), { 0.2f,0.2f,0.2f });
+		ParticleManager::GetInstance()->SetParticleUVTransform(std::format("number_{}", i), Transform::GetInitialValue({ 0.1f ,1.0f,0.0f }, { 0.0f,0.0f,0.0f }, { 0.1f * static_cast<float>(i),0.0f,0.0f }));
+	}
 }
 
 void ParticleManager::Update() {
