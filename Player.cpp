@@ -1107,6 +1107,9 @@ void Player::OnCollision([[maybe_unused]] Collider* other) {
 			return;
 		}
 	}
+	Transform damageTransform = transform_;
+	damageTransform.translate += Random::GetInstance()->RandomVector3(-Vector3(colliderSize_.x / 2.0f, 0.5f, colliderSize_.z / 2.0f), Vector3(colliderSize_.x / 2.0f, 0.5f, colliderSize_.z / 2.0f));
+	damageTransform.translate.y += 1.5f;
 	colliderColor_ = { 1.0f,0.0f,0.0f,1.0f };
 
 	if (damageCoolTimer_ <= 0.0f) {
@@ -1119,6 +1122,8 @@ void Player::OnCollision([[maybe_unused]] Collider* other) {
 			damageCoolTimer_ = other->GetDamageCoolTime();
 		}
 		SoundManager::GetInstance()->SoundPlay("snd_player_damage", 1.0f, 1.0f, kSoundEffect);
+		ParticleManager::GetInstance()->SpawnNumbers(other->GetDamage(), damageTransform, {1.0f,0.5f,0.5f });
+		InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.5f);
 
 		if (currentHP_ < 0.0f) {
 			currentHP_ = 0.0f;

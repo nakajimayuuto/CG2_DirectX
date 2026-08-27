@@ -209,6 +209,6 @@ private:
 	// Respawn.
 	static inline float kRespawnStartGapTimerMax = 1.0f;
 
-	static inline float kRespawnHPIncreese = 30.0f;
+	static inline float kRespawnHPIncreese = 20.0f;
 };
 

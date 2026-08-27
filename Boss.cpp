@@ -22,7 +22,7 @@ void (Boss::* Boss::pInitializeFunc[])() = {
 		&Boss::Phase2FangAttackInitialize,
 		&Boss::DownInitialize,
 		&Boss::SuperDownInitialize,
-		&Boss::SuperDownInitialize,
+		&Boss::LastDownInitialize,
 		&Boss::SpecialAttackInitialize,
 		&Boss::ThreeWayWaveInitialize,
 		&Boss::AutoHalberdInitialize,
@@ -49,7 +49,7 @@ void (Boss::* Boss::pUpdateFunc[])() = {
 		&Boss::Phase2FangAttackUpdate,
 		&Boss::DownUpdate,
 		&Boss::SuperDownUpdate,
-		&Boss::SuperDownUpdate,
+		&Boss::LastDownUpdate,
 		&Boss::SpecialAttackUpdate,
 		&Boss::ThreeWayWaveUpdate,
 		&Boss::AutoHalberdUpdate,
@@ -754,7 +754,9 @@ void Boss::OnCollision(Collider* other) {
 	float preHP = currentHP_;
 	float tempMag = 1.0f;
 	std::string sndName = "snd_boss_damage";
-
+	Transform damageTransform = transform_;
+	damageTransform.translate += Random::GetInstance()->RandomVector3(-Vector3( kBasicColliderSize.x /2.0f,0.5f,kBasicColliderSize.z / 2.0f ), Vector3(kBasicColliderSize.x / 2.0f, 0.5f, kBasicColliderSize.z / 2.0f));
+	damageTransform.translate.y += 2.5f;
 	if (isPlayAttack_) {
 		if (currentAttack_ == Attacks::kAutoHalberd || currentAttack_ == Attacks::kInfinitySlasher) {
 			tempMag = 0.0f;
@@ -776,9 +778,15 @@ void Boss::OnCollision(Collider* other) {
 			currentHP_ -= other->GetDamage() * downDamageMangification_ * tempMag;
 
 			DeltaTime::GetInstance()->SetHitStop(0.05f);
-
 			damageCountFirst_++;
 			SoundManager::GetInstance()->SoundPlay(sndName, 1.0f, 1.0f, kSoundEffect);
+			InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.25f);
+
+			if (tempMag == 0.0f) {
+				ParticleManager::GetInstance()->SpawnNumbers(0.0f, damageTransform, { 0.4f,0.4f,0.4f });
+			} else {
+				ParticleManager::GetInstance()->SpawnNumbers(other->GetDamage() * downDamageMangification_, damageTransform, { 0.5f,0.5f,1.0f });
+			}
 		}
 		break;
 	case 2:
@@ -792,6 +800,13 @@ void Boss::OnCollision(Collider* other) {
 
 				damageCountSecond_++;
 				SoundManager::GetInstance()->SoundPlay(sndName, 1.0f, 1.0f, kSoundEffect);
+				InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.25f);
+
+				if (tempMag == 0.0f) {
+					ParticleManager::GetInstance()->SpawnNumbers(0.0f, damageTransform, { 0.4f,0.4f,0.4f });
+				} else {
+					ParticleManager::GetInstance()->SpawnNumbers(other->GetDamage() * downDamageMangification_, damageTransform, { 0.5f,0.5f,1.0f });
+				}
 			}
 		}
 		break;
@@ -804,6 +819,13 @@ void Boss::OnCollision(Collider* other) {
 				damageCoolTimer_ = other->GetDamageCoolTime();
 				damageCountThird_++;
 				SoundManager::GetInstance()->SoundPlay(sndName, 1.0f, 1.0f, kSoundEffect);
+				InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.25f);
+
+				if (tempMag == 0.0f) {
+					ParticleManager::GetInstance()->SpawnNumbers(0.0f, damageTransform, { 0.4f,0.4f,0.4f });
+				} else {
+					ParticleManager::GetInstance()->SpawnNumbers(other->GetDamage() * downDamageMangification_, damageTransform, { 0.5f,0.5f,1.0f });
+				}
 
 				if (damageCountFirst_ >= 1) {
 					if (damageCountSecond_ >= 2) {
@@ -840,6 +862,13 @@ void Boss::OnCollision(Collider* other) {
 
 			damageCoolTimer_ = other->GetDamageCoolTime();
 			SoundManager::GetInstance()->SoundPlay(sndName, 1.0f, 1.0f, kSoundEffect);
+			InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.25f);
+
+			if (tempMag == 0.0f) {
+				ParticleManager::GetInstance()->SpawnNumbers(0.0f, damageTransform, { 0.4f,0.4f,0.4f });
+			} else {
+				ParticleManager::GetInstance()->SpawnNumbers(other->GetDamage() * downDamageMangification_, damageTransform, { 0.5f,0.5f,1.0f });
+			}
 		}
 		break;
 	}
@@ -862,6 +891,7 @@ void Boss::OnCollision(Collider* other) {
 			gGameProgress = GameProgress::kPhase2Clear;
 			SoundManager::GetInstance()->SoundPause("mus_phase1_intro");
 			SoundManager::GetInstance()->SoundPause("mus_phase1");
+			InputManager::GetInstance()->SetVibration(0.5f, 0.5f, 0.5f);
 		}
 	}
 
@@ -874,6 +904,7 @@ void Boss::OnCollision(Collider* other) {
 			phase_ = Phase::kPhase3;
 			SoundManager::GetInstance()->SoundPause("mus_phase2_intro");
 			SoundManager::GetInstance()->SoundPause("mus_phase2");
+			InputManager::GetInstance()->SetVibration(0.5f, 0.5f, 0.5f);
 			AttackInitialize();
 
 		}
@@ -885,6 +916,7 @@ void Boss::OnCollision(Collider* other) {
 			DeltaTime::GetInstance()->SetHitStop(1.0f);
 			DeltaTime::GetInstance()->SetGameTimeSpeed(0.2f);
 			phase_ = Phase::kFinished;
+			InputManager::GetInstance()->SetVibration(0.5f, 0.5f, 0.5f);
 			isChangePhase_ = true;
 		}
 	}
@@ -1113,6 +1145,7 @@ void Boss::SuperDownInitialize() {
 	hpGauge->SetColor({ 1.0f,1.0f,0.1f });
 	hpGauge->SetBackColor({ 1.0f,0.1f,0.1f });
 	SoundManager::GetInstance()->SoundPlay("snd_parry", 1.0f, 1.0f, kSoundEffect);
+	InputManager::GetInstance()->SetVibration(0.3f, 0.3f, 0.5f);
 	kMaxAttackTimer = kDonwStartTimer;
 	donwAnimHalberdVelocityY_ = 2.0f;
 	downAnimHalberdRotate_ = halberdTransform_.rotate;
@@ -1128,8 +1161,11 @@ void Boss::SuperDownInitialize() {
 	halberdRight_->SetPosition(kBasicHalberdRightPos);
 	halberdRight_->SetRotate({ 0.0f,0.0f,0.0f });
 	halberdRight_->SetParent(&transform_);
-
+	Transform transformTemp;
+	transformTemp = transform_;
+	transformTemp.translate.y += 2.5f;
 	currentHP_ -= maxHP_ / 20.0f;
+	ParticleManager::GetInstance()->SpawnNumbers(maxHP_ / 20.0f , transformTemp, { 0.5f,0.5f,1.0f });
 	if (currentHP_ < 1.0f) {
 		currentHP_ = 1.0f;
 		DeltaTime::GetInstance()->SetHitStop(0.5f);
@@ -2423,6 +2459,7 @@ void Boss::DeathAnimationUpdate() {
 		if (animTimer_ >= animTimerMax_) {
 			NextAnimPhase(kAnimDeathExplodeTimerMax);
 			SoundManager::GetInstance()->SoundPlay("snd_explode", 1.0f, 1.0f, kSoundEffect);
+			InputManager::GetInstance()->SetVibration(1.0f, 1.0f, kAnimDeathExplodeTimerMax + kAnimDeathExplodeBlankTimerMax);
 			for (uint32_t i = 0; i < 30; i++) {
 				ParticleManager::GetInstance()->SpawnParticles("death_cross", transform_.GetWorldPosition());
 			}

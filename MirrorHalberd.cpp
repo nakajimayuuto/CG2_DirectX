@@ -229,6 +229,10 @@ void MirrorHalberd::AttackUpdate() {
 			currentPhase_ = 0;
 			isDeath_ = false;
 
+			for (uint32_t i = 0; i < 30; i++) {
+				ParticleManager::GetInstance()->SpawnParticles("death_cross", transform_.GetWorldPosition());
+			}
+			SoundManager::GetInstance()->SoundPlay("snd_shine", 1.0f, 1.0f, kSoundEffect);
 			AttackInitialize();
 		}
 
@@ -493,6 +497,7 @@ void MirrorHalberd::RespawnInitialize() {
 }
 
 void MirrorHalberd::RespawnUpdate() {
+	Transform damageTransform;
 	switch (currentAttackPhase) {
 	case 0: // ハルバードを前に構える.
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
@@ -504,12 +509,21 @@ void MirrorHalberd::RespawnUpdate() {
 			ParticleManager::GetInstance()->SpawnParticles("charge", transform_.GetWorldPosition());
 		}
 		currentHP_ += gameTime_ * kRespawnHPIncreese;
+		damageTransform = transform_;
+		damageTransform.translate += Random::GetInstance()->RandomVector3(-Vector3(colliderSize_.x / 2.0f, 0.5f, colliderSize_.z / 2.0f), Vector3(colliderSize_.x / 2.0f, 0.5f, colliderSize_.z / 2.0f));
+		damageTransform.translate.y += 2.5f;
+		ParticleManager::GetInstance()->SpawnNumbers(1.0f, damageTransform, { 0.5f,1.0f,0.5f });
+
 		if (currentHP_ >= maxHP_ / 2.0f) {
 			currentAttackPhase++;
 		}
 		break;
 	case 2:
+		damageTransform = transform_;
+		damageTransform.translate += Random::GetInstance()->RandomVector3(-Vector3(colliderSize_.x / 2.0f, 0.5f, colliderSize_.z / 2.0f), Vector3(colliderSize_.x / 2.0f, 0.5f, colliderSize_.z / 2.0f));
+		damageTransform.translate.y += 2.5f;
 		currentHP_ += gameTime_ * kRespawnHPIncreese;
+		ParticleManager::GetInstance()->SpawnNumbers(1.0f, damageTransform, { 0.5f,1.0f,0.5f });
 		break;
 	}
 }
@@ -533,6 +547,9 @@ void MirrorHalberd::OnCollision(Collider* other) {
 	if (other->GetCollisionAttribute() == CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayer)) {
 		return;
 	}
+	Transform damageTransform = transform_;
+	damageTransform.translate += Random::GetInstance()->RandomVector3(-Vector3(colliderSize_.x / 2.0f, 0.5f, colliderSize_.z / 2.0f), Vector3(colliderSize_.x / 2.0f, 0.5f, colliderSize_.z / 2.0f));
+	damageTransform.translate.y += 2.5f;
 
 	//if ((other->GetCollisionAttribute() & CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack)) == 0x0) {
 	switch (other->GetDamageType()) {
@@ -541,6 +558,8 @@ void MirrorHalberd::OnCollision(Collider* other) {
 			currentHP_ -= other->GetDamage();
 
 			DeltaTime::GetInstance()->SetHitStop(0.05f);
+			ParticleManager::GetInstance()->SpawnNumbers(other->GetDamage(), damageTransform, { 0.5f,0.5f,1.0f });
+			InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.25);
 			SoundManager::GetInstance()->SoundPlay("snd_boss_damage", 1.0f, 1.0f, kSoundEffect);
 
 			damageCountFirst_++;
@@ -552,6 +571,8 @@ void MirrorHalberd::OnCollision(Collider* other) {
 				currentHP_ -= other->GetDamage();
 
 				DeltaTime::GetInstance()->SetHitStop(0.05f);
+				ParticleManager::GetInstance()->SpawnNumbers(other->GetDamage(), damageTransform, { 0.5f,0.5f,1.0f });
+				InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.25);
 
 				damageCoolTimer_ = other->GetDamageCoolTime();
 				SoundManager::GetInstance()->SoundPlay("snd_boss_damage", 1.0f, 1.0f, kSoundEffect);
@@ -565,6 +586,8 @@ void MirrorHalberd::OnCollision(Collider* other) {
 			if (damageCoolTimer_ <= 0.0f) {
 				currentHP_ -= other->GetDamage();
 				DeltaTime::GetInstance()->SetHitStop(0.05f);
+				ParticleManager::GetInstance()->SpawnNumbers(other->GetDamage(), damageTransform, { 0.5f,0.5f,1.0f });
+				InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.25);
 
 				damageCoolTimer_ = other->GetDamageCoolTime();
 				SoundManager::GetInstance()->SoundPlay("snd_boss_damage", 1.0f, 1.0f, kSoundEffect);
@@ -577,6 +600,8 @@ void MirrorHalberd::OnCollision(Collider* other) {
 			currentHP_ -= other->GetDamage();
 
 			DeltaTime::GetInstance()->SetHitStop(0.05f);
+			ParticleManager::GetInstance()->SpawnNumbers(other->GetDamage(), damageTransform, { 0.5f,0.5f,1.0f });
+			InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.25);
 
 			SoundManager::GetInstance()->SoundPlay("snd_boss_damage", 1.0f, 1.0f, kSoundEffect);
 			damageCoolTimer_ = other->GetDamageCoolTime();
@@ -586,6 +611,9 @@ void MirrorHalberd::OnCollision(Collider* other) {
 
 	if (currentHP_ <= 0.0f) {
 
+
+		ParticleManager::GetInstance()->SpawnNumbers(other->GetDamage(), damageTransform, { 0.5f,0.5f,1.0f });
+		InputManager::GetInstance()->SetVibration(0.5f, 0.5f, 0.5f);
 		SoundManager::GetInstance()->SoundPlay("snd_explode_mini", 1.0f, 1.0f, kSoundEffect);
 		DeltaTime::GetInstance()->SetHitStop(0.5f);
 		RespawnInitialize();

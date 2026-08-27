@@ -13,6 +13,7 @@
 
 struct ParticleData {
 	Transform transform;
+	Vector3 posBlank;
 	Transform targetTransform;
 	Vector3 velocity;
 	Vector4 color;
@@ -43,6 +44,7 @@ public:
 		kExplode,
 		kExplodeMonochrome,
 		kCharge,
+		kNumber,
 	};
 
 	~Particles();
@@ -51,6 +53,7 @@ public:
 	void Initialize(const TextureInfo& info);
 
 	void MakeNewParticle(const Vector3& position);
+	void MakeNewParticle(const Vector3& position, const Vector3& blank);
 
 	void MakeNewParticle(const Transform& transform);
 
@@ -68,6 +71,10 @@ public:
 	void CheckCollision(const Field& field);
 
 	void ClearParticle() { particleData_.clear(); };
+
+	void SetUvTransform(Transform transform) { uvTransform_ = transform; };
+
+	void SetColor(const Vector3& color) { colorNoAlpha_ = color; };
 private:
 	void MoveNormal();
 
@@ -76,6 +83,8 @@ private:
 	void MoveExplode();
 
 	void MoveCharge();
+
+	void MoveNumber();
 private:
 	Vector3 size_;
 
@@ -120,6 +129,8 @@ private:
 	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU;
 
 	BillboardType billboardType_;
+
+	Vector3 colorNoAlpha_;
 	//std::list<ParticleData> particleData_;
 };
 

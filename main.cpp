@@ -25,8 +25,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Environment::GetInstance()->SetWindowMode(WindowMode::kFullscreen);
 #endif // _DEBUG
 
-
-
+	Vector3 color_;
+	color_ = {1.0f,1.0f,1.0f};
+	float num_ = 1024.0f;
 	// ウィンドウのxボタンが押されるまでループ.
 	while (system->ProcessMessage()) {
 		if (system->BeginFrame()) {
@@ -40,6 +41,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #ifdef _DEBUG
 			ImGui::Begin("aa");
 			ImGui::DragFloat("intensity", &LightManager::GetInstance()->GetDirectionalLightData()->intensity,0.01f,0.0f,200.0f);
+			ImGui::DragFloat("num", &num_,0.01f,0.0f,10000.0f);
+			ImGui::ColorEdit3("parColor", reinterpret_cast<float*>(&color_));
+			
+			if (ImGui::Button("numcreate")) {
+				ParticleManager::GetInstance()->SpawnNumbers(num_, Transform::GetInitialValue(), color_);
+			}
 
 			ImGui::End();
 #endif // _DEBUG
@@ -157,6 +164,21 @@ void LoadDatas() {
 
 	TextureManager::GetInstance()->RegisterTexture("end_to_hamburger", "Resource/UI/end_to_hamburger.png");
 	TextureManager::GetInstance()->RegisterTexture("title", "Resource/UI/title.png");
+
+	TextureManager::GetInstance()->RegisterTexture("numbers", "Resource/UI/numbers.png");
+	ParticleManager::GetInstance()->CreateNewParticles("normal", TextureManager::GetInstance()->GetTextureInfo("effect_plane"), BillboardType::kAllAxis, Particles::Move::kNormal);
+	ParticleManager::GetInstance()->CreateNewParticles("fire", TextureManager::GetInstance()->GetTextureInfo("effect_fire"), BillboardType::kAllAxis, Particles::Move::kFire);
+
+	for (uint32_t i = 0; i < 10; i++) {
+		ParticleManager::GetInstance()->CreateNewParticles(std::format("number_{}", i), TextureManager::GetInstance()->GetTextureInfo("numbers"), BillboardType::kAllAxis, Particles::Move::kNumber);
+		ParticleManager::GetInstance()->SetParticleSize(std::format("number_{}", i), { 0.2f,0.2f,0.2f });
+		ParticleManager::GetInstance()->SetParticleUVTransform(std::format("number_{}", i), Transform::GetInitialValue({ 0.1f ,1.0f,0.0f}, {0.0f,0.0f,0.0f}, {0.1f * static_cast<float>(i),0.0f,0.0f}));
+	}
+
+
+
+
+
 
 	SoundManager::GetInstance()->RegisterSound("mus_phase1_intro", "Resource/Sound/mus_phase1_intro.wav");
 	SoundManager::GetInstance()->RegisterSound("mus_phase1", "Resource/Sound/mus_phase1.wav");
