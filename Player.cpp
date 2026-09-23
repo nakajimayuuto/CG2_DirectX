@@ -276,11 +276,11 @@ void Player::Update() {
 	transform_.rotate.y = std::fmod(transform_.rotate.y, Radian(360.0f));
 
 	//if (gGamePhase == GamePhase::kTutorial || gGamePhase == GamePhase::kBossLastJarona || gGamePhase == GamePhase::kGameClearStage) {
-	if (gGamePhase == GamePhase::kTutorial) {
-		TutorialWallClamp();
-	} else {
-		CircleWallClamp();
-	}
+
+		//TutorialWallClamp();
+
+	CircleWallClamp();
+
 
 	GameCamera::GetInstance()->SetTargetIsMove(isMoving_);
 	GameCamera::GetInstance()->SetTargetIsDash(isDash_);
@@ -453,136 +453,14 @@ void Player::BehaviorAttackFinished() {
 }
 
 void Player::CheckTutorialFlag() {
-	TutorialManager* tutorialManager = TutorialManager::GetInstance();
-	if (gGamePhase == kTutorial) {
-		switch (tutorialManager->GetCurrentFlagName()) {
-		case TutorialManager::TutorialFlagName::kFirstJump:
-			tutorialUsableMove_ = false;
-			tutorialUsableJump_ = true;
-			tutorialUsableDash_ = false;
-			tutorialUsableAttack_ = false;
-			tutorialClampMaxPosZ_ = -380.0f;
-			break;
-		case TutorialManager::TutorialFlagName::kMoveTest:
-			tutorialUsableMove_ = true;
-			tutorialUsableJump_ = true;
-			tutorialUsableDash_ = false;
-			tutorialUsableAttack_ = false;
-			break;
-		case TutorialManager::TutorialFlagName::kAttackTest:
-			tutorialUsableMove_ = true;
-			tutorialUsableJump_ = true;
-			tutorialUsableDash_ = false;
-			tutorialUsableAttack_ = true;
-			break;
-		case TutorialManager::TutorialFlagName::kDashToJump:
-			tutorialUsableMove_ = false;
-			tutorialUsableJump_ = true;
-			tutorialUsableDash_ = false;
-			tutorialUsableAttack_ = false;
-			break;
-		case TutorialManager::TutorialFlagName::kDashToAttack:
-			tutorialUsableMove_ = false;
-			tutorialUsableJump_ = false;
-			tutorialUsableDash_ = true;
-			tutorialUsableAttack_ = false;
-			break;
-		case TutorialManager::TutorialFlagName::kDashJumpTest:
-			if (transform_.translate.z >= -275.0f) {
-				tutorialUsableMove_ = false;
-				tutorialUsableJump_ = true;
-				tutorialUsableDash_ = false;
-				tutorialUsableAttack_ = false;
+	tutorialUsableMove_ = true;
+	tutorialUsableJump_ = true;
+	tutorialUsableDash_ = true;
+	tutorialUsableAttack_ = true;
 
-				if (behavior_ == Behavior::kDashJumpAttack || behavior_ == Behavior::kFall) {
-					DeltaTime::GetInstance()->SetGameTimeSpeed(1.0f);
-				} else {
-					DeltaTime::GetInstance()->SetGameTimeSpeed(0.0f);
-				}
-			} else {
-				tutorialUsableMove_ = false;
-				tutorialUsableJump_ = false;
-				tutorialUsableDash_ = false;
-				tutorialUsableAttack_ = false;
-			}
-			break;
-		case TutorialManager::TutorialFlagName::kFinaleTest:
-			tutorialClampMaxPosZ_ = -258.0f;
-			tutorialUsableMove_ = true;
-			tutorialUsableJump_ = true;
-			tutorialUsableDash_ = true;
-			tutorialUsableAttack_ = true;
-			break;
-		case TutorialManager::TutorialFlagName::kFinaleAnim:
-			tutorialUsableMove_ = false;
-			tutorialUsableJump_ = false;
-			tutorialUsableDash_ = false;
-			tutorialUsableAttack_ = false;
-			break;
-		default:
-			break;
-		}
-	} else {
-		if (gGamePhase == GamePhase::kGameStartAnim || gGamePhase == GamePhase::kBossPhaseChangeAnim || gGamePhase == GamePhase::kBossLastJaronaAnim) {
-			tutorialUsableMove_ = false;
-			tutorialUsableJump_ = false;
-			tutorialUsableDash_ = false;
-			tutorialUsableAttack_ = false;
-		} else {
-			tutorialUsableMove_ = true;
-			tutorialUsableJump_ = true;
-			tutorialUsableDash_ = true;
-			tutorialUsableAttack_ = true;
-		}
-	}
 }
 
 void Player::CheckTutorialUpdate() {
-	TutorialManager* tutorialManager = TutorialManager::GetInstance();
-	if (!gGamePhase == kTutorial) {
-		return;
-	}
-
-	switch (tutorialManager->GetCurrentFlagName())
-	{
-	case TutorialManager::TutorialFlagName::kFirstJump:
-		if (isJump_) {
-			tutorialManager->NextTutorial();
-		}
-		break;
-	case TutorialManager::TutorialFlagName::kMoveTest:
-		if (isMoving_) {
-			tutorialTimer_ += DeltaTime::GetInstance()->GetGameTime();
-
-			if (tutorialTimer_ > 3.0f) {
-				tutorialManager->NextTutorial();
-			}
-		}
-		break;
-	case TutorialManager::TutorialFlagName::kAttackTest:
-		break;
-	case TutorialManager::TutorialFlagName::kDashToJump:
-		if (transform_.translate.y >= 2.3f) {
-			DeltaTime::GetInstance()->SetGameTimeSpeed(0.0f);
-			tutorialManager->NextTutorial();
-		}
-		break;
-	case TutorialManager::TutorialFlagName::kDashToAttack:
-		if (isDash_) {
-			DeltaTime::GetInstance()->SetGameTimeSpeed(1.0f);
-			tutorialManager->NextTutorial();
-		}
-		break;
-	case TutorialManager::TutorialFlagName::kDashJumpTest:
-		if (behavior_ == Behavior::kRoot) {
-			tutorialManager->NextTutorial();
-		}
-		break;
-	case TutorialManager::TutorialFlagName::kFinaleTest:
-		break;
-	default:
-		break;
-	}
 }
 
 void Player::SetNextAttackPhase(float timeMax) {
@@ -869,9 +747,6 @@ void Player::BehaviorJumpUpdate() {
 }
 
 void Player::BehaviorDashAttackInitialize() {
-	if (TutorialManager::GetInstance()->GetCurrentFlagName() == TutorialManager::TutorialFlagName::kDashToAttack) {
-		transform_.rotate.y = 0.0f;
-	}
 
 	attackTimer_ = 0.0f;
 	attackTimeMax_ = kDashAttackStart;
@@ -932,40 +807,37 @@ void Player::BehaviorDashAttackUpdate() {
 
 void Player::BehaviorDashJumpAttackInitialize() {
 	InputManager* input = InputManager::GetInstance();
-	Vector3 direction = {0.0f,0.0f,0.0f};
+	Vector3 direction = { 0.0f,0.0f,0.0f };
 	SoundManager::GetInstance()->SoundPlay("snd_drill", 1.0f, 1.0f, kSoundEffect);
-	if (TutorialManager::GetInstance()->GetCurrentFlagName() != TutorialManager::TutorialFlagName::kDashJumpTest) {
-		if (input->IsGamePadConnect()) {
-			direction = { input->GetLeftStickDirection().x,0.0f,input->GetLeftStickDirection().y };
-		} else {
-			if (input->PressKey(DIK_W)) {
-				direction.z += 1.0f;
-			}
-			if (input->PressKey(DIK_S)) {
-				direction.z -= 1.0f;
-			}
-			if (input->PressKey(DIK_D)) {
-				direction.x += 1.0f;
-			}
-			if (input->PressKey(DIK_A)) {
-				direction.x -= 1.0f;
-			}
+	if (input->IsGamePadConnect()) {
+		direction = { input->GetLeftStickDirection().x,0.0f,input->GetLeftStickDirection().y };
+	} else {
+		if (input->PressKey(DIK_W)) {
+			direction.z += 1.0f;
 		}
-		direction = direction.Normalize();
-		float direY = std::atan2(direction.x, direction.z);
-		direY = Degree(direY);
-		//if (GetDownPress()) {
-		//velocity_ *= -1.0f;
-		transform_.rotate.y += Radian(direY);
-		Vector3 move = { 0.0f,0.0f,kDashSpeed };
-
-		Matrix4x4 rotateMatrix = Matrix4x4::MakeRotateMatrix(transform_.rotate);
-
-		move = rotateMatrix.TransformNomal(move);
-
-		velocity_ = move;
-		//}
+		if (input->PressKey(DIK_S)) {
+			direction.z -= 1.0f;
+		}
+		if (input->PressKey(DIK_D)) {
+			direction.x += 1.0f;
+		}
+		if (input->PressKey(DIK_A)) {
+			direction.x -= 1.0f;
+		}
 	}
+	direction = direction.Normalize();
+	float direY = std::atan2(direction.x, direction.z);
+	direY = Degree(direY);
+	//if (GetDownPress()) {
+	//velocity_ *= -1.0f;
+	transform_.rotate.y += Radian(direY);
+	Vector3 move = { 0.0f,0.0f,kDashSpeed };
+
+	Matrix4x4 rotateMatrix = Matrix4x4::MakeRotateMatrix(transform_.rotate);
+
+	move = rotateMatrix.TransformNomal(move);
+
+	velocity_ = move;
 
 
 	transformModel.rotate.x = Radian(90.0f);
@@ -1072,11 +944,8 @@ void Player::Draw() {
 	}
 
 	//particles_->Draw();
-	if (gGamePhase != GamePhase::kGameStartAnim &&
-		gGamePhase != GamePhase::kBossPhaseChangeAnim &&
-		gGamePhase != GamePhase::kBossLastJaronaAnim) {
-		hpGauge_->Draw();
-	}
+	hpGauge_->Draw();
+
 
 	DrawCollider();
 }
@@ -1122,7 +991,7 @@ void Player::OnCollision([[maybe_unused]] Collider* other) {
 			damageCoolTimer_ = other->GetDamageCoolTime();
 		}
 		SoundManager::GetInstance()->SoundPlay("snd_player_damage", 1.0f, 1.0f, kSoundEffect);
-		ParticleManager::GetInstance()->SpawnNumbers(other->GetDamage(), damageTransform, {1.0f,0.5f,0.5f });
+		ParticleManager::GetInstance()->SpawnNumbers(other->GetDamage(), damageTransform, { 1.0f,0.5f,0.5f });
 		InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.5f);
 
 		if (currentHP_ < 0.0f) {

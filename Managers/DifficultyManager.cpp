@@ -18,7 +18,7 @@ void DifficultyManager::Update() {
 	currentDifficulty_ = static_cast<Difficulty>(dif);
 #endif // _DEBUG
 
-	switch (currentDifficulty_){
+	switch (currentDifficulty_) {
 	case kDifficultyEasy:
 		speedMagnification_ = 0.8f;
 		damageMagnification_ = 0.75f;
@@ -37,12 +37,16 @@ void DifficultyManager::Update() {
 		break;
 	}
 
-	dopamineSpeed_ = Easing(kPlayerHPMinDopamineMagnification,1.0f,*playerHP,playerHPMax,EaseType::kConstant) * Easing(kBossHPMinDopamineMagnification, 1.0f, *bossHP, bossHPMax, EaseType::kConstant);
+	if (playerHP != nullptr && bossHP != nullptr) {
+		dopamineSpeed_ = Easing(kPlayerHPMinDopamineMagnification, 1.0f, *playerHP, playerHPMax, EaseType::kConstant) * Easing(kBossHPMinDopamineMagnification, 1.0f, *bossHP, bossHPMax, EaseType::kConstant);
+	} else {
+		dopamineSpeed_ = 1.0f;
+	}
 
 #ifdef _DEBUG
 	ImGui::Text(magic_enum::enum_name(currentDifficulty_).data());
-	ImGui::Text("DopamineSpeed:%f\n",dopamineSpeed_);
-	ImGui::Text("CurrentBossSpeedMag:%f\nCurrentBossDamageMag:%f\n", speedMagnification_ * dopamineSpeed_,damageMagnification_);
+	ImGui::Text("DopamineSpeed:%f\n", dopamineSpeed_);
+	ImGui::Text("CurrentBossSpeedMag:%f\nCurrentBossDamageMag:%f\n", speedMagnification_ * dopamineSpeed_, damageMagnification_);
 	ImGui::End();
 #endif // _DEBUG
 }

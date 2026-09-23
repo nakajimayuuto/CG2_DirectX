@@ -23,14 +23,8 @@ void GameCamera::Initialize() {
 }
 
 void GameCamera::Update() {
-	if (gGamePhase == GamePhase::kGameStartAnim ||
-		gGamePhase == GamePhase::kBossPhaseChangeAnim ||
-		gGamePhase == GamePhase::kBossLastJaronaAnim
-		) {
-
-	} else {
 		FollowedUpdate();
-	}
+	
 
 	Camera::GetInstance()->SetTransform(transform_);
 }
@@ -110,10 +104,8 @@ void GameCamera::FollowedUpdate() {
 		//destinationAngleY_ = std::atan2(targetEnemy_->translate.x - transform_.translate.x, targetEnemy_->translate.z - transform_.translate.z);
 	}
 
-	if (gGamePhase != GamePhase::kTutorial) {
+	
 		destinationPlayerAngleY_ = LerpShortAngle(destinationPlayerAngleY_, destinationTargetAngleY_, targetEaseTimer_);
-	}
-
 	destinationAngleY_ = LerpShortAngle(destinationPlayerAngleY_, destinationDashAngleY_, dashEaseTimer_);
 
 	destinationPlayerAngleY_ = destinationAngleY_;
@@ -122,12 +114,8 @@ void GameCamera::FollowedUpdate() {
 
 	transform_.translate = interOffsetTarget_;
 
-	//if (gGamePhase == GamePhase::kTutorial || gGamePhase == GamePhase::kBossLastJarona || gGamePhase == GamePhase::kGameClearStage) {
-	if (gGamePhase == GamePhase::kTutorial) {
-		TutorialWallClamp();
-	} else {
+		//TutorialWallClamp();
 		FollowedWallClamp();
-	}
 
 	transform_.rotate.y = LerpShortAngle(transform_.rotate.y, destinationAngleY_, kCompletionRate);
 
@@ -250,7 +238,11 @@ void GameCamera::FollowedDash() {
 }
 
 void GameCamera::FollowedTarget() {
-	destinationTargetAngleY_ = std::atan2(targetEnemy_->translate.x - transform_.translate.x, targetEnemy_->translate.z - transform_.translate.z);
+	if (targetEnemy_) {
+		destinationTargetAngleY_ = std::atan2(targetEnemy_->translate.x - transform_.translate.x, targetEnemy_->translate.z - transform_.translate.z);
+	} else {
+		destinationTargetAngleY_ = destinationPlayerAngleY_;
+	}
 }
 
 Vector3 GameCamera::GetOffset() const {

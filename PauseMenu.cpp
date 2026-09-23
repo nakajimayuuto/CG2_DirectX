@@ -8,14 +8,15 @@ void PauseMenu::Initialize() {
 	finishTimer_ = 0.0f;
 	isActive_ = false;
 	isFinish_;
-	switch (gGameProgress) {
-	case kPhase1Clear:
-		maxSelect_ = 0;
-		break;
-	case kPhase2Clear:
-		maxSelect_ = 1;
-		break;
-	}
+	maxSelect_ = 0;
+	//switch (gGameProgress) {
+	//case kPhase1Clear:
+	//	maxSelect_ = 0;
+	//	break;
+	//case kPhase2Clear:
+	//	maxSelect_ = 1;
+	//	break;
+	//}
 }
 
 void PauseMenu::Update() {
@@ -50,45 +51,37 @@ void PauseMenu::Update() {
 				}
 				break;
 			case 1:
-				if (maxSelect_ == 2) {
-					gGamePhase = GamePhase::kBossLastJaronaAnim;
-				} else if (maxSelect_ == 1) {
-					gGamePhase = GamePhase::kBossPhaseChangeAnim;
-				} else {
-					gGamePhase = GamePhase::kGameStartAnim;
-				}
 				DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
 				SceneManager::GetInstance()->ReloadScene();
 				break;
 			case 2:
-				if (maxSelect_ == 2) {
-					gGamePhase = GamePhase::kBossPhaseChangeAnim;
-				} else if (maxSelect_ == 1) {
-					gGamePhase = GamePhase::kGameStartAnim;
-				} else {
-					gGamePhase = GamePhase::kTutorial;
-					DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
-					SceneManager::GetInstance()->ChengeScene(SceneName::kTitleScene);
-					break;
-				}
+				//if (maxSelect_ == 2) {
+				//	gGamePhase = GamePhase::kBossPhaseChangeAnim;
+				//} else if (maxSelect_ == 1) {
+				//	gGamePhase = GamePhase::kGameStartAnim;
+				//} else {
+				//	gGamePhase = GamePhase::kTutorial;
+				DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
+				SceneManager::GetInstance()->ChengeScene(SceneName::kTitleScene);
+				break;
+				//}
 				DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
 				SceneManager::GetInstance()->ReloadScene();
 				break;
 			case 3:
-				if (maxSelect_ == 2) {
-					gGamePhase = GamePhase::kGameStartAnim;
-				} else {
-					gGamePhase = GamePhase::kTutorial;
-					DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
-					SceneManager::GetInstance()->ChengeScene(SceneName::kTitleScene);
-					break;
-				}
+				//if (maxSelect_ == 2) {
+				//	gGamePhase = GamePhase::kGameStartAnim;
+				//} else {
+				//	gGamePhase = GamePhase::kTutorial;
+				DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
+				SceneManager::GetInstance()->ChengeScene(SceneName::kTitleScene);
+				break;
+				//}
 
 				DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
 				SceneManager::GetInstance()->ReloadScene();
 				break;
 			case 4:
-				gGamePhase = GamePhase::kTutorial;
 				DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
 				SceneManager::GetInstance()->ChengeScene(SceneName::kTitleScene);
 				break;
@@ -211,22 +204,6 @@ void PauseMenu::ShowMenu() {
 }
 
 void PauseMenu::CheckCurrentPhase() {
-	switch (gGamePhase) {
-	case kTutorial:
-		break;
-	case kGameStartAnim:
-	case kBossPhase1:
-		break;
-	case kBossPhaseChangeAnim:
-	case kBossPhase2:
-		break;
-	case kBossLastJaronaAnim:
-	case kBossLastJarona:
-	case kGameClearStage:
-		break;
-	default:
-		break;
-	}
 }
 bool PauseMenu::TriggerUp() {
 	if (InputManager::GetInstance()->IsGamePadConnect()) {
@@ -280,14 +257,7 @@ void GameOverMenu::Initialize() {
 	isActive_ = false;
 	canGameUpdate_ = false;
 	isFinish_;
-	switch (gGameProgress){
-	case kPhase1Clear:
-		maxSelect_ = 0;
-		break;
-	case kPhase2Clear:
-		maxSelect_ = 1;
-		break;
-	}
+	maxSelect_ = 0;
 }
 
 void GameOverMenu::Update() {
@@ -330,7 +300,7 @@ void GameOverMenu::Update() {
 	}
 
 	menuPos_ = Easing({ 0.0f,1000.0f,0.0f }, { 0.0f,100.0f,0.0f }, menuTimer_, menuTimerMax_, EaseType::kEaseOut);
-	gameOverPos_ = Easing( { 0.0f,0.0f,0.0f }, { 0.0f,-200.0f,0.0f }, menuTimer_, menuTimerMax_, EaseType::kEaseOut);
+	gameOverPos_ = Easing({ 0.0f,0.0f,0.0f }, { 0.0f,-200.0f,0.0f }, menuTimer_, menuTimerMax_, EaseType::kEaseOut);
 
 	if (isFinish_) {
 		if (fade_->isFinished()) {
@@ -343,45 +313,27 @@ void GameOverMenu::Update() {
 				//	}
 				//	break;
 			case 0:
-				if (maxSelect_ == 2) {
-					gGamePhase = GamePhase::kBossLastJaronaAnim;
-				} else if (maxSelect_ == 1) {
-					gGamePhase = GamePhase::kBossPhaseChangeAnim;
-				} else {
-					gGamePhase = GamePhase::kGameStartAnim;
-				}
 				DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
 				SceneManager::GetInstance()->ReloadScene();
 				break;
 			case 1:
-				if (maxSelect_ == 2) {
-					gGamePhase = GamePhase::kBossPhaseChangeAnim;
-				} else if (maxSelect_ == 1) {
-					gGamePhase = GamePhase::kGameStartAnim;
-				} else {
-					gGamePhase = GamePhase::kTutorial;
-					DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
-					SceneManager::GetInstance()->ChengeScene(SceneName::kTitleScene);
-					break;
-				}
+				DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
+				SceneManager::GetInstance()->ChengeScene(SceneName::kTitleScene);
+				break;
+
 				DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
 				SceneManager::GetInstance()->ReloadScene();
 				break;
 			case 2:
-				if (maxSelect_ == 2) {
-					gGamePhase = GamePhase::kGameStartAnim;
-				} else {
-					gGamePhase = GamePhase::kTutorial;
-					DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
-					SceneManager::GetInstance()->ChengeScene(SceneName::kTitleScene);
-					break;
-				}
+				DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
+				SceneManager::GetInstance()->ChengeScene(SceneName::kTitleScene);
+				break;
+
 
 				DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
 				SceneManager::GetInstance()->ReloadScene();
 				break;
 			case 3:
-				gGamePhase = GamePhase::kTutorial;
 				DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
 				SceneManager::GetInstance()->ChengeScene(SceneName::kTitleScene);
 				break;
@@ -509,22 +461,7 @@ void GameOverMenu::ShowMenu() {
 }
 
 void GameOverMenu::CheckCurrentPhase() {
-	switch (gGamePhase) {
-	case kTutorial:
-		break;
-	case kGameStartAnim:
-	case kBossPhase1:
-		break;
-	case kBossPhaseChangeAnim:
-	case kBossPhase2:
-		break;
-	case kBossLastJaronaAnim:
-	case kBossLastJarona:
-	case kGameClearStage:
-		break;
-	default:
-		break;
-	}
+
 }
 bool GameOverMenu::TriggerUp() {
 	if (InputManager::GetInstance()->IsGamePadConnect()) {
