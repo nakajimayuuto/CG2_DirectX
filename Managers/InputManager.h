@@ -4,6 +4,7 @@
 #include <dinput.h>
 #include <cstdint>
 #include <xinput.h>
+#include <array>
 #include "../Engine/Math/Vector2.h"
 #include "../Engine/Math/Easing.h"
 
@@ -232,6 +233,16 @@ private:
 	Vector2 preMouseScreenPosition_;
 };
 
+enum class InputAction {
+	UP,
+	DOWN,
+	LEFT,
+	RIGHT,
+	JUMP,
+	ATTACK,
+	COUNT,
+};
+
 class InputManager {
 public:
 	static InputManager* GetInstance();
@@ -287,11 +298,17 @@ public:
 	void SetVibration(float left, float right,float duration);
 
 	void SetContinuationVibration(float left,float right,bool isVibration);
+public:
+	bool PressAction(InputAction action) const;
+	bool TriggerAction(InputAction action) const;
+	bool ReleaseAction(InputAction action) const;
+	bool NoneAction(InputAction action) const;
 private:
 	void VibrationUpdate();
 
 	void OperationModeCheck();
 private:
+	std::array<std::pair<std::pair<std::vector<uint8_t>, std::vector<MouseButtons>>, std::vector<PadButtons>>, static_cast<size_t>(InputAction::COUNT)> inputActions_;
 	bool isDebugCursorMovingAllow_ = false;
 	IDirectInput8* directInput_ = nullptr;
 	InputKeyBoard keyBoard_;

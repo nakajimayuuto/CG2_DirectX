@@ -31,28 +31,49 @@ void SoundManager::DeleteDatas() {
 	std::vector<std::string> deleteHandles;
 	std::vector<uint32_t> deleteNums;
 
-	for (std::pair<std::string, PlaySoundData*> data : playSoundDatas_) {
-		if (IsFinishedSound(data.first)) {
-			if (!data.second->canLoop) {
-				deleteHandles.push_back(data.first);
+	for (auto it = playSoundDatas_.begin(); it != playSoundDatas_.end(); ) {
+		if (IsFinishedSound(it->first)) {
+			if (!it->second->canLoop) {
+				deleteHandles.push_back(it->first);
 			}
 		}
+
+		++it;
+		continue;
 	}
+
+	//for (std::pair<std::string, PlaySoundData*> data : playSoundDatas_) {
+	//	if (IsFinishedSound(data.first)) {
+	//		if (!data.second->canLoop) {
+	//			deleteHandles.push_back(data.first);
+	//		}
+	//	}
+	//}
 
 	for (std::string& deleteHandle : deleteHandles) {
 		SoundStop(deleteHandle);
 	}
 
-
-	for (std::pair<uint32_t, PlaySoundData*> data : soundOneTimeDatas_) {
+	for (auto it = soundOneTimeDatas_.begin(); it != soundOneTimeDatas_.end(); ) {
 		XAUDIO2_VOICE_STATE state;
-
-		data.second->voice->GetState(&state);
-
+		it->second->voice->GetState(&state);
 		if (state.BuffersQueued == 0) {
-			deleteNums.push_back(data.first);
+			deleteNums.push_back(it->first);
 		}
+
+		++it;
+		continue;
 	}
+
+	//for (std::pair<uint32_t, PlaySoundData*> data : soundOneTimeDatas_) {
+	//	XAUDIO2_VOICE_STATE state;
+	//
+	//	data.second->voice->GetState(&state);
+	//
+	//	if (state.BuffersQueued == 0) {
+	//		deleteNums.push_back(data.first);
+	//	}
+	//}
 
 	for (uint32_t& deleteNum : deleteNums) {
 		soundOneTimeDatas_[deleteNum]->voice->Stop();
@@ -243,7 +264,7 @@ PlaySoundData* SoundManager::GetPlaySoundData(const std::string& name) {
 	auto it = playSoundDatas_.find(name);
 
 	assert(it != playSoundDatas_.end());
-	return it->second;
+	return it->second.get();
 }
 
 // 変更予定
@@ -371,7 +392,7 @@ void SoundManager::SoundPlay(const SoundData& soundData, float speed, float volu
 	result = pSourceVoice->Start();
 	result = pSourceVoice->SetVolume(newVolume);
 
-	playSoundDatas_[handle] = new PlaySoundData();
+	playSoundDatas_[handle] = std::make_unique<PlaySoundData>();
 
 	playSoundDatas_[handle]->buffer = buf;
 	playSoundDatas_[handle]->voice = pSourceVoice;
@@ -404,7 +425,7 @@ void SoundManager::SoundPlay(const SoundData& soundData, float speed, float volu
 	result = pSourceVoice->SubmitSourceBuffer(&buf);
 	result = pSourceVoice->Start();
 	result = pSourceVoice->SetVolume(volume);
-	soundOneTimeDatas_[soundNum_] = new PlaySoundData();
+	soundOneTimeDatas_[soundNum_] = std::make_unique<PlaySoundData>();
 	soundOneTimeDatas_[soundNum_]->buffer = buf;
 	soundOneTimeDatas_[soundNum_]->voice = pSourceVoice;
 	soundOneTimeDatas_[soundNum_]->canLoop = false;
@@ -477,7 +498,7 @@ void SoundManager::ResetBGM() {
 		it->second->voice->Stop();
 		it->second->voice->FlushSourceBuffers();
 
-		delete it->second;
+		it->second.release();
 		it = playSoundDatas_.erase(it);
 	}
 

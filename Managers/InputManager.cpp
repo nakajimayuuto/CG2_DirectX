@@ -599,6 +599,74 @@ void InputManager::SetContinuationVibration(float left, float right, bool isVibr
 	}
 }
 
+bool InputManager::PressAction(InputAction action) const{
+	if (IsGamePadConnect()) {
+		for (auto padButton : inputActions_[static_cast<size_t>(action)].second) {
+			return gamePad_.PressButton(padButton);
+		}
+	} else {
+		for (auto key : inputActions_[static_cast<size_t>(action)].first.first) {
+			return keyBoard_.PressKey(key);
+		}
+
+		for (auto mouseButton : inputActions_[static_cast<size_t>(action)].first.second) {
+			return mouse_.PressMouse(mouseButton);
+		}
+	}
+	return false;
+}
+
+bool InputManager::TriggerAction(InputAction action) const{
+	if (IsGamePadConnect()) {
+		for (auto padButton : inputActions_[static_cast<size_t>(action)].second) {
+			return gamePad_.TriggerButton(padButton);
+		}
+	} else {
+		for (auto key : inputActions_[static_cast<size_t>(action)].first.first) {
+			return keyBoard_.TriggerKey(key);
+		}
+
+		for (auto mouseButton : inputActions_[static_cast<size_t>(action)].first.second) {
+			return mouse_.TriggerMouse(mouseButton);
+		}
+	}
+	return false;
+}
+
+bool InputManager::ReleaseAction(InputAction action) const{
+	if (IsGamePadConnect()) {
+		for (auto padButton : inputActions_[static_cast<size_t>(action)].second) {
+			return gamePad_.ReleaseButton(padButton);
+		}
+	} else {
+		for (auto key : inputActions_[static_cast<size_t>(action)].first.first) {
+			return keyBoard_.ReleaseKey(key);
+		}
+
+		for (auto mouseButton : inputActions_[static_cast<size_t>(action)].first.second) {
+			return mouse_.ReleaseMouse(mouseButton);
+		}
+	}
+	return false;
+}
+
+bool InputManager::NoneAction(InputAction action) const{
+	if (IsGamePadConnect()) {
+		for (auto padButton : inputActions_[static_cast<size_t>(action)].second) {
+			return gamePad_.NoneButton(padButton);
+		}
+	} else {
+		for (auto key : inputActions_[static_cast<size_t>(action)].first.first) {
+			return keyBoard_.NoneKey(key);
+		}
+
+		for (auto mouseButton : inputActions_[static_cast<size_t>(action)].first.second) {
+			return mouse_.NoneMouse(mouseButton);
+		}
+	}
+	return false;
+}
+
 void InputManager::VibrationUpdate(){
 	if (!isVibration_) {
 		return;

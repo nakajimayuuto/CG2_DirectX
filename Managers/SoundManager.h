@@ -154,8 +154,8 @@ private:
 	Microsoft::WRL::ComPtr<IXAudio2> xAudio2_;
 	IXAudio2MasteringVoice* masterVoice_;
 	std::map<std::string, SoundData> sounds_;
-	std::map<std::string, PlaySoundData*> playSoundDatas_;
-	std::map<uint32_t, PlaySoundData*> soundOneTimeDatas_;
+	std::map<std::string, std::unique_ptr<PlaySoundData>> playSoundDatas_;
+	std::map<uint32_t, std::unique_ptr<PlaySoundData>> soundOneTimeDatas_;
 
 	uint32_t soundNum_ = 0;
 
