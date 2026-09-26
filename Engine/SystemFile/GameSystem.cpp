@@ -410,7 +410,7 @@ void GameSystem::Initialize() {
 
 	Environment::GetInstance()->Initialize();
 
-	ParticleManager::GetInstance()->Initialize();
+	ParticleManager::GetInstance()->ParticleClear();
 
 	RegisterGlobalVariables();
 

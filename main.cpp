@@ -67,15 +67,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 }
 
 void LoadDatas() {
-	//TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resource/uvChecker.png");
-	//TextureManager::GetInstance()->RegisterTexture("reticle", "Resource/reticle.png");
-	//ModelManager::GetInstance()->RegisterObj("skydome", "Resource/skydome", "skydome.obj");
-	//ModelManager::GetInstance()->RegisterObj("creeking", "Resource/creeking", "creeking.obj");
-	ModelManager::GetInstance()->RegisterObj("boss", "Resource/boss", "boss_ghost.obj", false);
+	//ModelManager::GetInstance()->RegisterObj("boss", "Resource/boss", "boss_ghost.obj", false);
 	ModelManager::GetInstance()->RegisterObj("ground", "Resource/Ground", "ground.obj");
 	ModelManager::GetInstance()->RegisterObj("celling", "Resource/Ground", "celling.obj");
 	ModelManager::GetInstance()->RegisterObj("drill_ghost", "Resource/drill_ghost", "drill_ghost.obj", false);
-	ModelManager::GetInstance()->RegisterObj("halberd", "Resource/halberd", "halberd.obj", false);
+	//ModelManager::GetInstance()->RegisterObj("halberd", "Resource/halberd", "halberd.obj", false);
 	ModelManager::GetInstance()->RegisterObj("wall", "Resource/wall", "wall.obj");
 	ModelManager::GetInstance()->RegisterObj("bullet_crystal", "Resource/Bullet", "bullet_crystal.obj");
 	ModelManager::GetInstance()->RegisterObj("spike", "Resource/Spike", "spike.obj");
@@ -84,7 +80,7 @@ void LoadDatas() {
 	TextureManager::GetInstance()->RegisterTexture("bullet_bounce", "Resource/Bullet/bullet_bounce.png");
 	TextureManager::GetInstance()->RegisterTexture("wall_soul", "Resource/wall/wall_soul.png");
 	TextureManager::GetInstance()->RegisterTexture("door", "Resource/wall/door.png");
-	TextureManager::GetInstance()->RegisterTexture("halberd_soul", "Resource/Halberd/halberd_soul.png");
+	//TextureManager::GetInstance()->RegisterTexture("halberd_soul", "Resource/Halberd/halberd_soul.png");
 
 	TextureManager::GetInstance()->RegisterTexture("effect_plane", "Resource/effects/effect_plane.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_fire", "Resource/effects/effect_fire.png");
@@ -167,17 +163,6 @@ void LoadDatas() {
 	TextureManager::GetInstance()->RegisterTexture("numbers", "Resource/UI/numbers.png");
 	ParticleManager::GetInstance()->CreateNewParticles("normal", TextureManager::GetInstance()->GetTextureInfo("effect_plane"), BillboardType::kAllAxis, Particles::Move::kNormal);
 	ParticleManager::GetInstance()->CreateNewParticles("fire", TextureManager::GetInstance()->GetTextureInfo("effect_fire"), BillboardType::kAllAxis, Particles::Move::kFire);
-
-	for (uint32_t i = 0; i < 10; i++) {
-		ParticleManager::GetInstance()->CreateNewParticles(std::format("number_{}", i), TextureManager::GetInstance()->GetTextureInfo("numbers"), BillboardType::kAllAxis, Particles::Move::kNumber);
-		ParticleManager::GetInstance()->SetParticleSize(std::format("number_{}", i), { 0.2f,0.2f,0.2f });
-		ParticleManager::GetInstance()->SetParticleUVTransform(std::format("number_{}", i), Transform::GetInitialValue({ 0.1f ,1.0f,0.0f}, {0.0f,0.0f,0.0f}, {0.1f * static_cast<float>(i),0.0f,0.0f}));
-	}
-
-
-
-
-
 
 	SoundManager::GetInstance()->RegisterSound("mus_phase1_intro", "Resource/Sound/mus_phase1_intro.wav");
 	SoundManager::GetInstance()->RegisterSound("mus_phase1", "Resource/Sound/mus_phase1.wav");

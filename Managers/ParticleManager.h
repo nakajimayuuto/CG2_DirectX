@@ -14,6 +14,8 @@ public:
 
 	void Draw();
 
+	void ParticleClear();
+
 	void SpawnParticles(const std::string& name,const Transform transform);
 	void SpawnParticles(const std::string& name,const Vector3 vector3);
 	void SpawnNumbers(float number, const Transform transform,const Vector3& color);
