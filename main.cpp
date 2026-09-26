@@ -9,11 +9,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	system->Initialize();
 
-
-
-
-
-
 	/*=============================================================
 	ここから下がゲームの変数.
 	=============================================================*/
@@ -53,7 +48,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			/*=============================================================
 			以下にゲームの描画処理を記述.
 			=============================================================*/
-			system->DrawSetup();
+			//system->DrawSetup();
 
 			SceneManager::GetInstance()->Draw();
 
@@ -71,7 +66,7 @@ void LoadDatas() {
 	ModelManager::GetInstance()->RegisterObj("ground", "Resource/Ground", "ground.obj");
 	ModelManager::GetInstance()->RegisterObj("celling", "Resource/Ground", "celling.obj");
 	ModelManager::GetInstance()->RegisterObj("drill_ghost", "Resource/drill_ghost", "drill_ghost.obj", false);
-	//ModelManager::GetInstance()->RegisterObj("halberd", "Resource/halberd", "halberd.obj", false);
+	ModelManager::GetInstance()->RegisterObj("halberd", "Resource/halberd", "halberd.obj", false);
 	ModelManager::GetInstance()->RegisterObj("wall", "Resource/wall", "wall.obj");
 	ModelManager::GetInstance()->RegisterObj("bullet_crystal", "Resource/Bullet", "bullet_crystal.obj");
 	ModelManager::GetInstance()->RegisterObj("spike", "Resource/Spike", "spike.obj");
@@ -160,7 +155,6 @@ void LoadDatas() {
 	TextureManager::GetInstance()->RegisterTexture("end_to_hamburger", "Resource/UI/end_to_hamburger.png");
 	TextureManager::GetInstance()->RegisterTexture("title", "Resource/UI/title.png");
 
-	TextureManager::GetInstance()->RegisterTexture("numbers", "Resource/UI/numbers.png");
 	ParticleManager::GetInstance()->CreateNewParticles("normal", TextureManager::GetInstance()->GetTextureInfo("effect_plane"), BillboardType::kAllAxis, Particles::Move::kNormal);
 	ParticleManager::GetInstance()->CreateNewParticles("fire", TextureManager::GetInstance()->GetTextureInfo("effect_fire"), BillboardType::kAllAxis, Particles::Move::kFire);
 

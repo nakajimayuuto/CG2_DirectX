@@ -196,6 +196,12 @@
     <Filter Include="ソース ファイル\PauseMenu">
       <UniqueIdentifier>{561c0cc8-ab3a-4957-99a1-7d68f89e4cea}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Enemy">
+      <UniqueIdentifier>{492833a1-8a78-4ce6-b083-54190d7b4acc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MapChip">
+      <UniqueIdentifier>{8dead884-e55b-4007-9574-18ef0c5db8e6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -371,6 +377,18 @@
     </ClCompile>
     <ClCompile Include="PauseMenu.cpp">
       <Filter>ソース ファイル\PauseMenu</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseEnemy.cpp">
+      <Filter>ソース ファイル\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="Enemy.cpp">
+      <Filter>ソース ファイル\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="ShieldEnemy.cpp">
+      <Filter>ソース ファイル\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="MapChipField.cpp">
+      <Filter>ソース ファイル\MapChip</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -562,6 +580,18 @@
     </ClInclude>
     <ClInclude Include="PauseMenu.h">
       <Filter>ソース ファイル\PauseMenu</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseEnemy.h">
+      <Filter>ソース ファイル\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="Enemy.h">
+      <Filter>ソース ファイル\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="ShieldEnemy.h">
+      <Filter>ソース ファイル\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="MapChipField.h">
+      <Filter>ソース ファイル\MapChip</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
