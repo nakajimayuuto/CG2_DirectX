@@ -66,6 +66,7 @@ void GameScene::Initialize() {
 
 	isBossDeath_ = false;
 
+	MapChipManager::GetInstance()->Initialize();
 }
 
 void GameScene::Update() {
@@ -139,6 +140,8 @@ void GameScene::Update() {
 
 	Camera::GetInstance()->Update();
 	CheckAllCollisions();
+
+	MapChipManager::GetInstance()->Update();
 }
 
 void GameScene::Draw() {
@@ -146,8 +149,9 @@ void GameScene::Draw() {
 	Renderer* renderer = Renderer::GetInstance();
 
 
-	renderer->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "wall", { 1.0f,1.0f,1.0f,1.0f }, false);
-	renderer->DrawBox(Transform::GetInitialValue({ 10.0f,10.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,5.0f,-75.0f }), "door", { 1.0f,1.0f,1.0f,1.0f });
+	//renderer->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "wall", { 1.0f,1.0f,1.0f,1.0f }, false);
+	//renderer->DrawBox(Transform::GetInitialValue({ 10.0f,10.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,5.0f,-75.0f }), "door", { 1.0f,1.0f,1.0f,1.0f });
+	MapChipManager::GetInstance()->Draw();
 
 
 	ProjectileManager::GetInstance()->Draw();

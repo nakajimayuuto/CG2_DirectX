@@ -8,6 +8,7 @@
 #include "../GameCamera.h"
 #include "../Fade.h"
 #include "../PauseMenu.h"
+#include "../MapChipManager.h"
 
 class GameScene : public IScene {
 public:
