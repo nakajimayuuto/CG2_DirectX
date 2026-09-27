@@ -21,7 +21,9 @@
     <ClCompile Include="Fade.cpp" />
     <ClCompile Include="HPGauge.cpp" />
     <ClCompile Include="Managers\DifficultyManager.cpp" />
+    <ClCompile Include="Managers\StageManager.cpp" />
     <ClCompile Include="MapChipField.cpp" />
+    <ClCompile Include="MapChipManager.cpp" />
     <ClCompile Include="PauseMenu.cpp" />
     <ClCompile Include="ProjectileManager.cpp" />
     <ClCompile Include="ContactRecord.cpp" />
@@ -112,7 +114,9 @@
     <ClInclude Include="Fade.h" />
     <ClInclude Include="HPGauge.h" />
     <ClInclude Include="Managers\DifficultyManager.h" />
+    <ClInclude Include="Managers\StageManager.h" />
     <ClInclude Include="MapChipField.h" />
+    <ClInclude Include="MapChipManager.h" />
     <ClInclude Include="PauseMenu.h" />
     <ClInclude Include="ProjectileManager.h" />
     <ClInclude Include="ContactRecord.h" />
