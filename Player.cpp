@@ -1032,6 +1032,7 @@ void Player::BehaviorFallUpdate() {
 }
 
 void Player::UpdateFloatingGimmick() {
+	return;
 	float kFloatingAnimationStep = 2.0f * std::numbers::pi_v<float> / kFloatingAnimationPeriod;
 	floatingParameter += kFloatingAnimationStep;
 
