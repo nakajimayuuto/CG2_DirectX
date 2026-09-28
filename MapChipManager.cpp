@@ -336,9 +336,9 @@ bool MapChipManager::OnGroundCheck(const Vector3& position,const CollisionMapInf
 		hit = true;
 	}
 
-	if (!hit) {
-		return false;
-	}
+	//if (!hit) {
+	//	return false;
+	//}
 
-	return true;
+	return hit;
 }

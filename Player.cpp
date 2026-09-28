@@ -7,7 +7,8 @@ void Player::Initialize() {
 	targetRotateY = 0.0f;
 	model_.Initialize("drill_ghost");
 	model_.SetBlendMode(BlendMode::kNormalCullNone);
-	transform_.translate = { 2.0f, kTranslateBlankY + 2.0f,-30.0f };
+	//transform_.translate = { 0.0f, kTranslateBlankY,-30.0f };
+	transform_.translate = { 5.0f, kTranslateBlankY + 1.0f,0.0f };
 
 	/// HPGauge.
 	maxHP_ = 200.0f;
@@ -190,6 +191,7 @@ void Player::Update() {
 	ImGui::Begin("player");
 	ImGui::DragFloat("HP", &currentHP_, 1.0f, 0.0f, maxHP_);
 	ImGui::Text("pos %f,%f,%f", transform_.translate.x, transform_.translate.y, transform_.translate.z);
+	ImGui::Text("Behavior %s", magic_enum::enum_name(behavior_).data());
 	ImGui::End();
 #endif // _DEBUG
 	LightManager::GetInstance()->SetLightPos("player_light", transform_.GetWorldPosition());
@@ -348,7 +350,7 @@ void Player::BehaviorRootUpdate() {
 
 	MovingUpdate();
 
-	//MapCollision();
+	MapCollisionUpdate();
 
 	UpdateFloatingGimmick();
 
@@ -407,6 +409,7 @@ void Player::MovingUpdate() {
 		}
 
 		if (InputManager::GetInstance()->PressKey(DIK_UP)) {
+			//behaviorRequest_ = Behavior::kJump;
 			velocity_ += Vector3(0.0f, kJumpAcceleration, 0.0f);
 		}
 	} else {
@@ -441,7 +444,7 @@ void Player::MovingUpdate() {
 }
 
 void Player::CollisionMoveUpdate(const CollisionMapInfo& info) {
-	transform_.translate += info.movementAmount;
+	transform_.translate += static_cast<Vector3>(info.movementAmount);
 }
 
 void Player::CellingCollisionUpdate(const CollisionMapInfo& info) {
@@ -471,6 +474,7 @@ void Player::IsGroundUpdate(const CollisionMapInfo& info) {
 			onGround_ = true;
 			velocity_.x *= (1.0f - kAttenuationLanding);
 			velocity_.y = 0.0f;
+			//behaviorRequest_ = Behavior::kRoot;
 		}
 	}
 }
@@ -497,6 +501,26 @@ void Player::CheckFallVoid() {
 	if (transform_.translate.y <= -2.0f) {
 		isDeath_ = true;
 	}
+}
+
+void Player::MapCollisionUpdate() {
+	CollisionMapInfo collisionMapInfo;
+
+	collisionMapInfo.movementAmount = velocity_ * DeltaTime::GetInstance()->GetGameTime();
+
+	MapChipManager::GetInstance()->MapCollision(transform_.translate,collisionMapInfo);
+
+	CollisionMoveUpdate(collisionMapInfo);
+
+	CellingCollisionUpdate(collisionMapInfo);
+
+	IsHitWallUpdate(collisionMapInfo);
+
+	IsGroundUpdate(collisionMapInfo);
+
+	TurningControl();
+
+	CheckFallVoid();
 }
 
 void Player::BehaviorAttackInitialize() {
@@ -812,7 +836,7 @@ void Player::BehaviorJumpUpdate() {
 
 	Vector3 accelerationVector = { 0.0f,-kGravityAcceleration,0.0f };
 	velocity_ += accelerationVector * DeltaTime::GetInstance()->GetGameTime();
-	transform_.translate += velocity_ * DeltaTime::GetInstance()->GetGameTime();
+	//transform_.translate += velocity_ * DeltaTime::GetInstance()->GetGameTime();
 
 
 	if (transform_.translate.y <= kTranslateBlankY) {
@@ -827,6 +851,10 @@ void Player::BehaviorJumpUpdate() {
 			behaviorRequest_ = Behavior::kDashAttack;
 		}
 	}
+
+	MapCollisionUpdate();
+
+	UpdateFloatingGimmick();
 }
 
 void Player::BehaviorDashAttackInitialize() {

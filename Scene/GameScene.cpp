@@ -21,7 +21,7 @@ void GameScene::Initialize() {
 	GameCamera::GetInstance()->Initialize();
 	player_ = std::make_unique<Player>();
 	player_->Initialize();
-	player_->SetStartPosition({ 0.0f,1.0f,-375.0f });
+	//player_->SetStartPosition({ 0.0f,1.0f,-375.0f });
 	//if (gGamePhase == GamePhase::kGameStartAnim || gGamePhase == GamePhase::kBossPhase1) {
 	//	SoundManager::GetInstance()->SoundPlay("mus_phase1_intro", 1.0f, 0.25f, kBGM, false, "mus_phase1_intro");
 	//} else if (gGamePhase == GamePhase::kBossPhaseChangeAnim || gGamePhase == GamePhase::kBossPhase2) {
