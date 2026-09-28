@@ -465,7 +465,7 @@ void Player::IsGroundUpdate(const CollisionMapInfo& info) {
 		if (velocity_.y > 0.0f) {
 			onGround_ = false;
 		} else {
-			if (MapChipManager::GetInstance()->OnGroundCheck(transform_.translate,info)) {
+			if (!MapChipManager::GetInstance()->OnGroundCheck(transform_.translate,info)) {
 				onGround_ = false;
 			}
 		}

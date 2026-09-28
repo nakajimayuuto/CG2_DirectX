@@ -141,15 +141,15 @@ private:
 
 
 	// 移動.
-	static inline const float kAcceletation = 0.02f;
-	static inline const float kAttenuation = 0.1f;
-	static inline const float kLimitRunSpeed = 2.0f;
+	static inline const float kAcceletation = 0.8f;
+	static inline const float kAttenuation = 1.0f;
+	static inline const float kLimitRunSpeed = 20.0f;
 
 	Transform transform_;
 	Vector3 velocity_ = {};
 
 	// ジャンプ.v
-	static inline const float kLimitFallSpeed = 0.4f;
+	static inline const float kLimitFallSpeed = 10.0f;
 	static inline const float kJumpAcceleration = 15.0f;
 
 	bool onGround_ = true;
@@ -202,7 +202,7 @@ private:
 	static inline float kJumpFirstSpeed_ = 7.0f;
 	static inline float kDashJumpFirstSpeed_ = 12.0f;
 
-	static inline float kGravityAcceleration = 5.0f;
+	static inline float kGravityAcceleration = 1.0f;
 
 	bool isMoving_;
 
