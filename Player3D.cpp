@@ -1,13 +1,11 @@
-#include "Player.h"
-#define NOMINMAX
-#include <algorithm>
+#include "Player3D.h"
 #include "GameCamera.h"
-void Player::Initialize() {
+void Player3D::Initialize() {
 	transform_.Initialize();
 	targetRotateY = 0.0f;
-	model_.Initialize("drill_ghost");
+	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("drill_ghost"));
 	model_.SetBlendMode(BlendMode::kNormalCullNone);
-	transform_.translate = { 2.0f, kTranslateBlankY + 2.0f,-30.0f };
+	transform_.translate = { 0.0f, kTranslateBlankY,-30.0f };
 
 	/// HPGauge.
 	maxHP_ = 200.0f;
@@ -68,14 +66,13 @@ void Player::Initialize() {
 	isDeath_ = false;
 
 	deathTimer_ = 0.0f;
-	onGround_ = true;
 }
 
-void Player::InitializeFloatingGimmick() {
+void Player3D::InitializeFloatingGimmick() {
 	floatingParameter = 0.0f;
 }
 
-bool Player::GetAttackButtonTrigger() {
+bool Player3D::GetAttackButtonTrigger() {
 	InputManager* input = InputManager::GetInstance();
 	if (input->IsGamePadConnect()) {
 		if (input->TriggerPadButton(PadButtons::INPUT_X) || input->TriggerPadButton(PadButtons::INPUT_Y)) {
@@ -90,7 +87,7 @@ bool Player::GetAttackButtonTrigger() {
 	return false;
 }
 
-bool Player::GetJumpButtonTrigger() {
+bool Player3D::GetJumpButtonTrigger() {
 	InputManager* input = InputManager::GetInstance();
 	if (input->IsGamePadConnect()) {
 		if (input->TriggerPadButton(PadButtons::INPUT_A) || input->TriggerPadButton(PadButtons::INPUT_B)) {
@@ -105,7 +102,7 @@ bool Player::GetJumpButtonTrigger() {
 	return false;
 }
 
-bool Player::GetDownPress() {
+bool Player3D::GetDownPress() {
 	InputManager* input = InputManager::GetInstance();
 	if (input->IsGamePadConnect()) {
 		if (input->GetLeftStickDirection().y <= -0.5f) {
@@ -120,7 +117,7 @@ bool Player::GetDownPress() {
 	return false;
 }
 
-float Player::GetDirectionYPress() {
+float Player3D::GetDirectionYPress() {
 	InputManager* input = InputManager::GetInstance();
 	if (input->IsGamePadConnect()) {
 		//if (input->GetLeftStickDirection().y <= - 0.5f) {
@@ -149,7 +146,7 @@ float Player::GetDirectionYPress() {
 
 }
 
-void Player::FloatingAccelerationChange() {
+void Player3D::FloatingAccelerationChange() {
 	return;
 
 	InputManager* input = InputManager::GetInstance();
@@ -185,7 +182,7 @@ void Player::FloatingAccelerationChange() {
 	velocity_ += acceleration * DeltaTime::GetInstance()->GetGameTime();
 }
 
-void Player::Update() {
+void Player3D::Update() {
 #ifdef _DEBUG
 	ImGui::Begin("player");
 	ImGui::DragFloat("HP", &currentHP_, 1.0f, 0.0f, maxHP_);
@@ -201,25 +198,25 @@ void Player::Update() {
 		behavior_ = behaviorRequest_.value();
 
 		switch (behavior_) {
-		case Player::Behavior::kRoot:
+		case Player3D::Behavior::kRoot:
 			BehaviorRootInitialize();
 			break;
-		case Player::Behavior::kAttack:
+		case Player3D::Behavior::kAttack:
 			BehaviorAttackInitialize();
 			break;
-		case Player::Behavior::kDash:
+		case Player3D::Behavior::kDash:
 			BehaviorDashInitialize();
 			break;
-		case Player::Behavior::kJump:
+		case Player3D::Behavior::kJump:
 			BehaviorJumpInitialize();
 			break;
-		case Player::Behavior::kDashAttack:
+		case Player3D::Behavior::kDashAttack:
 			BehaviorDashAttackInitialize();
 			break;
-		case Player::Behavior::kDashJumpAttack:
+		case Player3D::Behavior::kDashJumpAttack:
 			BehaviorDashJumpAttackInitialize();
 			break;
-		case Player::Behavior::kFall:
+		case Player3D::Behavior::kFall:
 			BehaviorFallInitialize();
 			break;
 		}
@@ -233,33 +230,33 @@ void Player::Update() {
 
 	colliderDimensionType_ = ColliderDimensionType::k3D;
 	switch (behavior_) {
-	case Player::Behavior::kRoot:
+	case Player3D::Behavior::kRoot:
 		BehaviorRootUpdate();
 		CollisionManager::GetInstance()->AddColliderList(this);
 		break;
-	case Player::Behavior::kAttack:
+	case Player3D::Behavior::kAttack:
 		BehaviorAttackUpdate();
 		CollisionManager::GetInstance()->AddColliderList(this);
 		break;
-	case Player::Behavior::kDash:
+	case Player3D::Behavior::kDash:
 		BehaviorDashUpdate();
 		colliderDimensionType_ = ColliderDimensionType::k2D;
 		CollisionManager::GetInstance()->AddColliderList(this);
 		LightManager::GetInstance()->SetLightIsActive("player_light", false);
 		break;
-	case Player::Behavior::kJump:
+	case Player3D::Behavior::kJump:
 		BehaviorJumpUpdate();
 		CollisionManager::GetInstance()->AddColliderList(this);
 		break;
-	case Player::Behavior::kDashAttack:
+	case Player3D::Behavior::kDashAttack:
 		BehaviorDashAttackUpdate();
 		CollisionManager::GetInstance()->AddColliderList(this);
 		break;
-	case Player::Behavior::kDashJumpAttack:
+	case Player3D::Behavior::kDashJumpAttack:
 		BehaviorDashJumpAttackUpdate();
 		CollisionManager::GetInstance()->AddColliderList(this);
 		break;
-	case Player::Behavior::kFall:
+	case Player3D::Behavior::kFall:
 		BehaviorFallUpdate();
 		CollisionManager::GetInstance()->AddColliderList(this);
 		break;
@@ -289,7 +286,7 @@ void Player::Update() {
 	GameCamera::GetInstance()->SetTargetIsDash(isDash_);
 }
 
-void Player::CircleWallClamp() {
+void Player3D::CircleWallClamp() {
 	/// ここから地獄
 	float distance = transform_.translate.Length();
 	float posY = transform_.translate.y;
@@ -300,7 +297,7 @@ void Player::CircleWallClamp() {
 	}
 }
 
-void Player::TutorialWallClamp() {
+void Player3D::TutorialWallClamp() {
 	if (transform_.translate.x > 5.0f - colliderSize_.x) {
 		transform_.translate.x = 5.0f - colliderSize_.x;
 	}
@@ -318,7 +315,7 @@ void Player::TutorialWallClamp() {
 	}
 }
 
-void Player::SlashEffectCreate(Transform* targetTransform, uint32_t num) {
+void Player3D::SlashEffectCreate(Transform* targetTransform, uint32_t num) {
 	Transform effectCreate;
 	for (uint32_t i = 0; i < 3; i++) {
 		effectCreate.Initialize();
@@ -329,7 +326,7 @@ void Player::SlashEffectCreate(Transform* targetTransform, uint32_t num) {
 	}
 }
 
-void Player::BehaviorRootInitialize() {
+void Player3D::BehaviorRootInitialize() {
 	floatingParameter = 0.0f;
 
 	InitializeFloatingGimmick();
@@ -337,169 +334,89 @@ void Player::BehaviorRootInitialize() {
 
 
 
-void Player::BehaviorRootUpdate() {
+void Player3D::BehaviorRootUpdate() {
+	isMoving_ = false;
+
 	if (isDeath_) {
+		UpdateFloatingGimmick();
 		return;
 	}
 
-	//if (InputManager::GetInstance()->TriggerKey(DIK_SPACE)) {
-	//	behaviorRequest_ = Behavior::kAttack;
-	//}
+	velocity_ = { 0.0f,0.0f,0.0f };
+	InputManager* input = InputManager::GetInstance();
+	if (input->IsGamePadConnect()) {
+		if (tutorialUsableMove_) {
+			velocity_ = { input->GetLeftStickDirection().x,0.0f,input->GetLeftStickDirection().y };
+			velocity_ = velocity_.Normalize() * kSpeed;
+		}
 
-	MovingUpdate();
+		if (tutorialUsableJump_) {
+			if (GetJumpButtonTrigger()) {
+				behaviorRequest_ = Behavior::kJump;
+			}
+		}
 
-	//MapCollision();
+		if (tutorialUsableAttack_) {
+			if (GetAttackButtonTrigger()) {
+				behaviorRequest_ = Behavior::kAttack;
+			}
+		}
+	} else {
+		if (tutorialUsableMove_) {
+			if (input->PressKey(DIK_W)) {
+				velocity_.z += 1.0f;
+			}
+
+			if (input->PressKey(DIK_S)) {
+				velocity_.z -= 1.0f;
+			}
+
+			if (input->PressKey(DIK_A)) {
+				velocity_.x -= 1.0f;
+			}
+
+			if (input->PressKey(DIK_D)) {
+				velocity_.x += 1.0f;
+			}
+		}
+
+		if (tutorialUsableJump_) {
+			if (GetJumpButtonTrigger()) {
+				behaviorRequest_ = Behavior::kJump;
+			}
+		}
+
+		if (tutorialUsableAttack_) {
+			if (GetAttackButtonTrigger()) {
+				behaviorRequest_ = Behavior::kAttack;
+			}
+		}
+
+		velocity_ = velocity_.Normalize() * kSpeed;
+	}
+
+	if (velocity_.x != 0.0f || velocity_.z != 0.0f) {
+		isMoving_ = true;
+	}
+
+	Matrix4x4 cameraRotateMatrix = Matrix4x4::MakeRotateMatrix(Camera::GetInstance()->GetTransform().rotate);
+
+	velocity_ = cameraRotateMatrix.TransformNomal(velocity_);
+
+	if (isMoving_) {
+		targetRotateY = std::atan2(velocity_.x, velocity_.z);
+	}
+
+	transform_.rotate.y = LerpShortAngle(transform_.rotate.y, targetRotateY, kCompletionRate);
+	//transform_.rotate.y = std::atan2(move.x, move.z);
+
+	transform_.translate += velocity_ * DeltaTime::GetInstance()->GetGameTime();;
 
 	UpdateFloatingGimmick();
 
 }
 
-void Player::MovingUpdate() {
-	if (onGround_) {
-		if (InputManager::GetInstance()->PressKey(DIK_RIGHT) || InputManager::GetInstance()->PressKey(DIK_LEFT)) {
-			// 左右加速.
-			Vector3 acceleration = {};
-
-			if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
-				// 左移動中の右入力.
-				if (velocity_.x < 0.0f) {
-					velocity_.x *= (1.0f - kAttenuation);
-				}
-
-				acceleration.x += kAcceletation;
-
-				if (lrDirection_ != LRDirection::kRight) {
-					lrDirection_ = LRDirection::kRight;
-
-					turnFirstRotationY_ = transform_.rotate.y;
-					turnTimer_ = kTimeTurn;
-				}
-			} else if (InputManager::GetInstance()->PressKey(DIK_LEFT)) {
-				// 右移動中の左入力.
-				if (velocity_.x > 0.0f) {
-					velocity_.x *= (1.0f - kAttenuation);
-				}
-
-				acceleration.x -= kAcceletation;
-
-				if (lrDirection_ != LRDirection::kLeft) {
-					lrDirection_ = LRDirection::kLeft;
-
-					turnFirstRotationY_ = transform_.rotate.y;
-					turnTimer_ = kTimeTurn;
-				}
-			}
-
-
-
-			// 加速減速.
-			velocity_ += acceleration;
-
-			// 最大速度制限.
-			velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
-		} else {
-			// 非入力時は移動減衰をかける.
-			if (velocity_.x <= 0.01f && velocity_.x >= -0.01f) {
-				velocity_.x = 0.0f;
-			} else {
-				velocity_.x *= (1.0f - kAttenuation);
-			}
-		}
-
-		if (InputManager::GetInstance()->PressKey(DIK_UP)) {
-			velocity_ += Vector3(0.0f, kJumpAcceleration, 0.0f);
-		}
-	} else {
-		// 落下速度.
-		velocity_ += Vector3(0.0f, -kGravityAcceleration, 0.0f);
-		// 速度制限.
-		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
-	}
-
-	// 多分いらない.
-	//bool landing = false;
-	//if (velocity_.y < 0.0f) {
-	//	if (transform_.translate.y <= 1.0f) {
-	//		landing = true;
-	//	}
-	//}
-	//
-	//if (onGround_) {
-	//	if (velocity_.y > 0.0f) {
-	//		onGround_ = false;
-	//	}
-	//} else {
-	//	if (landing) {
-	//		transform_.translate.y = 1.0f;
-	//		velocity_.x *= (1.0f - kAttenuation);
-	//		velocity_.y = 0.0f;
-	//		onGround_ = true;
-	//	}
-	//}
-
-	//transform_.translate += velocity_;
-}
-
-void Player::CollisionMoveUpdate(const CollisionMapInfo& info) {
-	transform_.translate += info.movementAmount;
-}
-
-void Player::CellingCollisionUpdate(const CollisionMapInfo& info) {
-	if (info.isCellingCollision) {
-		GameSystem::GetInstance()->Log("hit ceiling\n");
-		velocity_.y = 0.0f;
-	}
-}
-
-void Player::IsHitWallUpdate(const CollisionMapInfo& info) {
-	if (info.isWallCollision) {
-		velocity_.x *= (1.0f - kAttenuationWall);
-	}
-}
-
-void Player::IsGroundUpdate(const CollisionMapInfo& info) {
-	if (onGround_) {
-		if (velocity_.y > 0.0f) {
-			onGround_ = false;
-		} else {
-			if (MapChipManager::GetInstance()->OnGroundCheck(transform_.translate,info)) {
-				onGround_ = false;
-			}
-		}
-	} else {
-		if (info.isLanding) {
-			onGround_ = true;
-			velocity_.x *= (1.0f - kAttenuationLanding);
-			velocity_.y = 0.0f;
-		}
-	}
-}
-
-void Player::TurningControl() {
-	// 旋回制御.
-
-	if (turnTimer_ > 0.0f) {
-		turnTimer_ -= 1.0f / 60.0f;
-
-		// 左右の自キャラ角度テーブル.
-		float destinationRotationYTable[] = {
-			Radian(90.0f),
-			Radian(270.0f),
-		};
-
-		float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
-
-		transform_.rotate.y = Easing(turnFirstRotationY_, destinationRotationY, kTimeTurn - turnTimer_, kTimeTurn, EaseType::kConstant);
-	}
-}
-
-void Player::CheckFallVoid() {
-	if (transform_.translate.y <= -2.0f) {
-		isDeath_ = true;
-	}
-}
-
-void Player::BehaviorAttackInitialize() {
+void Player3D::BehaviorAttackInitialize() {
 	transform_.rotate.y = targetRotateY;
 	attackTimer_ = 0.0f;
 	attackTimeMax_ = kAttackFirstStart;
@@ -511,7 +428,7 @@ void Player::BehaviorAttackInitialize() {
 	AttackFirstInitialize();
 }
 
-void Player::BehaviorAttackUpdate() {
+void Player3D::BehaviorAttackUpdate() {
 	isAttack_ = true;
 	attackTimer_ += DeltaTime::GetInstance()->GetGameTime();
 
@@ -530,12 +447,12 @@ void Player::BehaviorAttackUpdate() {
 
 }
 
-void Player::BehaviorAttackFinished() {
+void Player3D::BehaviorAttackFinished() {
 	behaviorRequest_ = Behavior::kRoot;
 	transformModel.SetParent(&transformColliderOffset);
 }
 
-void Player::CheckTutorialFlag() {
+void Player3D::CheckTutorialFlag() {
 	tutorialUsableMove_ = true;
 	tutorialUsableJump_ = true;
 	tutorialUsableDash_ = true;
@@ -543,16 +460,16 @@ void Player::CheckTutorialFlag() {
 
 }
 
-void Player::CheckTutorialUpdate() {
+void Player3D::CheckTutorialUpdate() {
 }
 
-void Player::SetNextAttackPhase(float timeMax) {
+void Player3D::SetNextAttackPhase(float timeMax) {
 	attackTimeMax_ = timeMax;
 	attackPhase_++;
 	attackTimer_ = 0.0f;
 }
 
-void Player::AttackFirstInitialize() {
+void Player3D::AttackFirstInitialize() {
 	useNextAttack_ = false;
 	attackCollider_.SetRadius(4.5f);
 	attackCollider_.SetDamage(35.0f);
@@ -562,7 +479,7 @@ void Player::AttackFirstInitialize() {
 	SoundManager::GetInstance()->SoundPlay("snd_attack_wind", 1.0f, 1.0f, kSoundEffect);
 }
 
-void Player::AttackFirstUpdate() {
+void Player3D::AttackFirstUpdate() {
 	attackCollider_.SetActive(false);
 	attackCollider_.SetTransform(transform_);
 	attackCollider_.SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
@@ -620,7 +537,7 @@ void Player::AttackFirstUpdate() {
 	attackCollider_.DrawCollider();
 }
 
-void Player::AttackSecondInitialize() {
+void Player3D::AttackSecondInitialize() {
 	useNextAttack_ = false;
 	attackTimer_ = 0.0f;
 	attackTimeMax_ = kAttackSecondStart;
@@ -636,7 +553,7 @@ void Player::AttackSecondInitialize() {
 	SoundManager::GetInstance()->SoundPlay("snd_attack_wind", 1.0f, 1.0f, kSoundEffect);
 }
 
-void Player::AttackSecondUpdate() {
+void Player3D::AttackSecondUpdate() {
 	attackCollider_.SetActive(false);
 	attackCollider_.SetTransform(transform_);
 	attackCollider_.SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
@@ -694,7 +611,7 @@ void Player::AttackSecondUpdate() {
 	attackCollider_.DrawCollider();
 }
 
-void Player::AttackThreeInitialize() {
+void Player3D::AttackThreeInitialize() {
 	useNextAttack_ = false;
 	attackTimer_ = 0.0f;
 	attackTimeMax_ = kAttackThirdStart;
@@ -710,7 +627,7 @@ void Player::AttackThreeInitialize() {
 	SoundManager::GetInstance()->SoundPlay("snd_near_attack", 1.0f, 1.0f, kSoundEffect);
 }
 
-void Player::AttackThreeUpdate() {
+void Player3D::AttackThreeUpdate() {
 	attackCollider_.SetActive(false);
 	attackCollider_.SetTransform(transform_);
 	attackCollider_.SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
@@ -751,11 +668,11 @@ void Player::AttackThreeUpdate() {
 	attackCollider_.DrawCollider();
 }
 
-void Player::BehaviorDashInitialize() {
+void Player3D::BehaviorDashInitialize() {
 	//transform_.rotate.y = targetRotateY;
 }
 
-void Player::BehaviorDashUpdate() {
+void Player3D::BehaviorDashUpdate() {
 	isDash_ = true;
 	isMoving_ = true;
 	InputManager* input = InputManager::GetInstance();
@@ -798,14 +715,14 @@ void Player::BehaviorDashUpdate() {
 	transform_.translate += move * DeltaTime::GetInstance()->GetGameTime();
 }
 
-void Player::BehaviorJumpInitialize() {
+void Player3D::BehaviorJumpInitialize() {
 	velocity_.y = kJumpFirstSpeed_;
 	SoundManager::GetInstance()->SoundPlay("snd_step", 1.0f, 1.0f, kSoundEffect);
 
 
 }
 
-void Player::BehaviorJumpUpdate() {
+void Player3D::BehaviorJumpUpdate() {
 	isJump_ = true;
 
 	FloatingAccelerationChange();
@@ -829,7 +746,7 @@ void Player::BehaviorJumpUpdate() {
 	}
 }
 
-void Player::BehaviorDashAttackInitialize() {
+void Player3D::BehaviorDashAttackInitialize() {
 
 	attackTimer_ = 0.0f;
 	attackTimeMax_ = kDashAttackStart;
@@ -843,7 +760,7 @@ void Player::BehaviorDashAttackInitialize() {
 	attackCollider_.SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack));
 }
 
-void Player::BehaviorDashAttackUpdate() {
+void Player3D::BehaviorDashAttackUpdate() {
 	isDash_ = true;
 	attackCollider_.SetActive(false);
 	attackCollider_.SetTransform(transform_);
@@ -888,7 +805,7 @@ void Player::BehaviorDashAttackUpdate() {
 	attackCollider_.DrawCollider();
 }
 
-void Player::BehaviorDashJumpAttackInitialize() {
+void Player3D::BehaviorDashJumpAttackInitialize() {
 	InputManager* input = InputManager::GetInstance();
 	Vector3 direction = { 0.0f,0.0f,0.0f };
 	SoundManager::GetInstance()->SoundPlay("snd_drill", 1.0f, 1.0f, kSoundEffect);
@@ -938,7 +855,7 @@ void Player::BehaviorDashJumpAttackInitialize() {
 	useNextAttack_ = false;
 }
 
-void Player::BehaviorDashJumpAttackUpdate() {
+void Player3D::BehaviorDashJumpAttackUpdate() {
 	isDash_ = true;
 	attackCollider_.SetTransform(transform_);
 	attackCollider_.SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
@@ -977,11 +894,11 @@ void Player::BehaviorDashJumpAttackUpdate() {
 	attackCollider_.DrawCollider();
 }
 
-void Player::BehaviorFallInitialize() {
+void Player3D::BehaviorFallInitialize() {
 	velocity_.y = 0.0f;
 }
 
-void Player::BehaviorFallUpdate() {
+void Player3D::BehaviorFallUpdate() {
 	FloatingAccelerationChange();
 
 	Vector3 accelerationVector = { 0.0f,-kGravityAcceleration,0.0f };
@@ -1003,7 +920,7 @@ void Player::BehaviorFallUpdate() {
 	}
 }
 
-void Player::UpdateFloatingGimmick() {
+void Player3D::UpdateFloatingGimmick() {
 	float kFloatingAnimationStep = 2.0f * std::numbers::pi_v<float> / kFloatingAnimationPeriod;
 	floatingParameter += kFloatingAnimationStep;
 
@@ -1012,7 +929,7 @@ void Player::UpdateFloatingGimmick() {
 	transformColliderOffset.translate.y = (std::sin(floatingParameter) * kFloatingAmplitude) + kBodyBlankY;
 }
 
-void Player::Draw() {
+void Player3D::Draw() {
 	Transform dashT;
 	dashT.Initialize();
 	dashT.SetParent(&transformModel);
@@ -1033,7 +950,7 @@ void Player::Draw() {
 	DrawCollider();
 }
 
-void Player::RegisterGlobalVariables() {
+void Player3D::RegisterGlobalVariables() {
 
 	const char* groupName = "Player";
 
@@ -1041,14 +958,14 @@ void Player::RegisterGlobalVariables() {
 	GlobalVariables::GetInstance()->AddValue(groupName, "FloatingAmplitude", kFloatingAmplitude);
 }
 
-void Player::ApplyGlobalVariables() {
+void Player3D::ApplyGlobalVariables() {
 	const char* groupName = "Player";
 	kFloatingAnimationPeriod = GlobalVariables::GetInstance()->GetIntValue(groupName, "FloatingAnimationPeriod");
 	kFloatingAmplitude = GlobalVariables::GetInstance()->GetFloatValue(groupName, "FloatingAmplitude");
 
 }
 
-void Player::OnCollision([[maybe_unused]] Collider* other) {
+void Player3D::OnCollision([[maybe_unused]] Collider* other) {
 	if (isImmune_ || isDeath_) {
 		return;
 	}

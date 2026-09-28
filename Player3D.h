@@ -2,12 +2,11 @@
 #include "Satlib.h"
 #include "HPGauge.h"
 #include <string>
-#include "MapChipManager.h"
 
 /// <summary>
 /// 自キャラ
 /// </summary>
-class Player : public Collider {
+class Player3D : public Collider {
 public:
 	enum class Behavior {
 		kRoot,
@@ -33,11 +32,6 @@ public:
 		float chargeSpeed; // ため移動速度.
 
 		float swingSpeed; // 攻撃移動速度.
-	};
-
-	enum class LRDirection {
-		kRight,
-		kLeft,
 	};
 
 	void Initialize();
@@ -84,8 +78,6 @@ private:
 	void BehaviorRootInitialize();
 	void BehaviorRootUpdate();
 
-	void MovingUpdate();
-
 	void BehaviorAttackInitialize();
 	void BehaviorAttackUpdate();
 	void BehaviorAttackFinished();
@@ -110,57 +102,7 @@ private:
 	void InitializeFloatingGimmick();
 
 	void UpdateFloatingGimmick();
-
-	// 3 判定結果を反映して移動.
-
-	void CollisionMoveUpdate(const CollisionMapInfo& info);
-
-	// 4 天井に接触している場合の処理.
-	void CellingCollisionUpdate(const CollisionMapInfo& info);
-
-	// 5 壁に接触している場合の処理.
-	void IsHitWallUpdate(const CollisionMapInfo& info);
-
-	// 6 接地状態の切り替え.
-	void IsGroundUpdate(const CollisionMapInfo& info);
-
-	// 7 旋回制御.
-	void TurningControl();
-
-	void CheckFallVoid();
-
-	void MapCollision();
 private:
-	float knockbackParameter_ = 0.0f;
-	static inline const float kKnockbackParameterBack = 0.2f;
-	static inline const float kKnockbackParameterStop = 0.2f;
-
-	static inline const float kAttenuationLanding = 0.01f;
-
-	static inline const float kAttenuationWall = 0.1f;
-
-
-	// 移動.
-	static inline const float kAcceletation = 0.02f;
-	static inline const float kAttenuation = 0.1f;
-	static inline const float kLimitRunSpeed = 0.25f;
-
-	Transform transform_;
-	Vector3 velocity_ = {};
-
-	// ジャンプ.v
-	static inline const float kLimitFallSpeed = 0.4f;
-	static inline const float kJumpAcceleration = 0.3f;
-
-	bool onGround_ = true;
-
-	// 旋回制御.
-	static inline const float kTimeTurn = 0.3f;
-
-	LRDirection lrDirection_ = LRDirection::kRight;
-	float turnFirstRotationY_ = 0.0f;
-	float turnTimer_ = 0.0f;
-
 	std::string emitterName_ = "player_emitter";
 
 	bool isAttack_;
@@ -202,6 +144,7 @@ private:
 	static inline float kJumpFirstSpeed_ = 7.0f;
 	static inline float kDashJumpFirstSpeed_ = 12.0f;
 
+	Vector3 velocity_;
 	static inline float kGravityAcceleration = 20.0f;
 
 	bool isMoving_;

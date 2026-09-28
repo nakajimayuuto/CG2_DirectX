@@ -351,7 +351,7 @@
     <ClCompile Include="Managers\LightManager.cpp">
       <Filter>Managers\LightManager</Filter>
     </ClCompile>
-    <ClCompile Include="Player.cpp">
+    <ClCompile Include="Player3D.cpp">
       <Filter>ソース ファイル\Player</Filter>
     </ClCompile>
     <ClCompile Include="Ground.cpp">
@@ -398,6 +398,9 @@
     </ClCompile>
     <ClCompile Include="Managers\StageManager.cpp">
       <Filter>Managers\StageManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>ソース ファイル\Player</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -554,7 +557,7 @@
     <ClInclude Include="Managers\LightManager.h">
       <Filter>Managers\LightManager</Filter>
     </ClInclude>
-    <ClInclude Include="Player.h">
+    <ClInclude Include="Player3D.h">
       <Filter>ソース ファイル\Player</Filter>
     </ClInclude>
     <ClInclude Include="Ground.h">
@@ -607,6 +610,9 @@
     </ClInclude>
     <ClInclude Include="Managers\StageManager.h">
       <Filter>Managers\StageManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>ソース ファイル\Player</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

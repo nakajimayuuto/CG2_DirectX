@@ -309,3 +309,36 @@ Vector3 MapChipManager::CornerPosition(const Vector3& position, Corner corner) {
 
 	return static_cast<Vector3>(position) + offsetTable[static_cast<uint32_t>(corner)];
 }
+
+bool MapChipManager::OnGroundCheck(const Vector3& position,const CollisionMapInfo& info){
+	std::array<Vector3, 4> positionNew;
+
+	for (uint32_t i = 0; i < positionNew.size(); i++) {
+		positionNew[i] = MapChipManager::GetInstance()->CornerPosition(static_cast<Vector3>(position) + info.movementAmount, static_cast<MapChipManager::Corner>(i));
+	}
+
+	MapChipType mapChipType;
+
+	bool hit = false;
+
+	MapChipField::IndexSet indexSet;
+	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionNew[kLeftBottom] + Vector3(0.0f, -kBlank, 0.0f));
+	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVirtical() - 1 - indexSet.yIndex);
+
+	if (mapChipType == MapChipType::kBlock) {
+		hit = true;
+	}
+
+	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionNew[kRightBottom] + Vector3(0.0f, -kBlank, 0.0f));
+	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVirtical() - 1 - indexSet.yIndex);
+
+	if (mapChipType == MapChipType::kBlock) {
+		hit = true;
+	}
+
+	if (!hit) {
+		return false;
+	}
+
+	return true;
+}

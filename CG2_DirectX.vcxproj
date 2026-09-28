@@ -25,6 +25,7 @@
     <ClCompile Include="MapChipField.cpp" />
     <ClCompile Include="MapChipManager.cpp" />
     <ClCompile Include="PauseMenu.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="ProjectileManager.cpp" />
     <ClCompile Include="ContactRecord.cpp" />
     <ClCompile Include="Engine\Math\Beats.cpp" />
@@ -100,7 +101,7 @@
     <ClCompile Include="Managers\SceneManager.cpp" />
     <ClCompile Include="Managers\SoundManager.cpp" />
     <ClCompile Include="Managers\TextureManager.cpp" />
-    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Player3D.cpp" />
     <ClCompile Include="Scene\GameScene.cpp" />
     <ClCompile Include="Scene\TitleScene.cpp" />
     <ClCompile Include="ShieldEnemy.cpp" />
@@ -118,6 +119,7 @@
     <ClInclude Include="MapChipField.h" />
     <ClInclude Include="MapChipManager.h" />
     <ClInclude Include="PauseMenu.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="ProjectileManager.h" />
     <ClInclude Include="ContactRecord.h" />
     <ClInclude Include="Engine\Math\Beats.h" />
@@ -169,7 +171,7 @@
     <ClInclude Include="Managers\SceneManager.h" />
     <ClInclude Include="Managers\SoundManager.h" />
     <ClInclude Include="Managers\TextureManager.h" />
-    <ClInclude Include="Player.h" />
+    <ClInclude Include="Player3D.h" />
     <ClInclude Include="Satlib.h" />
     <ClInclude Include="Scene\GameScene.h" />
     <ClInclude Include="Scene\IScene.h" />
