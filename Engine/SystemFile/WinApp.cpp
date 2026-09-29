@@ -7,7 +7,6 @@ void WinApp::Initialize() {
 	=============================================================*/
 	CoInitializeEx(0, COINIT_MULTITHREADED);
 
-
 	/*=============================================================
 	Window作成系
 	=============================================================*/
@@ -61,7 +60,6 @@ void WinApp::Initialize() {
 	}
 #endif // _DEBUG
 
-
 	// ウィンドウを表示する.
 	ShowWindow(hwnd, SW_SHOW);
 }
@@ -76,9 +74,9 @@ LRESULT CALLBACK WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM l
 #ifdef _DEBUG
 
 
-	//if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
-	//	return true;
-	//}
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
+		return true;
+	}
 #endif // _DEBUG
 
 	RECT* rect;

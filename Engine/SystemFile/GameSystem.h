@@ -12,6 +12,9 @@
 #include <dbghelp.h>
 #include <vector>
 #include <numbers>
+#include "WinApp.h"
+
+
 #include "../Math/Vector4.h"
 #include "../Math/Vertex.h"
 #include "../Math/Matrix4x4.h"
@@ -201,12 +204,15 @@ public:
 	//static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle();
 
 private:
-	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-
 	std::ofstream CreateLogFile();
 
 	void WindowSizeUpdate();
 private:
+	/*=============================================================
+	WindowsApi系
+	=============================================================*/
+	std::unique_ptr<WinApp> winApp_;
+
 	uint32_t drawCount_;
 
 	/*=============================================================
@@ -214,13 +220,9 @@ private:
 	=============================================================*/
 	static D3DResourceLeakChecker resourceLeakChecker;
 
-	WNDCLASS wc{};
-
 	MSG msg{};
 
 	Microsoft::WRL::ComPtr<ID3D12Device> device = nullptr;
-
-	HWND hwnd;
 
 	std::ofstream logStream;
 
