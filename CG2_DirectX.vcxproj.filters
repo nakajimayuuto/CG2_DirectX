@@ -205,6 +205,9 @@
     <Filter Include="Managers\StageManager">
       <UniqueIdentifier>{4b3dc800-e706-4bc0-9f9c-77f7e27d4596}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\SystemFile\WinApp">
+      <UniqueIdentifier>{79ea8616-0475-467f-a001-5cd496789e24}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -398,6 +401,9 @@
     </ClCompile>
     <ClCompile Include="Managers\StageManager.cpp">
       <Filter>Managers\StageManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\SystemFile\WinApp.cpp">
+      <Filter>Engine\SystemFile\WinApp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -607,6 +613,9 @@
     </ClInclude>
     <ClInclude Include="Managers\StageManager.h">
       <Filter>Managers\StageManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\SystemFile\WinApp.h">
+      <Filter>Engine\SystemFile\WinApp</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

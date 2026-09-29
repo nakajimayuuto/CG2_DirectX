@@ -22,6 +22,7 @@
     <ClCompile Include="BaseEnemy.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="Engine\Renderer\TextRenderer.cpp" />
+    <ClCompile Include="Engine\SystemFile\WinApp.cpp" />
     <ClCompile Include="Fade.cpp" />
     <ClCompile Include="HPGauge.cpp" />
     <ClCompile Include="Managers\DifficultyManager.cpp" />
@@ -125,6 +126,7 @@
     <ClInclude Include="BaseEnemy.h" />
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="Engine\Renderer\TextRenderer.h" />
+    <ClInclude Include="Engine\SystemFile\WinApp.h" />
     <ClInclude Include="externals\magic_enum\magic_enum.hpp" />
     <ClInclude Include="Fade.h" />
     <ClInclude Include="HPGauge.h" />
