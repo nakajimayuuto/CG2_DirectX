@@ -15,7 +15,7 @@ InputManager* InputManager::GetInstance() {
 	return &instance;
 }
 
-void InputKeyBoard::Initialize(IDirectInput8* directInput) {
+void InputKeyBoard::Initialize(Microsoft::WRL::ComPtr<IDirectInput8> directInput) {
 
 	// キーボードデバイスの作成.
 	HRESULT result = directInput->CreateDevice(GUID_SysKeyboard, &keyBoard_, NULL);
@@ -37,7 +37,7 @@ void InputKeyBoard::Update() {
 	keyBoard_->GetDeviceState(sizeof(keys_), keys_);
 }
 
-void InputMouse::Initialize(IDirectInput8* directInput) {
+void InputMouse::Initialize(Microsoft::WRL::ComPtr<IDirectInput8> directInput) {
 
 	// キーボードデバイスの作成.
 	HRESULT result = directInput->CreateDevice(GUID_SysMouse, &mouse_, NULL);

@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <xinput.h>
 #include <array>
+#include <wrl.h>
 #include "../Engine/Math/Vector2.h"
 #include "../Engine/Math/Easing.h"
 
@@ -16,39 +17,6 @@ enum class VibrationType {
 	FIXED_TIME,
 	CONTINUATION,
 };
-/*
-enum PadButtoms {
-	INPUT_A = XINPUT_GAMEPAD_A,
-	INPUT_B = XINPUT_GAMEPAD_B,
-	INPUT_X = XINPUT_GAMEPAD_X,
-	INPUT_Y = XINPUT_GAMEPAD_Y,
-
-	INPUT_UP = XINPUT_GAMEPAD_DPAD_UP,
-	INPUT_DOWN = XINPUT_GAMEPAD_DPAD_DOWN,
-	INPUT_LEFT = XINPUT_GAMEPAD_DPAD_LEFT,
-	INPUT_RIGHT = XINPUT_GAMEPAD_DPAD_RIGHT,
-
-	INPUT_LSTICK_UP,
-	INPUT_LSTICK_DOWN,
-	INPUT_LSTICK_LEFT,
-	INPUT_LSTICK_RIGHT,
-
-	INPUT_RSTICK_UP,
-	INPUT_RSTICK_DOWN,
-	INPUT_RSTICK_LEFT,
-	INPUT_RSTICK_RIGHT = 111,
-
-	INPUT_L1 = XINPUT_GAMEPAD_LEFT_SHOULDER,
-	INPUT_R1 = XINPUT_GAMEPAD_RIGHT_SHOULDER,
-	INPUT_L2,
-	INPUT_R2,
-	INPUT_L3 = XINPUT_GAMEPAD_LEFT_THUMB, // Lスティック押し込み.
-	INPUT_R3 = XINPUT_GAMEPAD_RIGHT_THUMB, // Rスティック押し込み.
-
-	INPUT_START = XINPUT_GAMEPAD_START,
-	INPUT_BACK = XINPUT_GAMEPAD_BACK,
-};
-*/
 
 enum PadButtons {
 	INPUT_A, // Aボタン.
@@ -97,7 +65,7 @@ enum MouseButtons {
 
 class InputKeyBoard {
 public:
-	void Initialize(IDirectInput8* directInput);
+	void Initialize(Microsoft::WRL::ComPtr<IDirectInput8> directInput);
 
 	void Update();
 
@@ -109,7 +77,7 @@ public:
 	bool IsOperationDevice();
 private:
 
-	IDirectInputDevice8* keyBoard_ = nullptr;
+	Microsoft::WRL::ComPtr<IDirectInputDevice8> keyBoard_ = nullptr;
 
 	BYTE keys_[256] = {};
 	BYTE preKeys_[256] = {};
@@ -182,7 +150,7 @@ private:
 
 class InputMouse {
 public:
-	void Initialize(IDirectInput8* directInput);
+	void Initialize(Microsoft::WRL::ComPtr<IDirectInput8> directInput);
 
 	void Update();
 
@@ -221,7 +189,7 @@ private:
 	bool isCursorVisible_;
 
 	bool isDebugCursorMovingAllow_;
-	IDirectInputDevice8* mouse_ = nullptr;
+	Microsoft::WRL::ComPtr<IDirectInputDevice8> mouse_ = nullptr;
 
 	DIMOUSESTATE2 mouseState_ = {};
 	DIMOUSESTATE2 preMouseState_ = {};
@@ -310,7 +278,7 @@ private:
 private:
 	std::array<std::pair<std::pair<std::vector<uint8_t>, std::vector<MouseButtons>>, std::vector<PadButtons>>, static_cast<size_t>(InputAction::COUNT)> inputActions_;
 	bool isDebugCursorMovingAllow_ = false;
-	IDirectInput8* directInput_ = nullptr;
+	Microsoft::WRL::ComPtr<IDirectInput8> directInput_ = nullptr;
 	InputKeyBoard keyBoard_;
 	InputMouse mouse_;
 	InputGamePad gamePad_;
