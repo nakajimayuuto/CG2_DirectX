@@ -55,7 +55,9 @@
     <ClCompile Include="Engine\SystemFile\Convert.cpp" />
     <ClCompile Include="Engine\SystemFile\Debug.cpp" />
     <ClCompile Include="Engine\SystemFile\DeltaTime.cpp" />
-    <ClCompile Include="Engine\SystemFile\GameSystem.cpp" />
+    <ClCompile Include="Engine\SystemFile\GameSystem.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+    </ClCompile>
     <ClCompile Include="Engine\SystemFile\GlobalVariables.cpp" />
     <ClCompile Include="Environment.cpp" />
     <ClCompile Include="externals\imgui\imgui.cpp">
@@ -102,7 +104,9 @@
     </ClCompile>
     <ClCompile Include="GameCamera.cpp" />
     <ClCompile Include="Ground.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="main.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+    </ClCompile>
     <ClCompile Include="Managers\CollisionManager.cpp" />
     <ClCompile Include="Managers\InputManager.cpp" />
     <ClCompile Include="Managers\LightManager.cpp" />
@@ -345,13 +349,15 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <Optimization>Disabled</Optimization>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -359,6 +365,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
+      <LinkTimeCodeGeneration />
     </Link>
     <PostBuildEvent>
       <Command>copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxcompiler.dll" "$(TargetDir)dxcompiler.dll"

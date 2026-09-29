@@ -2,7 +2,6 @@
 void LoadDatas();
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
-
 	GameSystem* system = GameSystem::GetInstance();
 
 	Camera::GetInstance()->Initialize(static_cast<float>(Environment::GetInstance()->GetWindowSize().width), static_cast<float>(Environment::GetInstance()->GetWindowSize().height));
