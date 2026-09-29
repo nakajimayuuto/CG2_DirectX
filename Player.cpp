@@ -357,57 +357,55 @@ void Player::BehaviorRootUpdate() {
 }
 
 void Player::MovingUpdate() {
-	if (onGround_) {
-		if (InputManager::GetInstance()->PressKey(DIK_RIGHT) || InputManager::GetInstance()->PressKey(DIK_LEFT)) {
-			// 左右加速.
-			Vector3 acceleration = {};
+	if (InputManager::GetInstance()->PressKey(DIK_RIGHT) || InputManager::GetInstance()->PressKey(DIK_LEFT)) {
+		// 左右加速.
+		Vector3 acceleration = {};
 
-			if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
-				// 左移動中の右入力.
-				if (velocity_.x < 0.0f) {
-					velocity_.x *= (1.0f - kAttenuation);
-				}
-
-				acceleration.x += kAcceletation;
-
-				if (lrDirection_ != LRDirection::kRight) {
-					lrDirection_ = LRDirection::kRight;
-
-					turnFirstRotationY_ = transform_.rotate.y;
-					turnTimer_ = kTimeTurn;
-				}
-			} else if (InputManager::GetInstance()->PressKey(DIK_LEFT)) {
-				// 右移動中の左入力.
-				if (velocity_.x > 0.0f) {
-					velocity_.x *= (1.0f - kAttenuation);
-				}
-
-				acceleration.x -= kAcceletation;
-
-				if (lrDirection_ != LRDirection::kLeft) {
-					lrDirection_ = LRDirection::kLeft;
-
-					turnFirstRotationY_ = transform_.rotate.y;
-					turnTimer_ = kTimeTurn;
-				}
+		if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
+			// 左移動中の右入力.
+			if (velocity_.x < 0.0f) {
+				velocity_.x *= (1.0f - kAttenuation);
 			}
 
+			acceleration.x += kAcceleration;
 
+			if (lrDirection_ != LRDirection::kRight) {
+				lrDirection_ = LRDirection::kRight;
 
-			// 加速減速.
-			velocity_ += acceleration;
-
-			// 最大速度制限.
-			velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
-		} else {
-			// 非入力時は移動減衰をかける.
-			if (velocity_.x <= 0.01f && velocity_.x >= -0.01f) {
-				velocity_.x = 0.0f;
-			} else {
+				turnFirstRotationY_ = transform_.rotate.y;
+				turnTimer_ = kTimeTurn;
+			}
+		} else if (InputManager::GetInstance()->PressKey(DIK_LEFT)) {
+			// 右移動中の左入力.
+			if (velocity_.x > 0.0f) {
 				velocity_.x *= (1.0f - kAttenuation);
+			}
+
+			acceleration.x -= kAcceleration;
+
+			if (lrDirection_ != LRDirection::kLeft) {
+				lrDirection_ = LRDirection::kLeft;
+
+				turnFirstRotationY_ = transform_.rotate.y;
+				turnTimer_ = kTimeTurn;
 			}
 		}
 
+		// 加速減速.
+		velocity_ += acceleration;
+
+		// 最大速度制限.
+		velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
+	} else {
+		// 非入力時は移動減衰をかける.
+		if (velocity_.x <= 0.01f && velocity_.x >= -0.01f) {
+			velocity_.x = 0.0f;
+		} else {
+			velocity_.x *= (1.0f - kAttenuation);
+		}
+	}
+
+	if (onGround_) {
 		if (InputManager::GetInstance()->PressKey(DIK_UP)) {
 			//behaviorRequest_ = Behavior::kJump;
 			velocity_ += Vector3(0.0f, kJumpAcceleration, 0.0f);
@@ -418,29 +416,6 @@ void Player::MovingUpdate() {
 		// 速度制限.
 		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
 	}
-
-	// 多分いらない.
-	//bool landing = false;
-	//if (velocity_.y < 0.0f) {
-	//	if (transform_.translate.y <= 1.0f) {
-	//		landing = true;
-	//	}
-	//}
-	//
-	//if (onGround_) {
-	//	if (velocity_.y > 0.0f) {
-	//		onGround_ = false;
-	//	}
-	//} else {
-	//	if (landing) {
-	//		transform_.translate.y = 1.0f;
-	//		velocity_.x *= (1.0f - kAttenuation);
-	//		velocity_.y = 0.0f;
-	//		onGround_ = true;
-	//	}
-	//}
-
-	//transform_.translate += velocity_;
 }
 
 void Player::CollisionMoveUpdate(const CollisionMapInfo& info) {
@@ -465,7 +440,7 @@ void Player::IsGroundUpdate(const CollisionMapInfo& info) {
 		if (velocity_.y > 0.0f) {
 			onGround_ = false;
 		} else {
-			if (!MapChipManager::GetInstance()->OnGroundCheck(transform_.translate,info)) {
+			if (!MapChipManager::GetInstance()->OnGroundCheck(transform_.translate, info)) {
 				onGround_ = false;
 			}
 		}
@@ -508,7 +483,7 @@ void Player::MapCollisionUpdate() {
 
 	collisionMapInfo.movementAmount = velocity_ * DeltaTime::GetInstance()->GetGameTime();
 
-	MapChipManager::GetInstance()->MapCollision(transform_.translate,collisionMapInfo);
+	MapChipManager::GetInstance()->MapCollision(transform_.translate, collisionMapInfo);
 
 	CollisionMoveUpdate(collisionMapInfo);
 
@@ -521,6 +496,41 @@ void Player::MapCollisionUpdate() {
 	TurningControl();
 
 	CheckFallVoid();
+}
+
+void Player::BehaviorJumpInitialize() {
+	velocity_.y = kJumpFirstSpeed_;
+	SoundManager::GetInstance()->SoundPlay("snd_step", 1.0f, 1.0f, kSoundEffect);
+
+
+}
+
+void Player::BehaviorJumpUpdate() {
+	isJump_ = true;
+
+	FloatingAccelerationChange();
+
+	Vector3 accelerationVector = { 0.0f,-kGravityAcceleration,0.0f };
+	velocity_ += accelerationVector * DeltaTime::GetInstance()->GetGameTime();
+	//transform_.translate += velocity_ * DeltaTime::GetInstance()->GetGameTime();
+
+
+	if (transform_.translate.y <= kTranslateBlankY) {
+		transform_.translate.y = kTranslateBlankY;
+		behaviorRequest_ = Behavior::kRoot;
+		SoundManager::GetInstance()->SoundPlay("snd_step", 1.0f, 1.0f, kSoundEffect);
+	}
+
+	if (tutorialUsableDash_) {
+		if (GetAttackButtonTrigger()) {
+			SoundManager::GetInstance()->SoundPlay("snd_shine", 1.0f, 1.0f, kSoundEffect);
+			behaviorRequest_ = Behavior::kDashAttack;
+		}
+	}
+
+	MapCollisionUpdate();
+
+	UpdateFloatingGimmick();
 }
 
 void Player::BehaviorAttackInitialize() {
@@ -820,41 +830,6 @@ void Player::BehaviorDashUpdate() {
 	velocity_ = move;
 
 	transform_.translate += move * DeltaTime::GetInstance()->GetGameTime();
-}
-
-void Player::BehaviorJumpInitialize() {
-	velocity_.y = kJumpFirstSpeed_;
-	SoundManager::GetInstance()->SoundPlay("snd_step", 1.0f, 1.0f, kSoundEffect);
-
-
-}
-
-void Player::BehaviorJumpUpdate() {
-	isJump_ = true;
-
-	FloatingAccelerationChange();
-
-	Vector3 accelerationVector = { 0.0f,-kGravityAcceleration,0.0f };
-	velocity_ += accelerationVector * DeltaTime::GetInstance()->GetGameTime();
-	//transform_.translate += velocity_ * DeltaTime::GetInstance()->GetGameTime();
-
-
-	if (transform_.translate.y <= kTranslateBlankY) {
-		transform_.translate.y = kTranslateBlankY;
-		behaviorRequest_ = Behavior::kRoot;
-		SoundManager::GetInstance()->SoundPlay("snd_step", 1.0f, 1.0f, kSoundEffect);
-	}
-
-	if (tutorialUsableDash_) {
-		if (GetAttackButtonTrigger()) {
-			SoundManager::GetInstance()->SoundPlay("snd_shine", 1.0f, 1.0f, kSoundEffect);
-			behaviorRequest_ = Behavior::kDashAttack;
-		}
-	}
-
-	MapCollisionUpdate();
-
-	UpdateFloatingGimmick();
 }
 
 void Player::BehaviorDashAttackInitialize() {

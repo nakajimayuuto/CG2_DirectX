@@ -141,7 +141,7 @@ private:
 
 
 	// 移動.
-	static inline const float kAcceletation = 0.8f;
+	static inline const float kAcceleration = 0.8f;
 	static inline const float kAttenuation = 1.0f;
 	static inline const float kLimitRunSpeed = 20.0f;
 
@@ -150,7 +150,7 @@ private:
 
 	// ジャンプ.v
 	static inline const float kLimitFallSpeed = 10.0f;
-	static inline const float kJumpAcceleration = 15.0f;
+	static inline const float kJumpAcceleration = 20.0f;
 
 	bool onGround_ = true;
 
