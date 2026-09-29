@@ -991,7 +991,7 @@ void Player::OnCollision([[maybe_unused]] Collider* other) {
 			damageCoolTimer_ = other->GetDamageCoolTime();
 		}
 		SoundManager::GetInstance()->SoundPlay("snd_player_damage", 1.0f, 1.0f, kSoundEffect);
-		ParticleManager::GetInstance()->SpawnNumbers(other->GetDamage(), damageTransform, { 1.0f,0.5f,0.5f });
+		//ParticleManager::GetInstance()->SpawnNumbers(other->GetDamage(), damageTransform, { 1.0f,0.5f,0.5f });
 		InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.5f);
 
 		if (currentHP_ < 0.0f) {

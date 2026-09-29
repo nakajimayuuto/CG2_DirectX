@@ -90,6 +90,18 @@ void GameScene::Update() {
 	}
 #endif // _DEBUG
 
+	ImGui::Begin("a");
+
+	ImGui::SliderInt("type", & type,0,static_cast<int>(BulletType::kFire));
+	ImGui::SliderInt("count", & count,0,24);
+	ImGui::SliderFloat("direction", &direction,1.0f,360.0f);
+
+	if (ImGui::Button("shot")) {
+		ProjectileManager::GetInstance()->CreateDiffusionBullet(Transform::GetInitialValue({1.0f,1.0f,1.0f}, {0.0f,0.0f,0.0f}, {0.0f,1.0f,0.0f}), { -10.0f,0.0f,0.0f }, static_cast<BulletType>(type), CollisionAttributeName::kCollisionEnemy, 10.0f, 1.0f, Radian(direction), count);
+	}
+
+	ImGui::End();
+
 	if (gameOverMenu_->GetIsActive()) {
 		if (gameOverMenu_->GetCanGameUpdate()) {
 			gameOverMenu_->Update();

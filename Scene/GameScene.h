@@ -42,6 +42,9 @@ private:
 	void TutorialUpdate();
 	void TutorialDraw();
 private:
+	int type = 0.0f;
+	int count = 0.0f;
+	float direction = 15.0f;
 
 	float tutorialTimer_;
 	float tutorialTimerMax_ = 1.0f;
