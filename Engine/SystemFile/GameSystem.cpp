@@ -62,7 +62,7 @@ void GameSystem::Initialize() {
 	winApp_ = std::make_unique<WinApp>();
 	winApp_->Initialize();
 
-	InputManager::GetInstance()->Initialize();
+	InputManager::GetInstance()->Initialize(winApp_.get());
 
 	logStream = CreateLogFile();
 
@@ -188,15 +188,15 @@ void GameSystem::Initialize() {
 	=============================================================*/
 	// スワップチェーンを生成する.
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
-	swapChainDesc.Width = 1280;// kClientWidth; //画面の幅。ウィンドウのクライアント領域を同じものにする.
-	swapChainDesc.Height = 720;// kClientHeight; //画面の高さ。ウィンドウのクライアント領域を同じものにする.
+	swapChainDesc.Width = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().width); //画面の幅。ウィンドウのクライアント領域を同じものにする.
+	swapChainDesc.Height = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().height); //画面の高さ。ウィンドウのクライアント領域を同じものにする.
 	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; //色の形式.
 	swapChainDesc.SampleDesc.Count = 1; // マルチサンプルしない.
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // 描画のターゲットとして利用する.
 	swapChainDesc.BufferCount = 2; // ダブルバッファ.
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD; //モニタに移したら中身を破棄.
 	// コマンドキュー、ウィンドウハンドル、設定を渡して生成する.
-	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue.Get(), hwnd, &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf()));
+	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue.Get(), winApp_->GetHWND() , &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf()));
 	assert(SUCCEEDED(hr));
 
 
@@ -269,7 +269,7 @@ void GameSystem::Initialize() {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
-	ImGui_ImplWin32_Init(hwnd);
+	ImGui_ImplWin32_Init(winApp_->GetHWND());
 	ImGui_ImplDX12_Init(device.Get(),
 		swapChainDesc.BufferCount,
 		rtvDesc.Format,
@@ -807,18 +807,12 @@ bool GameSystem::ProcessMessage() {
 		return false;
 	}
 
-	return msg.message != WM_QUIT;
+	return !winApp_->ProcessMessage();
 }
 
 bool GameSystem::BeginFrame() {
 	drawCount_ = 0;
 	// Windowにメッセージが来てたら最優先で処理させる.
-	if (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-
-		return false;
-	}
 
 	InputManager::GetInstance()->Update();
 
@@ -986,10 +980,7 @@ void GameSystem::Finalize() {
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 #endif // USE_IMGUI
-
-	CloseWindow(hwnd);
-
-	CoUninitialize();
+	winApp_->Finalize();
 }
 
 void GameSystem::WindowSizeUpdate() {

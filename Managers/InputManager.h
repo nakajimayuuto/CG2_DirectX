@@ -8,6 +8,7 @@
 #include <wrl.h>
 #include "../Engine/Math/Vector2.h"
 #include "../Engine/Math/Easing.h"
+#include "../Engine/SystemFile/WinApp.h"
 
 enum class OperationMode {
 	KeyBoard,
@@ -215,7 +216,7 @@ class InputManager {
 public:
 	static InputManager* GetInstance();
 
-	void Initialize();
+	void Initialize(WinApp* winApp);
 
 	void Update();
 

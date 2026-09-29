@@ -13,6 +13,13 @@ public:
 	void Initialize();
 
 	void Update();
+
+	void Finalize();
+
+	HWND GetHWND() const { return hwnd; };
+	HINSTANCE GetHInstance() const{ return wc.hInstance; };
+
+	bool ProcessMessage();
 private:
 	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 private:

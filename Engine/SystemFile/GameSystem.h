@@ -122,10 +122,7 @@ public:
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetSrvDescriptorHeap() { return srvDescriptorHeap; };
 	uint32_t GetDescriptorSizeSRV() { return descriptorSizeSRV; };
-
-	WNDCLASS GetWc() { return wc; };
-
-	HWND GetHWND() { return hwnd; };
+	HWND GetHWND() { return winApp_->GetHWND(); };
 
 	std::ofstream& GetLogStream() { return logStream; };
 

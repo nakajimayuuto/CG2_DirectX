@@ -537,8 +537,8 @@ BYTE InputGamePad::GetPreButtonPress(PadButtons button) const {
 	return false;
 }
 
-void InputManager::Initialize() {// DirectInputの初期化.
-	HRESULT result = DirectInput8Create(GameSystem::GetInstance()->GetWc().hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
+void InputManager::Initialize(WinApp* winApp) {// DirectInputの初期化.
+	HRESULT result = DirectInput8Create(winApp->GetHInstance(), DIRECTINPUT_VERSION, IID_IDirectInput8,
 		(void**)&directInput_, nullptr);
 	assert(SUCCEEDED(result));
 

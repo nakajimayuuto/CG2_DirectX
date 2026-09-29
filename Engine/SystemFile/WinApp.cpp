@@ -5,7 +5,7 @@ void WinApp::Initialize() {
 	/*=============================================================
 	COMの初期化.
 	=============================================================*/
-	CoInitializeEx(0, COINIT_MULTITHREADED);
+	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
 
 	/*=============================================================
 	Window作成系
@@ -64,8 +64,28 @@ void WinApp::Initialize() {
 	ShowWindow(hwnd, SW_SHOW);
 }
 
+bool WinApp::ProcessMessage(){
+	MSG msg{};
+	if (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+	if (msg.message == WM_QUIT) {
+		return true;
+	}
+
+	return false;
+}
+
 void WinApp::Update() {
 
+}
+
+void WinApp::Finalize() {
+	CloseWindow(hwnd);
+
+	CoUninitialize();
 }
 
 LRESULT CALLBACK WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
