@@ -12,6 +12,9 @@
 #include <dbghelp.h>
 #include <vector>
 #include <numbers>
+
+#include <chrono>
+#include <thread>
 #include "WinApp.h"
 
 
@@ -126,6 +129,13 @@ private:
 	void ImGuiInitialize();
 
 	void LoadSampleDatas();
+
+private:
+	void FixFPSInitialize();
+
+	void FixFPSUpdate();
+private:
+	std::chrono::steady_clock::time_point reference_;
 private:
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory_ = nullptr;
 

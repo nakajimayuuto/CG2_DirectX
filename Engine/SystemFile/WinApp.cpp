@@ -62,6 +62,7 @@ void WinApp::Initialize() {
 
 	// ウィンドウを表示する.
 	ShowWindow(hwnd, SW_SHOW);
+	timeBeginPeriod(1);
 }
 
 bool WinApp::ProcessMessage(){

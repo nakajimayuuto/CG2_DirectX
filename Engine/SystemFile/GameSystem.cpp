@@ -59,6 +59,8 @@ void GameSystem::Initialize() {
 	// main関数始まってすぐに登録すると良い.
 	SetUnhandledExceptionFilter(ExportDump);
 
+	FixFPSInitialize();
+
 	winApp_ = std::make_unique<WinApp>();
 	winApp_->Initialize();
 
@@ -334,7 +336,7 @@ void GameSystem::DXCompilerInitialize() {
 	assert(SUCCEEDED(hr));
 }
 
-void GameSystem::ShaderCompile(){
+void GameSystem::ShaderCompile() {
 	vertexShaderBlobParticle = CompileShader(L"./hlsl/Particle.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
 	pixelShaderBlobParticle = CompileShader(L"./hlsl/Particle.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
 
@@ -349,7 +351,7 @@ void GameSystem::ShaderCompile(){
 
 }
 
-void GameSystem::PipelineInitialize(){
+void GameSystem::PipelineInitialize() {
 	for (uint32_t j = 0; j < static_cast<uint32_t>(ShaderType::kCount); j++) {
 		for (uint32_t i = 0; i < static_cast<uint32_t>(BlendMode::kCount); i++) {
 			CreatePipeline(static_cast<BlendMode>(i), static_cast<ShaderType>(j));
@@ -377,10 +379,29 @@ void GameSystem::ImGuiInitialize() {
 #endif // USE_IMGUI
 }
 
-void GameSystem::LoadSampleDatas(){
+void GameSystem::LoadSampleDatas() {
 	ModelManager::GetInstance()->RegisterObj("block_template", "Resource/block", "block.obj");
 	ModelManager::GetInstance()->RegisterObj("effect_plane", "Resource/effects", "effect_plane.obj");
 	TextureManager::GetInstance()->RegisterTexture("white_template", "Resource/white_template.png");
+}
+
+void GameSystem::FixFPSInitialize() {
+	reference_ = std::chrono::steady_clock::now();
+}
+
+void GameSystem::FixFPSUpdate() {
+	const std::chrono::microseconds kMinTime(uint64_t(1000000.0f/60.0f));
+	const std::chrono::microseconds kMinCheckTime(uint64_t(1000000.0f/65.0f));
+
+	std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+	std::chrono::microseconds elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - reference_);
+
+	if (elapsed < kMinCheckTime) {
+		while (std::chrono::steady_clock::now() - reference_ < kMinTime){
+			std::this_thread::sleep_for(std::chrono::microseconds(1));
+		}
+	}
+	reference_ = std::chrono::steady_clock::now();
 }
 
 void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
@@ -973,12 +994,14 @@ void GameSystem::EndFrame() {
 		WaitForSingleObject(fenceEvent, INFINITE);
 	}
 
-	auto end = std::chrono::high_resolution_clock::now();
-
-	double waitTime =
-		std::chrono::duration<double, std::milli>(end - start).count();
-
-	OutputDebugStringA(static_cast<LPCSTR>(std::format("{}ms\n", waitTime).c_str()));
+	FixFPSUpdate();
+	
+	//auto end = std::chrono::high_resolution_clock::now();
+	//
+	//double waitTime =
+	//	std::chrono::duration<double, std::milli>(end - start).count();
+	//
+	//OutputDebugStringA(static_cast<LPCSTR>(std::format("{}ms\n", waitTime).c_str()));
 
 
 	// 次のフレーム用のコマンドリストを準備.

@@ -1,4 +1,5 @@
 #pragma once
+#pragma comment(lib,"winmm.lib")
 #include <Windows.h>
 #include "../../Environment.h"
 #include <wrl.h>
