@@ -111,6 +111,12 @@ private:
 
 	void UpdateFloatingGimmick();
 
+	void MapChipDigUpdate();
+
+	void BlockShotUpdate();
+
+	void GravityUpdate();
+
 	// 3 判定結果を反映して移動.
 
 	void CollisionMoveUpdate(const CollisionMapInfo& info);
@@ -142,14 +148,15 @@ private:
 
 	// 移動.
 	static inline const float kAcceleration = 0.8f;
-	static inline const float kAttenuation = 1.0f;
+	static inline const float kAttenuation = 0.4f;
+	static inline const float kJumpAttenuation = 0.01f;
 	static inline const float kLimitRunSpeed = 20.0f;
 
 	Transform transform_;
 	Vector3 velocity_ = {};
 
 	// ジャンプ.v
-	static inline const float kLimitFallSpeed = 10.0f;
+	static inline const float kLimitFallSpeed = 30.0f;
 	static inline const float kJumpAcceleration = 20.0f;
 
 	bool onGround_ = true;

@@ -344,9 +344,14 @@ void Player::BehaviorRootUpdate() {
 		return;
 	}
 
-	//if (InputManager::GetInstance()->TriggerKey(DIK_SPACE)) {
-	//	behaviorRequest_ = Behavior::kAttack;
-	//}
+	MapChipField* mapChipField = MapChipManager::GetInstance()->GetMapChipField();
+	MapChipField::IndexSet indexSet;
+	indexSet = mapChipField->GetMapChipIndexSetByPosition(transform_.translate);
+
+
+	if (InputManager::GetInstance()->TriggerKey(DIK_LSHIFT)) {
+		MapChipDigUpdate();
+	}
 
 	MovingUpdate();
 
@@ -356,7 +361,37 @@ void Player::BehaviorRootUpdate() {
 
 }
 
+void Player::MapChipDigUpdate() {
+	MapChipManager::GetInstance()->DeleteBlock(transform_.translate,0,-1);
+	//MapChipManager::GetInstance()->DeleteBlock(transform_.translate,1,0);
+}
+
+void Player::BlockShotUpdate() {
+	if (InputManager::GetInstance()->TriggerKey(DIK_SPACE)) {
+		//behaviorRequest_ = Behavior::kJump;
+		velocity_.y = kJumpAcceleration;
+		//MapChipManager::GetInstance()->CreateBlock(transform_.translate);
+		//transform_.translate.y += 1.0f;
+	}
+}
+
+void Player::GravityUpdate(){
+	if (!onGround_) {
+		// 落下速度.
+		velocity_ += Vector3(0.0f, -kGravityAcceleration, 0.0f);
+		// 速度制限.
+		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
+	}
+}
+
 void Player::MovingUpdate() {
+	float attenuation = 1.0f;
+	if (onGround_) {
+		attenuation = kAttenuation;
+	} else {
+		attenuation = kJumpAttenuation;
+	}
+
 	if (InputManager::GetInstance()->PressKey(DIK_RIGHT) || InputManager::GetInstance()->PressKey(DIK_LEFT)) {
 		// 左右加速.
 		Vector3 acceleration = {};
@@ -364,7 +399,7 @@ void Player::MovingUpdate() {
 		if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
 			// 左移動中の右入力.
 			if (velocity_.x < 0.0f) {
-				velocity_.x *= (1.0f - kAttenuation);
+				velocity_.x *= (1.0f - attenuation);
 			}
 
 			acceleration.x += kAcceleration;
@@ -378,7 +413,7 @@ void Player::MovingUpdate() {
 		} else if (InputManager::GetInstance()->PressKey(DIK_LEFT)) {
 			// 右移動中の左入力.
 			if (velocity_.x > 0.0f) {
-				velocity_.x *= (1.0f - kAttenuation);
+				velocity_.x *= (1.0f - attenuation);
 			}
 
 			acceleration.x -= kAcceleration;
@@ -401,21 +436,14 @@ void Player::MovingUpdate() {
 		if (velocity_.x <= 0.01f && velocity_.x >= -0.01f) {
 			velocity_.x = 0.0f;
 		} else {
-			velocity_.x *= (1.0f - kAttenuation);
+			velocity_.x *= (1.0f - attenuation);
 		}
 	}
 
-	if (onGround_) {
-		if (InputManager::GetInstance()->PressKey(DIK_UP)) {
-			//behaviorRequest_ = Behavior::kJump;
-			velocity_ += Vector3(0.0f, kJumpAcceleration, 0.0f);
-		}
-	} else {
-		// 落下速度.
-		velocity_ += Vector3(0.0f, -kGravityAcceleration, 0.0f);
-		// 速度制限.
-		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
-	}
+
+	BlockShotUpdate();
+
+	GravityUpdate();
 }
 
 void Player::CollisionMoveUpdate(const CollisionMapInfo& info) {

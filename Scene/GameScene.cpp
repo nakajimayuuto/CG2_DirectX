@@ -11,7 +11,7 @@ void GameScene::Initialize() {
 	SoundManager::GetInstance()->ResetBGM();
 
 	DeltaTime::GetInstance()->SetGameTimeSpeed(1.0f);
-	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.15f;
+	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.5f;
 	LightManager::GetInstance()->GetDirectionalLightData()->direction = { 0.0f,-1.0f,0.0f };
 	LightManager::GetInstance()->GetDirectionalLightData()->color = { 1.0f,1.0f,1.0f,1.0f };
 	ParticleManager::GetInstance()->ClearParticles();
@@ -203,7 +203,7 @@ void GameScene::AnimSkipUpdate() {
 				useSkipStart_ = true;
 			}
 		} else {
-			if (InputManager::GetInstance()->TriggerKey(DIK_LSHIFT) || InputManager::GetInstance()->TriggerKey(DIK_Q)) {
+			if (InputManager::GetInstance()->TriggerKey(DIK_I) || InputManager::GetInstance()->TriggerKey(DIK_Q)) {
 				fade_->SetColor({ 0.0f,0.0f,0.0f });
 				fade_->Start(Fade::Status::FadeOut, 1.0f);
 				useSkipStart_ = true;

@@ -8,6 +8,10 @@ MapChipManager* MapChipManager::GetInstance() {
 void MapChipManager::Initialize() {
 	StageManager::GetInstance()->LoadStageDataFile();
 
+	mapChipField_ = std::make_unique<MapChipField>();
+	mapChipField_->ResetMapChipData();
+	ClearFieldObjects();
+
 	CreateStage();
 
 	GenerateFieldObjects();
@@ -39,20 +43,77 @@ void MapChipManager::Finalize() {
 	modelBlocks_.clear();
 }
 
+void MapChipManager::DeleteBlock(const Vector3& position, int offsetX, int offsetY) {
+	MapChipType mapChipType;
+	MapChipField::IndexSet indexSet;
+	indexSet = mapChipField_->GetMapChipIndexSetByPosition(position);
+	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex + offsetX, mapChipField_->GetNumBlockVertical() - 1 - offsetY - indexSet.yIndex);
+
+	if (mapChipType != MapChipType::kBlock) {
+		return;
+	}
+
+	mapChipField_->SetMapChipTypeByIndexType(indexSet.xIndex + offsetX, mapChipField_->GetNumBlockVertical() - 1 - offsetY - indexSet.yIndex, MapChipType::kBlank);
+
+	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
+		if (i != mapChipField_->GetNumBlockVertical() - 1 - offsetY - indexSet.yIndex) {
+			continue;
+		}
+		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+			if (j != indexSet.xIndex + offsetX) {
+				continue;
+			}
+			modelBlocks_[i][j].first.release();
+
+			break;
+		}
+	}
+}
+
+void MapChipManager::CreateBlock(const Vector3& position) {
+	MapChipType mapChipType;
+	MapChipField::IndexSet indexSet;
+	indexSet = mapChipField_->GetMapChipIndexSetByPosition(position);
+	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - 1 - indexSet.yIndex);
+
+	if (mapChipType != MapChipType::kBlank) {
+		return;
+	}
+
+	mapChipField_->SetMapChipTypeByIndexType(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - 1 - indexSet.yIndex, MapChipType::kBlock);
+
+	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
+		if (i != mapChipField_->GetNumBlockVertical() - 1 - indexSet.yIndex) {
+			continue;
+		}
+		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+			if (j != indexSet.xIndex) {
+				continue;
+			}
+			modelBlocks_[i][j].first = std::make_unique<Model>();
+			modelBlocks_[i][j].first->Initialize("block_template");
+
+			modelBlocks_[i][j].second = std::make_unique<Transform>();
+			modelBlocks_[i][j].second->Initialize();
+			modelBlocks_[i][j].second->translate = mapChipField_->GetMapChipPositionByIndex(j, i);
+
+			break;
+		}
+	}
+}
+
 void MapChipManager::CreateStage() {
 
 	const StageData& stageData = StageManager::GetInstance()->GetCurrentStageData();
 
 	std::string stageFileName = "Resource/map/" + stageData.name + ".csv";
 
-	mapChipField_ = std::make_unique<MapChipField>();
-
 	mapChipField_->LoadMapChipCsv(stageFileName);
 }
 
 void MapChipManager::GenerateFieldObjects() {
 	// 要素数を変更する.
-	kNumBlockVertical = mapChipField_->GetNumBlockVirtical();
+	kNumBlockVertical = mapChipField_->GetNumBlockVertical();
 	kNumBlockHorizontal = mapChipField_->GetNumBlockHorizontal();
 
 	modelBlocks_.resize(kNumBlockVertical);
@@ -103,6 +164,19 @@ void MapChipManager::GenerateFieldObjects() {
 	}
 }
 
+void MapChipManager::ClearFieldObjects() {
+	if (modelBlocks_.size() <= 0) {
+		return;
+	}
+
+	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
+		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+			modelBlocks_[i][j].first.release();
+			modelBlocks_[i][j].second.release();
+		}
+	}
+}
+
 void MapChipManager::MapCollision(const Vector3& position, CollisionMapInfo& info) {
 	MapCollisionUp(position, info);
 	MapCollisionDown(position, info);
@@ -128,16 +202,16 @@ void MapChipManager::MapCollisionUp(const Vector3& position, CollisionMapInfo& i
 
 	MapChipField::IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionNew[kLeftTop]);
-	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVirtical() - 1 - indexSet.yIndex);
-	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVirtical() - indexSet.yIndex);
+	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - 1 - indexSet.yIndex);
+	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - indexSet.yIndex);
 
 	if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 		hit = true;
 	}
 
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionNew[kRightTop]);
-	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVirtical() - 1 - indexSet.yIndex);
-	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVirtical() - indexSet.yIndex);
+	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - 1 - indexSet.yIndex);
+	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - indexSet.yIndex);
 
 	if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 		hit = true;
@@ -175,16 +249,16 @@ void MapChipManager::MapCollisionDown(const Vector3& position, CollisionMapInfo&
 
 	MapChipField::IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionNew[kLeftBottom]);
-	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVirtical() - 1 - indexSet.yIndex);
-	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVirtical() - 2 - indexSet.yIndex);
+	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - 1 - indexSet.yIndex);
+	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - 2 - indexSet.yIndex);
 
 	if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 		hit = true;
 	}
 
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionNew[kRightBottom]);
-	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVirtical() - 1 - indexSet.yIndex);
-	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVirtical() - 2 - indexSet.yIndex);
+	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - 1 - indexSet.yIndex);
+	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - 2 - indexSet.yIndex);
 
 	if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 		hit = true;
@@ -221,7 +295,7 @@ void MapChipManager::MapCollisionRight(const Vector3& position, CollisionMapInfo
 
 	MapChipField::IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionNew[kRightTop]);
-	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVirtical() - 1 - indexSet.yIndex);
+	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - 1 - indexSet.yIndex);
 	//mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex + 1, mapChipField_->GetNumBlockVirtical() - 1 - indexSet.yIndex);
 	// && mapChipTypeNext != MapChipType::kBlock
 
@@ -230,7 +304,7 @@ void MapChipManager::MapCollisionRight(const Vector3& position, CollisionMapInfo
 	}
 
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionNew[kRightBottom]);
-	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVirtical() - 1 - indexSet.yIndex);
+	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - 1 - indexSet.yIndex);
 	//mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex + 1, mapChipField_->GetNumBlockVirtical() - 1 - indexSet.yIndex);
 	// && mapChipTypeNext != MapChipType::kBlock
 
@@ -269,7 +343,7 @@ void MapChipManager::MapCollisionLeft(const Vector3& position, CollisionMapInfo&
 
 	MapChipField::IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionNew[kLeftTop]);
-	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVirtical() - 1 - indexSet.yIndex);
+	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - 1 - indexSet.yIndex);
 	//mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex - 1, mapChipField_->GetNumBlockVirtical() - 1 - indexSet.yIndex);
 	// && mapChipTypeNext != MapChipType::kBlock	
 
@@ -278,7 +352,7 @@ void MapChipManager::MapCollisionLeft(const Vector3& position, CollisionMapInfo&
 	}
 
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionNew[kLeftBottom]);
-	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVirtical() - 1 - indexSet.yIndex);
+	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - 1 - indexSet.yIndex);
 	//mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex - 1, mapChipField_->GetNumBlockVirtical() - 1 - indexSet.yIndex);
 	// && mapChipTypeNext != MapChipType::kBlock
 
@@ -310,7 +384,7 @@ Vector3 MapChipManager::CornerPosition(const Vector3& position, Corner corner) {
 	return static_cast<Vector3>(position) + offsetTable[static_cast<uint32_t>(corner)];
 }
 
-bool MapChipManager::OnGroundCheck(const Vector3& position,const CollisionMapInfo& info){
+bool MapChipManager::OnGroundCheck(const Vector3& position, const CollisionMapInfo& info) {
 	std::array<Vector3, 4> positionNew;
 
 	for (uint32_t i = 0; i < positionNew.size(); i++) {
@@ -323,14 +397,14 @@ bool MapChipManager::OnGroundCheck(const Vector3& position,const CollisionMapInf
 
 	MapChipField::IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionNew[kLeftBottom] + Vector3(0.0f, -kBlank, 0.0f));
-	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVirtical() - 1 - indexSet.yIndex);
+	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - 1 - indexSet.yIndex);
 
 	if (mapChipType == MapChipType::kBlock) {
 		hit = true;
 	}
 
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionNew[kRightBottom] + Vector3(0.0f, -kBlank, 0.0f));
-	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVirtical() - 1 - indexSet.yIndex);
+	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - 1 - indexSet.yIndex);
 
 	if (mapChipType == MapChipType::kBlock) {
 		hit = true;

@@ -38,10 +38,11 @@ public:
 	void LoadMapChipCsv(const std::string& filePath);
 
 	MapChipType GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex);
+	void SetMapChipTypeByIndexType(uint32_t xIndex, uint32_t yIndex,MapChipType type);
 
 	uint8_t GetMapChipSubIDByIndex(uint32_t xIndex, uint32_t yIndex);
 
-	uint32_t GetNumBlockVirtical() { return kNumBlockVertical; };
+	uint32_t GetNumBlockVertical() { return kNumBlockVertical; };
 	uint32_t GetNumBlockHorizontal() { return kNumBlockHorizontal; };
 
 	Vector3 GetMapChipPositionByIndex(uint32_t xIndex, uint32_t yIndex);

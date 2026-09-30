@@ -42,10 +42,18 @@ public:
 	Vector3 CornerPosition(const Vector3& position, Corner corner);
 
 	bool OnGroundCheck(const Vector3& position, const  CollisionMapInfo& info);
+
+	MapChipField* GetMapChipField() { return mapChipField_.get(); };
+
+	void DeleteBlock(const Vector3& position,int offsetX,int offsetY);
+
+	void CreateBlock(const Vector3& position);
 private:
 	void CreateStage();
 
 	void GenerateFieldObjects();
+
+	void ClearFieldObjects();
 private:
 
 	static inline const float kWidth = 0.8f;
