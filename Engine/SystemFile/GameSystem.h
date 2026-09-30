@@ -81,7 +81,7 @@ struct ModelElement;
 
 class GameSystem {
 private:
-	static inline const D3D12_FILTER kUsingFillter_ = D3D12_FILTER_MIN_MAG_MIP_POINT; // D3D12_FILTER_MIN_MAG_MIP_LINEAR.
+	static inline const D3D12_FILTER kUsingFilter_ = D3D12_FILTER_MIN_MAG_MIP_POINT; // D3D12_FILTER_MIN_MAG_MIP_LINEAR.
 
 	static inline const uint32_t kSrvDescriptorHeapNumMax = 128;
 public:
@@ -100,7 +100,45 @@ public:
 	void EndFrame();
 
 	void Finalize();
+private:
+	void DXFactoryInitialize();
 
+	void CommandInitialize();
+
+	void SwapChainInitialize();
+
+	void DescriptorInitialize();
+
+	void RenderTargetViewInitialize();
+
+	void FenceInitialize();
+
+	void ViewportInitialize();
+
+	void ScissorInitialize();
+
+	void DXCompilerInitialize();
+
+	void ShaderCompile();
+
+	void PipelineInitialize();
+	
+	void ImGuiInitialize();
+
+	void LoadSampleDatas();
+private:
+	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory_ = nullptr;
+
+	DXGI_SWAP_CHAIN_DESC1 swapChainDesc_{};
+
+	uint32_t descriptorSizeRTV_;
+
+	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc_{};
+
+	Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils_ = nullptr;
+	Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler_ = nullptr;
+	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler_ = nullptr;
+public:
 	void RegisterGlobalVariables();
 	void ApplyGlobalVariables();
 
@@ -110,13 +148,7 @@ public:
 
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetCommandQueue() { return commandQueue; };
 
-	//Microsoft::WRL::ComPtr<ID3D12CommandAllocator> GetCommandAllocator() { return commandAllocator; };
-
 	Microsoft::WRL::ComPtr<ID3D12Fence> GetFence() { return fence; };
-
-	//uint64_t GetFenceValue() { return fenceValue; };
-
-	//void FenceValueIncrement() { fenceValue++; };
 
 	HANDLE GetFenceEvent() { return fenceEvent; };
 
