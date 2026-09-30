@@ -11,12 +11,7 @@ class Player : public Collider {
 public:
 	enum class Behavior {
 		kRoot,
-		kAttack,
-		kDash,
-		kJump,
-		kDashAttack,
-		kDashJumpAttack,
-		kFall,
+		kShot,
 	};
 
 	struct ConstAttack {
@@ -86,25 +81,10 @@ private:
 
 	void MovingUpdate();
 
-	void BehaviorAttackInitialize();
-	void BehaviorAttackUpdate();
-	void BehaviorAttackFinished();
+	void BehaviorShotInitialize();
+	void BehaviorShotUpdate();
 
-	void BehaviorDashInitialize();
-	void BehaviorDashUpdate();
-
-	void BehaviorJumpInitialize();
-	void BehaviorJumpUpdate();
-
-	void BehaviorDashAttackInitialize();
-	void BehaviorDashAttackUpdate();
-
-	void BehaviorDashJumpAttackInitialize();
-	void BehaviorDashJumpAttackUpdate();
-
-
-	void BehaviorFallInitialize();
-	void BehaviorFallUpdate();
+	void BlockShot();
 
 
 	void InitializeFloatingGimmick();
