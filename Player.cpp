@@ -301,9 +301,7 @@ void Player::BehaviorRootInitialize() {
 }
 
 void Player::BehaviorRootUpdate() {
-	if (InputManager::GetInstance()->TriggerKey(DIK_LSHIFT)) {
 		MapChipDigUpdate();
-	}
 
 	MovingUpdate();
 
@@ -332,8 +330,9 @@ void Player::BlockShot() {
 }
 
 void Player::MapChipDigUpdate() {
+	if (InputManager::GetInstance()->TriggerAction(InputAction::ATTACK)) {
 	MapChipManager::GetInstance()->DeleteBlock(transform_.translate, 0, -1);
-	//MapChipManager::GetInstance()->DeleteBlock(transform_.translate,1,0);
+	}
 }
 
 void Player::BlockShotUpdate() {
@@ -344,7 +343,7 @@ void Player::BlockShotUpdate() {
 		attenuation = kJumpAttenuation;
 	}
 
-	if (InputManager::GetInstance()->ReleaseKey(DIK_SPACE)) {
+	if (InputManager::GetInstance()->ReleaseAction(InputAction::JUMP)) {
 		BlockShot();
 		behaviorRequest_ = Behavior::kRoot;
 		velocity_.y = kJumpAcceleration;
@@ -375,11 +374,11 @@ void Player::MovingUpdate() {
 		attenuation = kJumpAttenuation;
 	}
 
-	if (InputManager::GetInstance()->PressKey(DIK_RIGHT) || InputManager::GetInstance()->PressKey(DIK_LEFT)) {
+	if (InputManager::GetInstance()->PressAction(InputAction::RIGHT) || InputManager::GetInstance()->PressAction(InputAction::LEFT)) {
 		// 左右加速.
 		Vector3 acceleration = {};
 
-		if (InputManager::GetInstance()->PressKey(DIK_RIGHT)) {
+		if (InputManager::GetInstance()->PressAction(InputAction::RIGHT)) {
 			// 左移動中の右入力.
 			if (velocity_.x < 0.0f) {
 				velocity_.x *= (1.0f - attenuation);
@@ -393,7 +392,7 @@ void Player::MovingUpdate() {
 				turnFirstRotationY_ = transform_.rotate.y;
 				turnTimer_ = kTimeTurn;
 			}
-		} else if (InputManager::GetInstance()->PressKey(DIK_LEFT)) {
+		} else if (InputManager::GetInstance()->PressAction(InputAction::LEFT)) {
 			// 右移動中の左入力.
 			if (velocity_.x > 0.0f) {
 				velocity_.x *= (1.0f - attenuation);
@@ -423,7 +422,7 @@ void Player::MovingUpdate() {
 		}
 	}
 
-	if (InputManager::GetInstance()->TriggerKey(DIK_SPACE)) {
+	if (InputManager::GetInstance()->TriggerAction(InputAction::JUMP)) {
 		behaviorRequest_ = Behavior::kShot;
 	}
 

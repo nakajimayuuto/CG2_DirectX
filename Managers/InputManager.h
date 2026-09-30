@@ -82,6 +82,7 @@ enum PadButtons {
 	INPUT_BACK,
 
 	INPUT_MAX, // パッドのEnumの最大数.
+	INPUT_NONE, // パッドのEnumの最大数.
 };
 
 enum MouseButtons {
@@ -95,6 +96,7 @@ enum MouseButtons {
 	MOUSE_5, // 拡張ボタン5.
 
 	MOUSE_MAX, // マウスのEnumの最大数.
+	MOUSE_NONE, // マウスのEnumの最大数.
 };
 
 class InputKeyBoard {
@@ -305,9 +307,13 @@ public:
 	bool TriggerAction(InputAction action) const;
 	bool ReleaseAction(InputAction action) const;
 	bool NoneAction(InputAction action) const;
-
+	
 	void SetAction(InputAction action, uint8_t key, MouseButtons mouse, PadButtons pad);
 private:
+	void SetActions();
+
+	void ResetActions();
+
 	void VibrationUpdate();
 
 	void OperationModeCheck();
