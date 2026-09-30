@@ -345,6 +345,7 @@ void Player::BlockShotUpdate() {
 	}
 
 	if (InputManager::GetInstance()->ReleaseKey(DIK_SPACE)) {
+		BlockShot();
 		behaviorRequest_ = Behavior::kRoot;
 		velocity_.y = kJumpAcceleration;
 	}

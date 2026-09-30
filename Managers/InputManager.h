@@ -93,6 +93,8 @@ enum MouseButtons {
 	MOUSE_3, // 拡張ボタン3.
 	MOUSE_4, // 拡張ボタン4.
 	MOUSE_5, // 拡張ボタン5.
+
+	MOUSE_MAX, // マウスのEnumの最大数.
 };
 
 class InputKeyBoard {
@@ -303,6 +305,8 @@ public:
 	bool TriggerAction(InputAction action) const;
 	bool ReleaseAction(InputAction action) const;
 	bool NoneAction(InputAction action) const;
+
+	void SetAction(InputAction action, uint8_t key, MouseButtons mouse, PadButtons pad);
 private:
 	void VibrationUpdate();
 

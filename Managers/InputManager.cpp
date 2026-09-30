@@ -667,6 +667,10 @@ bool InputManager::NoneAction(InputAction action) const{
 	return false;
 }
 
+void InputManager::SetAction(InputAction action, uint8_t key, MouseButtons mouse, PadButtons pad){
+	//inputActions_[static_cast<size_t>(action)].second = pad;
+}
+
 void InputManager::VibrationUpdate(){
 	if (!isVibration_) {
 		return;
