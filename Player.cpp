@@ -2,6 +2,7 @@
 #define NOMINMAX
 #include <algorithm>
 #include "GameCamera.h"
+#include "ProjectileManager.h"
 void Player::Initialize() {
 	transform_.Initialize();
 	targetRotateY = 0.0f;
@@ -314,6 +315,7 @@ void Player::BehaviorShotInitialize() {
 	floatingParameter = 0.0f;
 
 	InitializeFloatingGimmick();
+	DeltaTime::GetInstance()->SetGameTimeSpeed(0.2f);
 }
 
 void Player::BehaviorShotUpdate() {
@@ -327,6 +329,7 @@ void Player::BehaviorShotUpdate() {
 }
 
 void Player::BlockShot() {
+	ProjectileManager::GetInstance()->CreateBullet(transform_, {0.0f,10.0f,0.0f},BulletType::kBlock,CollisionAttributeName::kCollisionPlayerAttack,10.0f,1.0f);
 }
 
 void Player::MapChipDigUpdate() {
@@ -347,6 +350,7 @@ void Player::BlockShotUpdate() {
 		BlockShot();
 		behaviorRequest_ = Behavior::kRoot;
 		velocity_.y = kJumpAcceleration;
+		DeltaTime::GetInstance()->SetGameTimeSpeed(1.0f);
 	}
 
 	// 非入力時は移動減衰をかける.

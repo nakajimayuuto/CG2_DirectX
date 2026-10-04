@@ -66,6 +66,9 @@ void GameScene::Initialize() {
 
 	isBossDeath_ = false;
 
+	isClear_ = false;
+	isGameOver_ = false;
+
 	MapChipManager::GetInstance()->Initialize();
 }
 
@@ -87,6 +90,10 @@ void GameScene::Update() {
 
 	if (InputManager::GetInstance()->TriggerKey(DIK_F4)) {
 		Renderer::GetInstance()->ChangeUseDebugLine();
+	}
+
+	if (InputManager::GetInstance()->TriggerKey(DIK_F6)) {
+		isClear_ = true;
 	}
 #endif // _DEBUG
 
@@ -124,6 +131,17 @@ void GameScene::Update() {
 	}
 
 	player_->Update();
+
+	if (gameOverMenu_->GetIsActive()) {
+	} else {
+		if (isClear_) {
+			if (gameclearTimer_ >= gameclearTimerMax_) {
+				gameclearTimer_ = gameclearTimerMax_;
+			} else {
+				gameclearTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
+			}
+		}
+	}
 
 
 	ProjectileManager::GetInstance()->Update();
@@ -178,6 +196,10 @@ void GameScene::Draw() {
 		if (!DeltaTime::GetInstance()->GetIsHitStop()) {
 			renderer->DrawSprite(Transform::GetInitialValue(Easing({ 100.0f,100.0f,100.0f }, { 1.0f,1.0f,1.0f }, gameoverTimer_, gameoverTimerMax_, EaseType::kEaseOut), { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "gameover", { 1.0f,1.0f,1.0f,Easing(0.0f,1.0f, gameoverTimer_, gameoverTimerMax_, EaseType::kEaseOut) });
 		}
+	}
+
+	if (isClear_) {
+		renderer->DrawSprite(Transform::GetInitialValue(Easing({ 100.0f,100.0f,100.0f }, { 1.0f,1.0f,1.0f }, gameclearTimer_, gameclearTimerMax_, EaseType::kEaseOut), { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "gameclear", { 1.0f,1.0f,1.0f,Easing(0.0f,1.0f, gameclearTimer_, gameclearTimerMax_, EaseType::kEaseOut) });
 	}
 
 	fade_->Draw();

@@ -5,6 +5,7 @@ enum class BulletType {
 	kBounce,
 	kSpike,
 	kSlowSpike,
+	kBlock,
 	kFire,
 };
 
@@ -39,6 +40,8 @@ private:
 	void SlowSpikeInitialize();
 	void SlowSpikeUpdate();
 
+	void BlockInitialize();
+	void BlockUpdate();
 private:
 	Transform modelTransform_;
 	Model model_;
@@ -66,6 +69,10 @@ private:
 	float spikeCreateTimer_;
 	static inline float kSpikeCreateRate = 0.1f;
 	static inline Vector3 kRadnomsize_ = { 2.0f,0.0f,2.0f };
+
+	// Block
+	static inline float kBlockGravityAccelerationY = 20.0f;
+
 
 	float spikeRotatePosX_;
 	float spikeRotateY_;
