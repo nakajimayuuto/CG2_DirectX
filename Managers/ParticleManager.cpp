@@ -8,7 +8,7 @@ ParticleManager* ParticleManager::GetInstance() {
 void ParticleManager::Initialize() {
 	ParticleClear();
 
-	TextureManager::GetInstance()->RegisterTexture("numbers", "Resource/UI/numbers.png");
+	TextureManager::GetInstance()->RegisterTexture("numbers", "Resources/UI/numbers.png");
 	for (uint32_t i = 0; i < 10; i++) {
 		CreateNewParticles(std::format("number_{}", i), TextureManager::GetInstance()->GetTextureInfo("numbers"), BillboardType::kAllAxis, Particles::Move::kNumber);
 		SetParticleSize(std::format("number_{}", i), { 0.2f,0.2f,0.2f });

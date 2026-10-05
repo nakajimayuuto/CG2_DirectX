@@ -335,17 +335,17 @@ void GameSystem::DXCompilerInitialize() {
 }
 
 void GameSystem::ShaderCompile(){
-	vertexShaderBlobParticle = CompileShader(L"./hlsl/Particle.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
-	pixelShaderBlobParticle = CompileShader(L"./hlsl/Particle.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	vertexShaderBlobParticle = CompileShader(L"./Resources/Shaders/Particle.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	pixelShaderBlobParticle = CompileShader(L"./Resources/Shaders/Particle.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
 
-	vertexShaderBlobLine = CompileShader(L"./hlsl/Line.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
-	pixelShaderBlobLine = CompileShader(L"./hlsl/Line.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	vertexShaderBlobLine = CompileShader(L"./Resources/Shaders/Line.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	pixelShaderBlobLine = CompileShader(L"./Resources/Shaders/Line.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
 
-	vertexShaderBlob3dObject = CompileShader(L"./hlsl/Object3d.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
-	pixelShaderBlob3dObject = CompileShader(L"./hlsl/Object3d.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	vertexShaderBlob3dObject = CompileShader(L"./Resources/Shaders/Object3d.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	pixelShaderBlob3dObject = CompileShader(L"./Resources/Shaders/Object3d.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
 
-	vertexShaderBlobNoTexture = CompileShader(L"./hlsl/NoTexture.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
-	pixelShaderBlobNoTexture = CompileShader(L"./hlsl/NoTexture.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	vertexShaderBlobNoTexture = CompileShader(L"./Resources/Shaders/NoTexture.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	pixelShaderBlobNoTexture = CompileShader(L"./Resources/Shaders/NoTexture.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
 
 }
 
@@ -378,9 +378,9 @@ void GameSystem::ImGuiInitialize() {
 }
 
 void GameSystem::LoadSampleDatas(){
-	ModelManager::GetInstance()->RegisterObj("block_template", "Resource/block", "block.obj");
-	ModelManager::GetInstance()->RegisterObj("effect_plane", "Resource/effects", "effect_plane.obj");
-	TextureManager::GetInstance()->RegisterTexture("white_template", "Resource/white_template.png");
+	ModelManager::GetInstance()->RegisterObj("block_template", "Resources/block", "block.obj");
+	ModelManager::GetInstance()->RegisterObj("effect_plane", "Resources/effects", "effect_plane.obj");
+	TextureManager::GetInstance()->RegisterTexture("white_template", "Resources/white_template.png");
 }
 
 void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {

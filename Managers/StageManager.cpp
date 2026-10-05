@@ -11,7 +11,7 @@ StageManager* StageManager::GetInstance() {
 
 void StageManager::LoadStageDataFile() {
 
-	const std::string filePath = "Resource/map/stageDatas.csv";
+	const std::string filePath = "Resources/map/stageDatas.csv";
 
 	// ファイルを開く
 	std::ifstream file;

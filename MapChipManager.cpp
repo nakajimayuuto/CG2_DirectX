@@ -43,7 +43,7 @@ void MapChipManager::CreateStage() {
 
 	const StageData& stageData = StageManager::GetInstance()->GetCurrentStageData();
 
-	std::string stageFileName = "Resource/map/" + stageData.name + ".csv";
+	std::string stageFileName = "Resources/map/" + stageData.name + ".csv";
 
 	mapChipField_ = std::make_unique<MapChipField>();
 
@@ -51,7 +51,7 @@ void MapChipManager::CreateStage() {
 }
 
 void MapChipManager::GenerateFieldObjects() {
-	// 要素数を変更する.
+	// 要素数を変更する.N
 	kNumBlockVertical = mapChipField_->GetNumBlockVirtical();
 	kNumBlockHorizontal = mapChipField_->GetNumBlockHorizontal();
 
