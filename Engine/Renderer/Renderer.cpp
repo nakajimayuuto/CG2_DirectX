@@ -1,0 +1,2106 @@
+#include "Renderer.h"
+#include "Camera.h"
+
+#include "../../Managers/SoundManager.h"
+#include <vector>
+Model::~Model() {
+
+	materialData_.clear();
+
+	wvpData_.clear();
+
+	isVisible_.clear();
+
+	modelData_.clear();
+
+	vertexResource_.clear();
+
+	materialResource_.clear();
+
+	wvpResource_.clear();
+
+	vertexBufferView_.clear();
+
+	uvTransform_.clear();
+}
+
+void Model::Initialize(const ModelInfo& info) {
+	modelMax_ = static_cast<uint32_t>(info.modelData.size());
+	
+	radius_ = info.radius;
+
+	blendMode_ = BlendMode::kNormal;
+
+	materialData_.resize(modelMax_);
+	isVisible_.resize(modelMax_);
+	modelData_.resize(modelMax_);
+	wvpData_.resize(modelMax_);
+	vertexResource_.resize(modelMax_);
+	materialResource_.resize(modelMax_);
+	uvTransform_.resize(modelMax_);
+	wvpResource_.resize(modelMax_);
+	vertexBufferView_.resize(modelMax_);
+
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
+
+		isVisible_[i] = true;
+
+		modelData_[i] = info.modelData[i];
+
+		if (modelData_[i].materialData.textureFilePath == "") {
+			modelData_[i].textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesGPU;
+		}
+
+		vertexResource_[i] = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * modelData_[i].vertices.size());
+
+		// 【MaterialResourceを生成する】
+		// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
+		materialResource_[i] = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+		// マテリアルにデータを書き込む.
+		// 書き込むためのアドレスを取得.
+		materialResource_[i]->Map(0, nullptr, reinterpret_cast<void**>(&materialData_[i]));
+		// 今回は赤を書き込んでみる
+		materialData_[i]->color = modelData_[i].materialData.matarial.color;
+		materialData_[i]->lightingType = static_cast<uint32_t>(LightingType::kHalfLambert);
+		materialData_[i]->uvTransform = modelData_[i].materialData.matarial.uvTransform;
+		materialData_[i]->reflectionType = static_cast<uint32_t>(ReflectionType::kPhong);
+		materialData_[i]->shininess = 40.0f;
+
+		// 【TransformationMatrix】
+		// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
+		wvpResource_[i] = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+		// データを書き込む.
+		//TransformationMatrix* wvpData = nullptr;
+		// 書き込むためのアドレスを取得.
+		wvpResource_[i]->Map(0, nullptr, reinterpret_cast<void**>(&wvpData_[i]));
+		// 単位行列を書き込んでおく.
+		wvpData_[i]->WVP = Matrix4x4::Identity();
+		wvpData_[i]->World = Matrix4x4::Identity();
+		uvTransform_[i].Initialize();
+		uvTransform_[i].scale = materialData_[i]->uvTransform.GetMatrixToTransform().scale;
+		uvTransform_[i].rotate = materialData_[i]->uvTransform.GetMatrixToTransform().rotate;
+		uvTransform_[i].translate = materialData_[i]->uvTransform.GetMatrixToTransform().translate;
+
+		// 【VertexBufferViewを作成する】
+
+		// 頂点バッファビューを作成する.
+		// リソースの先頭のアドレスから使う.
+		vertexBufferView_[i].BufferLocation = vertexResource_[i]->GetGPUVirtualAddress();
+		// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
+		vertexBufferView_[i].SizeInBytes = UINT(sizeof(VertexData) * modelData_[i].vertices.size());
+		// 1頂点あたりのサイズ.
+		vertexBufferView_[i].StrideInBytes = sizeof(VertexData);
+
+
+		// 【Resourceにデータを書き込む】
+
+		// 頂点リソースにデータを書き込む.
+		// 書き込むためのアドレスを取得.
+		vertexResource_[i]->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+		memcpy(vertexData, modelData_[i].vertices.data(), sizeof(VertexData) * modelData_[i].vertices.size());
+	}
+}
+
+void Model::Initialize(const std::string& name) {
+	Initialize(ModelManager::GetInstance()->GetModelInfo(name));
+}
+
+void Model::Draw(const Transform& transform) {
+	Draw(transform, true);
+}
+
+void Model::Draw(const Transform& transform, bool useTransparent){
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		if (!isVisible_[i]) {
+			return;
+		}
+
+		if (!Camera::GetInstance()->IsInCameraFrustum(transform.GetWorldPosition(), radius_ * transform.GetMaxScale())) {
+			return;
+		}
+		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+
+		wvpData_[i]->World = worldMatrix;
+		wvpData_[i]->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+		wvpData_[i]->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+
+		materialResource_[i]->Map(0, nullptr, reinterpret_cast<void**>(&materialData_[i]));
+		materialData_[i]->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransform_[i]);
+
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = GameSystem::GetInstance()->GetCommandList();
+
+		/*=============================================================
+		三角形の描画のコマンド.
+		=============================================================*/
+		D3D12_VERTEX_BUFFER_VIEW vetexBufferView = vertexBufferView_[i];
+
+		GameSystem::GetInstance()->DrawCommand(
+			blendMode_,
+			&vetexBufferView,
+			nullptr,
+			D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+			materialResource_[i],
+			wvpResource_[i],
+			modelData_[i].textureSrvHandlesGPU,
+			UINT(modelData_[i].vertices.size())
+		);
+	}
+}
+
+void Model::SetIsVisible(bool isVisible) {
+	if (modelMax_ == 1) {
+		isVisible_[0] = isVisible;
+		return;
+	}
+
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		isVisible_[i] = isVisible;
+	}
+}
+
+void Model::SetIsVisible(bool isVisible, const std::string& meshName) {
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		if (modelData_[i].meshName != meshName) {
+			continue;
+		}
+
+		isVisible_[i] = isVisible;
+		break;
+	}
+};
+
+bool Model::GetIsVisible()  const {
+	if (modelMax_ == 1) {
+		return isVisible_[0];
+	}
+
+	return false;
+};
+
+bool Model::GetIsVisible(const std::string& meshName) const {
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		if (modelData_[i].meshName != meshName) {
+			continue;
+		}
+
+		return isVisible_[i];
+	}
+	return isVisible_[0];
+};
+
+void Model::ChangeTexture(const TextureInfo& info) {
+	if (modelMax_ == 1) {
+		modelData_[0].textureSrvHandlesGPU = info.textureSrvHandlesGPU;
+		return;
+	}
+
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		modelData_[i].textureSrvHandlesGPU = info.textureSrvHandlesGPU;
+	}
+};
+
+void Model::ChangeTexture(const TextureInfo& info, const std::string& meshName) {
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		if (modelData_[i].meshName != meshName) {
+			continue;
+		}
+
+		modelData_[i].textureSrvHandlesGPU = info.textureSrvHandlesGPU;
+		break;
+	}
+};
+
+void Model::ChangeTexture(const TextureInfo& info, uint32_t index) {
+	modelData_[index].textureSrvHandlesGPU = info.textureSrvHandlesGPU;
+};
+
+void Model::SetColor(Vector4 color) {
+	if (modelMax_ == 1) {
+		materialData_[0]->color = color;
+		materialResource_[0]->Map(0, nullptr, reinterpret_cast<void**>(&materialData_[0]));
+		return;
+	}
+
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		materialData_[i]->color = color;
+		materialResource_[i]->Map(0, nullptr, reinterpret_cast<void**>(&materialData_[i]));
+	}
+};
+void Model::SetColor(Vector4 color, const std::string& meshName) {
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		if (modelData_[i].meshName != meshName) {
+			continue;
+		}
+
+		materialData_[i]->color = color;
+		break;
+	}
+}
+void Model::SetColor(Vector4 color, uint32_t index) {
+	materialData_[index]->color = color;
+}
+
+Vector4 Model::GetColor() {
+	return materialData_[0]->color;
+};
+Vector4 Model::GetColor(const std::string& meshName) {
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		if (modelData_[i].meshName != meshName) {
+			continue;
+		}
+
+		return materialData_[i]->color;
+	}
+	return materialData_[0]->color;
+};
+
+Vector4 Model::GetColor(uint32_t index) {
+	return materialData_[index]->color;
+};
+
+void Model::SetUvTransform(const Transform& uvTransform) {
+	if (modelMax_ == 1) {
+		uvTransform_[0] = uvTransform;
+		return;
+	}
+
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		uvTransform_[i] = uvTransform;
+	}
+};
+void Model::SetUvTransform(const Transform& uvTransform, const std::string& meshName) {
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		if (modelData_[i].meshName != meshName) {
+			continue;
+		}
+
+		uvTransform_[i] = uvTransform;
+		break;
+	}
+}
+
+void Model::SetUvTransform(const Transform& uvTransform, uint32_t index){
+	uvTransform_[index] = uvTransform;
+}
+
+Transform Model::GetUvTransform() {
+	return uvTransform_[0];
+};
+Transform Model::GetUvTransform(const std::string& meshName) {
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		if (modelData_[i].meshName != meshName) {
+			continue;
+		}
+
+		return uvTransform_[i];
+	}
+	return uvTransform_[0];
+}
+Transform Model::GetUvTransform(uint32_t index){
+	return uvTransform_[index];
+}
+
+void Model::SetLightingType(LightingType type) {
+	if (modelMax_ == 1) {
+		materialData_[0]->lightingType = static_cast<int32_t>(type);
+		return;
+	}
+
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		materialData_[i]->lightingType = static_cast<int32_t>(type);
+	}
+};
+void Model::SetLightingType(LightingType type, const std::string& meshName) {
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		if (modelData_[i].meshName != meshName) {
+			continue;
+		}
+
+		materialData_[i]->lightingType = static_cast<int32_t>(type);
+		break;
+	}
+};
+
+void Model::SetLightingType(LightingType type, uint32_t index) {
+	materialData_[index]->lightingType = static_cast<int32_t>(type);
+};
+
+LightingType Model::GetLightingType() {
+	return static_cast<LightingType>(materialData_[0]->lightingType);
+};
+LightingType Model::GetLightingType(const std::string& meshName) {
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		if (modelData_[i].meshName != meshName) {
+			continue;
+		}
+
+		return static_cast<LightingType>(materialData_[i]->lightingType);
+	}
+	return static_cast<LightingType>(materialData_[0]->lightingType);
+}
+LightingType Model::GetLightingType(uint32_t index) {
+	return static_cast<LightingType>(materialData_[index]->lightingType);
+};
+
+ModelElements Model::GetModelElement() const {
+	ModelElement modelElement;
+	ModelElements modelElements;
+
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		modelElement.modelMax_ = modelMax_;
+		modelElement.materialData_ = materialData_[i];
+		modelElement.wvpData_ = wvpData_[i];
+		modelElement.modelData_ = modelData_[i];
+		modelElement.vertexResource_ = vertexResource_[i];
+		modelElement.vertexBufferView_ = vertexBufferView_[i];
+		modelElement.uvTransform_ = uvTransform_[i];
+		modelElement.blendMode_ = blendMode_;
+
+		modelElements.push_back(modelElement);
+	}
+	return modelElements;
+}
+
+void Sprite::Initialize(TextureInfo info) {
+	isVisible_ = true;
+
+	blendMode_ = BlendMode::kNormal;
+	uvTransform_.Initialize();
+
+	textureInfo_ = info;
+	/*=============================================================
+	Sprite用のResourceとView.
+	=============================================================*/
+	// 【VertexResourceを生成する】
+	// 実際に頂点リソースを作る.
+	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * 4);
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ.
+	vertexBufferView_.SizeInBytes = sizeof(VertexData) * 4;
+	// 1頂点あたりのサイズ.
+	vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+	// 【IndexResourceを生成する】
+	// 実際に頂点リソースを作る.
+	indexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * 6);
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	indexBufferView_.BufferLocation = indexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズはインデックス6つ分のサイズ.
+	indexBufferView_.SizeInBytes = sizeof(uint32_t) * 6;
+	// インデックスはuint32_tとする.
+	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+
+
+	// 【MaterialResourceを生成する】
+	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
+	materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+	// マテリアルにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
+	// 今回は赤を書き込んでみる
+	materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	materialData_->lightingType = static_cast<uint32_t>(LightingType::kNone);
+	materialData_->uvTransform = Matrix4x4::Identity();
+
+	// 【TransformationMatrix】
+	//Sprite用のTransformationMatrixを作る。Matrix4x4 1つ分のサイズを用意する.
+	transformationMatrixResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+	// データを書き込む.
+	// 書き込むためのアドレスを取得.
+	transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_));
+	// 単位行列を書き込んでおく.
+	transformationMatrixData_->WVP = Matrix4x4::Identity();
+	transformationMatrixData_->World = Matrix4x4::Identity();
+
+	// 【Resourceにデータを書き込む】
+
+	// 頂点リソースにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	// 1枚目の三角形.
+	vertexData[0].position = { 0.0f,360.0f,0.0f,1.0f }; // 左下.
+	vertexData[0].texcoord = { 0.0f,1.0f };
+	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f }; // 左上.
+	vertexData[1].texcoord = { 0.0f,0.0f };
+	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[2].position = { 640.0f,360.0f,0.0f,1.0f }; // 右下.
+	vertexData[2].texcoord = { 1.0f,1.0f };
+	vertexData[2].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[3].position = { 640.0f,0.0f,0.0f,1.0f }; // 右上.
+	vertexData[3].texcoord = { 1.0f,0.0f };
+	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
+
+	// インデックスリソースにデータを書き込む.
+	uint32_t* indexDataSprite = nullptr;
+	// 書き込むためのアドレスを取得.
+	indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
+	// 1枚目の三角形.
+	indexDataSprite[0] = 0;
+	indexDataSprite[1] = 1;
+	indexDataSprite[2] = 2;
+	indexDataSprite[3] = 1;
+	indexDataSprite[4] = 3;
+	indexDataSprite[5] = 2;
+
+	size_ = { static_cast<float>(textureInfo_.width),static_cast<float>(textureInfo_.height) };
+	AdaptationSize();
+}
+
+void Sprite::Initialize() {
+	isVisible_ = true;
+
+	blendMode_ = BlendMode::kNormal;
+	uvTransform_.Initialize();
+
+	textureInfo_ = TextureManager::GetInstance()->GetTextureInfo("white_template");
+	/*=============================================================
+	Sprite用のResourceとView.
+	=============================================================*/
+	// 【VertexResourceを生成する】
+	// 実際に頂点リソースを作る.
+	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * 4);
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ.
+	vertexBufferView_.SizeInBytes = sizeof(VertexData) * 4;
+	// 1頂点あたりのサイズ.
+	vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+	// 【IndexResourceを生成する】
+	// 実際に頂点リソースを作る.
+	indexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * 6);
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	indexBufferView_.BufferLocation = indexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズはインデックス6つ分のサイズ.
+	indexBufferView_.SizeInBytes = sizeof(uint32_t) * 6;
+	// インデックスはuint32_tとする.
+	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+
+
+	// 【MaterialResourceを生成する】
+	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
+	materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+	// マテリアルにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
+	// 今回は赤を書き込んでみる
+	materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	materialData_->lightingType = static_cast<uint32_t>(LightingType::kNone);
+	materialData_->uvTransform = Matrix4x4::Identity();
+
+	// 【TransformationMatrix】
+	//Sprite用のTransformationMatrixを作る。Matrix4x4 1つ分のサイズを用意する.
+	transformationMatrixResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+	// データを書き込む.
+	// 書き込むためのアドレスを取得.
+	transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_));
+	// 単位行列を書き込んでおく.
+	transformationMatrixData_->WVP = Matrix4x4::Identity();
+	transformationMatrixData_->World = Matrix4x4::Identity();
+
+	// 【Resourceにデータを書き込む】
+
+	// 頂点リソースにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	// 1枚目の三角形.
+	vertexData[0].position = { 0.0f,360.0f,0.0f,1.0f }; // 左下.
+	vertexData[0].texcoord = { 0.0f,1.0f };
+	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f }; // 左上.
+	vertexData[1].texcoord = { 0.0f,0.0f };
+	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[2].position = { 640.0f,360.0f,0.0f,1.0f }; // 右下.
+	vertexData[2].texcoord = { 1.0f,1.0f };
+	vertexData[2].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[3].position = { 640.0f,0.0f,0.0f,1.0f }; // 右上.
+	vertexData[3].texcoord = { 1.0f,0.0f };
+	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
+
+	// インデックスリソースにデータを書き込む.
+	uint32_t* indexDataSprite = nullptr;
+	// 書き込むためのアドレスを取得.
+	indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
+	// 1枚目の三角形.
+	indexDataSprite[0] = 0;
+	indexDataSprite[1] = 1;
+	indexDataSprite[2] = 2;
+	indexDataSprite[3] = 1;
+	indexDataSprite[4] = 3;
+	indexDataSprite[5] = 2;
+
+	size_ = { static_cast<float>(textureInfo_.width),static_cast<float>(textureInfo_.height) };
+	AdaptationSize();
+}
+
+void Sprite::Draw(const Transform& transform) {
+	if (!isVisible_) {
+		return;
+	}
+
+	transformationMatrixData_->World = transform.GetAffineMatrix();
+	transformationMatrixData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(transform.GetAffineMatrix());
+
+	materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransform_);
+	/*=============================================================
+	三角形のSpriteの描画のコマンド.
+	=============================================================*/
+	// Spriteの描画。変更が必要なものだけ変更する.
+	GameSystem::GetInstance()->DrawCommand(
+		blendMode_,
+		&vertexBufferView_,
+		&indexBufferView_,
+		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+		materialResource_,
+		transformationMatrixResource_,
+		textureInfo_.textureSrvHandlesGPU,
+		6
+	);
+}
+
+void Sprite::Draw(const Transform2D& transform) {
+	Transform transform3D;
+	transform3D.scale.x = transform.scale.x;
+	transform3D.scale.y = transform.scale.y;
+	transform3D.scale.z = 1.0f;
+	transform3D.rotate.x = transform.rotate;
+	transform3D.rotate.y = 0.0f;
+	transform3D.rotate.z = 0.0f;
+	transform3D.translate.x = transform.translate.x;
+	transform3D.translate.y = transform.translate.y;
+	transform3D.translate.z =depth_;
+	;
+	Draw(transform3D);
+}
+
+void Sprite::SetSize(Vector2 size) {
+	size_ = size;
+	AdaptationSize();
+}
+
+void Sprite::SetSize(WindowSize windowSize) {
+	size_ = { static_cast<float>(windowSize.width),static_cast<float>(windowSize.height) };
+	AdaptationSize();
+}
+
+void Sprite::AdaptationSize() {
+	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	vertexData[0].position = { -size_.x / 2.0f,size_.y / 2.0f,0.0f,1.0f }; // 左下.
+	vertexData[0].texcoord = { 0.0f,1.0f };
+	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[1].position = { -size_.x / 2.0f,-size_.y / 2.0f,0.0f,1.0f }; // 左上.
+	vertexData[1].texcoord = { 0.0f,0.0f };
+	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[2].position = { size_.x / 2.0f,size_.y / 2.0f,0.0f,1.0f }; // 右下.
+	vertexData[2].texcoord = { 1.0f,1.0f };
+	vertexData[2].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[3].position = { size_.x / 2.0f,-size_.y / 2.0f,0.0f,1.0f }; // 右上.
+	vertexData[3].texcoord = { 1.0f,0.0f };
+	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
+}
+
+ModelElement* Sprite::GetModelElement() const {
+	ModelElement* modelElement;
+	modelElement = new ModelElement();
+	modelElement->materialData_ = materialData_;
+	modelElement->wvpData_ = transformationMatrixData_;
+	modelElement->modelData_.textureSrvHandlesGPU = textureInfo_.textureSrvHandlesGPU;
+	modelElement->vertexResource_ = vertexResource_;
+	modelElement->materialResource_ = materialResource_;
+	modelElement->wvpResource_ = transformationMatrixResource_;
+	modelElement->vertexBufferView_ = vertexBufferView_;
+	modelElement->uvTransform_ = uvTransform_;
+	modelElement->indexResource_ = indexResource_;
+	modelElement->indexBufferView_ = indexBufferView_;
+	modelElement->blendMode_ = blendMode_;
+	return modelElement;
+}
+
+Renderer* Renderer::GetInstance() {
+	static Renderer instance;
+	return &instance;
+}
+
+void Renderer::Initialize() {
+#ifdef _DEBUG
+	useDebugLine_ = true;
+#endif // _DEBUG
+
+
+	currentDrawModelIndex_ = 0;
+	currentDrawSpriteIndex_ = 0;
+	currentDrawTorusIndex_ = 0;
+
+	blendMode_ = BlendMode::kNormal;
+
+	lightingType_ = LightingType::kHalfLambert;
+
+	reflectionType_ = ReflectionType::kBlinnPhong;
+
+	lineElement_ = new ModelElement();
+	CreateLine(lineElement_);
+	modelInstances.clear();
+	modelInstances.resize(maxModelNum);
+
+	for (auto& instance : modelInstances) {
+		instance = std::make_unique<ModelInstance>();
+		instance->materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+		instance->wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+	}
+
+	spriteInstances.clear();
+	spriteInstances.resize(maxModelNum);
+
+	for (auto& instance : spriteInstances) {
+		instance = std::make_unique<SpriteInstance>();
+		instance->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * 4);
+		instance->indexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * 6);
+		instance->materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+		instance->wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+	}
+
+	CreateSphereResource();
+	torusInstances.clear();
+	torusInstances.resize(maxTorusNum);
+	CreateTorusResource();
+}
+
+void Renderer::ClearDrawIndex() {
+	currentDrawModelIndex_ = 0;
+	currentDrawLineIndex_ = 0;
+	currentDrawSpriteIndex_ = 0;
+	currentDrawTorusIndex_ = 0;
+}
+
+void Renderer::SetBlendMode(BlendMode blendMode) {
+	if (blendMode == blendMode_) {
+		return;
+	}
+
+	blendMode_ = blendMode;
+}
+
+void Renderer::SetLightingType(LightingType lightingType) {
+	if (lightingType == lightingType_) {
+		return;
+	}
+
+	lightingType_ = lightingType;
+}
+
+void Renderer::SetReflectionType(ReflectionType reflectionType) {
+	if (reflectionType == reflectionType_) {
+		return;
+	}
+
+	reflectionType_ = reflectionType;
+}
+
+void Renderer::DrawLine(const Vector3& startVector3, const Vector3& endVector3, const Vector4& color) {
+	if (currentDrawLineIndex_ * 2 >= maxLineNum_) {
+		return;
+	}
+
+	Vector3 centerVector3;
+	centerVector3.x = (static_cast<Vector3>(startVector3) + endVector3).x / 2.0f;
+	centerVector3.y = (static_cast<Vector3>(startVector3) + endVector3).y / 2.0f;
+	centerVector3.z = (static_cast<Vector3>(startVector3) + endVector3).z / 2.0f;
+	Vector3 diff = (static_cast<Vector3>(startVector3) - endVector3);
+
+	Matrix4x4 worldMatrix = Matrix4x4::Identity();
+
+	lineElement_->vertexDataLine[currentDrawLineIndex_ * 2].position = { (-diff.x / 2.0f) + centerVector3.x,(-diff.y / 2.0f) + centerVector3.y ,(-diff.z / 2.0f) + centerVector3.z ,1.0f };
+	lineElement_->vertexDataLine[currentDrawLineIndex_ * 2].color = color;
+	lineElement_->vertexDataLine[(currentDrawLineIndex_ * 2) + 1].position = { (diff.x / 2.0f) + centerVector3.x,(diff.y / 2.0f) + centerVector3.y,(diff.z / 2.0f) + centerVector3.z,1.0f };
+	lineElement_->vertexDataLine[(currentDrawLineIndex_ * 2) + 1].color = color;
+	currentDrawLineIndex_++;
+}
+
+
+
+void Renderer::DrawLineAll() {
+	if (!useDebugLine_) {
+		return;
+	}
+
+	Matrix4x4 worldMatrix = Matrix4x4::Identity();
+	lineElement_->wvpData_->World = worldMatrix;
+	lineElement_->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+	lineElement_->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+
+	GameSystem::GetInstance()->DrawCommand(
+		lineElement_->blendMode_,
+		&lineElement_->vertexBufferView_,
+		nullptr,
+		D3D_PRIMITIVE_TOPOLOGY_LINELIST,
+		lineElement_->materialResource_,
+		lineElement_->wvpResource_,
+		lineElement_->modelData_.textureSrvHandlesGPU,
+		currentDrawLineIndex_ * 2
+	);
+}
+
+void Renderer::ChangeUseDebugLine(){
+	if (useDebugLine_) {
+		useDebugLine_ = false;
+	} else {
+		useDebugLine_ = true;
+	}
+}
+
+void Renderer::CreateSphereResource() {
+
+	// 【Resourceにデータを書き込む】
+	sphereVertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * kSphereSubdivision_ * kSphereSubdivision_ * 4);
+	sphereIndexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * kSphereSubdivision_ * kSphereSubdivision_ * 6);
+
+	// 頂点リソースにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	sphereVertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&sphereVertexData));
+
+	// インデックスリソースにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	sphereIndexResource_->Map(0, nullptr, reinterpret_cast<void**>(&sphereIndexData));
+
+
+	// スフィアの描画プログラム.(いつかRendererに入れる)
+	const float kLonEvery = std::numbers::pi_v<float> *2.0f / kSphereSubdivision_;
+	const float kLatEvery = std::numbers::pi_v<float> / kSphereSubdivision_;
+
+	for (uint32_t latIndex = 0; latIndex < kSphereSubdivision_; latIndex++) {
+		float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;
+
+		for (uint32_t lonIndex = 0; lonIndex < kSphereSubdivision_; lonIndex++) {
+			uint32_t start = (latIndex * kSphereSubdivision_ + lonIndex) * 4;
+			uint32_t indexStart = (latIndex * kSphereSubdivision_ + lonIndex) * 6;
+			float lon = lonIndex * kLonEvery;
+
+			float u = static_cast<float>(lonIndex) / static_cast<float>(kSphereSubdivision_);
+			float v = 1.0f - static_cast<float>(latIndex) / static_cast<float>(kSphereSubdivision_);
+
+			sphereVertexData[start].position = { cos(lat) * cos(lon),sin(lat),cos(lat) * sin(lon) ,1.0f };
+			sphereVertexData[start].texcoord = { u - 1.0f / static_cast<float>(kSphereSubdivision_),v };
+			sphereVertexData[start + 1].position = { cos(lat + std::numbers::pi_v<float> / kSphereSubdivision_) * cos(lon),sin(lat + std::numbers::pi_v<float> / kSphereSubdivision_),cos(lat + std::numbers::pi_v<float> / kSphereSubdivision_) * sin(lon) ,1.0f };
+			sphereVertexData[start + 1].texcoord = { u - 1.0f / static_cast<float>(kSphereSubdivision_) ,v - 1.0f / static_cast<float>(kSphereSubdivision_) };
+			sphereVertexData[start + 2].position = { cos(lat) * cos(lon + std::numbers::pi_v<float> *2.0f / kSphereSubdivision_),sin(lat),cos(lat) * sin(lon + std::numbers::pi_v<float> *2.0f / kSphereSubdivision_) ,1.0f };
+			sphereVertexData[start + 2].texcoord = { u ,v };
+			sphereVertexData[start + 3].position = { cos(lat + std::numbers::pi_v<float> / kSphereSubdivision_) * cos(lon + std::numbers::pi_v<float> *2.0f / kSphereSubdivision_),sin(lat + std::numbers::pi_v<float> / kSphereSubdivision_),cos(lat + std::numbers::pi_v<float> / kSphereSubdivision_) * sin(lon + std::numbers::pi_v<float> *2.0f / kSphereSubdivision_),1.0f };
+			sphereVertexData[start + 3].texcoord = { u ,v - 1.0f / static_cast<float>(kSphereSubdivision_) };
+
+			sphereIndexData[indexStart] = start;
+			sphereIndexData[indexStart + 1] = start + 1;
+			sphereIndexData[indexStart + 2] = start + 2;
+			sphereIndexData[indexStart + 3] = start + 1;
+			sphereIndexData[indexStart + 4] = start + 3;
+			sphereIndexData[indexStart + 5] = start + 2;
+
+
+			for (uint32_t i = 0; i < 4; i++) {
+				sphereVertexData[start + i].normal.x = sphereVertexData[start + i].position.x;
+				sphereVertexData[start + i].normal.y = sphereVertexData[start + i].position.y;
+				sphereVertexData[start + i].normal.z = sphereVertexData[start + i].position.z;
+			}
+		}
+	}
+
+
+
+
+	sphereVertexBufferView_.BufferLocation = sphereVertexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
+	sphereVertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * kSphereSubdivision_ * kSphereSubdivision_ * 4);
+	// 1頂点あたりのサイズ.
+	sphereVertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+	// 【IndexResourceを生成する】
+	// 実際に頂点リソースを作る.
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	sphereIndexBufferView_.BufferLocation = sphereIndexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズはインデックス6つ分のサイズ.
+	sphereIndexBufferView_.SizeInBytes = sizeof(uint32_t) * kSphereSubdivision_ * kSphereSubdivision_ * 6;
+	// インデックスはuint32_tとする.
+	sphereIndexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+}
+
+void Renderer::CreateTorusResource() {
+	// 【Resourceにデータを書き込む】
+	for (auto& instance : torusInstances) {
+		instance = std::make_unique<TorusInstance>();
+		instance->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * (kTorusSubdivision_ + 1) * (kTorusSubdivision_ + 1));
+		instance->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&instance->vertexData));
+		instance->materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+		instance->wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+	}
+
+	torusIndexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * kTorusSubdivision_ * kTorusSubdivision_ * 6);
+
+	// 頂点リソースにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+
+	// インデックスリソースにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	torusIndexResource_->Map(0, nullptr, reinterpret_cast<void**>(&torusIndexData));
+
+	uint32_t stride = kTorusSubdivision_ + 1;
+
+	for (uint32_t y = 0; y < kTorusSubdivision_; y++)
+	{
+		for (uint32_t x = 0; x < kTorusSubdivision_; x++)
+		{
+			uint32_t index = (y * kTorusSubdivision_ + x) * 6;
+			uint32_t a = y * stride + x;
+			uint32_t b = a + 1;
+			uint32_t c = a + stride;
+			uint32_t d = c + 1;
+
+			torusIndexData[index] = a;
+			torusIndexData[index + 1] = b;
+			torusIndexData[index + 2] = c;
+
+			torusIndexData[index + 3] = b;
+			torusIndexData[index + 4] = d;
+			torusIndexData[index + 5] = c;
+		}
+	}
+}
+
+void Renderer::DrawSphere(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color) {
+	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+	ModelElement* newElement;
+	newElement = new ModelElement();
+	CreateSphere(newElement);
+
+	newElement->modelData_.textureSrvHandlesGPU = textureInfo.textureSrvHandlesGPU;
+
+	newElement->wvpData_->World = worldMatrix;
+	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+	newElement->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+	/*=============================================================
+	三角形の描画のコマンド.
+	=============================================================*/
+	newElement->indexInstanceNum_ = kSphereSubdivision_ * kSphereSubdivision_ * 6;
+	GameSystem::GetInstance()->DrawCommand(
+		newElement->blendMode_,
+		&newElement->vertexBufferView_,
+		&newElement->indexBufferView_,
+		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+		newElement->materialResource_,
+		newElement->wvpResource_,
+		newElement->modelData_.textureSrvHandlesGPU,
+		newElement->indexInstanceNum_
+	);
+}
+
+void Renderer::DrawSphere(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color, const Transform& uvTransform){
+	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+	std::unique_ptr<ModelElement> newElement;
+	newElement = std::make_unique<ModelElement>();
+	CreateSphere(newElement.get());
+
+	newElement->modelData_.textureSrvHandlesGPU = textureInfo.textureSrvHandlesGPU;
+	newElement->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransform);
+
+	newElement->wvpData_->World = worldMatrix;
+	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+	newElement->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+	/*=============================================================
+	三角形の描画のコマンド.
+	=============================================================*/
+	newElement->indexInstanceNum_ = kSphereSubdivision_ * kSphereSubdivision_ * 6;
+	GameSystem::GetInstance()->DrawCommand(
+		newElement->blendMode_,
+		&newElement->vertexBufferView_,
+		&newElement->indexBufferView_,
+		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+		newElement->materialResource_,
+		newElement->wvpResource_,
+		newElement->modelData_.textureSrvHandlesGPU,
+		newElement->indexInstanceNum_
+	);
+}
+
+void Renderer::DrawTorus(const Transform& transform, float majorRadius, float minorRadius, const TextureInfo& textureInfo, const Vector4& color) {
+	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+	std::unique_ptr<ModelElement> newElement;
+	newElement = std::make_unique<ModelElement>();
+	CreateTorus(newElement.get(), majorRadius, minorRadius);
+
+	newElement->modelData_.textureSrvHandlesGPU = textureInfo.textureSrvHandlesGPU;
+
+	newElement->wvpData_->World = worldMatrix;
+	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+	newElement->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+	newElement->materialData_->color = color;
+	/*=============================================================
+	三角形の描画のコマンド.
+	=============================================================*/
+	newElement->indexInstanceNum_ = kTorusSubdivision_ * kTorusSubdivision_ * 6;
+	GameSystem::GetInstance()->DrawCommand(
+		newElement->blendMode_,
+		&newElement->vertexBufferView_,
+		&newElement->indexBufferView_,
+		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+		newElement->materialResource_,
+		newElement->wvpResource_,
+		newElement->modelData_.textureSrvHandlesGPU,
+		newElement->indexInstanceNum_
+	);
+}
+
+void Renderer::DrawSphereWireFrame(const Transform& transform, const Vector4& color) {
+	if (!Camera::GetInstance()->IsInCameraFrustum(transform.GetWorldPosition(), transform.GetMaxScale())) {
+		return;
+	}
+
+	const uint32_t kSubdivision = 8;
+	const float kLonEvery = std::numbers::pi_v<float> *2.0f / kSubdivision;
+	const float kLatEvery = std::numbers::pi_v<float> / kSubdivision;
+	Transform sphereTransform = transform;
+	sphereTransform.scale = sphereTransform.scale * 0.5f;
+
+	for (uint32_t latIndex = 0; latIndex < kSubdivision; latIndex++) {
+		float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;
+
+		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; lonIndex++) {
+			float lon = lonIndex * kLonEvery;
+
+			Vector3 a = { cos(lat) * cos(lon),sin(lat),cos(lat) * sin(lon) };
+			Vector3 b = { cos(lat + std::numbers::pi_v<float> / kSubdivision) * cos(lon),sin(lat + std::numbers::pi_v<float> / kSubdivision),cos(lat + std::numbers::pi_v<float> / kSubdivision) * sin(lon) };
+			Vector3 c = { cos(lat) * cos(lon + std::numbers::pi_v<float> *2.0f / kSubdivision),sin(lat),cos(lat) * sin(lon + std::numbers::pi_v<float> *2.0f / kSubdivision) };
+
+			Matrix4x4 worldMatrix = sphereTransform.GetAffineMatrix();
+			Vector3 startPosition = worldMatrix.MatrixTransform(a);
+			Vector3 endPosition = worldMatrix.MatrixTransform(b);
+
+			DrawLine(startPosition, endPosition, color);
+
+			startPosition = worldMatrix.MatrixTransform(a);
+			endPosition = worldMatrix.MatrixTransform(c);
+
+			DrawLine(startPosition, endPosition, color);
+		}
+	}
+}
+
+void Renderer::DrawBox(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color) {
+	DrawBox(transform,Transform::GetInitialValue(),textureInfo,color);
+}
+
+void Renderer::DrawBox(const Transform& transform, const Transform& uvTransform, const TextureInfo& textureInfo, const Vector4& color){
+	std::unique_ptr<ModelElement> newElement;
+	newElement = std::make_unique<ModelElement>();
+	ModelData data = ModelManager::GetInstance()->GetModelInfo("block_template").modelData[0];
+	newElement->vertexResource_ = data.vertexResource_;
+	newElement->vertexBufferView_ = data.vertexBufferView_;
+	CreateBox(newElement.get());
+	newElement->modelData_.textureSrvHandlesGPU = textureInfo.textureSrvHandlesGPU;
+
+	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+
+	newElement->wvpData_->World = worldMatrix;
+	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+	newElement->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+
+	newElement->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransform);
+	newElement->materialData_->color = color;
+
+	/*=============================================================
+	三角形の描画のコマンド.
+	=============================================================*/
+	GameSystem::GetInstance()->DrawCommand(
+		newElement->blendMode_,
+		&newElement->vertexBufferView_,
+		nullptr,
+		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+		newElement->materialResource_,
+		newElement->wvpResource_,
+		newElement->modelData_.textureSrvHandlesGPU,
+		UINT(newElement->modelData_.vertices.size())
+	);
+}
+
+void Renderer::DrawBoxWireFrame(const Transform& transform, const Vector3& size, const Vector4& color) {
+	std::vector<Vector3> vertices;
+
+	Transform VertexTransform;
+	VertexTransform.Initialize();
+	VertexTransform.SetParent(&transform);
+
+	VertexTransform.translate = Vector3(-size.x / 2.0f, -size.y / 2.0f, -size.z / 2.0f);
+	vertices.push_back(VertexTransform.GetAffineMatrix().GetMatrixToTranslate());
+	VertexTransform.translate = Vector3(-size.x / 2.0f, size.y / 2.0f, -size.z / 2.0f);
+	vertices.push_back(VertexTransform.GetAffineMatrix().GetMatrixToTranslate());
+	VertexTransform.translate = Vector3(size.x / 2.0f, -size.y / 2.0f, -size.z / 2.0f);
+	vertices.push_back(VertexTransform.GetAffineMatrix().GetMatrixToTranslate());
+	VertexTransform.translate = Vector3(size.x / 2.0f, size.y / 2.0f, -size.z / 2.0f);
+	vertices.push_back(VertexTransform.GetAffineMatrix().GetMatrixToTranslate());
+
+	VertexTransform.translate = Vector3(-size.x / 2.0f, -size.y / 2.0f, size.z / 2.0f);
+	vertices.push_back(VertexTransform.GetAffineMatrix().GetMatrixToTranslate());
+	VertexTransform.translate = Vector3(-size.x / 2.0f, size.y / 2.0f, size.z / 2.0f);
+	vertices.push_back(VertexTransform.GetAffineMatrix().GetMatrixToTranslate());
+	VertexTransform.translate = Vector3(size.x / 2.0f, -size.y / 2.0f, size.z / 2.0f);
+	vertices.push_back(VertexTransform.GetAffineMatrix().GetMatrixToTranslate());
+	VertexTransform.translate = Vector3(size.x / 2.0f, size.y / 2.0f, size.z / 2.0f);
+	vertices.push_back(VertexTransform.GetAffineMatrix().GetMatrixToTranslate());
+
+	DrawLine(vertices[0], vertices[1], color);
+	DrawLine(vertices[0], vertices[2], color);
+	DrawLine(vertices[1], vertices[3], color);
+	DrawLine(vertices[2], vertices[3], color);
+
+	DrawLine(vertices[4], vertices[5], color);
+	DrawLine(vertices[4], vertices[6], color);
+	DrawLine(vertices[5], vertices[7], color);
+	DrawLine(vertices[6], vertices[7], color);
+
+	DrawLine(vertices[0], vertices[4], color);
+	DrawLine(vertices[1], vertices[5], color);
+	DrawLine(vertices[2], vertices[6], color);
+	DrawLine(vertices[3], vertices[7], color);
+}
+
+void Renderer::DrawPlaneWireFrame(Plane& plane) {
+	Vector3 center = plane.normal * plane.distance * -1.0f; // 1.
+	Vector3 perpendiculars[4];
+	perpendiculars[0] = Vector3::Normalize(plane.normal.Perpendicular()); // 2.
+	perpendiculars[1] = { -perpendiculars[0].x,-perpendiculars[0].y ,-perpendiculars[0].z }; // 3.
+	perpendiculars[2] = plane.normal.Cross(perpendiculars[0]); // 4.
+	perpendiculars[3] = { -perpendiculars[2].x,-perpendiculars[2].y ,-perpendiculars[2].z }; // 5.
+	// 6.
+	Vector3 points[4];
+	for (int32_t index = 0; index < 4; ++index) {
+		Vector3 extend = perpendiculars[index] * 2.0f;
+		points[index] = center + extend;
+
+	}
+
+
+	DrawLine(points[0], points[3], { 1.0f,1.0f,1.0f,1.0f });
+	DrawLine(points[3], points[1], { 1.0f,1.0f,1.0f,1.0f });
+	DrawLine(points[1], points[2], { 1.0f,1.0f,1.0f,1.0f });
+	DrawLine(points[2], points[0], { 1.0f,1.0f,1.0f,1.0f });
+
+	DrawLine(
+		center,
+		center + plane.normal * 5.0f,
+		{ 1.0f,0.0f,0.0f,1.0f });
+}
+
+void Renderer::DrawBoxWireFrame(const AABB& aabb, const Vector4& color) {
+	std::vector<Vector3> vertices;
+
+	vertices.push_back(aabb.min);
+	vertices.push_back(Vector3(aabb.min.x, aabb.max.y, aabb.min.z));
+	vertices.push_back(Vector3(aabb.max.x, aabb.min.y, aabb.min.z));
+	vertices.push_back(Vector3(aabb.max.x, aabb.max.y, aabb.min.z));
+
+	vertices.push_back(Vector3(aabb.min.x, aabb.min.y, aabb.max.z));
+	vertices.push_back(Vector3(aabb.min.x, aabb.max.y, aabb.max.z));
+	vertices.push_back(Vector3(aabb.max.x, aabb.min.y, aabb.max.z));
+	vertices.push_back(aabb.max);
+
+	DrawLine(vertices[0], vertices[1], color);
+	DrawLine(vertices[0], vertices[2], color);
+	DrawLine(vertices[1], vertices[3], color);
+	DrawLine(vertices[2], vertices[3], color);
+
+	DrawLine(vertices[4], vertices[5], color);
+	DrawLine(vertices[4], vertices[6], color);
+	DrawLine(vertices[5], vertices[7], color);
+	DrawLine(vertices[6], vertices[7], color);
+
+	DrawLine(vertices[0], vertices[4], color);
+	DrawLine(vertices[1], vertices[5], color);
+	DrawLine(vertices[2], vertices[6], color);
+	DrawLine(vertices[3], vertices[7], color);
+}
+
+void Renderer::DrawBoxWireFrame(const OBB& obb, const Vector4& color) {
+	Matrix4x4 matrix;
+	Matrix4x4 rotateMatrix;
+	rotateMatrix = rotateMatrix.Identity();
+
+	for (uint32_t i = 0; i < 3; i++) {
+		rotateMatrix.matrix[i][0] = obb.orientations[i].x;
+		rotateMatrix.matrix[i][1] = obb.orientations[i].y;
+		rotateMatrix.matrix[i][2] = obb.orientations[i].z;
+	}
+
+	matrix = rotateMatrix;
+	matrix = matrix * Matrix4x4::MakeTranslateMatrix(obb.center);
+
+	std::vector<Vector3> vertices;
+	vertices.push_back(matrix.MatrixTransform({ -obb.size.x,-obb.size.y,-obb.size.z }));
+	vertices.push_back(matrix.MatrixTransform({ -obb.size.x,obb.size.y,-obb.size.z }));
+	vertices.push_back(matrix.MatrixTransform({ obb.size.x,-obb.size.y,-obb.size.z }));
+	vertices.push_back(matrix.MatrixTransform({ obb.size.x,obb.size.y,-obb.size.z }));
+
+	vertices.push_back(matrix.MatrixTransform({ -obb.size.x,-obb.size.y,obb.size.z }));
+	vertices.push_back(matrix.MatrixTransform({ -obb.size.x,obb.size.y,obb.size.z }));
+	vertices.push_back(matrix.MatrixTransform({ obb.size.x,-obb.size.y,obb.size.z }));
+	vertices.push_back(matrix.MatrixTransform({ obb.size.x,obb.size.y,obb.size.z }));
+
+	DrawLine(vertices[0], vertices[1], color);
+	DrawLine(vertices[0], vertices[2], color);
+	DrawLine(vertices[1], vertices[3], color);
+	DrawLine(vertices[2], vertices[3], color);
+
+	DrawLine(vertices[4], vertices[5], color);
+	DrawLine(vertices[4], vertices[6], color);
+	DrawLine(vertices[5], vertices[7], color);
+	DrawLine(vertices[6], vertices[7], color);
+
+	DrawLine(vertices[0], vertices[4], color);
+	DrawLine(vertices[1], vertices[5], color);
+	DrawLine(vertices[2], vertices[6], color);
+	DrawLine(vertices[3], vertices[7], color);
+}
+
+void Renderer::DrawModel(const Transform& transform, const ModelInfo& modelInfo, const Vector4& color, bool useTransparent) {
+	if (!Camera::GetInstance()->IsInCameraFrustum(transform.translate, modelInfo.radius * transform.GetMaxScale())) {
+		return;
+	}
+
+	uint32_t modelMax_ = static_cast<uint32_t>(modelInfo.modelData.size());
+	std::unique_ptr<ModelElements> newElements;
+	newElements = std::make_unique<ModelElements>();
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		ModelElement element;
+		element.modelData_ = modelInfo.modelData[i];
+		element.vertexResource_ = modelInfo.modelData[i].vertexResource_;
+		element.vertexBufferView_ = modelInfo.modelData[i].vertexBufferView_;
+		newElements.get()->push_back(element);
+	}
+
+	CreateNewModel(newElements.get(), modelMax_);
+
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+
+		(*newElements)[i].wvpData_->World = worldMatrix;
+		(*newElements)[i].wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+		(*newElements)[i].wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+
+		(*newElements)[i].materialData_->uvTransform = Matrix4x4::MakeAffineMatrix((*newElements)[i].uvTransform_);
+
+		if (useTransparent) {
+			(*newElements)[i].materialData_->color = Camera::GetInstance()->GetTransparentColor(worldMatrix.GetMatrixToTranslate(), (*newElements)[i].materialData_->color);
+		}
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = GameSystem::GetInstance()->GetCommandList();
+
+		/*=============================================================
+		三角形の描画のコマンド.
+		=============================================================*/
+		GameSystem::GetInstance()->DrawCommand(
+			blendMode_,
+			&(*newElements)[i].vertexBufferView_,
+			nullptr,
+			D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+			(*newElements)[i].materialResource_,
+			(*newElements)[i].wvpResource_,
+			(*newElements)[i].modelData_.textureSrvHandlesGPU,
+			UINT((*newElements)[i].modelData_.vertices.size())
+		);
+	}
+}
+
+void Renderer::DrawModel(const Transform& transform, const Model* model, bool useTransparent) {
+	if (!model->GetIsVisible()) {
+		return;
+	}
+	uint32_t modelMax_ = static_cast<uint32_t>(model->GetModelCountMax());
+
+	std::unique_ptr<ModelElements> newElements;
+	newElements = std::make_unique<ModelElements>(model->GetModelElement());
+
+	//newElements->resize(modelMax_);
+	ModelElements modelData = model->GetModelElement();
+
+	CreateModel(newElements.get(), model->GetModelElement(), modelMax_);
+
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+
+		(*newElements)[i].wvpData_->World = worldMatrix;
+		(*newElements)[i].wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+		(*newElements)[i].wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+
+		(*newElements)[i].materialData_->uvTransform = Matrix4x4::MakeAffineMatrix((*newElements)[i].uvTransform_);
+
+		if (useTransparent) {
+			(*newElements)[i].materialData_->color = Camera::GetInstance()->GetTransparentColor(worldMatrix.GetMatrixToTranslate(), (*newElements)[i].materialData_->color);
+		}
+
+		/*=============================================================
+		三角形の描画のコマンド.
+		=============================================================*/
+		GameSystem::GetInstance()->DrawCommand(
+			blendMode_,
+			&(*newElements)[i].vertexBufferView_,
+			nullptr,
+			D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+			(*newElements)[i].materialResource_,
+			(*newElements)[i].wvpResource_,
+			(*newElements)[i].modelData_.textureSrvHandlesGPU,
+			UINT((*newElements)[i].modelData_.vertices.size())
+		);
+	}
+}
+
+void Renderer::DrawSprite(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color) {
+	Transform worldTransform = transform;
+
+	Vector2 size;
+	size.x = static_cast<float>(textureInfo.width);
+	size.y = static_cast<float>(textureInfo.height);
+
+	std::unique_ptr<ModelElement> newElement;
+	newElement = std::make_unique<ModelElement>();
+	newElement->modelData_.textureSrvHandlesGPU = textureInfo.textureSrvHandlesGPU;
+
+	CreateNewSprite(newElement.get(), size.x, size.y);
+
+	// インデックスリソースにデータを書き込む.
+
+	// 書き込むためのアドレスを取得.
+	newElement->indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->indexData));
+	// 1枚目の三角形.
+	newElement->indexData[0] = 0;
+	newElement->indexData[1] = 1;
+	newElement->indexData[2] = 2;
+	newElement->indexData[3] = 1;
+	newElement->indexData[4] = 3;
+	newElement->indexData[5] = 2;
+
+	Matrix4x4 worldMatrix = worldTransform.GetAffineMatrix();
+
+	newElement->wvpData_->World = worldMatrix;
+	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
+	newElement->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+	newElement->materialData_->color = color;
+
+	newElement->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(newElement->uvTransform_);
+	/*=============================================================
+	三角形のSpriteの描画のコマンド.
+	=============================================================*/
+	GameSystem::GetInstance()->DrawCommand(
+		blendMode_,
+		&newElement->vertexBufferView_,
+		&newElement->indexBufferView_,
+		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+		newElement->materialResource_,
+		newElement->wvpResource_,
+		newElement->modelData_.textureSrvHandlesGPU,
+		6
+	);
+}
+
+void Renderer::DrawSprite(const Transform& transform, const Vector2& size, const TextureInfo& textureInfo, const Vector4& color) {
+	Transform worldTransform = transform;
+
+	//Vector2 size;
+	//size.x = static_cast<float>(textureInfo.width);
+	//size.y = static_cast<float>(textureInfo.height);
+
+	std::unique_ptr<ModelElement> newElement;
+	newElement = std::make_unique<ModelElement>();
+	newElement->modelData_.textureSrvHandlesGPU = textureInfo.textureSrvHandlesGPU;
+
+	CreateNewSprite(newElement.get(), size.x, size.y);
+
+	// インデックスリソースにデータを書き込む.
+
+	newElement->materialData_->color = color;
+	// 書き込むためのアドレスを取得.
+	newElement->indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->indexData));
+	// 1枚目の三角形.
+	newElement->indexData[0] = 0;
+	newElement->indexData[1] = 1;
+	newElement->indexData[2] = 2;
+	newElement->indexData[3] = 1;
+	newElement->indexData[4] = 3;
+	newElement->indexData[5] = 2;
+
+	Matrix4x4 worldMatrix = worldTransform.GetAffineMatrix();
+
+	newElement->wvpData_->World = worldMatrix;
+	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
+	newElement->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+
+	newElement->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(newElement->uvTransform_);
+	/*=============================================================
+	三角形のSpriteの描画のコマンド.
+	=============================================================*/
+	GameSystem::GetInstance()->DrawCommand(
+		blendMode_,
+		&newElement->vertexBufferView_,
+		&newElement->indexBufferView_,
+		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+		newElement->materialResource_,
+		newElement->wvpResource_,
+		newElement->modelData_.textureSrvHandlesGPU,
+		6
+	);
+}
+
+void Renderer::DrawSprite(const Transform& transform, const Sprite& sprite) {
+	Transform worldTransform = transform;
+
+	Vector2 size = sprite.GetSize();
+
+	ModelElement* newElement;
+	newElement = new ModelElement();
+	newElement = sprite.GetModelElement();
+
+	CreateSprite(newElement, size.x, size.y);
+
+	worldTransform.translate.x = transform.translate.x - (size.x / 2.0f);
+	worldTransform.translate.y = transform.translate.y - (size.y / 2.0f);
+
+	Matrix4x4 worldMatrix = worldTransform.GetAffineMatrix();
+
+	newElement->wvpData_->World = worldMatrix;
+	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
+	newElement->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+
+	newElement->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(newElement->uvTransform_);
+	/*=============================================================
+	三角形のSpriteの描画のコマンド.
+	=============================================================*/
+	GameSystem::GetInstance()->DrawCommand(
+		blendMode_,
+		&newElement->vertexBufferView_,
+		&newElement->indexBufferView_,
+		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+		newElement->materialResource_,
+		newElement->wvpResource_,
+		newElement->modelData_.textureSrvHandlesGPU,
+		6
+	);
+}
+
+void Renderer::DrawShadow(const Transform& transform, const Model* model) {
+	uint32_t modelMax_ = static_cast<uint32_t>(model->GetModelCountMax());
+	std::unique_ptr<ModelElements> newElements;
+	newElements = std::make_unique<ModelElements>(model->GetModelElement());
+	//newElements->resize(modelMax_);
+	CreateModel(newElements.get(), model->GetModelElement(), modelMax_);
+
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+		Matrix4x4 projectionMatrix = Matrix4x4::Identity();
+		projectionMatrix.matrix[1][1] = 0.01f;
+		worldMatrix = worldMatrix * projectionMatrix;
+		(*newElements)[i].wvpData_->World = worldMatrix * projectionMatrix;
+		(*newElements)[i].wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+		(*newElements)[i].wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+
+		(*newElements)[i].materialData_->uvTransform = Matrix4x4::MakeAffineMatrix((*newElements)[i].uvTransform_);
+
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = GameSystem::GetInstance()->GetCommandList();
+
+		/*=============================================================
+		三角形の描画のコマンド.
+		=============================================================*/
+		GameSystem::GetInstance()->DrawCommand(
+			blendMode_,
+			&(*newElements)[i].vertexBufferView_,
+			nullptr,
+			D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+			(*newElements)[i].materialResource_,
+			(*newElements)[i].wvpResource_,
+			(*newElements)[i].modelData_.textureSrvHandlesGPU,
+			UINT((*newElements)[i].modelData_.vertices.size())
+		);
+	}
+}
+
+void Renderer::DrawShadow(const Transform& transform, const Model* model, const Vector4& color) {
+	uint32_t modelMax_ = static_cast<uint32_t>(model->GetModelCountMax());
+	std::unique_ptr<ModelElements> newElements;
+	newElements = std::make_unique<ModelElements>(model->GetModelElement());
+	CreateModel(newElements.get(), model->GetModelElement(), modelMax_);
+
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+		Matrix4x4 projectionMatrix = Matrix4x4::Identity();
+		projectionMatrix.matrix[1][1] = 0.01f;
+		worldMatrix = worldMatrix * projectionMatrix;
+		newElements.get()[i].data()->wvpData_->World = worldMatrix * projectionMatrix;
+		newElements.get()[i].data()->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+		newElements.get()[i].data()->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+
+		newElements.get()[i].data()->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(newElements.get()[i].data()->uvTransform_);
+		newElements.get()[i].data()->materialData_->color = color;
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = GameSystem::GetInstance()->GetCommandList();
+
+		/*=============================================================
+		三角形の描画のコマンド.
+		=============================================================*/
+		GameSystem::GetInstance()->DrawCommand(
+			blendMode_,
+			&newElements.get()[i].data()->vertexBufferView_,
+			nullptr,
+			D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+			newElements.get()[i].data()->materialResource_,
+			newElements.get()[i].data()->wvpResource_,
+			newElements.get()[i].data()->modelData_.textureSrvHandlesGPU,
+			UINT(newElements.get()[i].data()->modelData_.vertices.size())
+		);
+	}
+}
+
+void Renderer::DrawShadow(const Transform& transform, const ModelInfo& modelInfo, const Vector4& color) {
+	//if (!Camera::GetInstance()->IsInCameraFrustum(transform.translate, modelInfo.radius * transform.GetMaxScale())) {
+	//	return;
+	//}
+
+	uint32_t modelMax_ = static_cast<uint32_t>(modelInfo.modelData.size());
+	std::unique_ptr<ModelElements> newElements;
+	newElements = std::make_unique<ModelElements>();
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		ModelElement element;
+		element.modelData_ = modelInfo.modelData[i];
+		element.vertexResource_ = modelInfo.modelData[i].vertexResource_;
+		element.vertexBufferView_ = modelInfo.modelData[i].vertexBufferView_;
+		newElements.get()->push_back(element);
+	}
+
+	CreateNewModel(newElements.get(), modelMax_);
+
+	for (uint32_t i = 0; i < modelMax_; i++) {
+		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
+		Matrix4x4 projectionMatrix = Matrix4x4::Identity();
+		projectionMatrix.matrix[1][1] = 0.0f;
+		worldMatrix = worldMatrix * projectionMatrix;
+		worldMatrix.matrix[3][1] = 0.01f;
+		(*newElements)[i].wvpData_->World = worldMatrix;
+		(*newElements)[i].wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+		(*newElements)[i].wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+
+		(*newElements)[i].materialData_->uvTransform = Matrix4x4::MakeAffineMatrix((*newElements)[i].uvTransform_);
+		(*newElements)[i].materialData_->color = color;
+
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = GameSystem::GetInstance()->GetCommandList();
+
+		/*=============================================================
+		三角形の描画のコマンド.
+		=============================================================*/
+		GameSystem::GetInstance()->DrawCommand(
+			blendMode_,
+			&(*newElements)[i].vertexBufferView_,
+			nullptr,
+			D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+			(*newElements)[i].materialResource_,
+			(*newElements)[i].wvpResource_,
+			(*newElements)[i].modelData_.textureSrvHandlesGPU,
+			UINT((*newElements)[i].modelData_.vertices.size())
+		);
+	}
+}
+
+void Renderer::CreateLine(ModelElement* newElement) {
+	newElement->modelData_.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesGPU;
+	newElement->blendMode_ = BlendMode::kLine;
+
+	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
+	newElement->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexDataLine) * maxLineNum_);
+
+	// 【TransformationMatrix】
+	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
+	newElement->wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+	// データを書き込む.
+	// 書き込むためのアドレスを取得.
+	newElement->wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->wvpData_));
+	// 単位行列を書き込んでおく.
+	newElement->wvpData_->WVP = Matrix4x4::Identity();
+	newElement->wvpData_->World = Matrix4x4::Identity();
+
+	// 【VertexBufferViewを作成する】
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	newElement->vertexBufferView_.BufferLocation = newElement->vertexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
+	newElement->vertexBufferView_.SizeInBytes = UINT(sizeof(VertexDataLine) * maxLineNum_);
+	// 1頂点あたりのサイズ.
+	newElement->vertexBufferView_.StrideInBytes = sizeof(VertexDataLine);
+
+	// 【Resourceにデータを書き込む】
+	// 書き込むためのアドレスを取得.
+	newElement->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->vertexDataLine));
+}
+
+void Renderer::CreateSphere(ModelElement* newElement) {
+
+	newElement->blendMode_ = blendMode_;//BlendMode::kNormal;
+
+	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
+	newElement->vertexResource_ = sphereVertexResource_;
+	newElement->indexResource_ = sphereIndexResource_;
+	newElement->vertexData = sphereVertexData;
+	newElement->indexData = sphereIndexData;
+	newElement->vertexBufferView_ = sphereVertexBufferView_;
+	newElement->indexBufferView_ = sphereIndexBufferView_;
+	newElement->materialResource_ = modelInstances[currentDrawModelIndex_]->materialResource_;
+	newElement->wvpResource_ = modelInstances[currentDrawModelIndex_]->wvpResource_;
+
+	newElement->blendMode_ = blendMode_;
+	newElement->uvTransform_.Initialize();
+	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
+	currentDrawModelIndex_++;
+	newElement->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->materialData_));
+	// 今回は赤を書き込んでみる
+	newElement->materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	newElement->materialData_->lightingType = static_cast<uint32_t>(lightingType_);;
+	newElement->materialData_->uvTransform = Matrix4x4::Identity();
+	newElement->materialData_->reflectionType = static_cast<uint32_t>(reflectionType_);
+	newElement->materialData_->shininess = 40.0f;
+
+	// 【TransformationMatrix】
+	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
+	// データを書き込む.
+	// 書き込むためのアドレスを取得.
+	newElement->wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->wvpData_));
+	// 単位行列を書き込んでおく.
+	newElement->wvpData_->WVP = Matrix4x4::Identity();
+	newElement->wvpData_->World = Matrix4x4::Identity();
+	newElement->wvpData_->WorldInverseTranspose = Matrix4x4::Identity();
+}
+
+void Renderer::CreateTorus(ModelElement* newElement, float majorRadius, float minorRadius) {
+	const float pi = std::numbers::pi_v<float>;
+
+	//newElement->vertexData[]
+	newElement->indexResource_ = torusIndexResource_;
+	newElement->vertexResource_ = torusInstances[currentDrawTorusIndex_]->vertexResource_;
+	newElement->vertexData = torusInstances[currentDrawTorusIndex_]->vertexData;
+	newElement->materialResource_ = torusInstances[currentDrawTorusIndex_]->materialResource_;
+	newElement->wvpResource_ = torusInstances[currentDrawTorusIndex_]->wvpResource_;
+	currentDrawTorusIndex_++;
+
+	newElement->blendMode_ = blendMode_;
+	newElement->uvTransform_.Initialize();
+	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
+	currentDrawModelIndex_++;
+	newElement->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->materialData_));
+	// 今回は赤を書き込んでみる
+	newElement->materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	newElement->materialData_->lightingType = static_cast<uint32_t>(lightingType_);;
+	newElement->materialData_->uvTransform = Matrix4x4::Identity();
+	newElement->materialData_->reflectionType = static_cast<uint32_t>(reflectionType_);
+	newElement->materialData_->shininess = 40.0f;
+
+	// 【TransformationMatrix】
+	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
+	// データを書き込む.
+	// 書き込むためのアドレスを取得.
+	newElement->wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->wvpData_));
+	// 単位行列を書き込んでおく.
+	newElement->wvpData_->WVP = Matrix4x4::Identity();
+	newElement->wvpData_->World = Matrix4x4::Identity();
+
+
+	newElement->vertexBufferView_.BufferLocation = newElement->vertexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
+	newElement->vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * (kTorusSubdivision_ + 1) * (kTorusSubdivision_ + 1));
+	// 1頂点あたりのサイズ.
+	newElement->vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+	// 【IndexResourceを生成する】
+	// 実際に頂点リソースを作る.
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	newElement->indexBufferView_.BufferLocation = newElement->indexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズはインデックス6つ分のサイズ.
+	newElement->indexBufferView_.SizeInBytes = sizeof(uint32_t) * kTorusSubdivision_ * kTorusSubdivision_ * 6;
+	// インデックスはuint32_tとする.
+	newElement->indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+
+	uint32_t vertexPerRow = kTorusSubdivision_ + 1;
+
+	for (uint32_t y = 0; y <= kTorusSubdivision_; y++) {
+		float v = (float)y / kTorusSubdivision_;
+		float theta = v * pi * 2.0f;
+
+		float cosTheta = std::cos(theta);
+		float sinTheta = std::sin(theta);
+
+		for (uint32_t x = 0; x <= kTorusSubdivision_; x++) {
+			uint32_t index = y * vertexPerRow + x;
+
+			float u = (float)x / kTorusSubdivision_;
+			float phi = u * pi * 2.0f;
+
+			float cosPhi = std::cos(phi);
+			float sinPhi = std::sin(phi);
+
+			//---------------------------------
+			// チューブ中心
+			//---------------------------------
+
+			Vector3 center = { majorRadius * cosTheta,0.0f,majorRadius * sinTheta };
+
+			//---------------------------------
+			// 法線
+			//---------------------------------
+
+			Vector3 normal = { cosTheta * cosPhi,sinPhi,sinTheta * cosPhi };
+
+			normal = normal.Normalize();
+
+			//---------------------------------
+			// 頂点座標
+			//---------------------------------
+
+			Vector3 position = center + normal * minorRadius;
+
+			newElement->vertexData[index].position = { position.x,position.y,position.z,1.0f };
+
+			newElement->vertexData[index].normal = normal;
+
+			newElement->vertexData[index].texcoord = { u,v };
+		}
+	}
+}
+
+void Renderer::CreateBox(ModelElement* newElement) {
+	newElement->blendMode_ = blendMode_;
+	newElement->uvTransform_.Initialize();
+	newElement->modelData_ = ModelManager::GetInstance()->GetModelInfo("block_template").modelData[0];
+	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
+
+	// 【MaterialResourceを生成する】
+	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
+	// マテリアルにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	newElement->materialResource_ = modelInstances[currentDrawModelIndex_]->materialResource_;
+	newElement->wvpResource_ = modelInstances[currentDrawModelIndex_]->wvpResource_;
+
+	currentDrawModelIndex_++;
+	newElement->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->materialData_));
+	// 今回は赤を書き込んでみる
+	newElement->materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	newElement->materialData_->lightingType = static_cast<uint32_t>(lightingType_);;
+	newElement->materialData_->uvTransform = Matrix4x4::Identity();
+	newElement->materialData_->reflectionType = static_cast<uint32_t>(reflectionType_);
+	newElement->materialData_->shininess = 40.0f;
+
+	// 【TransformationMatrix】
+	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
+	// データを書き込む.
+	// 書き込むためのアドレスを取得.
+	newElement->wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->wvpData_));
+	// 単位行列を書き込んでおく.
+	newElement->wvpData_->WVP = Matrix4x4::Identity();
+	newElement->wvpData_->World = Matrix4x4::Identity();
+
+	//// 【VertexBufferViewを作成する】
+	//// 頂点バッファビューを作成する.
+	//// リソースの先頭のアドレスから使う.
+	//newElement->vertexBufferView_.BufferLocation = newElement->vertexResource_->GetGPUVirtualAddress();
+	//// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
+	//newElement->vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * newElement->modelData_.vertices.size());
+	//// 1頂点あたりのサイズ.
+	//newElement->vertexBufferView_.StrideInBytes = sizeof(VertexData);
+	//
+	//// 【Resourceにデータを書き込む】
+	//// 頂点リソースにデータを書き込む.
+	//VertexData* vertexData = nullptr;
+	//// 書き込むためのアドレスを取得.
+	//newElement->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	//memcpy(vertexData, newElement->modelData_.vertices.data(), sizeof(VertexData) * newElement->modelData_.vertices.size());
+}
+
+void Renderer::CreateNewModel(ModelElements* newElements, const uint32_t modelMax) {
+
+	for (uint32_t i = 0; i < modelMax; i++) {
+		// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
+		if (newElements[i].data()->modelData_.materialData.textureFilePath == "") {
+			newElements[i].data()->modelData_.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesGPU;
+		}
+
+		newElements[i].data()->blendMode_ = blendMode_;
+		newElements[i].data()->materialResource_ = modelInstances[currentDrawModelIndex_]->materialResource_;
+		newElements[i].data()->wvpResource_ = modelInstances[currentDrawModelIndex_]->wvpResource_;
+
+		currentDrawModelIndex_++;
+		// 【MaterialResourceを生成する】
+		// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
+		// マテリアルにデータを書き込む.
+		// 書き込むためのアドレスを取得.
+		newElements[i].data()->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElements[i].data()->materialData_));
+		// 今回は赤を書き込んでみる
+		newElements[i].data()->materialData_->color = newElements[i].data()->modelData_.materialData.matarial.color;
+		newElements[i].data()->materialData_->lightingType = static_cast<uint32_t>(lightingType_);;
+		newElements[i].data()->materialData_->uvTransform = newElements[i].data()->modelData_.materialData.matarial.uvTransform;
+		newElements[i].data()->materialData_->reflectionType = static_cast<uint32_t>(reflectionType_);
+		newElements[i].data()->materialData_->shininess = 40.0f;
+
+		// 【TransformationMatrix】
+		// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
+		// データを書き込む.
+		// 書き込むためのアドレスを取得.
+		newElements[i].data()->wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElements[i].data()->wvpData_));
+		// 単位行列を書き込んでおく.
+		newElements[i].data()->wvpData_->WVP = Matrix4x4::Identity();
+		newElements[i].data()->wvpData_->World = Matrix4x4::Identity();
+		newElements[i].data()->uvTransform_.Initialize();
+		newElements[i].data()->uvTransform_.scale = newElements[i].data()->materialData_->uvTransform.GetMatrixToTransform().scale;
+		newElements[i].data()->uvTransform_.rotate = newElements[i].data()->materialData_->uvTransform.GetMatrixToTransform().rotate;
+		newElements[i].data()->uvTransform_.translate = newElements[i].data()->materialData_->uvTransform.GetMatrixToTransform().translate;
+	}
+
+
+}
+
+void Renderer::CreateModel(ModelElements* newElements, const ModelElements& targetElements, const uint32_t modelMax) {
+	for (uint32_t i = 0; i < modelMax; i++) {
+		if (newElements[i].data()->modelData_.materialData.textureFilePath == "") {
+			newElements[i].data()->modelData_.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesGPU;
+		}
+
+		// 個別設定のResourceを取得.
+		newElements[i].data()->materialResource_ = modelInstances[currentDrawModelIndex_]->materialResource_;
+		newElements[i].data()->wvpResource_ = modelInstances[currentDrawModelIndex_]->wvpResource_;
+
+		// newElementsのデータと紐づけ.
+		newElements[i].data()->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElements[i].data()->materialData_));
+		newElements[i].data()->wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElements[i].data()->wvpData_));
+
+		// materialDataにModelのデータを記入.
+		newElements[i].data()->materialData_->color = targetElements[i].materialData_->color;
+		newElements[i].data()->materialData_->lightingType = targetElements[i].materialData_->lightingType;
+		newElements[i].data()->materialData_->reflectionType = targetElements[i].materialData_->reflectionType;
+		newElements[i].data()->materialData_->shininess = targetElements[i].materialData_->shininess;
+		newElements[i].data()->materialData_->uvTransform = targetElements[i].materialData_->uvTransform;
+
+
+		// 【VertexBufferViewを作成する】
+
+		// 頂点バッファビューを作成する.
+
+		newElements[i].data()->vertexBufferView_.BufferLocation = newElements[i].data()->vertexResource_->GetGPUVirtualAddress();
+
+		newElements[i].data()->vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * newElements[i].data()->modelData_.vertices.size());
+		// 1頂点あたりのサイズ.
+		newElements[i].data()->vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+		currentDrawModelIndex_++;
+
+
+		// 【Resourceにデータを書き込む】
+
+		// 頂点リソースにデータを書き込む.
+		VertexData* vertexData = nullptr;
+		// 書き込むためのアドレスを取得.
+		newElements[i].data()->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+		memcpy(vertexData, newElements[i].data()->modelData_.vertices.data(), sizeof(VertexData) * newElements[i].data()->modelData_.vertices.size());
+	}
+}
+
+void Renderer::CreateNewSprite(ModelElement* newElement, float width, float height) {
+	newElement->blendMode_ = blendMode_;
+	newElement->uvTransform_.Initialize();
+
+	/*=============================================================
+	Sprite用のResourceとView.
+	=============================================================*/
+	newElement->vertexResource_ = spriteInstances[currentDrawSpriteIndex_]->vertexResource_;
+	newElement->indexResource_ = spriteInstances[currentDrawSpriteIndex_]->indexResource_;
+	newElement->materialResource_ = spriteInstances[currentDrawSpriteIndex_]->materialResource_;
+	newElement->wvpResource_ = spriteInstances[currentDrawSpriteIndex_]->wvpResource_;
+	currentDrawSpriteIndex_++;
+	// 【VertexResourceを生成する】
+	// 実際に頂点リソースを作る.
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	newElement->vertexBufferView_.BufferLocation = newElement->vertexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ.
+	newElement->vertexBufferView_.SizeInBytes = sizeof(VertexData) * 4;
+	// 1頂点あたりのサイズ.
+	newElement->vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+	// 【IndexResourceを生成する】
+	// 実際に頂点リソースを作る.
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	newElement->indexBufferView_.BufferLocation = newElement->indexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズはインデックス6つ分のサイズ.
+	newElement->indexBufferView_.SizeInBytes = sizeof(uint32_t) * 6;
+	// インデックスはuint32_tとする.
+	newElement->indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+
+
+	// 【MaterialResourceを生成する】
+	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
+	// マテリアルにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	newElement->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->materialData_));
+	// 今回は赤を書き込んでみる
+	newElement->materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	newElement->materialData_->lightingType = static_cast<uint32_t>(LightingType::kNone);
+	newElement->materialData_->uvTransform = Matrix4x4::Identity();
+	newElement->materialData_->reflectionType = static_cast<uint32_t>(ReflectionType::kNone);
+	newElement->materialData_->shininess = 0.0f;
+
+	// 【TransformationMatrix】
+	//Sprite用のTransformationMatrixを作る。Matrix4x4 1つ分のサイズを用意する.
+	// データを書き込む.
+	// 書き込むためのアドレスを取得.
+	newElement->wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->wvpData_));
+	// 単位行列を書き込んでおく.
+	newElement->wvpData_->WVP = Matrix4x4::Identity();
+	newElement->wvpData_->World = Matrix4x4::Identity();
+
+	// 【Resourceにデータを書き込む】
+	float halfWidth = width * 0.5f;
+	float halfHeight = height * 0.5f;
+	// 頂点リソースにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	newElement->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->vertexData));
+	newElement->vertexData[0].position = { -halfWidth,halfHeight,0.0f,1.0f }; // 左下.
+	newElement->vertexData[0].texcoord = { 0.0f,1.0f };
+	newElement->vertexData[0].normal = { 0.0f,0.0f,-1.0f };
+	newElement->vertexData[1].position = { -halfWidth ,-halfHeight,0.0f,1.0f }; // 左上.
+	newElement->vertexData[1].texcoord = { 0.0f,0.0f };
+	newElement->vertexData[1].normal = { 0.0f,0.0f,-1.0f };
+	newElement->vertexData[2].position = { halfWidth ,halfHeight,0.0f,1.0f }; // 右下.
+	newElement->vertexData[2].texcoord = { 1.0f,1.0f };
+	newElement->vertexData[2].normal = { 0.0f,0.0f,-1.0f };
+	newElement->vertexData[3].position = { halfWidth ,-halfHeight,0.0f,1.0f }; // 右上.
+	newElement->vertexData[3].texcoord = { 1.0f,0.0f };
+	newElement->vertexData[3].normal = { 0.0f,0.0f,-1.0f };
+}
+
+void Renderer::CreateSprite(ModelElement* newElement, float width, float height) {
+	//newElement->blendMode_ = BlendMode::kNormal;
+	newElement->uvTransform_.Initialize();
+	/*=============================================================
+	Sprite用のResourceとView.
+	=============================================================*/
+	// 【VertexResourceを生成する】
+	// 実際に頂点リソースを作る.
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	newElement->vertexBufferView_.BufferLocation = newElement->vertexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ.
+	newElement->vertexBufferView_.SizeInBytes = sizeof(VertexData) * 4;
+	// 1頂点あたりのサイズ.
+	newElement->vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+	// 【IndexResourceを生成する】
+	// 実際に頂点リソースを作る.
+	newElement->indexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * 6);
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	newElement->indexBufferView_.BufferLocation = newElement->indexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズはインデックス6つ分のサイズ.
+	newElement->indexBufferView_.SizeInBytes = sizeof(uint32_t) * 6;
+	// インデックスはuint32_tとする.
+	newElement->indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+
+
+	// 【MaterialResourceを生成する】
+	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
+	// マテリアルにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	newElement->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->materialData_));
+	// 今回は赤を書き込んでみる
+	// 【TransformationMatrix】
+	//Sprite用のTransformationMatrixを作る。Matrix4x4 1つ分のサイズを用意する.
+	newElement->wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+	// データを書き込む.
+	// 書き込むためのアドレスを取得.
+	newElement->wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->wvpData_));
+	// 単位行列を書き込んでおく.
+	newElement->wvpData_->WVP = Matrix4x4::Identity();
+	newElement->wvpData_->World = Matrix4x4::Identity();
+
+	// 【Resourceにデータを書き込む】
+
+	// 頂点リソースにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	newElement->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->vertexData));
+	newElement->vertexData[0].position = { 0.0f,height,0.0f,1.0f }; // 左下.
+	newElement->vertexData[0].texcoord = { 0.0f,1.0f };
+	newElement->vertexData[0].normal = { 0.0f,0.0f,-1.0f };
+	newElement->vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f }; // 左上.
+	newElement->vertexData[1].texcoord = { 0.0f,0.0f };
+	newElement->vertexData[1].normal = { 0.0f,0.0f,-1.0f };
+	newElement->vertexData[2].position = { width,height,0.0f,1.0f }; // 右下.
+	newElement->vertexData[2].texcoord = { 1.0f,1.0f };
+	newElement->vertexData[2].normal = { 0.0f,0.0f,-1.0f };
+	newElement->vertexData[3].position = { width,0.0f,0.0f,1.0f }; // 右上.
+	newElement->vertexData[3].texcoord = { 1.0f,0.0f };
+	newElement->vertexData[3].normal = { 0.0f,0.0f,-1.0f };
+
+	// インデックスリソースにデータを書き込む.
+	uint32_t* indexDataSprite = nullptr;
+	// 書き込むためのアドレスを取得.
+	newElement->indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
+	// 1枚目の三角形.
+	indexDataSprite[0] = 0;
+	indexDataSprite[1] = 1;
+	indexDataSprite[2] = 2;
+	indexDataSprite[3] = 1;
+	indexDataSprite[4] = 3;
+	indexDataSprite[5] = 2;
+}
+
+void TestParticle::Initialize(const ModelInfo& info, uint32_t numInstanced) {
+	numInstance_ = numInstanced;
+	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
+	modelMax_ = static_cast<uint32_t>(info.modelData.size());
+
+	if (modelMax_ > 1) {
+#ifdef _DEBUG
+
+		assert(false, "テスト用のやつなんでメッシュ1以上のやつはやらんといてください");
+
+#endif // _DEBUG
+	}
+
+	isVisible_ = true;
+
+	modelData_ = info.modelData[0];
+
+	if (modelData_.materialData.textureFilePath == "") {
+		modelData_.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesGPU;
+		modelData_.textureSrvHandlesCPU = TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesCPU;
+	}
+
+	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * modelData_.vertices.size());
+
+	// 【MaterialResourceを生成する】
+	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
+	//Microsoft::WRL::ComPtr<ID3D12Resource> materialResource 
+	materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+	// マテリアルにデータを書き込む.
+	//Material* materialData = nullptr;
+	// 書き込むためのアドレスを取得.
+	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
+	// 今回は赤を書き込んでみる
+	materialData_->color = modelData_.materialData.matarial.color;
+	materialData_->lightingType = static_cast<uint32_t>(LightingType::kHalfLambert);
+	materialData_->uvTransform = modelData_.materialData.matarial.uvTransform;
+
+	// 【TransformationMatrix】
+	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
+	//Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource 
+	//wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
+	// データを書き込む.
+	//TransformationMatrix* wvpData = nullptr;
+	// 書き込むためのアドレスを取得.
+	//wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&wvpData_));
+	// 単位行列を書き込んでおく.
+	//wvpData_->WVP = Matrix4x4::Identity();
+	//wvpData_->World = Matrix4x4::Identity();
+	uvTransform_.Initialize();
+	uvTransform_.scale = materialData_->uvTransform.GetMatrixToTransform().scale;
+	uvTransform_.rotate = materialData_->uvTransform.GetMatrixToTransform().rotate;
+	uvTransform_.translate = materialData_->uvTransform.GetMatrixToTransform().translate;
+
+	// 【VertexBufferViewを作成する】
+
+	// 頂点バッファビューを作成する.
+	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+	// リソースの先頭のアドレスから使う.
+	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
+	//vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 4;
+	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * modelData_.vertices.size());
+	// 1頂点あたりのサイズ.
+	vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+
+	// 【Resourceにデータを書き込む】
+
+	// 頂点リソースにデータを書き込む.
+	VertexData* vertexData = nullptr;
+	// 書き込むためのアドレスを取得.
+	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	memcpy(vertexData, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
+
+
+	instancingResource_ = GameSystem::GetInstance()->CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix) * numInstance_);
+
+	instancingResource_->Map(0, nullptr, reinterpret_cast<void**>(&instancingData_));
+
+	for (uint32_t index = 0; index < numInstance_; index++) {
+		instancingData_[index].WVP = Matrix4x4::Identity();
+		instancingData_[index].World = Matrix4x4::Identity();
+	}
+
+	instancingSrvDesc.Format = DXGI_FORMAT_UNKNOWN;
+	instancingSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	instancingSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+	instancingSrvDesc.Buffer.FirstElement = 0;
+	instancingSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+	instancingSrvDesc.Buffer.NumElements = numInstance_;
+	instancingSrvDesc.Buffer.StructureByteStride = sizeof(TransformationMatrix);
+
+	instancingSrvHandleCPU = GameSystem::GetInstance()->GetCPUDescriptorHandle(GameSystem::GetInstance()->GetSrvDescriptorHeap(), GameSystem::GetInstance()->GetDescriptorSizeSRV(), GameSystem::GetInstance()->GetSrvDescriptorHeapNum());
+	instancingSrvHandleGPU = GameSystem::GetInstance()->GetGPUDescriptorHandle(GameSystem::GetInstance()->GetSrvDescriptorHeap(), GameSystem::GetInstance()->GetDescriptorSizeSRV(), GameSystem::GetInstance()->GetSrvDescriptorHeapNum());
+
+	GameSystem::GetInstance()->SrvDescriptorHeapNumIncrement();
+
+	GameSystem::GetInstance()->GetDevice()->CreateShaderResourceView(instancingResource_.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
+}
+
+void TestParticle::Draw(const Transform& transform) const {
+	if (!isVisible_) {
+		return;
+	}
+
+	for (uint32_t index = 0; index < numInstance_; index++) {
+		Transform instancingTransform = transform;
+		instancingTransform.translate = { index * 0.1f,index * 0.1f, index * 0.1f };
+
+		Matrix4x4 worldMatrix = instancingTransform.GetAffineMatrix();
+
+		instancingData_[index].World = worldMatrix;
+		instancingData_[index].WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+	}
+
+	materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransform_);
+
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = GameSystem::GetInstance()->GetCommandList();
+
+	/*=============================================================
+	三角形の描画のコマンド.
+	=============================================================*/
+	GameSystem::GetInstance()->SetParticlePipeline(blendMode_);
+
+	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_); // VBVを設定.
+	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	// CBufferの場所を設定.
+	// マテリアル用のCBufferの場所.
+	commandList->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
+	// WVP用のCBufferの場所.
+	//commandList->SetGraphicsRootConstantBufferView(1, wvpResource_->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootDescriptorTable(1, instancingSrvHandleGPU);
+	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
+	commandList->SetGraphicsRootDescriptorTable(2, modelData_.textureSrvHandlesGPU);
+	// DirectionalLight用のCBufferの場所.
+	//commandList->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
+	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
+	commandList->DrawInstanced(UINT(modelData_.vertices.size()), numInstance_, 0, 0);
+}
