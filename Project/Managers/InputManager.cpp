@@ -15,25 +15,7 @@ InputManager* InputManager::GetInstance() {
 	return &instance;
 }
 
-void InputManager::SetActions() {
-	ResetActions();
-	SetAction(InputAction::LEFT, DIK_LEFT, MouseButtons::MOUSE_NONE, PadButtons::INPUT_LEFT);
-	SetAction(InputAction::LEFT, DIK_A, MouseButtons::MOUSE_NONE, PadButtons::INPUT_LSTICK_LEFT);
-	SetAction(InputAction::RIGHT, DIK_RIGHT, MouseButtons::MOUSE_NONE, PadButtons::INPUT_RIGHT);
-	SetAction(InputAction::RIGHT, DIK_D, MouseButtons::MOUSE_NONE, PadButtons::INPUT_LSTICK_RIGHT);
-	SetAction(InputAction::JUMP, DIK_SPACE, MouseButtons::MOUSE_NONE, PadButtons::INPUT_A);
-	SetAction(InputAction::ATTACK, DIK_LSHIFT, MouseButtons::MOUSE_NONE, PadButtons::INPUT_X);
-}
-
-void InputManager::ResetActions() {
-	for (auto& action : inputActions_) {
-		action.first.first.clear();
-		action.first.second.clear();
-		action.second.clear();
-	}
-}
-
-void InputKeyBoard::Initialize(IDirectInput8* directInput) {
+void InputKeyBoard::Initialize(Microsoft::WRL::ComPtr<IDirectInput8> directInput) {
 
 	// キーボードデバイスの作成.
 	HRESULT result = directInput->CreateDevice(GUID_SysKeyboard, &keyBoard_, NULL);
@@ -55,7 +37,7 @@ void InputKeyBoard::Update() {
 	keyBoard_->GetDeviceState(sizeof(keys_), keys_);
 }
 
-void InputMouse::Initialize(IDirectInput8* directInput) {
+void InputMouse::Initialize(Microsoft::WRL::ComPtr<IDirectInput8> directInput) {
 
 	// キーボードデバイスの作成.
 	HRESULT result = directInput->CreateDevice(GUID_SysMouse, &mouse_, NULL);
@@ -259,18 +241,18 @@ float InputGamePad::GetPreRightStickInclination() const {
 	return result.Length();
 }
 
-void InputGamePad::SetVibration(float left, float right) {
+void InputGamePad::SetVibration(float left, float right){
 	XINPUT_VIBRATION vibration{};
-
+	
 	if (left > 1.0f) {
 		left = 1.0f;
-	} else if (left < 0.0f) {
+	} else if (left < 0.0f){
 		left = 0.0f;
 	}
-
+	
 	if (right > 1.0f) {
 		right = 1.0f;
-	} else if (right < 0.0f) {
+	} else if (right < 0.0f){
 		right = 0.0f;
 	}
 
@@ -555,8 +537,8 @@ BYTE InputGamePad::GetPreButtonPress(PadButtons button) const {
 	return false;
 }
 
-void InputManager::Initialize() {// DirectInputの初期化.
-	HRESULT result = DirectInput8Create(GameSystem::GetInstance()->GetWc().hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
+void InputManager::Initialize(WinApp* winApp) {// DirectInputの初期化.
+	HRESULT result = DirectInput8Create(winApp->GetHInstance(), DIRECTINPUT_VERSION, IID_IDirectInput8,
 		(void**)&directInput_, nullptr);
 	assert(SUCCEEDED(result));
 
@@ -565,7 +547,6 @@ void InputManager::Initialize() {// DirectInputの初期化.
 	gamePad_.Initialize();
 
 	isDebugCursorMovingAllow_ = false;
-	SetActions();
 }
 
 
@@ -589,7 +570,7 @@ void InputManager::Update() {
 	VibrationUpdate();
 }
 
-void InputManager::SetVibration(float left, float right, float duration) {
+void InputManager::SetVibration(float left, float right, float duration){
 	if (vibrationType_ == VibrationType::CONTINUATION) {
 		return;
 	}
@@ -602,161 +583,91 @@ void InputManager::SetVibration(float left, float right, float duration) {
 	vibrationType_ = VibrationType::FIXED_TIME;
 }
 
-void InputManager::SetContinuationVibration(float left, float right, bool isVibration) {
+void InputManager::SetContinuationVibration(float left, float right, bool isVibration){
 	leftVibrationMag_ = left;
 	rightVibrationMag_ = right;
 	isVibration_ = isVibration;
 
 	if (isVibration_) {
 		vibrationType_ = VibrationType::CONTINUATION;
-		gamePad_.SetVibration(left, right);
+		gamePad_.SetVibration(left,right);
 	} else {
 		vibrationType_ = VibrationType::FIXED_TIME;
 		leftVibrationMag_ = 0.0f;
 		rightVibrationMag_ = 0.0f;
-		gamePad_.SetVibration(0.0f, 0.0f);
+		gamePad_.SetVibration(0.0f,0.0f);
 	}
 }
 
-bool InputManager::PressAction(InputAction action) const {
+bool InputManager::PressAction(InputAction action) const{
 	if (IsGamePadConnect()) {
 		for (auto padButton : inputActions_[static_cast<size_t>(action)].second) {
-			if (gamePad_.PressButton(padButton)) {
-				return true;
-			}
+			return gamePad_.PressButton(padButton);
 		}
 	} else {
 		for (auto key : inputActions_[static_cast<size_t>(action)].first.first) {
-			if (keyBoard_.PressKey(key)) {
-				return true;
-			}
+			return keyBoard_.PressKey(key);
 		}
 
 		for (auto mouseButton : inputActions_[static_cast<size_t>(action)].first.second) {
-			if (mouse_.PressMouse(mouseButton)) {
-				return true;
-			}
+			return mouse_.PressMouse(mouseButton);
 		}
 	}
 	return false;
 }
 
-bool InputManager::TriggerAction(InputAction action) const {
+bool InputManager::TriggerAction(InputAction action) const{
 	if (IsGamePadConnect()) {
 		for (auto padButton : inputActions_[static_cast<size_t>(action)].second) {
-			if (gamePad_.TriggerButton(padButton)) {
-				return true;
-			}
+			return gamePad_.TriggerButton(padButton);
 		}
 	} else {
 		for (auto key : inputActions_[static_cast<size_t>(action)].first.first) {
-			if (keyBoard_.TriggerKey(key)) {
-				return true;
-			}
+			return keyBoard_.TriggerKey(key);
 		}
 
 		for (auto mouseButton : inputActions_[static_cast<size_t>(action)].first.second) {
-			if (mouse_.TriggerMouse(mouseButton)) {
-				return true;
-			}
+			return mouse_.TriggerMouse(mouseButton);
 		}
 	}
 	return false;
 }
 
-bool InputManager::ReleaseAction(InputAction action) const {
+bool InputManager::ReleaseAction(InputAction action) const{
 	if (IsGamePadConnect()) {
 		for (auto padButton : inputActions_[static_cast<size_t>(action)].second) {
-			if (gamePad_.ReleaseButton(padButton)) {
-				return true;
-			}
+			return gamePad_.ReleaseButton(padButton);
 		}
 	} else {
 		for (auto key : inputActions_[static_cast<size_t>(action)].first.first) {
-			if (keyBoard_.ReleaseKey(key)) {
-				return true;
-			}
+			return keyBoard_.ReleaseKey(key);
 		}
 
 		for (auto mouseButton : inputActions_[static_cast<size_t>(action)].first.second) {
-			if (mouse_.ReleaseMouse(mouseButton)) {
-				return true;
-			}
+			return mouse_.ReleaseMouse(mouseButton);
 		}
 	}
 	return false;
 }
 
-bool InputManager::NoneAction(InputAction action) const {
+bool InputManager::NoneAction(InputAction action) const{
 	if (IsGamePadConnect()) {
 		for (auto padButton : inputActions_[static_cast<size_t>(action)].second) {
-			if (gamePad_.NoneButton(padButton)) {
-				return true;
-			}
+			return gamePad_.NoneButton(padButton);
 		}
 	} else {
 		for (auto key : inputActions_[static_cast<size_t>(action)].first.first) {
-			if (keyBoard_.NoneKey(key)) {
-				return true;
-			}
+			return keyBoard_.NoneKey(key);
 		}
 
 		for (auto mouseButton : inputActions_[static_cast<size_t>(action)].first.second) {
-			if (mouse_.NoneMouse(mouseButton)) {
-				return true;
-			}
+			return mouse_.NoneMouse(mouseButton);
 		}
 	}
 	return false;
 }
 
-void InputManager::SetAction(InputAction action, uint8_t key, MouseButtons mouse, PadButtons pad) {
-	bool isNewInput = true;
-	if (inputActions_[static_cast<size_t>(action)].second.size() != 0) {
-		for (auto& action : inputActions_[static_cast<size_t>(action)].second) {
-			if (action == pad) {
-				isNewInput = false;
-				break;
-			}
-		}
-	}
-
-	if (isNewInput) {
-		inputActions_[static_cast<size_t>(action)].second.push_back(pad);
-	}
-
-
-	isNewInput = true;
-	if (inputActions_[static_cast<size_t>(action)].first.first.size() != 0) {
-		for (auto& action : inputActions_[static_cast<size_t>(action)].first.first) {
-			if (action == key) {
-				isNewInput = false;
-				break;
-			}
-		}
-	}
-
-	if (isNewInput) {
-		inputActions_[static_cast<size_t>(action)].first.first.push_back(key);
-	}
-
-
-	isNewInput = true;
-	if (inputActions_[static_cast<size_t>(action)].first.second.size() != 0) {
-		for (auto& action : inputActions_[static_cast<size_t>(action)].first.second) {
-			if (action == mouse) {
-				isNewInput = false;
-				break;
-			}
-		}
-	}
-
-	if (isNewInput) {
-		inputActions_[static_cast<size_t>(action)].first.second.push_back(mouse);
-	}
-}
-
-void InputManager::VibrationUpdate() {
+void InputManager::VibrationUpdate(){
 	if (!isVibration_) {
 		return;
 	}
@@ -773,9 +684,9 @@ void InputManager::VibrationUpdate() {
 			isVibration_ = false;
 			leftVibrationMag_ = 0.0f;
 			rightVibrationMag_ = 0.0f;
-			gamePad_.SetVibration(0.0f, 0.0f);
+			gamePad_.SetVibration(0.0f,0.0f);
 		} else {
-			gamePad_.SetVibration(left, right);
+			gamePad_.SetVibration(left,right);
 		}
 
 	}

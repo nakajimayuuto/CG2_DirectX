@@ -12,6 +12,9 @@
 #include <dbghelp.h>
 #include <vector>
 #include <numbers>
+#include "WinApp.h"
+
+
 #include "../Math/Vector4.h"
 #include "../Math/Vertex.h"
 #include "../Math/Matrix4x4.h"
@@ -78,7 +81,7 @@ struct ModelElement;
 
 class GameSystem {
 private:
-	static inline const D3D12_FILTER kUsingFillter_ = D3D12_FILTER_MIN_MAG_MIP_POINT; // D3D12_FILTER_MIN_MAG_MIP_LINEAR.
+	static inline const D3D12_FILTER kUsingFilter_ = D3D12_FILTER_MIN_MAG_MIP_POINT; // D3D12_FILTER_MIN_MAG_MIP_LINEAR.
 
 	static inline const uint32_t kSrvDescriptorHeapNumMax = 128;
 public:
@@ -97,7 +100,45 @@ public:
 	void EndFrame();
 
 	void Finalize();
+private:
+	void DXFactoryInitialize();
 
+	void CommandInitialize();
+
+	void SwapChainInitialize();
+
+	void DescriptorInitialize();
+
+	void RenderTargetViewInitialize();
+
+	void FenceInitialize();
+
+	void ViewportInitialize();
+
+	void ScissorInitialize();
+
+	void DXCompilerInitialize();
+
+	void ShaderCompile();
+
+	void PipelineInitialize();
+	
+	void ImGuiInitialize();
+
+	void LoadSampleDatas();
+private:
+	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory_ = nullptr;
+
+	DXGI_SWAP_CHAIN_DESC1 swapChainDesc_{};
+
+	uint32_t descriptorSizeRTV_;
+
+	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc_{};
+
+	Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils_ = nullptr;
+	Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler_ = nullptr;
+	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler_ = nullptr;
+public:
 	void RegisterGlobalVariables();
 	void ApplyGlobalVariables();
 
@@ -107,22 +148,13 @@ public:
 
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetCommandQueue() { return commandQueue; };
 
-	//Microsoft::WRL::ComPtr<ID3D12CommandAllocator> GetCommandAllocator() { return commandAllocator; };
-
 	Microsoft::WRL::ComPtr<ID3D12Fence> GetFence() { return fence; };
-
-	//uint64_t GetFenceValue() { return fenceValue; };
-
-	//void FenceValueIncrement() { fenceValue++; };
 
 	HANDLE GetFenceEvent() { return fenceEvent; };
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetSrvDescriptorHeap() { return srvDescriptorHeap; };
 	uint32_t GetDescriptorSizeSRV() { return descriptorSizeSRV; };
-
-	WNDCLASS GetWc() { return wc; };
-
-	HWND GetHWND() { return hwnd; };
+	HWND GetHWND() { return winApp_->GetHWND(); };
 
 	std::ofstream& GetLogStream() { return logStream; };
 
@@ -201,12 +233,15 @@ public:
 	//static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle();
 
 private:
-	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-
 	std::ofstream CreateLogFile();
 
 	void WindowSizeUpdate();
 private:
+	/*=============================================================
+	WindowsApi系
+	=============================================================*/
+	std::unique_ptr<WinApp> winApp_;
+
 	uint32_t drawCount_;
 
 	/*=============================================================
@@ -214,13 +249,9 @@ private:
 	=============================================================*/
 	static D3DResourceLeakChecker resourceLeakChecker;
 
-	WNDCLASS wc{};
-
 	MSG msg{};
 
 	Microsoft::WRL::ComPtr<ID3D12Device> device = nullptr;
-
-	HWND hwnd;
 
 	std::ofstream logStream;
 

@@ -55,9 +55,6 @@ private:
 
 	bool isBossDeath_;
 	bool isBGMStart_;
-
-	bool isClear_;
-	bool isGameOver_;
 private:
 	SoundData musPhase1_;
 	SoundData musPhase1Intro_;

@@ -11,15 +11,6 @@ struct CollisionMapInfo {
 
 class MapChipManager{
 public:
-	enum Corner {
-		kRightBottom,
-		kLeftBottom,
-		kRightTop,
-		kLeftTop,
-
-		kNumCornter,
-	};
-
 
 	static MapChipManager* GetInstance();
 
@@ -33,6 +24,19 @@ public:
 
 	// 2 移動量を加味して衝突判定を処理.
 	void MapCollision(const Vector3& position,CollisionMapInfo& info);
+private:
+	enum Corner {
+		kRightBottom,
+		kLeftBottom,
+		kRightTop,
+		kLeftTop,
+
+		kNumCornter,
+	};
+
+	void CreateStage();
+
+	void GenerateFieldObjects();
 
 	void MapCollisionUp(const Vector3& position, CollisionMapInfo& info);
 	void MapCollisionDown(const Vector3& position, CollisionMapInfo& info);
@@ -40,20 +44,6 @@ public:
 	void MapCollisionLeft(const Vector3& position, CollisionMapInfo& info);
 
 	Vector3 CornerPosition(const Vector3& position, Corner corner);
-
-	bool OnGroundCheck(const Vector3& position, const  CollisionMapInfo& info);
-
-	MapChipField* GetMapChipField() { return mapChipField_.get(); };
-
-	void DeleteBlock(const Vector3& position,int offsetX,int offsetY);
-
-	void CreateBlock(const Vector3& position);
-private:
-	void CreateStage();
-
-	void GenerateFieldObjects();
-
-	void ClearFieldObjects();
 private:
 
 	static inline const float kWidth = 0.8f;

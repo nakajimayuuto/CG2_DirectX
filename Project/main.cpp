@@ -2,7 +2,6 @@
 void LoadDatas();
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
-
 	GameSystem* system = GameSystem::GetInstance();
 
 	Camera::GetInstance()->Initialize(static_cast<float>(Environment::GetInstance()->GetWindowSize().width), static_cast<float>(Environment::GetInstance()->GetWindowSize().height));
@@ -63,28 +62,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 void LoadDatas() {
 	//ModelManager::GetInstance()->RegisterObj("boss", "Resource/boss", "boss_ghost.obj", false);
-	ModelManager::GetInstance()->RegisterObj("ground", "Resource/Ground", "ground.obj");
-	ModelManager::GetInstance()->RegisterObj("celling", "Resource/Ground", "celling.obj");
-	ModelManager::GetInstance()->RegisterObj("drill_ghost", "Resource/drill_ghost", "drill_ghost.obj", false);
-	ModelManager::GetInstance()->RegisterObj("halberd", "Resource/halberd", "halberd.obj", false);
-	ModelManager::GetInstance()->RegisterObj("wall", "Resource/wall", "wall.obj");
-	ModelManager::GetInstance()->RegisterObj("bullet_crystal", "Resource/Bullet", "bullet_crystal.obj");
-	ModelManager::GetInstance()->RegisterObj("spike", "Resource/Spike", "spike.obj");
-	ModelManager::GetInstance()->RegisterObj("tutorial_wall", "Resource/wall", "tutorial_wall.obj");
-	ModelManager::GetInstance()->RegisterObj("tutorial_celling", "Resource/wall", "tutorial_celling.obj");
-	TextureManager::GetInstance()->RegisterTexture("bullet_bounce", "Resource/Bullet/bullet_bounce.png");
-	TextureManager::GetInstance()->RegisterTexture("wall_soul", "Resource/wall/wall_soul.png");
-	TextureManager::GetInstance()->RegisterTexture("door", "Resource/wall/door.png");
+	ModelManager::GetInstance()->RegisterObj("ground", "Resources/Ground", "ground.obj");
+	ModelManager::GetInstance()->RegisterObj("celling", "Resources/Ground", "celling.obj");
+	ModelManager::GetInstance()->RegisterObj("drill_ghost", "Resources/drill_ghost", "drill_ghost.obj", false);
+	ModelManager::GetInstance()->RegisterObj("halberd", "Resources/halberd", "halberd.obj", false);
+	ModelManager::GetInstance()->RegisterObj("wall", "Resources/wall", "wall.obj");
+	ModelManager::GetInstance()->RegisterObj("bullet_crystal", "Resources/Bullet", "bullet_crystal.obj");
+	ModelManager::GetInstance()->RegisterObj("spike", "Resources/Spike", "spike.obj");
+	ModelManager::GetInstance()->RegisterObj("tutorial_wall", "Resources/wall", "tutorial_wall.obj");
+	ModelManager::GetInstance()->RegisterObj("tutorial_celling", "Resources/wall", "tutorial_celling.obj");
+	TextureManager::GetInstance()->RegisterTexture("bullet_bounce", "Resources/Bullet/bullet_bounce.png");
+	TextureManager::GetInstance()->RegisterTexture("wall_soul", "Resources/wall/wall_soul.png");
+	TextureManager::GetInstance()->RegisterTexture("door", "Resources/wall/door.png");
 	//TextureManager::GetInstance()->RegisterTexture("halberd_soul", "Resource/Halberd/halberd_soul.png");
 
-	TextureManager::GetInstance()->RegisterTexture("effect_plane", "Resource/effects/effect_plane.png");
-	TextureManager::GetInstance()->RegisterTexture("effect_fire", "Resource/effects/effect_fire.png");
-	TextureManager::GetInstance()->RegisterTexture("effect_big_fire", "Resource/effects/effect_big_fire.png");
-	TextureManager::GetInstance()->RegisterTexture("effect_blue_fire", "Resource/effects/effect_blue_fire.png");
-	TextureManager::GetInstance()->RegisterTexture("effect_big_blue_fire", "Resource/effects/effect_big_blue_fire.png");
-	TextureManager::GetInstance()->RegisterTexture("effect_slash", "Resource/effects/effect_slash.png");
-	TextureManager::GetInstance()->RegisterTexture("effect_cross", "Resource/effects/effect_cross.png");
-	TextureManager::GetInstance()->RegisterTexture("effect_star", "Resource/effects/effect_star.png");
+	TextureManager::GetInstance()->RegisterTexture("effect_plane", "Resources/effects/effect_plane.png");
+	TextureManager::GetInstance()->RegisterTexture("effect_fire", "Resources/effects/effect_fire.png");
+	TextureManager::GetInstance()->RegisterTexture("effect_big_fire", "Resources/effects/effect_big_fire.png");
+	TextureManager::GetInstance()->RegisterTexture("effect_blue_fire", "Resources/effects/effect_blue_fire.png");
+	TextureManager::GetInstance()->RegisterTexture("effect_big_blue_fire", "Resources/effects/effect_big_blue_fire.png");
+	TextureManager::GetInstance()->RegisterTexture("effect_slash", "Resources/effects/effect_slash.png");
+	TextureManager::GetInstance()->RegisterTexture("effect_cross", "Resources/effects/effect_cross.png");
+	TextureManager::GetInstance()->RegisterTexture("effect_star", "Resources/effects/effect_star.png");
 	ParticleManager::GetInstance()->CreateNewParticles("normal",TextureManager::GetInstance()->GetTextureInfo("effect_plane"), BillboardType::kAllAxis,Particles::Move::kNormal);
 	ParticleManager::GetInstance()->CreateNewParticles("fire",TextureManager::GetInstance()->GetTextureInfo("effect_fire"), BillboardType::kAllAxis,Particles::Move::kFire);
 	ParticleManager::GetInstance()->SetParticleSize("fire", {0.2f,0.2f,0.2f});
@@ -108,79 +107,79 @@ void LoadDatas() {
 	ParticleManager::GetInstance()->SetParticleSize("charge", { 0.2f,0.2f,0.2f });
 
 
-	TextureManager::GetInstance()->RegisterTexture("press_a", "Resource/UI/press_a.png");
-	TextureManager::GetInstance()->RegisterTexture("menu_start", "Resource/UI/menu_start.png");
-	TextureManager::GetInstance()->RegisterTexture("menu_setting", "Resource/UI/menu_setting.png");
-	TextureManager::GetInstance()->RegisterTexture("menu_return", "Resource/UI/menu_return.png");
+	TextureManager::GetInstance()->RegisterTexture("press_a", "Resources/UI/press_a.png");
+	TextureManager::GetInstance()->RegisterTexture("menu_start", "Resources/UI/menu_start.png");
+	TextureManager::GetInstance()->RegisterTexture("menu_setting", "Resources/UI/menu_setting.png");
+	TextureManager::GetInstance()->RegisterTexture("menu_return", "Resources/UI/menu_return.png");
 
-	TextureManager::GetInstance()->RegisterTexture("ui_difficulty", "Resource/UI/difficulty.png");
-	TextureManager::GetInstance()->RegisterTexture("difficulty_easy", "Resource/UI/difficulty_easy.png");
-	TextureManager::GetInstance()->RegisterTexture("difficulty_normal", "Resource/UI/difficulty_normal.png");
-	TextureManager::GetInstance()->RegisterTexture("difficulty_hard", "Resource/UI/difficulty_hard.png");
-	TextureManager::GetInstance()->RegisterTexture("difficulty_normal_outline", "Resource/UI/difficulty_normal_outline.png");
-	TextureManager::GetInstance()->RegisterTexture("difficulty_hard_outline", "Resource/UI/difficulty_hard_outline.png");
-	TextureManager::GetInstance()->RegisterTexture("ui_return", "Resource/UI/return.png");
-	TextureManager::GetInstance()->RegisterTexture("play_guid", "Resource/UI/play_guid.png");
-	TextureManager::GetInstance()->RegisterTexture("gameover", "Resource/UI/gameover.png");
-	TextureManager::GetInstance()->RegisterTexture("gameclear", "Resource/UI/gameclear.png");
+	TextureManager::GetInstance()->RegisterTexture("ui_difficulty", "Resources/UI/difficulty.png");
+	TextureManager::GetInstance()->RegisterTexture("difficulty_easy", "Resources/UI/difficulty_easy.png");
+	TextureManager::GetInstance()->RegisterTexture("difficulty_normal", "Resources/UI/difficulty_normal.png");
+	TextureManager::GetInstance()->RegisterTexture("difficulty_hard", "Resources/UI/difficulty_hard.png");
+	TextureManager::GetInstance()->RegisterTexture("difficulty_normal_outline", "Resources/UI/difficulty_normal_outline.png");
+	TextureManager::GetInstance()->RegisterTexture("difficulty_hard_outline", "Resources/UI/difficulty_hard_outline.png");
+	TextureManager::GetInstance()->RegisterTexture("ui_return", "Resources/UI/return.png");
+	TextureManager::GetInstance()->RegisterTexture("play_guid", "Resources/UI/play_guid.png");
+	TextureManager::GetInstance()->RegisterTexture("gameover", "Resources/UI/gameover.png");
+	TextureManager::GetInstance()->RegisterTexture("gameclear", "Resources/UI/gameclear.png");
 
-	TextureManager::GetInstance()->RegisterTexture("pause", "Resource/UI/pause.png");
-	TextureManager::GetInstance()->RegisterTexture("return_to_game", "Resource/UI/pause_return_to_game.png");
-	TextureManager::GetInstance()->RegisterTexture("retry", "Resource/UI/pause_retry.png");
-	TextureManager::GetInstance()->RegisterTexture("return_to_tutorial", "Resource/UI/pause_return_to_tutorial.png");
-	TextureManager::GetInstance()->RegisterTexture("retry_phase2", "Resource/UI/pause_retry_phase2.png");
-	TextureManager::GetInstance()->RegisterTexture("retry_last_jarona", "Resource/UI/pause_retry_last_jarona.png");
-	TextureManager::GetInstance()->RegisterTexture("return_to_title", "Resource/UI/pause_return_to_title.png");
+	TextureManager::GetInstance()->RegisterTexture("pause", "Resources/UI/pause.png");
+	TextureManager::GetInstance()->RegisterTexture("return_to_game", "Resources/UI/pause_return_to_game.png");
+	TextureManager::GetInstance()->RegisterTexture("retry", "Resources/UI/pause_retry.png");
+	TextureManager::GetInstance()->RegisterTexture("return_to_tutorial", "Resources/UI/pause_return_to_tutorial.png");
+	TextureManager::GetInstance()->RegisterTexture("retry_phase2", "Resources/UI/pause_retry_phase2.png");
+	TextureManager::GetInstance()->RegisterTexture("retry_last_jarona", "Resources/UI/pause_retry_last_jarona.png");
+	TextureManager::GetInstance()->RegisterTexture("return_to_title", "Resources/UI/pause_return_to_title.png");
 
-	TextureManager::GetInstance()->RegisterTexture("attack_to_x", "Resource/UI/attack_to_x.png");
-	TextureManager::GetInstance()->RegisterTexture("dash_to_x", "Resource/UI/dash_to_x.png");
-	TextureManager::GetInstance()->RegisterTexture("jump_to_a", "Resource/UI/jump_to_a.png");
-	TextureManager::GetInstance()->RegisterTexture("move_to_l", "Resource/UI/move_to_l.png");
-	TextureManager::GetInstance()->RegisterTexture("play_guid_tutorial_attack", "Resource/UI/play_guid_tutorial_attack.png");
-	TextureManager::GetInstance()->RegisterTexture("play_guid_tutorial_dash", "Resource/UI/play_guid_tutorial_dash.png");
-	TextureManager::GetInstance()->RegisterTexture("tutorial_attack_info", "Resource/UI/tutorial_attack_info.png");
-	TextureManager::GetInstance()->RegisterTexture("tutorial_damage_info", "Resource/UI/tutorial_damage_info.png");
-	TextureManager::GetInstance()->RegisterTexture("skip_to_lr", "Resource/UI/skip_to_lr.png");
-	TextureManager::GetInstance()->RegisterTexture("pause_to_hamburger", "Resource/UI/pause_to_hamburger.png");
+	TextureManager::GetInstance()->RegisterTexture("attack_to_x", "Resources/UI/attack_to_x.png");
+	TextureManager::GetInstance()->RegisterTexture("dash_to_x", "Resources/UI/dash_to_x.png");
+	TextureManager::GetInstance()->RegisterTexture("jump_to_a", "Resources/UI/jump_to_a.png");
+	TextureManager::GetInstance()->RegisterTexture("move_to_l", "Resources/UI/move_to_l.png");
+	TextureManager::GetInstance()->RegisterTexture("play_guid_tutorial_attack", "Resources/UI/play_guid_tutorial_attack.png");
+	TextureManager::GetInstance()->RegisterTexture("play_guid_tutorial_dash", "Resources/UI/play_guid_tutorial_dash.png");
+	TextureManager::GetInstance()->RegisterTexture("tutorial_attack_info", "Resources/UI/tutorial_attack_info.png");
+	TextureManager::GetInstance()->RegisterTexture("tutorial_damage_info", "Resources/UI/tutorial_damage_info.png");
+	TextureManager::GetInstance()->RegisterTexture("skip_to_lr", "Resources/UI/skip_to_lr.png");
+	TextureManager::GetInstance()->RegisterTexture("pause_to_hamburger", "Resources/UI/pause_to_hamburger.png");
 
-	TextureManager::GetInstance()->RegisterTexture("name_easy", "Resource/UI/boss_name_easy.png");
-	TextureManager::GetInstance()->RegisterTexture("name_easy_mirror", "Resource/UI/boss_name_easy_mirror.png");
-	TextureManager::GetInstance()->RegisterTexture("name_normal", "Resource/UI/boss_name_normal.png");
-	TextureManager::GetInstance()->RegisterTexture("name_normal_mirror", "Resource/UI/boss_name_normal_mirror.png");
-	TextureManager::GetInstance()->RegisterTexture("name_hard", "Resource/UI/boss_name_hard.png");
-	TextureManager::GetInstance()->RegisterTexture("name_hard_mirror", "Resource/UI/boss_name_hard_mirror.png");
-	TextureManager::GetInstance()->RegisterTexture("name_left_halberd", "Resource/UI/left_halberd_name.png");
-	TextureManager::GetInstance()->RegisterTexture("name_right_halberd", "Resource/UI/right_halberd_name.png");
+	TextureManager::GetInstance()->RegisterTexture("name_easy", "Resources/UI/boss_name_easy.png");
+	TextureManager::GetInstance()->RegisterTexture("name_easy_mirror", "Resources/UI/boss_name_easy_mirror.png");
+	TextureManager::GetInstance()->RegisterTexture("name_normal", "Resources/UI/boss_name_normal.png");
+	TextureManager::GetInstance()->RegisterTexture("name_normal_mirror", "Resources/UI/boss_name_normal_mirror.png");
+	TextureManager::GetInstance()->RegisterTexture("name_hard", "Resources/UI/boss_name_hard.png");
+	TextureManager::GetInstance()->RegisterTexture("name_hard_mirror", "Resources/UI/boss_name_hard_mirror.png");
+	TextureManager::GetInstance()->RegisterTexture("name_left_halberd", "Resources/UI/left_halberd_name.png");
+	TextureManager::GetInstance()->RegisterTexture("name_right_halberd", "Resources/UI/right_halberd_name.png");
 
-	TextureManager::GetInstance()->RegisterTexture("end_to_hamburger", "Resource/UI/end_to_hamburger.png");
-	TextureManager::GetInstance()->RegisterTexture("title", "Resource/UI/title.png");
+	TextureManager::GetInstance()->RegisterTexture("end_to_hamburger", "Resources/UI/end_to_hamburger.png");
+	TextureManager::GetInstance()->RegisterTexture("title", "Resources/UI/title.png");
 
 	ParticleManager::GetInstance()->CreateNewParticles("normal", TextureManager::GetInstance()->GetTextureInfo("effect_plane"), BillboardType::kAllAxis, Particles::Move::kNormal);
 	ParticleManager::GetInstance()->CreateNewParticles("fire", TextureManager::GetInstance()->GetTextureInfo("effect_fire"), BillboardType::kAllAxis, Particles::Move::kFire);
 
-	SoundManager::GetInstance()->RegisterSound("mus_phase1_intro", "Resource/Sound/mus_phase1_intro.wav");
-	SoundManager::GetInstance()->RegisterSound("mus_phase1", "Resource/Sound/mus_phase1.wav");
-	SoundManager::GetInstance()->RegisterSound("mus_phase2_intro", "Resource/Sound/mus_phase2_intro.wav");
-	SoundManager::GetInstance()->RegisterSound("mus_phase2", "Resource/Sound/mus_phase2.wav");
-	SoundManager::GetInstance()->RegisterSound("mus_title", "Resource/Sound/mus_title.mp3");
+	SoundManager::GetInstance()->RegisterSound("mus_phase1_intro", "Resources/Sound/mus_phase1_intro.wav");
+	SoundManager::GetInstance()->RegisterSound("mus_phase1", "Resources/Sound/mus_phase1.wav");
+	SoundManager::GetInstance()->RegisterSound("mus_phase2_intro", "Resources/Sound/mus_phase2_intro.wav");
+	SoundManager::GetInstance()->RegisterSound("mus_phase2", "Resources/Sound/mus_phase2.wav");
+	SoundManager::GetInstance()->RegisterSound("mus_title", "Resources/Sound/mus_title.mp3");
 
-	SoundManager::GetInstance()->RegisterSound("test", "Resource/free_k.wav");
-	SoundManager::GetInstance()->RegisterSound("snd_select", "Resource/Sound/snd_select.mp3");
+	SoundManager::GetInstance()->RegisterSound("test", "Resources/free_k.wav");
+	SoundManager::GetInstance()->RegisterSound("snd_select", "Resources/Sound/snd_select.mp3");
 
-	SoundManager::GetInstance()->RegisterSound("snd_near_attack", "Resource/Sound/snd_attack_near.mp3");
-	SoundManager::GetInstance()->RegisterSound("snd_near_attack_third", "Resource/Sound/snd_attack_near_third.wav");
-	SoundManager::GetInstance()->RegisterSound("snd_bullet_shot", "Resource/Sound/snd_bullet_shot.mp3");
-	SoundManager::GetInstance()->RegisterSound("snd_wave_shot", "Resource/Sound/snd_wave_shot.mp3");
-	SoundManager::GetInstance()->RegisterSound("snd_parry", "Resource/Sound/snd_parry.mp3");
-	SoundManager::GetInstance()->RegisterSound("snd_attack_wind", "Resource/Sound/snd_attack_wind.wav");
-	SoundManager::GetInstance()->RegisterSound("snd_shine", "Resource/Sound/snd_shine.wav");
-	SoundManager::GetInstance()->RegisterSound("snd_explode", "Resource/Sound/snd_explode.wav");
-	SoundManager::GetInstance()->RegisterSound("snd_explode_mini", "Resource/Sound/snd_explode_mini.wav");
-	SoundManager::GetInstance()->RegisterSound("snd_boss_damage", "Resource/Sound/snd_boss_damage.mp3");
-	SoundManager::GetInstance()->RegisterSound("snd_player_damage", "Resource/Sound/snd_player_damage.mp3");
-	SoundManager::GetInstance()->RegisterSound("snd_special_attack", "Resource/Sound/snd_special_attack.mp3");
-	SoundManager::GetInstance()->RegisterSound("snd_step", "Resource/Sound/snd_step.wav");
-	SoundManager::GetInstance()->RegisterSound("snd_drill", "Resource/Sound/snd_drill.mp3");
-	SoundManager::GetInstance()->RegisterSound("snd_parry", "Resource/Sound/snd_parry.mp3");
+	SoundManager::GetInstance()->RegisterSound("snd_near_attack", "Resources/Sound/snd_attack_near.mp3");
+	SoundManager::GetInstance()->RegisterSound("snd_near_attack_third", "Resources/Sound/snd_attack_near_third.wav");
+	SoundManager::GetInstance()->RegisterSound("snd_bullet_shot", "Resources/Sound/snd_bullet_shot.mp3");
+	SoundManager::GetInstance()->RegisterSound("snd_wave_shot", "Resources/Sound/snd_wave_shot.mp3");
+	SoundManager::GetInstance()->RegisterSound("snd_parry", "Resources/Sound/snd_parry.mp3");
+	SoundManager::GetInstance()->RegisterSound("snd_attack_wind", "Resources/Sound/snd_attack_wind.wav");
+	SoundManager::GetInstance()->RegisterSound("snd_shine", "Resources/Sound/snd_shine.wav");
+	SoundManager::GetInstance()->RegisterSound("snd_explode", "Resources/Sound/snd_explode.wav");
+	SoundManager::GetInstance()->RegisterSound("snd_explode_mini", "Resources/Sound/snd_explode_mini.wav");
+	SoundManager::GetInstance()->RegisterSound("snd_boss_damage", "Resources/Sound/snd_boss_damage.mp3");
+	SoundManager::GetInstance()->RegisterSound("snd_player_damage", "Resources/Sound/snd_player_damage.mp3");
+	SoundManager::GetInstance()->RegisterSound("snd_special_attack", "Resources/Sound/snd_special_attack.mp3");
+	SoundManager::GetInstance()->RegisterSound("snd_step", "Resources/Sound/snd_step.wav");
+	SoundManager::GetInstance()->RegisterSound("snd_drill", "Resources/Sound/snd_drill.mp3");
+	SoundManager::GetInstance()->RegisterSound("snd_parry", "Resources/Sound/snd_parry.mp3");
 
 }

@@ -92,18 +92,6 @@ MapChipType MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex
 	return mapChipData_.data[yIndex][xIndex].type;
 }
 
-void MapChipField::SetMapChipTypeByIndexType(uint32_t xIndex, uint32_t yIndex, MapChipType type){
-	if (xIndex < 0 || kNumBlockHorizontal - 1 < xIndex) {
-		return;
-	}
-
-	if (yIndex < 0 || kNumBlockVertical - 1 < yIndex) {
-		return;
-	}
-
-	mapChipData_.data[yIndex][xIndex].type = type;
-}
-
 uint8_t MapChipField::GetMapChipSubIDByIndex(uint32_t xIndex, uint32_t yIndex){
 	if (xIndex < 0 || kNumBlockHorizontal - 1 < xIndex) {
 		return -1;

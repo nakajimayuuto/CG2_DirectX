@@ -1,15 +1,11 @@
 #include "Player.h"
-#define NOMINMAX
-#include <algorithm>
 #include "GameCamera.h"
-#include "ProjectileManager.h"
 void Player::Initialize() {
 	transform_.Initialize();
 	targetRotateY = 0.0f;
-	model_.Initialize("drill_ghost");
+	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("drill_ghost"));
 	model_.SetBlendMode(BlendMode::kNormalCullNone);
-	//transform_.translate = { 0.0f, kTranslateBlankY,-30.0f };
-	transform_.translate = { 5.0f, kTranslateBlankY + 1.0f,0.0f };
+	transform_.translate = { 0.0f, kTranslateBlankY,-30.0f };
 
 	/// HPGauge.
 	maxHP_ = 200.0f;
@@ -70,7 +66,6 @@ void Player::Initialize() {
 	isDeath_ = false;
 
 	deathTimer_ = 0.0f;
-	onGround_ = true;
 }
 
 void Player::InitializeFloatingGimmick() {
@@ -192,7 +187,6 @@ void Player::Update() {
 	ImGui::Begin("player");
 	ImGui::DragFloat("HP", &currentHP_, 1.0f, 0.0f, maxHP_);
 	ImGui::Text("pos %f,%f,%f", transform_.translate.x, transform_.translate.y, transform_.translate.z);
-	ImGui::Text("Behavior %s", magic_enum::enum_name(behavior_).data());
 	ImGui::End();
 #endif // _DEBUG
 	LightManager::GetInstance()->SetLightPos("player_light", transform_.GetWorldPosition());
@@ -207,8 +201,23 @@ void Player::Update() {
 		case Player::Behavior::kRoot:
 			BehaviorRootInitialize();
 			break;
-		case Player::Behavior::kShot:
-			BehaviorShotInitialize();
+		case Player::Behavior::kAttack:
+			BehaviorAttackInitialize();
+			break;
+		case Player::Behavior::kDash:
+			BehaviorDashInitialize();
+			break;
+		case Player::Behavior::kJump:
+			BehaviorJumpInitialize();
+			break;
+		case Player::Behavior::kDashAttack:
+			BehaviorDashAttackInitialize();
+			break;
+		case Player::Behavior::kDashJumpAttack:
+			BehaviorDashJumpAttackInitialize();
+			break;
+		case Player::Behavior::kFall:
+			BehaviorFallInitialize();
 			break;
 		}
 
@@ -225,8 +234,30 @@ void Player::Update() {
 		BehaviorRootUpdate();
 		CollisionManager::GetInstance()->AddColliderList(this);
 		break;
-	case Player::Behavior::kShot:
-		BehaviorShotUpdate();
+	case Player::Behavior::kAttack:
+		BehaviorAttackUpdate();
+		CollisionManager::GetInstance()->AddColliderList(this);
+		break;
+	case Player::Behavior::kDash:
+		BehaviorDashUpdate();
+		colliderDimensionType_ = ColliderDimensionType::k2D;
+		CollisionManager::GetInstance()->AddColliderList(this);
+		LightManager::GetInstance()->SetLightIsActive("player_light", false);
+		break;
+	case Player::Behavior::kJump:
+		BehaviorJumpUpdate();
+		CollisionManager::GetInstance()->AddColliderList(this);
+		break;
+	case Player::Behavior::kDashAttack:
+		BehaviorDashAttackUpdate();
+		CollisionManager::GetInstance()->AddColliderList(this);
+		break;
+	case Player::Behavior::kDashJumpAttack:
+		BehaviorDashJumpAttackUpdate();
+		CollisionManager::GetInstance()->AddColliderList(this);
+		break;
+	case Player::Behavior::kFall:
+		BehaviorFallUpdate();
 		CollisionManager::GetInstance()->AddColliderList(this);
 		break;
 	}
@@ -301,217 +332,124 @@ void Player::BehaviorRootInitialize() {
 	InitializeFloatingGimmick();
 }
 
+
+
 void Player::BehaviorRootUpdate() {
-		MapChipDigUpdate();
+	isMoving_ = false;
 
-	MovingUpdate();
+	if (isDeath_) {
+		UpdateFloatingGimmick();
+		return;
+	}
 
-	MapCollisionUpdate();
+	velocity_ = { 0.0f,0.0f,0.0f };
+	InputManager* input = InputManager::GetInstance();
+	if (input->IsGamePadConnect()) {
+		if (tutorialUsableMove_) {
+			velocity_ = { input->GetLeftStickDirection().x,0.0f,input->GetLeftStickDirection().y };
+			velocity_ = velocity_.Normalize() * kSpeed;
+		}
+
+		if (tutorialUsableJump_) {
+			if (GetJumpButtonTrigger()) {
+				behaviorRequest_ = Behavior::kJump;
+			}
+		}
+
+		if (tutorialUsableAttack_) {
+			if (GetAttackButtonTrigger()) {
+				behaviorRequest_ = Behavior::kAttack;
+			}
+		}
+	} else {
+		if (tutorialUsableMove_) {
+			if (input->PressKey(DIK_W)) {
+				velocity_.z += 1.0f;
+			}
+
+			if (input->PressKey(DIK_S)) {
+				velocity_.z -= 1.0f;
+			}
+
+			if (input->PressKey(DIK_A)) {
+				velocity_.x -= 1.0f;
+			}
+
+			if (input->PressKey(DIK_D)) {
+				velocity_.x += 1.0f;
+			}
+		}
+
+		if (tutorialUsableJump_) {
+			if (GetJumpButtonTrigger()) {
+				behaviorRequest_ = Behavior::kJump;
+			}
+		}
+
+		if (tutorialUsableAttack_) {
+			if (GetAttackButtonTrigger()) {
+				behaviorRequest_ = Behavior::kAttack;
+			}
+		}
+
+		velocity_ = velocity_.Normalize() * kSpeed;
+	}
+
+	if (velocity_.x != 0.0f || velocity_.z != 0.0f) {
+		isMoving_ = true;
+	}
+
+	Matrix4x4 cameraRotateMatrix = Matrix4x4::MakeRotateMatrix(Camera::GetInstance()->GetTransform().rotate);
+
+	velocity_ = cameraRotateMatrix.TransformNomal(velocity_);
+
+	if (isMoving_) {
+		targetRotateY = std::atan2(velocity_.x, velocity_.z);
+	}
+
+	transform_.rotate.y = LerpShortAngle(transform_.rotate.y, targetRotateY, kCompletionRate);
+	//transform_.rotate.y = std::atan2(move.x, move.z);
+
+	transform_.translate += velocity_ * DeltaTime::GetInstance()->GetGameTime();;
 
 	UpdateFloatingGimmick();
+
 }
 
-void Player::BehaviorShotInitialize() {
-	floatingParameter = 0.0f;
-
-	InitializeFloatingGimmick();
-	DeltaTime::GetInstance()->SetGameTimeSpeed(0.2f);
+void Player::BehaviorAttackInitialize() {
+	transform_.rotate.y = targetRotateY;
+	attackTimer_ = 0.0f;
+	attackTimeMax_ = kAttackFirstStart;
+	attackComboPhase_ = 0;
+	attackPhase_ = 0;
+	attackTransform_.Initialize();
+	attackTransform_.SetParent(&transformColliderOffset);
+	transformModel.SetParent(&attackTransform_);
+	AttackFirstInitialize();
 }
 
-void Player::BehaviorShotUpdate() {
-	BlockShotUpdate();
+void Player::BehaviorAttackUpdate() {
+	isAttack_ = true;
+	attackTimer_ += DeltaTime::GetInstance()->GetGameTime();
 
-	GravityUpdate();
 
-	MapCollisionUpdate();
-
-	UpdateFloatingGimmick();
-}
-
-void Player::BlockShot() {
-	ProjectileManager::GetInstance()->CreateBullet(transform_, {0.0f,10.0f,0.0f},BulletType::kBlock,CollisionAttributeName::kCollisionPlayerAttack,10.0f,1.0f);
-}
-
-void Player::MapChipDigUpdate() {
-	if (InputManager::GetInstance()->TriggerAction(InputAction::ATTACK)) {
-	MapChipManager::GetInstance()->DeleteBlock(transform_.translate, 0, -1);
-	}
-}
-
-void Player::BlockShotUpdate() {
-	float attenuation = 1.0f;
-	if (onGround_) {
-		attenuation = kAttenuation;
-	} else {
-		attenuation = kJumpAttenuation;
+	switch (attackComboPhase_) {
+	case 0:
+		AttackFirstUpdate();
+		break;
+	case 1:
+		AttackSecondUpdate();
+		break;
+	case 2:
+		AttackThreeUpdate();
+		break;
 	}
 
-	if (InputManager::GetInstance()->ReleaseAction(InputAction::JUMP)) {
-		BlockShot();
-		behaviorRequest_ = Behavior::kRoot;
-		velocity_.y = kJumpAcceleration;
-		DeltaTime::GetInstance()->SetGameTimeSpeed(1.0f);
-	}
-
-	// 非入力時は移動減衰をかける.
-	if (velocity_.x <= 0.01f && velocity_.x >= -0.01f) {
-		velocity_.x = 0.0f;
-	} else {
-		velocity_.x *= (1.0f - attenuation);
-	}
 }
 
-void Player::GravityUpdate() {
-	if (!onGround_) {
-		// 落下速度.
-		velocity_ += Vector3(0.0f, -kGravityAcceleration, 0.0f);
-		// 速度制限.
-		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
-	}
-}
-
-void Player::MovingUpdate() {
-	float attenuation = 1.0f;
-	if (onGround_) {
-		attenuation = kAttenuation;
-	} else {
-		attenuation = kJumpAttenuation;
-	}
-
-	if (InputManager::GetInstance()->PressAction(InputAction::RIGHT) || InputManager::GetInstance()->PressAction(InputAction::LEFT)) {
-		// 左右加速.
-		Vector3 acceleration = {};
-
-		if (InputManager::GetInstance()->PressAction(InputAction::RIGHT)) {
-			// 左移動中の右入力.
-			if (velocity_.x < 0.0f) {
-				velocity_.x *= (1.0f - attenuation);
-			}
-
-			acceleration.x += kAcceleration;
-
-			if (lrDirection_ != LRDirection::kRight) {
-				lrDirection_ = LRDirection::kRight;
-
-				turnFirstRotationY_ = transform_.rotate.y;
-				turnTimer_ = kTimeTurn;
-			}
-		} else if (InputManager::GetInstance()->PressAction(InputAction::LEFT)) {
-			// 右移動中の左入力.
-			if (velocity_.x > 0.0f) {
-				velocity_.x *= (1.0f - attenuation);
-			}
-
-			acceleration.x -= kAcceleration;
-
-			if (lrDirection_ != LRDirection::kLeft) {
-				lrDirection_ = LRDirection::kLeft;
-
-				turnFirstRotationY_ = transform_.rotate.y;
-				turnTimer_ = kTimeTurn;
-			}
-		}
-
-		// 加速減速.
-		velocity_ += acceleration;
-
-		// 最大速度制限.
-		velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
-	} else {
-		// 非入力時は移動減衰をかける.
-		if (velocity_.x <= 0.01f && velocity_.x >= -0.01f) {
-			velocity_.x = 0.0f;
-		} else {
-			velocity_.x *= (1.0f - attenuation);
-		}
-	}
-
-	if (InputManager::GetInstance()->TriggerAction(InputAction::JUMP)) {
-		behaviorRequest_ = Behavior::kShot;
-	}
-
-
-	GravityUpdate();
-}
-
-void Player::CollisionMoveUpdate(const CollisionMapInfo& info) {
-	transform_.translate += static_cast<Vector3>(info.movementAmount);
-}
-
-void Player::CellingCollisionUpdate(const CollisionMapInfo& info) {
-	if (info.isCellingCollision) {
-		GameSystem::GetInstance()->Log("hit ceiling\n");
-		velocity_.y = 0.0f;
-	}
-}
-
-void Player::IsHitWallUpdate(const CollisionMapInfo& info) {
-	if (info.isWallCollision) {
-		velocity_.x *= (1.0f - kAttenuationWall);
-	}
-}
-
-void Player::IsGroundUpdate(const CollisionMapInfo& info) {
-	if (onGround_) {
-		if (velocity_.y > 0.0f) {
-			onGround_ = false;
-		} else {
-			if (!MapChipManager::GetInstance()->OnGroundCheck(transform_.translate, info)) {
-				onGround_ = false;
-			}
-		}
-	} else {
-		if (info.isLanding) {
-			onGround_ = true;
-			velocity_.x *= (1.0f - kAttenuationLanding);
-			velocity_.y = 0.0f;
-			//behaviorRequest_ = Behavior::kRoot;
-		}
-	}
-}
-
-void Player::TurningControl() {
-	// 旋回制御.
-
-	if (turnTimer_ > 0.0f) {
-		turnTimer_ -= 1.0f / 60.0f;
-
-		// 左右の自キャラ角度テーブル.
-		float destinationRotationYTable[] = {
-			Radian(90.0f),
-			Radian(270.0f),
-		};
-
-		float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
-
-		transform_.rotate.y = Easing(turnFirstRotationY_, destinationRotationY, kTimeTurn - turnTimer_, kTimeTurn, EaseType::kConstant);
-	}
-}
-
-void Player::CheckFallVoid() {
-	if (transform_.translate.y <= -2.0f) {
-		isDeath_ = true;
-	}
-}
-
-void Player::MapCollisionUpdate() {
-	CollisionMapInfo collisionMapInfo;
-
-	collisionMapInfo.movementAmount = velocity_ * DeltaTime::GetInstance()->GetGameTime();
-
-	MapChipManager::GetInstance()->MapCollision(transform_.translate, collisionMapInfo);
-
-	CollisionMoveUpdate(collisionMapInfo);
-
-	CellingCollisionUpdate(collisionMapInfo);
-
-	IsHitWallUpdate(collisionMapInfo);
-
-	IsGroundUpdate(collisionMapInfo);
-
-	TurningControl();
-
-	CheckFallVoid();
+void Player::BehaviorAttackFinished() {
+	behaviorRequest_ = Behavior::kRoot;
+	transformModel.SetParent(&transformColliderOffset);
 }
 
 void Player::CheckTutorialFlag() {
@@ -525,8 +463,464 @@ void Player::CheckTutorialFlag() {
 void Player::CheckTutorialUpdate() {
 }
 
+void Player::SetNextAttackPhase(float timeMax) {
+	attackTimeMax_ = timeMax;
+	attackPhase_++;
+	attackTimer_ = 0.0f;
+}
+
+void Player::AttackFirstInitialize() {
+	useNextAttack_ = false;
+	attackCollider_.SetRadius(4.5f);
+	attackCollider_.SetDamage(35.0f);
+	attackCollider_.SetDamageCoolTime(0.1f);
+	attackCollider_.SetDamageType(1);
+	attackCollider_.SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack));
+	SoundManager::GetInstance()->SoundPlay("snd_attack_wind", 1.0f, 1.0f, kSoundEffect);
+}
+
+void Player::AttackFirstUpdate() {
+	attackCollider_.SetActive(false);
+	attackCollider_.SetTransform(transform_);
+	attackCollider_.SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
+	Transform effectTransform;
+	effectTransform.Initialize();
+	effectTransform.SetParent(&transformModel);
+	effectTransform.scale = { 1.0f,1.0f,1.0f };
+	effectTransform.translate = { 0.0f,2.0f,0.0f };
+	SlashEffectCreate(&effectTransform, 3);
+	switch (attackPhase_) {
+	case 0:
+		attackTransform_.rotate.x = Easing(0.0f, kAttackFirstStartModelRotateX, attackTimer_, attackTimeMax_, EaseType::kEaseIn);
+		transformModel.translate.y = Easing(0.0f, kAttackFirstSpinModelPosY, attackTimer_, attackTimeMax_, EaseType::kEaseIn);
+
+		if (attackTimer_ >= attackTimeMax_) {
+			SetNextAttackPhase(kAttackFirstSpin);
+		}
+		break;
+	case 1:
+		attackCollider_.SetActive(true);
+		attackTransform_.rotate.x = Easing(kAttackFirstStartModelRotateX, kAttackFirstSpinModelRotateX, attackTimer_, attackTimeMax_, EaseType::kConstant);
+
+		if (!useNextAttack_) {
+			if (GetAttackButtonTrigger()) {
+				useNextAttack_ = true;
+			}
+		}
+
+		if (attackTimer_ >= attackTimeMax_) {
+			SetNextAttackPhase(kAttackFirstFinish);
+		}
+		break;
+	case 2:
+		attackTransform_.rotate.x = Easing(kAttackFirstSpinModelRotateX, Radian(360.0f), attackTimer_, attackTimeMax_, EaseType::kEaseOut);
+		transformModel.translate.y = Easing(kAttackFirstSpinModelPosY, 0.0f, attackTimer_, attackTimeMax_, EaseType::kEaseOut);
+
+		if (!useNextAttack_) {
+			if (GetAttackButtonTrigger()) {
+				useNextAttack_ = true;
+			}
+		}
+
+		if (attackTimer_ >= attackTimeMax_) {
+			if (useNextAttack_) {
+				attackComboPhase_++;
+				AttackSecondInitialize();
+			} else {
+				BehaviorAttackFinished();
+			}
+		}
+		break;
+	}
+
+	CollisionManager::GetInstance()->AddColliderList(&attackCollider_);
+	attackCollider_.DrawCollider();
+}
+
+void Player::AttackSecondInitialize() {
+	useNextAttack_ = false;
+	attackTimer_ = 0.0f;
+	attackTimeMax_ = kAttackSecondStart;
+	attackPhase_ = 0;
+	attackTransform_.Initialize();
+	attackTransform_.SetParent(&transformColliderOffset);
+	transformModel.SetParent(&attackTransform_);
+	attackCollider_.SetRadius(4.5f);
+	attackCollider_.SetDamage(30.0f);
+	attackCollider_.SetDamageCoolTime(0.05f);
+	attackCollider_.SetDamageType(2);
+	attackCollider_.SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack));
+	SoundManager::GetInstance()->SoundPlay("snd_attack_wind", 1.0f, 1.0f, kSoundEffect);
+}
+
+void Player::AttackSecondUpdate() {
+	attackCollider_.SetActive(false);
+	attackCollider_.SetTransform(transform_);
+	attackCollider_.SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
+	Transform effectTransform;
+	effectTransform.Initialize();
+	effectTransform.SetParent(&transformModel);
+	effectTransform.scale = { 1.0f,1.0f,1.0f };
+	effectTransform.translate = { 0.0f,2.0f,0.0f };
+	SlashEffectCreate(&effectTransform, 3);
+	switch (attackPhase_) {
+	case 0:
+		attackTransform_.rotate.x = Easing(0.0f, kAttackFirstStartModelRotateX, attackTimer_, attackTimeMax_, EaseType::kEaseIn);
+		transformModel.translate.y = Easing(0.0f, kAttackFirstSpinModelPosY, attackTimer_, attackTimeMax_, EaseType::kEaseIn);
+
+		if (attackTimer_ >= attackTimeMax_) {
+			SetNextAttackPhase(kAttackSecondSpin);
+		}
+		break;
+	case 1:
+		attackCollider_.SetActive(true);
+		attackTransform_.rotate.x = Easing(kAttackFirstStartModelRotateX, kAttackFirstSpinModelRotateX, attackTimer_, attackTimeMax_, EaseType::kConstant);
+
+		if (!useNextAttack_) {
+			if (GetAttackButtonTrigger()) {
+				useNextAttack_ = true;
+			}
+		}
+
+		if (attackTimer_ >= attackTimeMax_) {
+			SetNextAttackPhase(kAttackSecondFinish);
+		}
+		break;
+	case 2:
+		attackTransform_.rotate.x = Easing(kAttackFirstSpinModelRotateX, Radian(360.0f), attackTimer_, attackTimeMax_, EaseType::kEaseOut);
+		transformModel.translate.y = Easing(kAttackFirstSpinModelPosY, 0.0f, attackTimer_, attackTimeMax_, EaseType::kEaseOut);
+
+		if (!useNextAttack_) {
+			if (GetAttackButtonTrigger()) {
+				useNextAttack_ = true;
+			}
+		}
+
+		if (attackTimer_ >= attackTimeMax_) {
+			if (useNextAttack_) {
+				attackComboPhase_++;
+				AttackThreeInitialize();
+			} else {
+				BehaviorAttackFinished();
+			}
+		}
+		break;
+	}
+
+	CollisionManager::GetInstance()->AddColliderList(&attackCollider_);
+	attackCollider_.DrawCollider();
+}
+
+void Player::AttackThreeInitialize() {
+	useNextAttack_ = false;
+	attackTimer_ = 0.0f;
+	attackTimeMax_ = kAttackThirdStart;
+	attackPhase_ = 0;
+	attackTransform_.Initialize();
+	attackTransform_.SetParent(&transformColliderOffset);
+	transformModel.SetParent(&attackTransform_);
+	attackCollider_.SetRadius(5.5f);
+	attackCollider_.SetDamage(25.0f);
+	attackCollider_.SetDamageCoolTime(0.02f);
+	attackCollider_.SetDamageType(3);
+	attackCollider_.SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack));
+	SoundManager::GetInstance()->SoundPlay("snd_near_attack", 1.0f, 1.0f, kSoundEffect);
+}
+
+void Player::AttackThreeUpdate() {
+	attackCollider_.SetActive(false);
+	attackCollider_.SetTransform(transform_);
+	attackCollider_.SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
+	Transform effectTransform;
+	effectTransform.Initialize();
+	effectTransform.SetParent(&transformModel);
+	effectTransform.scale = { 1.0f,2.0f,1.0f };
+	effectTransform.translate = { 0.0f,2.5f,0.0f };
+	SlashEffectCreate(&effectTransform, 3);
+	switch (attackPhase_) {
+	case 0:
+		attackTransform_.rotate.x = Easing(0.0f, kAttackFirstStartModelRotateX, attackTimer_, attackTimeMax_, EaseType::kEaseIn);
+		transformModel.translate.y = Easing(0.0f, kAttackFirstSpinModelPosY, attackTimer_, attackTimeMax_, EaseType::kEaseIn);
+
+		if (attackTimer_ >= attackTimeMax_) {
+			SetNextAttackPhase(kAttackThirdSpin);
+		}
+		break;
+	case 1:
+		attackCollider_.SetActive(true);
+		attackTransform_.rotate.x = Easing(kAttackFirstStartModelRotateX, kAttackFirstSpinModelRotateX, attackTimer_, attackTimeMax_, EaseType::kConstant);
+
+		if (attackTimer_ >= attackTimeMax_) {
+			SetNextAttackPhase(kAttackThirdFinish);
+		}
+		break;
+	case 2:
+		attackTransform_.rotate.x = Easing(kAttackFirstSpinModelRotateX, Radian(360.0f), attackTimer_, attackTimeMax_, EaseType::kEaseOut);
+		transformModel.translate.y = Easing(kAttackFirstSpinModelPosY, 0.0f, attackTimer_, attackTimeMax_, EaseType::kEaseOut);
+
+		if (attackTimer_ >= attackTimeMax_) {
+			BehaviorAttackFinished();
+		}
+		break;
+	}
+
+	CollisionManager::GetInstance()->AddColliderList(&attackCollider_);
+	attackCollider_.DrawCollider();
+}
+
+void Player::BehaviorDashInitialize() {
+	//transform_.rotate.y = targetRotateY;
+}
+
+void Player::BehaviorDashUpdate() {
+	isDash_ = true;
+	isMoving_ = true;
+	InputManager* input = InputManager::GetInstance();
+	if (input->IsGamePadConnect()) {
+		if (tutorialUsableJump_) {
+			if (GetJumpButtonTrigger()) {
+				behaviorRequest_ = Behavior::kDashJumpAttack;
+			}
+		}
+
+		if (tutorialUsableMove_) {
+			transform_.rotate.y += input->GetLeftStickDirection().x * Radian(3.0f);
+		}
+	} else {
+		if (tutorialUsableMove_) {
+			if (input->PressKey(DIK_A)) {
+				transform_.rotate.y -= Radian(3.0f);
+			}
+
+			if (input->PressKey(DIK_D)) {
+				transform_.rotate.y += Radian(3.0f);
+			}
+		}
+
+		if (tutorialUsableJump_) {
+			if (GetJumpButtonTrigger()) {
+				behaviorRequest_ = Behavior::kDashJumpAttack;
+			}
+		}
+	}
+
+	Vector3 move = { 0.0f,0.0f,kDashSpeed };
+
+	Matrix4x4 rotateMatrix = Matrix4x4::MakeRotateMatrix(transform_.rotate);
+
+	move = rotateMatrix.TransformNomal(move);
+
+	velocity_ = move;
+
+	transform_.translate += move * DeltaTime::GetInstance()->GetGameTime();
+}
+
+void Player::BehaviorJumpInitialize() {
+	velocity_.y = kJumpFirstSpeed_;
+	SoundManager::GetInstance()->SoundPlay("snd_step", 1.0f, 1.0f, kSoundEffect);
+
+
+}
+
+void Player::BehaviorJumpUpdate() {
+	isJump_ = true;
+
+	FloatingAccelerationChange();
+
+	Vector3 accelerationVector = { 0.0f,-kGravityAcceleration,0.0f };
+	velocity_ += accelerationVector * DeltaTime::GetInstance()->GetGameTime();
+	transform_.translate += velocity_ * DeltaTime::GetInstance()->GetGameTime();
+
+
+	if (transform_.translate.y <= kTranslateBlankY) {
+		transform_.translate.y = kTranslateBlankY;
+		behaviorRequest_ = Behavior::kRoot;
+		SoundManager::GetInstance()->SoundPlay("snd_step", 1.0f, 1.0f, kSoundEffect);
+	}
+
+	if (tutorialUsableDash_) {
+		if (GetAttackButtonTrigger()) {
+			SoundManager::GetInstance()->SoundPlay("snd_shine", 1.0f, 1.0f, kSoundEffect);
+			behaviorRequest_ = Behavior::kDashAttack;
+		}
+	}
+}
+
+void Player::BehaviorDashAttackInitialize() {
+
+	attackTimer_ = 0.0f;
+	attackTimeMax_ = kDashAttackStart;
+	attackPhase_ = 0;
+	attackTransform_.Initialize();
+	attackTransform_.SetParent(&transform_);
+	attackCollider_.SetRadius(2.5f);
+	attackCollider_.SetDamage(15.0f);
+	attackCollider_.SetDamageCoolTime(0.02f);
+	attackCollider_.SetDamageType(0);
+	attackCollider_.SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack));
+}
+
+void Player::BehaviorDashAttackUpdate() {
+	isDash_ = true;
+	attackCollider_.SetActive(false);
+	attackCollider_.SetTransform(transform_);
+	attackCollider_.SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
+	attackTimer_ += DeltaTime::GetInstance()->GetGameTime();
+	switch (attackPhase_) {
+	case 0:
+		transformModel.rotate.x = Easing(0.0f, Radian(450.0f), attackTimer_, attackTimeMax_, EaseType::kEaseOut);
+
+		if (attackTimer_ >= attackTimeMax_) {
+			attackPhase_++;
+
+			Vector3 move = { 0.0f,0.0f,kDashSpeed };
+			Matrix4x4 rotateMatrix = Matrix4x4::MakeRotateMatrix(transform_.rotate);
+			velocity_ = rotateMatrix.TransformNomal(move);
+			velocity_.y = 0.0f;
+			SoundManager::GetInstance()->SoundPlay("snd_attack_wind", 1.0f, 1.0f, kSoundEffect);
+
+		}
+		break;
+	default:
+		//colliderDimensionType_ = ColliderDimensionType::k2D;
+		attackCollider_.SetActive(true);
+		Vector3 accelerationVector = { 0.0f,-kGravityAcceleration,0.0f };
+		velocity_ += accelerationVector * DeltaTime::GetInstance()->GetGameTime();
+		transform_.translate += velocity_ * DeltaTime::GetInstance()->GetGameTime();
+
+		transformModel.rotate.z += Radian(720.0f) * DeltaTime::GetInstance()->GetGameTime();
+
+		if (transform_.translate.y <= 0.0f) {
+			transform_.translate.y = 0.0f;
+			SoundManager::GetInstance()->SoundPlay("snd_drill", 1.0f, 1.0f, kSoundEffect);
+			behaviorRequest_ = Behavior::kDash;
+			transformModel.rotate.x = 0.0f;
+			transformModel.rotate.z = 0.0f;
+		}
+		break;
+	}
+
+
+	CollisionManager::GetInstance()->AddColliderList(&attackCollider_);
+	attackCollider_.DrawCollider();
+}
+
+void Player::BehaviorDashJumpAttackInitialize() {
+	InputManager* input = InputManager::GetInstance();
+	Vector3 direction = { 0.0f,0.0f,0.0f };
+	SoundManager::GetInstance()->SoundPlay("snd_drill", 1.0f, 1.0f, kSoundEffect);
+	if (input->IsGamePadConnect()) {
+		direction = { input->GetLeftStickDirection().x,0.0f,input->GetLeftStickDirection().y };
+	} else {
+		if (input->PressKey(DIK_W)) {
+			direction.z += 1.0f;
+		}
+		if (input->PressKey(DIK_S)) {
+			direction.z -= 1.0f;
+		}
+		if (input->PressKey(DIK_D)) {
+			direction.x += 1.0f;
+		}
+		if (input->PressKey(DIK_A)) {
+			direction.x -= 1.0f;
+		}
+	}
+	direction = direction.Normalize();
+	float direY = std::atan2(direction.x, direction.z);
+	direY = Degree(direY);
+	//if (GetDownPress()) {
+	//velocity_ *= -1.0f;
+	transform_.rotate.y += Radian(direY);
+	Vector3 move = { 0.0f,0.0f,kDashSpeed };
+
+	Matrix4x4 rotateMatrix = Matrix4x4::MakeRotateMatrix(transform_.rotate);
+
+	move = rotateMatrix.TransformNomal(move);
+
+	velocity_ = move;
+
+
+	transformModel.rotate.x = Radian(90.0f);
+	attackTimer_ = 0.0f;
+	attackTimeMax_ = kDashAttackStart;
+	attackPhase_ = 0;
+	attackTransform_.Initialize();
+	attackTransform_.SetParent(&transform_);
+	attackCollider_.SetRadius(2.5f);
+	attackCollider_.SetDamage(15.0f);
+	attackCollider_.SetDamageCoolTime(0.02f);
+	attackCollider_.SetDamageType(0);
+	attackCollider_.SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack));
+	velocity_.y = kDashJumpFirstSpeed_;
+	useNextAttack_ = false;
+}
+
+void Player::BehaviorDashJumpAttackUpdate() {
+	isDash_ = true;
+	attackCollider_.SetTransform(transform_);
+	attackCollider_.SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
+	Vector3 accelerationVector = { 0.0f,-kGravityAcceleration,0.0f };
+	velocity_ += accelerationVector * DeltaTime::GetInstance()->GetGameTime();
+	transform_.translate += velocity_ * DeltaTime::GetInstance()->GetGameTime();
+
+
+	if (velocity_.y <= 0.0f) {
+		if (useNextAttack_) {
+			SoundManager::GetInstance()->SoundPlay("snd_shine", 1.0f, 1.0f, kSoundEffect);
+			behaviorRequest_ = Behavior::kDashAttack;
+		} else {
+			behaviorRequest_ = Behavior::kFall;
+		}
+
+		transformModel.rotate.x = 0.0f;
+		useNextAttack_ = false;
+
+	} else if (velocity_.y <= 5.0f) {
+		transformModel.rotate.x = Easing(0.0f, Radian(90.0f), velocity_.y, 5.0f, EaseType::kConstant);
+		transformModel.rotate.z = 0.0f;
+		if (!useNextAttack_) {
+			if (tutorialUsableDash_) {
+				if (GetAttackButtonTrigger()) {
+					useNextAttack_ = true;
+				}
+			}
+		}
+	} else {
+		transformModel.rotate.z += Radian(720.0f) * DeltaTime::GetInstance()->GetGameTime();
+	}
+
+
+	CollisionManager::GetInstance()->AddColliderList(&attackCollider_);
+	attackCollider_.DrawCollider();
+}
+
+void Player::BehaviorFallInitialize() {
+	velocity_.y = 0.0f;
+}
+
+void Player::BehaviorFallUpdate() {
+	FloatingAccelerationChange();
+
+	Vector3 accelerationVector = { 0.0f,-kGravityAcceleration,0.0f };
+	velocity_ += accelerationVector * DeltaTime::GetInstance()->GetGameTime();
+	transform_.translate += velocity_ * DeltaTime::GetInstance()->GetGameTime();
+
+
+	if (transform_.translate.y <= kTranslateBlankY) {
+		transform_.translate.y = kTranslateBlankY;
+		behaviorRequest_ = Behavior::kRoot;
+		SoundManager::GetInstance()->SoundPlay("snd_step", 1.0f, 1.0f, kSoundEffect);
+	}
+
+	if (tutorialUsableDash_) {
+		if (GetAttackButtonTrigger()) {
+			SoundManager::GetInstance()->SoundPlay("snd_shine", 1.0f, 1.0f, kSoundEffect);
+			behaviorRequest_ = Behavior::kDashAttack;
+		}
+	}
+}
+
 void Player::UpdateFloatingGimmick() {
-	return;
 	float kFloatingAnimationStep = 2.0f * std::numbers::pi_v<float> / kFloatingAnimationPeriod;
 	floatingParameter += kFloatingAnimationStep;
 
@@ -541,8 +935,12 @@ void Player::Draw() {
 	dashT.SetParent(&transformModel);
 	dashT.rotate.x = Radian(90.0f);
 	if (!isDeath_ || DeltaTime::GetInstance()->GetIsHitStop()) {
-		Renderer::GetInstance()->DrawModel(transformModel, &model_, false);
-		Renderer::GetInstance()->DrawShadow(transformModel, &model_, { 0.0f,0.0f,0.0f,1.0f });
+		if (behavior_ == Behavior::kDash) {
+			Renderer::GetInstance()->DrawShadow(dashT, &model_, { 0.4f,0.4f,1.0f,1.0f });
+		} else {
+			Renderer::GetInstance()->DrawModel(transformModel, &model_, false);
+			Renderer::GetInstance()->DrawShadow(transformModel, &model_, { 0.0f,0.0f,0.0f,1.0f });
+		}
 	}
 
 	//particles_->Draw();

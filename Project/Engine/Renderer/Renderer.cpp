@@ -186,6 +186,7 @@ bool Model::GetIsVisible(const std::string& meshName) const {
 
 		return isVisible_[i];
 	}
+	return isVisible_[0];
 };
 
 void Model::ChangeTexture(const TextureInfo& info) {
@@ -251,6 +252,7 @@ Vector4 Model::GetColor(const std::string& meshName) {
 
 		return materialData_[i]->color;
 	}
+	return materialData_[0]->color;
 };
 
 Vector4 Model::GetColor(uint32_t index) {
@@ -293,6 +295,7 @@ Transform Model::GetUvTransform(const std::string& meshName) {
 
 		return uvTransform_[i];
 	}
+	return uvTransform_[0];
 }
 Transform Model::GetUvTransform(uint32_t index){
 	return uvTransform_[index];
@@ -334,6 +337,7 @@ LightingType Model::GetLightingType(const std::string& meshName) {
 
 		return static_cast<LightingType>(materialData_[i]->lightingType);
 	}
+	return static_cast<LightingType>(materialData_[0]->lightingType);
 }
 LightingType Model::GetLightingType(uint32_t index) {
 	return static_cast<LightingType>(materialData_[index]->lightingType);

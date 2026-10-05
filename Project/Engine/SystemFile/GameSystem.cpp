@@ -59,79 +59,68 @@ void GameSystem::Initialize() {
 	// main関数始まってすぐに登録すると良い.
 	SetUnhandledExceptionFilter(ExportDump);
 
-	/*=============================================================
-	COMの初期化.
-	=============================================================*/
-	CoInitializeEx(0, COINIT_MULTITHREADED);
+	winApp_ = std::make_unique<WinApp>();
+	winApp_->Initialize();
 
-
-	/*=============================================================
-	Window作成系
-	=============================================================*/
-
-	// ウィンドウプロシージャ
-	wc.lpfnWndProc = WindowProc;
-
-	// ウィンドウクラス名
-	wc.lpszClassName = L"CG2WindowClass";
-
-	// インスタンスハンドル.
-	wc.hInstance = GetModuleHandle(nullptr);
-
-	// カーソル.
-	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-
-	// ウィンドウクラスを登録する.
-	RegisterClass(&wc);
-
-	// クライアント領域のサイズ.
-	int32_t kClientWidth = Environment::GetInstance()->GetWindowSize().width;
-	int32_t kClientHeight = Environment::GetInstance()->GetWindowSize().height;
-
-	// ウィンドウサイズを表す構造体に九合アント領域を入れる.
-	RECT wrc{ 0,0,kClientWidth,kClientHeight };
-
-	// クライアント領域をもとに実際のサイズにwrcを変更してもらう.
-	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
-
-	// ウィンドウの生成.
-	hwnd = CreateWindow(
-		wc.lpszClassName,		// 利用するクラス名.
-		Environment::GetInstance()->GetWindowTitle(),					// タイトルバーの文字.
-		WS_OVERLAPPEDWINDOW,	// よく見るウィンドウスタイル.
-		CW_USEDEFAULT,			// 表示X座標(Windowsに任せる).
-		CW_USEDEFAULT,			// 表示Y座標(WindowsOSに任せる).
-		wrc.right - wrc.left,	// ウィンドウ横幅.
-		wrc.bottom - wrc.top,	// ウィンドウ縦幅.
-		nullptr,				// 親ウィンドウハンドル.
-		nullptr,				// メニューウィンドウハンドル.
-		wc.hInstance,			// インスタンスハンドル.
-		nullptr);				// オプション.
-
-#ifdef _DEBUG
-	Microsoft::WRL::ComPtr<ID3D12Debug1> debugController = nullptr;
-	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
-		// デバッグレイヤーを有効化する.
-		debugController->EnableDebugLayer();
-		// さらにGPU側でもチェックを行うようにする.
-		debugController->SetEnableGPUBasedValidation(TRUE);
-	}
-#endif // _DEBUG
-
-
-	// ウィンドウを表示する.
-	ShowWindow(hwnd, SW_SHOW);
-
-	InputManager::GetInstance()->Initialize();
+	InputManager::GetInstance()->Initialize(winApp_.get());
 
 	logStream = CreateLogFile();
 
-	// CG2_00_05.
+	// 01_00 ウィンドウの背景.
+	DXFactoryInitialize();
 
+	CommandInitialize();
+
+	SwapChainInitialize();
+
+	DescriptorInitialize();
+
+	RenderTargetViewInitialize();
+
+	FenceInitialize();
+
+	ViewportInitialize();
+
+	ScissorInitialize();
+
+	DXCompilerInitialize();
+
+	ShaderCompile();
+
+	PipelineInitialize();
+
+	ImGuiInitialize();
+
+	/*=============================================================
+	DirectionalLightの初期化.
+	=============================================================*/
+
+	LightManager::GetInstance()->Initialize();
+
+	Camera::GetInstance()->CreateResource();
+
+	SoundManager::GetInstance()->Initialize();
+
+	Random::GetInstance()->Initialize();
+
+	LoadSampleDatas();
+
+	Renderer::GetInstance()->Initialize();
+
+	GlobalVariables::GetInstance()->LoadFiles();
+
+	DeltaTime::GetInstance()->Initialize();
+
+	Environment::GetInstance()->Initialize();
+
+	ParticleManager::GetInstance()->ParticleClear();
+
+	RegisterGlobalVariables();
+}
+
+void GameSystem::DXFactoryInitialize() {
 	// DXGIファクトリーの生成.
-	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
-
-	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
+	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory_));
 
 	assert(SUCCEEDED(hr));
 
@@ -139,7 +128,7 @@ void GameSystem::Initialize() {
 	Microsoft::WRL::ComPtr<IDXGIAdapter4> useAdapter = nullptr;
 
 	// 一番いいのを頼む.
-	for (UINT i = 0; dxgiFactory->EnumAdapterByGpuPreference(i,
+	for (UINT i = 0; dxgiFactory_->EnumAdapterByGpuPreference(i,
 		DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&useAdapter)) !=
 		DXGI_ERROR_NOT_FOUND; i++) {
 
@@ -212,11 +201,9 @@ void GameSystem::Initialize() {
 		infoQueue->PushStorageFilter(&filter);
 	}
 #endif // _DEBUG
+}
 
-
-
-	// 01_00 ウィンドウの背景.
-
+void GameSystem::CommandInitialize() {
 	/*=============================================================
 	コマンド系
 	=============================================================*/
@@ -225,7 +212,7 @@ void GameSystem::Initialize() {
 
 	D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};
 
-	hr = device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&commandQueue));
+	HRESULT hr = device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&commandQueue));
 
 	// コマンドキューの生成がうまくいかなかったので起動できない.
 	assert(SUCCEEDED(hr));
@@ -241,31 +228,32 @@ void GameSystem::Initialize() {
 	hr = device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), nullptr, IID_PPV_ARGS(&commandList));
 	// コマンドリストの生成がうまくいかなかったので起動できない.
 	assert(SUCCEEDED(hr));
+}
 
-
+void GameSystem::SwapChainInitialize() {
 	/*=============================================================
 	スワップチェーン
 	=============================================================*/
 	// スワップチェーンを生成する.
-	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
-	swapChainDesc.Width = kClientWidth; //画面の幅。ウィンドウのクライアント領域を同じものにする.
-	swapChainDesc.Height = kClientHeight; //画面の高さ。ウィンドウのクライアント領域を同じものにする.
-	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; //色の形式.
-	swapChainDesc.SampleDesc.Count = 1; // マルチサンプルしない.
-	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // 描画のターゲットとして利用する.
-	swapChainDesc.BufferCount = 2; // ダブルバッファ.
-	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD; //モニタに移したら中身を破棄.
+	swapChainDesc_.Width = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().width); //画面の幅。ウィンドウのクライアント領域を同じものにする.
+	swapChainDesc_.Height = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().height); //画面の高さ。ウィンドウのクライアント領域を同じものにする.
+	swapChainDesc_.Format = DXGI_FORMAT_R8G8B8A8_UNORM; //色の形式.
+	swapChainDesc_.SampleDesc.Count = 1; // マルチサンプルしない.
+	swapChainDesc_.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // 描画のターゲットとして利用する.
+	swapChainDesc_.BufferCount = 2; // ダブルバッファ.
+	swapChainDesc_.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD; //モニタに移したら中身を破棄.
 	// コマンドキュー、ウィンドウハンドル、設定を渡して生成する.
-	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue.Get(), hwnd, &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf()));
+	HRESULT hr = dxgiFactory_->CreateSwapChainForHwnd(commandQueue.Get(), winApp_->GetHWND(), &swapChainDesc_, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf()));
 	assert(SUCCEEDED(hr));
+}
 
-
+void GameSystem::DescriptorInitialize() {
 	/*=============================================================
 	ディスクリプタ系
 	=============================================================*/
 	// RTV用のヒープでディスクリプタの数は2。RTVはShader内で触るものではないので、ShaderVisibleはfalse.
 	rtvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
-	const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	descriptorSizeRTV_ = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
 	srvDescriptorHeapNum_ = 1;
 	// SRV用のヒープでディスクリプタの数は128。SRVはShader内で触るものなので、ShaderVisibleはtrue.
@@ -273,73 +261,45 @@ void GameSystem::Initialize() {
 	descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	// SwapChainからResourceを引っ張ってくる.
-	hr = swapChain->GetBuffer(0, IID_PPV_ARGS(&swapChainResource[0]));
+	HRESULT hr = swapChain->GetBuffer(0, IID_PPV_ARGS(&swapChainResource[0]));
 	// 上手く取得出来なければ起動できない.
 	assert(SUCCEEDED(hr));
 	hr = swapChain->GetBuffer(1, IID_PPV_ARGS(&swapChainResource[1]));
 	assert(SUCCEEDED(hr));
+}
 
+void GameSystem::RenderTargetViewInitialize() {
 	// RTVの設定.
-	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
-	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB; // 出力結果をSRGBに変換して書き込む.
-	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D; // 2dテクスチャとして書き込む.
+	rtvDesc_.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB; // 出力結果をSRGBに変換して書き込む.
+	rtvDesc_.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D; // 2dテクスチャとして書き込む.
 	// RTVを2つ作るのでディスクリプタを2つ用意.
 	// まず1つ目を作る。1つ目は最初の所に作る。作る場所をこちらで指定して上げる必要がある.
 	const uint32_t rtvHandleMax = 2;
 
 	for (uint32_t dataNumber = 0; dataNumber < rtvHandleMax; dataNumber++) {
-		rtvHandles[dataNumber] = GetCPUDescriptorHandle(rtvDescriptorHeap, descriptorSizeRTV, dataNumber);
+		rtvHandles[dataNumber] = GetCPUDescriptorHandle(rtvDescriptorHeap, descriptorSizeRTV_, dataNumber);
 	}
-	device->CreateRenderTargetView(swapChainResource[0].Get(), &rtvDesc, rtvHandles[0]);
+	device->CreateRenderTargetView(swapChainResource[0].Get(), &rtvDesc_, rtvHandles[0]);
 
 	// 2つ目を作る.
-	device->CreateRenderTargetView(swapChainResource[1].Get(), &rtvDesc, rtvHandles[1]);
+	device->CreateRenderTargetView(swapChainResource[1].Get(), &rtvDesc_, rtvHandles[1]);
+}
 
-
+void GameSystem::FenceInitialize() {
 	/*=============================================================
 	Fence、Event系
 	=============================================================*/
 	// 初期値0でFenceを作る.
-	hr = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
+	HRESULT hr = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 	assert(SUCCEEDED(hr));
 
 	// FenceのSignalを持つためのイベントを作成する.
 	//HANDLE fenceEvent 
 	fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	assert(fenceEvent != nullptr);
+}
 
-
-
-	/*=============================================================
-	DirectionalLightの初期化.
-	=============================================================*/
-
-	LightManager::GetInstance()->Initialize();
-
-	//DirectionalLight::GetInstance()->Initialize();
-	//
-	//PointLight::GetInstance()->Initialize();
-	//
-	//SpotLight::GetInstance()->Initialize();
-
-	/*=============================================================
-	ImGuiの初期化.
-	=============================================================*/
-#ifdef USE_IMGUI
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGui::StyleColorsDark();
-	ImGui_ImplWin32_Init(hwnd);
-	ImGui_ImplDX12_Init(device.Get(),
-		swapChainDesc.BufferCount,
-		rtvDesc.Format,
-		srvDescriptorHeap.Get(),
-		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
-		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-	ImGuiIO& io = ImGui::GetIO();
-	io.Fonts->Build();
-#endif // USE_IMGUI
-
+void GameSystem::ViewportInitialize() {
 	// 【ビューポート】
 	// クライアント領域のサイズと一緒にして画面全体に表示.
 	viewport.Width = static_cast<FLOAT>(Environment::GetInstance()->GetWindowSize().width);
@@ -348,74 +308,79 @@ void GameSystem::Initialize() {
 	viewport.TopLeftY = 0;
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
+}
 
+void GameSystem::ScissorInitialize() {
 	// 【シザー矩形】
 	// 基本的にビューポートと同じ矩形が構成されるようにする.
 	scissorRect.left = 0;
 	scissorRect.right = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().width);
 	scissorRect.top = 0;
-	scissorRect.bottom = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().height);/*=============================================================
+	scissorRect.bottom = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().height);
+}
+
+void GameSystem::DXCompilerInitialize() {
+	/*=============================================================
 	DXCの初期化.
 	=============================================================*/
 	// dxcCompilerを初期化.
-	IDxcUtils* dxcUtils = nullptr;
-	IDxcCompiler3* dxcCompiler = nullptr;
-	hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
+	HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils_));
 	assert(SUCCEEDED(hr));
-	hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler));
+	hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler_));
 	assert(SUCCEEDED(hr));
 
 	// 現時点でincludeはしないが、includeに対応するための設定を行っておく.
-	IDxcIncludeHandler* includeHandler = nullptr;
-	hr = dxcUtils->CreateDefaultIncludeHandler(&includeHandler);
+	hr = dxcUtils_->CreateDefaultIncludeHandler(&includeHandler_);
 	assert(SUCCEEDED(hr));
+}
 
-	vertexShaderBlobParticle = CompileShader(L"./hlsl/Particle.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
-	pixelShaderBlobParticle = CompileShader(L"./hlsl/Particle.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+void GameSystem::ShaderCompile(){
+	vertexShaderBlobParticle = CompileShader(L"./Resources/Shaders/Particle.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	pixelShaderBlobParticle = CompileShader(L"./Resources/Shaders/Particle.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
 
-	vertexShaderBlobLine = CompileShader(L"./hlsl/Line.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
-	pixelShaderBlobLine = CompileShader(L"./hlsl/Line.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+	vertexShaderBlobLine = CompileShader(L"./Resources/Shaders/Line.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	pixelShaderBlobLine = CompileShader(L"./Resources/Shaders/Line.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
 
-	vertexShaderBlob3dObject = CompileShader(L"./hlsl/Object3d.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
-	pixelShaderBlob3dObject = CompileShader(L"./hlsl/Object3d.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+	vertexShaderBlob3dObject = CompileShader(L"./Resources/Shaders/Object3d.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	pixelShaderBlob3dObject = CompileShader(L"./Resources/Shaders/Object3d.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
 
-	vertexShaderBlobNoTexture = CompileShader(L"./hlsl/NoTexture.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
-	pixelShaderBlobNoTexture = CompileShader(L"./hlsl/NoTexture.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+	vertexShaderBlobNoTexture = CompileShader(L"./Resources/Shaders/NoTexture.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	pixelShaderBlobNoTexture = CompileShader(L"./Resources/Shaders/NoTexture.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
 
+}
+
+void GameSystem::PipelineInitialize(){
 	for (uint32_t j = 0; j < static_cast<uint32_t>(ShaderType::kCount); j++) {
 		for (uint32_t i = 0; i < static_cast<uint32_t>(BlendMode::kCount); i++) {
 			CreatePipeline(static_cast<BlendMode>(i), static_cast<ShaderType>(j));
 		}
 	}
+}
 
-	Camera::GetInstance()->CreateResource();
+void GameSystem::ImGuiInitialize() {
+	/*=============================================================
+	ImGuiの初期化.
+	=============================================================*/
+#ifdef USE_IMGUI
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGui::StyleColorsDark();
+	ImGui_ImplWin32_Init(winApp_->GetHWND());
+	ImGui_ImplDX12_Init(device.Get(),
+		swapChainDesc_.BufferCount,
+		rtvDesc_.Format,
+		srvDescriptorHeap.Get(),
+		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
+		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+	ImGuiIO& io = ImGui::GetIO();
+	io.Fonts->Build();
+#endif // USE_IMGUI
+}
 
-	SoundManager::GetInstance()->Initialize();
-
-	Random::GetInstance()->Initialize();
-
-	ModelManager::GetInstance()->RegisterObj("block_template", "Resource/block", "block.obj");
-
-	ModelManager::GetInstance()->RegisterObj("effect_plane", "Resource/effects", "effect_plane.obj");
-
-	TextureManager::GetInstance()->RegisterTexture("white_template", "Resource/white_template.png");
-
-	//Renderer::Line::GetInstance()->Initialize();
-
-	Renderer::GetInstance()->Initialize();
-
-	GlobalVariables::GetInstance()->LoadFiles();
-
-	DeltaTime::GetInstance()->Initialize();
-
-	Environment::GetInstance()->Initialize();
-
-	ParticleManager::GetInstance()->ParticleClear();
-
-	RegisterGlobalVariables();
-
-	dxcCompiler->Release();
-	dxcUtils->Release();
+void GameSystem::LoadSampleDatas(){
+	ModelManager::GetInstance()->RegisterObj("block_template", "Resources/block", "block.obj");
+	ModelManager::GetInstance()->RegisterObj("effect_plane", "Resources/effects", "effect_plane.obj");
+	TextureManager::GetInstance()->RegisterTexture("white_template", "Resources/white_template.png");
 }
 
 void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
@@ -611,7 +576,7 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 	// Samplerの設定.
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
 	if (blendMode != BlendMode::kLine && shaderType != ShaderType::kNoTexture) {
-		staticSamplers[0].Filter = kUsingFillter_; // バイリニアフィルタ.(重要!ゲーム的にここをLINEARからPOINTに切り替えています)
+		staticSamplers[0].Filter = kUsingFilter_; // バイリニアフィルタ.(重要!ゲーム的にここをLINEARからPOINTに切り替えています)
 		staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP; // 0~1の範囲外をリピート.
 		staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 		staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -653,7 +618,7 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 		inputLayoutDesc.pInputElementDescs = inputElementalDescsLine;
 		inputLayoutDesc.NumElements = _countof(inputElementalDescsLine);
 
-	}else if(shaderType == ShaderType::kNoTexture){
+	} else if (shaderType == ShaderType::kNoTexture) {
 		// 【InputLayout】
 		inputElementalDescsNoTexture[0].SemanticName = "POSITION";
 		inputElementalDescsNoTexture[0].SemanticIndex = 0;
@@ -757,7 +722,7 @@ void GameSystem::CreatePipeline(BlendMode blendMode, ShaderType shaderType) {
 	} else if (shaderType == ShaderType::kNoTexture) {
 		vertexShaderBlob = vertexShaderBlobNoTexture;
 		pixelShaderBlob = pixelShaderBlobNoTexture;
-	} else if(blendMode == BlendMode::kLine){
+	} else if (blendMode == BlendMode::kLine) {
 		vertexShaderBlob = vertexShaderBlobLine;
 		pixelShaderBlob = pixelShaderBlobLine;
 	} else {
@@ -867,18 +832,12 @@ bool GameSystem::ProcessMessage() {
 		return false;
 	}
 
-	return msg.message != WM_QUIT;
+	return !winApp_->ProcessMessage();
 }
 
 bool GameSystem::BeginFrame() {
 	drawCount_ = 0;
 	// Windowにメッセージが来てたら最優先で処理させる.
-	if (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-
-		return false;
-	}
 
 	InputManager::GetInstance()->Update();
 
@@ -1019,7 +978,7 @@ void GameSystem::EndFrame() {
 	double waitTime =
 		std::chrono::duration<double, std::milli>(end - start).count();
 
-	OutputDebugStringA(static_cast<LPCSTR>(std::format("{}ms\n",waitTime).c_str()));
+	OutputDebugStringA(static_cast<LPCSTR>(std::format("{}ms\n", waitTime).c_str()));
 
 
 	// 次のフレーム用のコマンドリストを準備.
@@ -1046,10 +1005,7 @@ void GameSystem::Finalize() {
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 #endif // USE_IMGUI
-
-	CloseWindow(hwnd);
-
-	CoUninitialize();
+	winApp_->Finalize();
 }
 
 void GameSystem::WindowSizeUpdate() {
@@ -1085,7 +1041,7 @@ void GameSystem::WindowSizeUpdate() {
 			viewportX = (windowWidth - (viewportHeight * targetAspect)) * 0.5f * (Environment::GetInstance()->GetWindowSize().width / windowWidth);
 		}
 
-		viewportHeight =static_cast<float>(Environment::GetInstance()->GetWindowSize().height);
+		viewportHeight = static_cast<float>(Environment::GetInstance()->GetWindowSize().height);
 	} else {
 		viewportWidth = windowWidth;
 		viewportHeight = viewportWidth / targetAspect * (Environment::GetInstance()->GetWindowSize().height / windowHeight);
@@ -1117,223 +1073,16 @@ void GameSystem::WindowSizeUpdate() {
 	scissorRect.bottom = static_cast<LONG>(viewportY + viewportHeight);
 }
 
-
 void GameSystem::RegisterGlobalVariables() {
 	Camera::GetInstance()->RegisterGlobalVariables();
 	CollisionManager::RegisterGlobalVariables();
-	//DirectionalLight::GetInstance()->RegisterGlobalVariables();
 };
 
 void GameSystem::ApplyGlobalVariables() {
 	Camera::GetInstance()->ApplyGlobalVariables();
 	CollisionManager::ApplyGlobalVariables();
-	//DirectionalLight::GetInstance()->ApplyGlobalVariables();
 };
 
-LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-	float aspect = Environment::GetInstance()->GetAspect();
-
-#ifdef _DEBUG
-
-
-	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
-		return true;
-	}
-#endif // _DEBUG
-
-	RECT* rect;
-	int width;
-	int height;
-	int newHeight;
-	int newWidth;
-
-	DWORD style;
-	DWORD exStyle;
-	RECT borderRect;
-	int borderWidth;
-	int borderHeight;
-
-	switch (msg) {
-	case WM_SIZING:
-		if (
-			Environment::GetInstance()->GetAspectMode() == kAspectWindowFixed ||
-			Environment::GetInstance()->GetAspectMode() == kAspectWindowAndFrameFixed
-			) {
-
-			if (
-				Environment::GetInstance()->GetAspectMode() == kAspectWindowAndFrameFixed &&
-				Environment::GetInstance()->GetWindowMode() == kFullscreen
-				) {
-				break;
-			}
-
-			rect = reinterpret_cast<RECT*>(lparam);
-			width = rect->right - rect->left;
-			height = rect->bottom - rect->top;
-
-			style = static_cast<DWORD>(GetWindowLongPtr(hwnd, GWL_STYLE));
-			exStyle = static_cast<DWORD>(GetWindowLongPtr(hwnd, GWL_EXSTYLE));
-
-			borderRect = { 0,0,0,0 };
-
-			AdjustWindowRectEx(
-				&borderRect,
-				style,
-				FALSE,
-				exStyle);
-
-			borderWidth = borderRect.right - borderRect.left;
-
-			borderHeight = borderRect.bottom - borderRect.top;
-
-			//Log(std::format("Rect l:{},r:{},t:{},b:{}\n", rect->left, rect->right, rect->top, rect->bottom));
-			//Log(std::format("Rect w:{},h:{}\n", width, height));
-
-			width -= borderWidth;
-			height -= borderHeight;
-
-			switch (wparam) {
-			case WMSZ_LEFT:
-			case WMSZ_RIGHT:
-				// 左右をドラッグ → 高さを補正
-				newHeight = static_cast<int>(width / aspect);
-				rect->bottom = rect->top + newHeight + borderHeight;
-				break;
-			case WMSZ_TOP:
-			case WMSZ_BOTTOM:
-				// 上下をドラッグ → 幅を補正
-				newWidth = static_cast<int>(height * aspect);
-				rect->right = rect->left + newWidth + borderWidth;
-				break;
-			case WMSZ_TOPLEFT:
-			case WMSZ_TOPRIGHT:
-			case WMSZ_BOTTOMLEFT:
-			case WMSZ_BOTTOMRIGHT:
-				// 四隅ドラッグ
-				newHeight = static_cast<int>(width / aspect);
-				rect->bottom = rect->top + newHeight + borderHeight;
-				break;
-			}
-			width += borderWidth;
-			height += borderHeight;
-		}
-
-		return TRUE;
-	case WM_DESTROY:
-		PostQuitMessage(0);
-		return 0;
-	}
-
-	return DefWindowProc(hwnd, msg, wparam, lparam);
-}
-
-/*
-LRESULT CALLBACK GameSystem::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
-		return true;
-	}
-
-	float aspect = Environment::GetInstance()->GetAspect();
-	switch (msg)
-	{
-	case WM_SIZING:
-	{
-		RECT* rect = reinterpret_cast<RECT*>(lparam);
-
-		DWORD style =
-			static_cast<DWORD>(
-				GetWindowLongPtr(hwnd, GWL_STYLE));
-
-		DWORD exStyle =
-			static_cast<DWORD>(
-				GetWindowLongPtr(hwnd, GWL_EXSTYLE));
-
-		RECT borderRect = { 0,0,0,0 };
-
-		AdjustWindowRectEx(
-			&borderRect,
-			style,
-			FALSE,
-			exStyle);
-
-		int borderWidth =
-			borderRect.right - borderRect.left;
-
-		int borderHeight =
-			borderRect.bottom - borderRect.top;
-
-		int width = rect->right - rect->left;
-		int height = rect->bottom - rect->top;
-		//--------------------------------------
-		// クライアントサイズへ変換
-		//--------------------------------------
-		int clientWidth = width - borderWidth;
-
-		int clientHeight = height - borderHeight;
-
-
-		rect->bottom = clientHeight;
-		rect->right = clientWidth;
-		int newWidth;
-		int newHeight;
-
-		int currentPosX = rect->left;
-		int currentPosY = rect->top;
-
-		Log(std::format("Rect l:{},r:{},t:{},b:{}\n", rect->left, rect->right, rect->top, rect->bottom));
-		Log(std::format("Rect w:{},h:{}\n", width,height));
-
-		switch (wparam) {
-		case WMSZ_LEFT:
-		case WMSZ_RIGHT:
-			// 左右をドラッグ → 高さを補正
-			newHeight = static_cast<int>(clientWidth / aspect);
-			rect->bottom = newHeight;
-			currentPosX = rect->left;
-			break;
-		case WMSZ_TOP:
-		case WMSZ_BOTTOM:
-			// 上下をドラッグ → 幅を補正
-			newWidth = static_cast<int>(clientHeight * aspect);
-			rect->right = newWidth;
-			currentPosY = rect->top;
-			break;
-		case WMSZ_TOPLEFT:
-		case WMSZ_TOPRIGHT:
-		case WMSZ_BOTTOMLEFT:
-		case WMSZ_BOTTOMRIGHT:
-			// 四隅ドラッグ
-			newHeight = static_cast<int>(clientWidth / aspect);
-			rect->bottom = newHeight;
-			currentPosX = rect->left;
-			break;
-		}
-
-		rect->left = 0;
-		rect->top = 0;
-
-		AdjustWindowRectEx(
-			rect,
-			style,
-			FALSE,
-			exStyle);
-
-		rect->left = currentPosX;
-		rect->top = currentPosY;
-		rect->right = rect->right + currentPosX + borderWidth;
-		rect->bottom = rect->bottom + currentPosY + borderHeight;
-
-		return TRUE;
-	}
-
-	case WM_DESTROY:
-		PostQuitMessage(0);
-		return 0;
-	}
-
-	return DefWindowProc(hwnd, msg, wparam, lparam);
-}
-*/
 
 std::ofstream GameSystem::CreateLogFile() {
 	// ログのディレクトリを用意.
@@ -1612,20 +1361,8 @@ D3D12_CPU_DESCRIPTOR_HANDLE GameSystem::GetCPUDescriptorHandle(Microsoft::WRL::C
 	return handleCPU;
 }
 
-//D3D12_CPU_DESCRIPTOR_HANDLE GameSystem::GetCPUDescriptorHandle(){
-//	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-//	handleCPU.ptr += (descriptorSizeSRV * srvDescriptorHeapNum_);
-//	return handleCPU;
-//}
-
 D3D12_GPU_DESCRIPTOR_HANDLE GameSystem::GetGPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index) {
 	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
 	handleGPU.ptr += (descriptorSize * index);
 	return handleGPU;
 }
-
-//D3D12_GPU_DESCRIPTOR_HANDLE GameSystem::GetGPUDescriptorHandle(){
-//	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
-//	handleGPU.ptr += (descriptorSizeSRV * srvDescriptorHeapNum_);
-//	return handleGPU;
-//}

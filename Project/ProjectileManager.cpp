@@ -1,6 +1,4 @@
 #include "ProjectileManager.h"
-#include "MapChipManager.h"
-
 ProjectileManager* ProjectileManager::GetInstance() {
 	static ProjectileManager instance;
 	return &instance;
@@ -211,7 +209,6 @@ void (Bullet::* Bullet::pInitializeFunc[])() = {
 		&Bullet::BounsInitialize,
 		&Bullet::SpikeInitialize,
 		&Bullet::SlowSpikeInitialize,
-		&Bullet::BlockInitialize,
 };
 
 void (Bullet::* Bullet::pUpdateFunc[])() = {
@@ -219,7 +216,6 @@ void (Bullet::* Bullet::pUpdateFunc[])() = {
 		&Bullet::BounsUpdate,
 		&Bullet::SpikeUpdate,
 		&Bullet::SlowSpikeUpdate,
-		&Bullet::BlockUpdate,
 };
 
 void Bullet::Initialize(const Transform& transform, const Vector3& velocity, BulletType type, CollisionAttributeName colliderName, float damage, float damageCoolTime) {
@@ -373,35 +369,6 @@ void Bullet::SlowSpikeUpdate(){
 			ProjectileManager::GetInstance()->CreateSpike(newTrasform, 0, kCollisionEnemyAttack, damage_, damageCoolTime_);
 		}
 	}
-}
-
-void Bullet::BlockInitialize(){
-	lifeTimeMax_ = 20.0f;
-}
-
-void Bullet::BlockUpdate(){
-	velocity_.y += -kBlockGravityAccelerationY * DeltaTime::GetInstance()->GetGameTime();
-	modelTransform_.rotate.x += kModelRotateSpeed * DeltaTime::GetInstance()->GetGameTime();
-	modelTransform_.rotate.y += kModelRotateSpeed * DeltaTime::GetInstance()->GetGameTime();
-
-	CollisionMapInfo collisionMapInfo;
-
-	collisionMapInfo.movementAmount = velocity_ * DeltaTime::GetInstance()->GetGameTime();
-
-	MapChipManager::GetInstance()->MapCollision(transform_.translate, collisionMapInfo);
-
-	if (
-		collisionMapInfo.isCellingCollision || 
-		collisionMapInfo.isLanding || 
-		collisionMapInfo.isWallCollision
-		) {
-		MapChipManager::GetInstance()->CreateBlock(transform_.translate);
-		isActive_ = false;
-		return;
-	}
-
-	transform_.translate += collisionMapInfo.movementAmount;
-
 }
 
 void Wave::Initialize(const Transform& transform, float speed, float height, float time, CollisionAttributeName colliderName, float damage, float damageCoolTime) {

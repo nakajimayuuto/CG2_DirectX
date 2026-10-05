@@ -132,7 +132,7 @@ private:
 
 	std::vector<TransformationMatrix*> wvpData_;
 
-	std::vector<int> isVisible_;
+	std::vector<bool> isVisible_;
 
 	std::vector<ModelData> modelData_;
 

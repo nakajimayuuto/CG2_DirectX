@@ -11,7 +11,7 @@ void GameScene::Initialize() {
 	SoundManager::GetInstance()->ResetBGM();
 
 	DeltaTime::GetInstance()->SetGameTimeSpeed(1.0f);
-	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.5f;
+	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.15f;
 	LightManager::GetInstance()->GetDirectionalLightData()->direction = { 0.0f,-1.0f,0.0f };
 	LightManager::GetInstance()->GetDirectionalLightData()->color = { 1.0f,1.0f,1.0f,1.0f };
 	ParticleManager::GetInstance()->ClearParticles();
@@ -21,7 +21,7 @@ void GameScene::Initialize() {
 	GameCamera::GetInstance()->Initialize();
 	player_ = std::make_unique<Player>();
 	player_->Initialize();
-	//player_->SetStartPosition({ 0.0f,1.0f,-375.0f });
+	player_->SetStartPosition({ 0.0f,1.0f,-375.0f });
 	//if (gGamePhase == GamePhase::kGameStartAnim || gGamePhase == GamePhase::kBossPhase1) {
 	//	SoundManager::GetInstance()->SoundPlay("mus_phase1_intro", 1.0f, 0.25f, kBGM, false, "mus_phase1_intro");
 	//} else if (gGamePhase == GamePhase::kBossPhaseChangeAnim || gGamePhase == GamePhase::kBossPhase2) {
@@ -66,9 +66,6 @@ void GameScene::Initialize() {
 
 	isBossDeath_ = false;
 
-	isClear_ = false;
-	isGameOver_ = false;
-
 	MapChipManager::GetInstance()->Initialize();
 }
 
@@ -90,10 +87,6 @@ void GameScene::Update() {
 
 	if (InputManager::GetInstance()->TriggerKey(DIK_F4)) {
 		Renderer::GetInstance()->ChangeUseDebugLine();
-	}
-
-	if (InputManager::GetInstance()->TriggerKey(DIK_F6)) {
-		isClear_ = true;
 	}
 #endif // _DEBUG
 
@@ -131,17 +124,6 @@ void GameScene::Update() {
 	}
 
 	player_->Update();
-
-	if (gameOverMenu_->GetIsActive()) {
-	} else {
-		if (isClear_) {
-			if (gameclearTimer_ >= gameclearTimerMax_) {
-				gameclearTimer_ = gameclearTimerMax_;
-			} else {
-				gameclearTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
-			}
-		}
-	}
 
 
 	ProjectileManager::GetInstance()->Update();
@@ -198,10 +180,6 @@ void GameScene::Draw() {
 		}
 	}
 
-	if (isClear_) {
-		renderer->DrawSprite(Transform::GetInitialValue(Easing({ 100.0f,100.0f,100.0f }, { 1.0f,1.0f,1.0f }, gameclearTimer_, gameclearTimerMax_, EaseType::kEaseOut), { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "gameclear", { 1.0f,1.0f,1.0f,Easing(0.0f,1.0f, gameclearTimer_, gameclearTimerMax_, EaseType::kEaseOut) });
-	}
-
 	fade_->Draw();
 	pauseMenu_->Draw();
 	gameOverMenu_->Draw();
@@ -225,7 +203,7 @@ void GameScene::AnimSkipUpdate() {
 				useSkipStart_ = true;
 			}
 		} else {
-			if (InputManager::GetInstance()->TriggerKey(DIK_I) || InputManager::GetInstance()->TriggerKey(DIK_Q)) {
+			if (InputManager::GetInstance()->TriggerKey(DIK_LSHIFT) || InputManager::GetInstance()->TriggerKey(DIK_Q)) {
 				fade_->SetColor({ 0.0f,0.0f,0.0f });
 				fade_->Start(Fade::Status::FadeOut, 1.0f);
 				useSkipStart_ = true;
