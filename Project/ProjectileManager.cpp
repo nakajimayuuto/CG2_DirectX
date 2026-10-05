@@ -376,17 +376,23 @@ void Bullet::SlowSpikeUpdate(){
 }
 
 void Bullet::BlockInitialize(){
+	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("block_template"));
+	model_.SetBlendMode(BlendMode::kNormal);
+	model_.SetLightingType(LightingType::kHalfLambert);
 	lifeTimeMax_ = 20.0f;
+	modelTransform_.rotate.y = std::atan2(velocity_.x, velocity_.z);
 }
 
 void Bullet::BlockUpdate(){
 	velocity_.y += -kBlockGravityAccelerationY * DeltaTime::GetInstance()->GetGameTime();
-	modelTransform_.rotate.x += kModelRotateSpeed * DeltaTime::GetInstance()->GetGameTime();
-	modelTransform_.rotate.y += kModelRotateSpeed * DeltaTime::GetInstance()->GetGameTime();
+	//modelTransform_.rotate.x += kModelRotateSpeed * DeltaTime::GetInstance()->GetGameTime();
+	//modelTransform_.rotate.y += kModelRotateSpeed * DeltaTime::GetInstance()->GetGameTime();
 
 	CollisionMapInfo collisionMapInfo;
 
 	collisionMapInfo.movementAmount = velocity_ * DeltaTime::GetInstance()->GetGameTime();
+	collisionMapInfo.width = kBlockWidth;
+	collisionMapInfo.height = kBlockHeight;
 
 	MapChipManager::GetInstance()->MapCollision(transform_.translate, collisionMapInfo);
 

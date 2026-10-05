@@ -307,6 +307,7 @@ public:
 	bool TriggerAction(InputAction action) const;
 	bool ReleaseAction(InputAction action) const;
 	bool NoneAction(InputAction action) const;
+	Vector2 GetActionDirection() const;
 	
 	void SetAction(InputAction action, uint8_t key, MouseButtons mouse, PadButtons pad);
 private:

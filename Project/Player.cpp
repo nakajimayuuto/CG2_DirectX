@@ -315,7 +315,7 @@ void Player::BehaviorShotInitialize() {
 	floatingParameter = 0.0f;
 
 	InitializeFloatingGimmick();
-	DeltaTime::GetInstance()->SetGameTimeSpeed(0.2f);
+	DeltaTime::GetInstance()->SetGameTimeSpeed(0.05f);
 }
 
 void Player::BehaviorShotUpdate() {
@@ -328,8 +328,8 @@ void Player::BehaviorShotUpdate() {
 	UpdateFloatingGimmick();
 }
 
-void Player::BlockShot() {
-	ProjectileManager::GetInstance()->CreateBullet(transform_, {0.0f,10.0f,0.0f},BulletType::kBlock,CollisionAttributeName::kCollisionPlayerAttack,10.0f,1.0f);
+void Player::BlockShot(const Vector2& shotDir) {
+	ProjectileManager::GetInstance()->CreateBullet(transform_, {shotDir.x * kJumpAcceleration,shotDir.y * kJumpAcceleration,0.0f},BulletType::kBlock,CollisionAttributeName::kCollisionPlayerAttack,10.0f,1.0f);
 }
 
 void Player::MapChipDigUpdate() {
@@ -346,10 +346,18 @@ void Player::BlockShotUpdate() {
 		attenuation = kJumpAttenuation;
 	}
 
+	Vector2 direction = {0.0f,1.0f};
+
+	direction = InputManager::GetInstance()->GetActionDirection();
+
+	if (direction.x == 0.0f && direction.y == 0.0f) {
+		direction.y = -1.0f;
+	}
+
 	if (InputManager::GetInstance()->ReleaseAction(InputAction::JUMP)) {
-		BlockShot();
+		BlockShot(direction);
 		behaviorRequest_ = Behavior::kRoot;
-		velocity_.y = kJumpAcceleration;
+		velocity_ = Vector3(-direction.x * kJumpAcceleration, -direction.y * kJumpAcceleration,0.0f);
 		DeltaTime::GetInstance()->SetGameTimeSpeed(1.0f);
 	}
 
@@ -470,6 +478,9 @@ void Player::IsGroundUpdate(const CollisionMapInfo& info) {
 	}
 }
 
+void Player::IsInBlockUpdate(const CollisionMapInfo& info){
+}
+
 void Player::TurningControl() {
 	// 旋回制御.
 
@@ -498,6 +509,8 @@ void Player::MapCollisionUpdate() {
 	CollisionMapInfo collisionMapInfo;
 
 	collisionMapInfo.movementAmount = velocity_ * DeltaTime::GetInstance()->GetGameTime();
+	collisionMapInfo.width = kWidth;
+	collisionMapInfo.height = kHeight;
 
 	MapChipManager::GetInstance()->MapCollision(transform_.translate, collisionMapInfo);
 

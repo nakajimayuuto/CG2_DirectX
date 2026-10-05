@@ -72,7 +72,8 @@ private:
 
 	// Block
 	static inline float kBlockGravityAccelerationY = 20.0f;
-
+	static inline const float kBlockWidth = 0.05f;
+	static inline const float kBlockHeight = 0.05f;
 
 	float spikeRotatePosX_;
 	float spikeRotateY_;

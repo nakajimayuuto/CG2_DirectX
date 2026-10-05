@@ -76,7 +76,7 @@ void MapChipManager::CreateBlock(const Vector3& position) {
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(position);
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - 1 - indexSet.yIndex);
 
-	if (mapChipType != MapChipType::kBlank) {
+	if (mapChipType == MapChipType::kBlock) {
 		return;
 	}
 
@@ -182,6 +182,7 @@ void MapChipManager::MapCollision(const Vector3& position, CollisionMapInfo& inf
 	MapCollisionDown(position, info);
 	MapCollisionRight(position, info);
 	MapCollisionLeft(position, info);
+	MapCollisionCenter(position, info);
 }
 
 void MapChipManager::MapCollisionUp(const Vector3& position, CollisionMapInfo& info) {
@@ -192,7 +193,7 @@ void MapChipManager::MapCollisionUp(const Vector3& position, CollisionMapInfo& i
 	std::array<Vector3, 4> positionNew;
 
 	for (uint32_t i = 0; i < positionNew.size(); i++) {
-		positionNew[i] = CornerPosition(static_cast<Vector3>(position) + info.movementAmount, static_cast<Corner>(i));
+		positionNew[i] = CornerPosition(static_cast<Vector3>(position) + info.movementAmount, info.width, info.height, static_cast<Corner>(i));
 	}
 
 	MapChipType mapChipType;
@@ -220,12 +221,12 @@ void MapChipManager::MapCollisionUp(const Vector3& position, CollisionMapInfo& i
 	if (hit) {
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionNew[kLeftTop]);
 		MapChipField::IndexSet indexSetNow;
-		indexSetNow = mapChipField_->GetMapChipIndexSetByPosition(CornerPosition(static_cast<Vector3>(position), kLeftTop));
+		indexSetNow = mapChipField_->GetMapChipIndexSetByPosition(CornerPosition(static_cast<Vector3>(position), info.width, info.height, kLeftTop));
 
 		if (indexSetNow.yIndex != indexSet.yIndex) {
 
 			MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
-			info.movementAmount.y = std::max(0.0f, (rect.bottom - static_cast<Vector3>(position).y) - ((kHeight / 2.0f) + kBlank));
+			info.movementAmount.y = std::max(0.0f, (rect.bottom - static_cast<Vector3>(position).y) - ((info.height / 2.0f) + kBlank));
 			info.isCellingCollision = true;
 		}
 	}
@@ -239,7 +240,7 @@ void MapChipManager::MapCollisionDown(const Vector3& position, CollisionMapInfo&
 	std::array<Vector3, 4> positionNew;
 
 	for (uint32_t i = 0; i < positionNew.size(); i++) {
-		positionNew[i] = CornerPosition(static_cast<Vector3>(position) + info.movementAmount, static_cast<Corner>(i));
+		positionNew[i] = CornerPosition(static_cast<Vector3>(position) + info.movementAmount, info.width, info.height, static_cast<Corner>(i));
 	}
 
 	MapChipType mapChipType;
@@ -267,11 +268,11 @@ void MapChipManager::MapCollisionDown(const Vector3& position, CollisionMapInfo&
 	if (hit) {
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionNew[kLeftBottom]);
 		MapChipField::IndexSet indexSetNow;
-		indexSetNow = mapChipField_->GetMapChipIndexSetByPosition(CornerPosition(static_cast<Vector3>(position), kLeftBottom));
+		indexSetNow = mapChipField_->GetMapChipIndexSetByPosition(CornerPosition(static_cast<Vector3>(position), info.width, info.height, kLeftBottom));
 
 		if (indexSetNow.yIndex != indexSet.yIndex) {
 			MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
-			info.movementAmount.y = std::min(0.0f, (rect.top - static_cast<Vector3>(position).y) + ((kHeight / 2.0f) + kBlank));
+			info.movementAmount.y = std::min(0.0f, (rect.top - static_cast<Vector3>(position).y) + ((info.height / 2.0f) + kBlank));
 			info.isLanding = true;
 		}
 	}
@@ -285,7 +286,7 @@ void MapChipManager::MapCollisionRight(const Vector3& position, CollisionMapInfo
 	std::array<Vector3, 4> positionNew;
 
 	for (uint32_t i = 0; i < positionNew.size(); i++) {
-		positionNew[i] = CornerPosition(static_cast<Vector3>(position) + info.movementAmount, static_cast<Corner>(i));
+		positionNew[i] = CornerPosition(static_cast<Vector3>(position) + info.movementAmount, info.width, info.height, static_cast<Corner>(i));
 	}
 
 	MapChipType mapChipType;
@@ -315,11 +316,11 @@ void MapChipManager::MapCollisionRight(const Vector3& position, CollisionMapInfo
 	if (hit) {
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionNew[kRightTop]);
 		MapChipField::IndexSet indexSetNow;
-		indexSetNow = mapChipField_->GetMapChipIndexSetByPosition(CornerPosition(static_cast<Vector3>(position), kRightTop));
+		indexSetNow = mapChipField_->GetMapChipIndexSetByPosition(CornerPosition(static_cast<Vector3>(position), info.width, info.height, kRightTop));
 
 		if (indexSetNow.xIndex != indexSet.xIndex) {
 			MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
-			info.movementAmount.x = std::max(0.0f, (rect.left - static_cast<Vector3>(position).x) - ((kWidth / 2.0f) + kBlank));
+			info.movementAmount.x = std::max(0.0f, (rect.left - static_cast<Vector3>(position).x) - ((info.width / 2.0f) + kBlank));
 			info.isWallCollision = true;
 		}
 	}
@@ -333,7 +334,7 @@ void MapChipManager::MapCollisionLeft(const Vector3& position, CollisionMapInfo&
 	std::array<Vector3, 4> positionNew;
 
 	for (uint32_t i = 0; i < positionNew.size(); i++) {
-		positionNew[i] = CornerPosition(static_cast<Vector3>(position) + info.movementAmount, static_cast<Corner>(i));
+		positionNew[i] = CornerPosition(static_cast<Vector3>(position) + info.movementAmount, info.width, info.height, static_cast<Corner>(i));
 	}
 
 	MapChipType mapChipType;
@@ -363,32 +364,70 @@ void MapChipManager::MapCollisionLeft(const Vector3& position, CollisionMapInfo&
 	if (hit) {
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionNew[kLeftTop]);
 		MapChipField::IndexSet indexSetNow;
-		indexSetNow = mapChipField_->GetMapChipIndexSetByPosition(CornerPosition(static_cast<Vector3>(position), kLeftTop));
+		indexSetNow = mapChipField_->GetMapChipIndexSetByPosition(CornerPosition(static_cast<Vector3>(position), info.width, info.height, kLeftTop));
 
 		if (indexSetNow.xIndex != indexSet.xIndex) {
 			MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
-			info.movementAmount.x = std::min(0.0f, (rect.right - static_cast<Vector3>(position).x) + ((kWidth / 2.0f) + kBlank));
+			info.movementAmount.x = std::min(0.0f, (rect.right - static_cast<Vector3>(position).x) + ((info.width / 2.0f) + kBlank));
 			info.isWallCollision = true;
 		}
 	}
 }
 
-Vector3 MapChipManager::CornerPosition(const Vector3& position, Corner corner) {
+Vector3 MapChipManager::CornerPosition(const Vector3& position, float width, float height, Corner corner) {
 	Vector3 offsetTable[kNumCornter] = {
-		{+kWidth / 2.0f, -kHeight / 2.0f, 0.0f},
-		{-kWidth / 2.0f, -kHeight / 2.0f, 0.0f},
-		{+kWidth / 2.0f, +kHeight / 2.0f, 0.0f},
-		{-kWidth / 2.0f, +kHeight / 2.0f, 0.0f}
+		{+width / 2.0f, -height / 2.0f, 0.0f},
+		{-width / 2.0f, -height / 2.0f, 0.0f},
+		{+width / 2.0f, +height / 2.0f, 0.0f},
+		{-width / 2.0f, +height / 2.0f, 0.0f}
 	};
 
 	return static_cast<Vector3>(position) + offsetTable[static_cast<uint32_t>(corner)];
+}
+
+void MapChipManager::MapCollisionCenter(const Vector3& position, CollisionMapInfo& info) {
+	float newPosY = 0.0f;
+	MapChipType mapChipType;
+
+	MapChipField::IndexSet indexSet;
+	while (true) {
+		indexSet = mapChipField_->GetMapChipIndexSetByPosition(static_cast<Vector3>(position) + Vector3(0.0f, newPosY, 0.0f));
+		mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - 1 - indexSet.yIndex);
+
+		if (mapChipType == MapChipType::kBlock) {
+			newPosY += 1.1f;
+		} else {
+			break;
+		}
+	}
+
+	if (newPosY > 0.0f) {
+		MapChipField::IndexSet indexSetNow;
+		indexSetNow = mapChipField_->GetMapChipIndexSetByPosition(CornerPosition(static_cast<Vector3>(position), info.width, info.height, kLeftBottom));
+
+		if (indexSetNow.yIndex != indexSet.yIndex) {
+			MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
+			info.movementAmount.y = std::min(0.0f, (rect.top - static_cast<Vector3>(position).y) + ((info.height / 2.0f) + kBlank));
+			info.movementAmount.y += newPosY;
+		}
+	}
+	//indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionNew[kLeftTop]);
+	//MapChipField::IndexSet indexSetNow;
+	//indexSetNow = mapChipField_->GetMapChipIndexSetByPosition(CornerPosition(static_cast<Vector3>(position), info.width, info.height, kLeftTop));
+	//
+	//if (indexSetNow.xIndex != indexSet.xIndex) {
+	//	MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
+	//	info.movementAmount.x = std::min(0.0f, (rect.right - static_cast<Vector3>(position).x) + ((info.width / 2.0f) + kBlank));
+	//	info.isWallCollision = true;
+	//}
+	//
 }
 
 bool MapChipManager::OnGroundCheck(const Vector3& position, const CollisionMapInfo& info) {
 	std::array<Vector3, 4> positionNew;
 
 	for (uint32_t i = 0; i < positionNew.size(); i++) {
-		positionNew[i] = MapChipManager::GetInstance()->CornerPosition(static_cast<Vector3>(position) + info.movementAmount, static_cast<MapChipManager::Corner>(i));
+		positionNew[i] = MapChipManager::GetInstance()->CornerPosition(static_cast<Vector3>(position) + info.movementAmount, info.width, info.height, static_cast<MapChipManager::Corner>(i));
 	}
 
 	MapChipType mapChipType;

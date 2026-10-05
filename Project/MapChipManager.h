@@ -7,6 +7,8 @@ struct CollisionMapInfo {
 	bool isLanding = false;
 	bool isWallCollision = false;
 	Vector3 movementAmount;
+	float width = 0.8f;
+	float height = 0.8f;
 };
 
 class MapChipManager{
@@ -38,7 +40,9 @@ public:
 	void MapCollisionRight(const Vector3& position, CollisionMapInfo& info);
 	void MapCollisionLeft(const Vector3& position, CollisionMapInfo& info);
 
-	Vector3 CornerPosition(const Vector3& position, Corner corner);
+	Vector3 CornerPosition(const Vector3& position,float width,float height, Corner corner);
+
+	void MapCollisionCenter(const Vector3& position, CollisionMapInfo& info);
 
 	bool OnGroundCheck(const Vector3& position, const  CollisionMapInfo& info);
 

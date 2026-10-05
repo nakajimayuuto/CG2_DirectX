@@ -633,6 +633,9 @@ bool InputManager::PressAction(InputAction action) const {
 		}
 
 		for (auto mouseButton : inputActions_[static_cast<size_t>(action)].first.second) {
+			if (mouseButton == MouseButtons::MOUSE_NONE) {
+				continue;
+			}
 			if (mouse_.PressMouse(mouseButton)) {
 				return true;
 			}
@@ -656,6 +659,9 @@ bool InputManager::TriggerAction(InputAction action) const {
 		}
 
 		for (auto mouseButton : inputActions_[static_cast<size_t>(action)].first.second) {
+			if (mouseButton == MouseButtons::MOUSE_NONE) {
+				continue;
+			}
 			if (mouse_.TriggerMouse(mouseButton)) {
 				return true;
 			}
@@ -679,6 +685,9 @@ bool InputManager::ReleaseAction(InputAction action) const {
 		}
 
 		for (auto mouseButton : inputActions_[static_cast<size_t>(action)].first.second) {
+			if (mouseButton == MouseButtons::MOUSE_NONE) {
+				continue;
+			}
 			if (mouse_.ReleaseMouse(mouseButton)) {
 				return true;
 			}
@@ -702,12 +711,38 @@ bool InputManager::NoneAction(InputAction action) const {
 		}
 
 		for (auto mouseButton : inputActions_[static_cast<size_t>(action)].first.second) {
+			if (mouseButton == MouseButtons::MOUSE_NONE) {
+				continue;
+			}
 			if (mouse_.NoneMouse(mouseButton)) {
 				return true;
 			}
 		}
 	}
 	return false;
+}
+
+Vector2 InputManager::GetActionDirection() const{
+	Vector2 direction = {0.0f,0.0f};
+	if (IsGamePadConnect()) {
+		direction = gamePad_.GetLeftStickDirection();
+	} else {
+		if (keyBoard_.PressKey(DIK_W) || keyBoard_.PressKey(DIK_UP)) {
+			direction.y += 1.0f;
+		}
+		if (keyBoard_.PressKey(DIK_S) || keyBoard_.PressKey(DIK_DOWN)) {
+			direction.y -= 1.0f;
+		}
+		if (keyBoard_.PressKey(DIK_D) || keyBoard_.PressKey(DIK_RIGHT)) {
+			direction.x += 1.0f;
+		}
+		if (keyBoard_.PressKey(DIK_A) || keyBoard_.PressKey(DIK_LEFT)) {
+			direction.x -= 1.0f;
+		}
+
+		direction = direction.Normalize();
+	}
+	return direction;
 }
 
 void InputManager::SetAction(InputAction action, uint8_t key, MouseButtons mouse, PadButtons pad) {

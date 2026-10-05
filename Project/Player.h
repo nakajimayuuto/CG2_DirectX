@@ -84,7 +84,7 @@ private:
 	void BehaviorShotInitialize();
 	void BehaviorShotUpdate();
 
-	void BlockShot();
+	void BlockShot(const Vector2& shotDir);
 
 
 	void InitializeFloatingGimmick();
@@ -110,6 +110,8 @@ private:
 	// 6 接地状態の切り替え.
 	void IsGroundUpdate(const CollisionMapInfo& info);
 
+	void IsInBlockUpdate(const CollisionMapInfo& info);
+
 	// 7 旋回制御.
 	void TurningControl();
 
@@ -117,6 +119,10 @@ private:
 
 	void MapCollisionUpdate();
 private:
+	// ブロック.
+	static inline const float kWidth = 0.8f;
+	static inline const float kHeight = 0.8f;
+
 	float knockbackParameter_ = 0.0f;
 	static inline const float kKnockbackParameterBack = 0.2f;
 	static inline const float kKnockbackParameterStop = 0.2f;
