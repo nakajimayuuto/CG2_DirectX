@@ -20,7 +20,6 @@ public:
 		kNumCornter,
 	};
 
-
 	static MapChipManager* GetInstance();
 
 	void Initialize();
@@ -56,8 +55,8 @@ private:
 	void ClearFieldObjects();
 private:
 
-	static inline const float kWidth = 0.8f;
-	static inline const float kHeight = 0.8f;
+	//static inline const float kWidth = 0.8f;
+	//static inline const float kHeight = 0.8f;
 	static inline const float kBlank = 0.2f;
 
 	// 要素数.
