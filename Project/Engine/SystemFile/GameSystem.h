@@ -19,8 +19,8 @@
 #include "../Math/Vertex.h"
 #include "../Math/Matrix4x4.h"
 #include "../Math/Transform.h"
-#include "../Math/Math.h"
-#include "../../Environment.h"
+#include "../Math/MyMath.h"
+#include "../Environment/Environment.h"
 
 #include "../Renderer/Material.h"
 #include "../Renderer/DirectionalLight.h"

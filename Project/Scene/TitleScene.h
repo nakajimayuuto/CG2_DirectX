@@ -1,5 +1,5 @@
 #pragma once
-#include "../Satlib.h"
+#include "Satlib.h"
 #include "IScene.h"
 #include "../Ground.h"
 #include "../Fade.h"

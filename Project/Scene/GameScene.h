@@ -1,7 +1,7 @@
 #pragma once
 #include <list>
 #include "IScene.h"
-#include "../Satlib.h"
+#include "Satlib.h"
 #include "../Skydome.h"
 #include "../Ground.h"
 #include "../Player.h"

@@ -1,7 +1,7 @@
 #define NOMINMAX
 #include "Collision.h"
 #include <cmath>
-#include "Math.h"
+#include "MyMath.h"
 #include <algorithm>
 #include <vector>
 

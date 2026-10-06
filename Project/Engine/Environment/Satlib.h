@@ -12,7 +12,7 @@
 #include "./Engine/Math/Random.h"
 #include "./Engine/Math/Beats.h"
 #include "./Engine/Math/Shape.h"
-#include "./Engine/Math/Math.h"
+#include "./Engine/Math/MyMath.h"
 
 //#include "./Engine/Renderer/DirectionalLight.h"
 //#include "./Engine/Renderer/PointLight.h"

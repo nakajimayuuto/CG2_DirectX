@@ -240,7 +240,7 @@
     <ClCompile Include="externals\imgui\imgui_widgets.cpp">
       <Filter>Engine\SystemFile\externals\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="Environment.cpp">
+    <ClCompile Include="Engine\Environment\Environment.cpp">
       <Filter>Environment</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Math\Matrix4x4.cpp">
@@ -270,7 +270,7 @@
     <ClCompile Include="Engine\Renderer\Renderer.cpp">
       <Filter>Engine\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Math\Math.cpp">
+    <ClCompile Include="Engine\Math\MyMath.cpp">
       <Filter>Engine\Math</Filter>
     </ClCompile>
     <ClCompile Include="Engine\SystemFile\Convert.cpp">
@@ -431,7 +431,7 @@
     <ClInclude Include="externals\imgui\imstb_truetype.h">
       <Filter>Engine\SystemFile\externals\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="Environment.h">
+    <ClInclude Include="Engine\Environment\Environment.h">
       <Filter>Environment</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Math\Matrix4x4.h">
@@ -467,7 +467,7 @@
     <ClInclude Include="Engine\Renderer\Renderer.h">
       <Filter>Engine\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Math\Math.h">
+    <ClInclude Include="Engine\Math\MyMath.h">
       <Filter>Engine\Math</Filter>
     </ClInclude>
     <ClInclude Include="Engine\SystemFile\Convert.h">
@@ -494,7 +494,7 @@
     <ClInclude Include="Managers\TextureManager.h">
       <Filter>Managers\TextureManager</Filter>
     </ClInclude>
-    <ClInclude Include="Satlib.h">
+    <ClInclude Include="Engine\Environment\Satlib.h">
       <Filter>Environment</Filter>
     </ClInclude>
     <ClInclude Include="Scene\GameScene.h">

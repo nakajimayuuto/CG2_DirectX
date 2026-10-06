@@ -3,7 +3,7 @@
 #include <cstdint>
 #include "../../Managers/ModelManager.h"
 #include "../../Managers/TextureManager.h"
-#include "../../Environment.h"
+#include "../Environment/Environment.h"
 #include "../../externals/DirectXTex/DirectXTex.h"
 #include "../../externals/DirectXTex/d3dx12.h"
 #include "../SystemFile/GameSystem.h"

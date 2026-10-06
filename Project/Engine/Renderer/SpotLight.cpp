@@ -1,6 +1,6 @@
 #include "SpotLight.h"
 #include "../SystemFile/GameSystem.h"
-#include "../Math/Math.h"
+#include "../Math/MyMath.h"
 
 //SpotLight* SpotLight::GetInstance() {
 //	static SpotLight instance;

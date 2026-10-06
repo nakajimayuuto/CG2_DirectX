@@ -1,5 +1,5 @@
 #include "GameScene.h"
-#include "../Satlib.h"
+#include "Satlib.h"
 #include "../ProjectileManager.h"
 
 GameScene::~GameScene() {

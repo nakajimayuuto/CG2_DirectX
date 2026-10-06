@@ -37,7 +37,7 @@
     <ClCompile Include="Engine\Math\Collision.cpp" />
     <ClCompile Include="Engine\Math\Easing.cpp" />
     <ClCompile Include="Engine\Math\Field.cpp" />
-    <ClCompile Include="Engine\Math\Math.cpp" />
+    <ClCompile Include="Engine\Math\MyMath.cpp" />
     <ClCompile Include="Engine\Math\Matrix4x4.cpp" />
     <ClCompile Include="Engine\Math\Random.cpp" />
     <ClCompile Include="Engine\Math\Shape.cpp" />
@@ -60,7 +60,7 @@
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
     </ClCompile>
     <ClCompile Include="Engine\SystemFile\GlobalVariables.cpp" />
-    <ClCompile Include="Environment.cpp" />
+    <ClCompile Include="Engine\Environment\Environment.cpp" />
     <ClCompile Include="externals\imgui\imgui.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ExcludedFromBuild>
@@ -143,7 +143,7 @@
     <ClInclude Include="Engine\Math\CollisionConfig.h" />
     <ClInclude Include="Engine\Math\Easing.h" />
     <ClInclude Include="Engine\Math\Field.h" />
-    <ClInclude Include="Engine\Math\Math.h" />
+    <ClInclude Include="Engine\Math\MyMath.h" />
     <ClInclude Include="Engine\Math\Matrix4x4.h" />
     <ClInclude Include="Engine\Math\Random.h" />
     <ClInclude Include="Engine\Math\Shape.h" />
@@ -167,7 +167,7 @@
     <ClInclude Include="Engine\SystemFile\GameSystem.h" />
     <ClInclude Include="Engine\SystemFile\GlobalVariables.h" />
     <ClInclude Include="Engine\SystemFile\ImGui.h" />
-    <ClInclude Include="Environment.h" />
+    <ClInclude Include="Engine\Environment\Environment.h" />
     <ClInclude Include="externals\imgui\imconfig.h" />
     <ClInclude Include="externals\imgui\imgui.h" />
     <ClInclude Include="externals\imgui\imgui_impl_dx12.h" />
@@ -187,7 +187,7 @@
     <ClInclude Include="Managers\SoundManager.h" />
     <ClInclude Include="Managers\TextureManager.h" />
     <ClInclude Include="Player.h" />
-    <ClInclude Include="Satlib.h" />
+    <ClInclude Include="Engine\Environment\Satlib.h" />
     <ClInclude Include="Scene\GameScene.h" />
     <ClInclude Include="Scene\IScene.h" />
     <ClInclude Include="Scene\TitleScene.h" />
@@ -315,7 +315,7 @@
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Renderer;$(ProjectDir)Engine\SystemFile;$(ProjectDir)Managers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Renderer;$(ProjectDir)Engine\SystemFile;$(ProjectDir)Managers;$(ProjectDir)Engine\Math;$(ProjectDir)Engine\Environment;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -339,7 +339,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Renderer;$(ProjectDir)Engine\SystemFile;$(ProjectDir)Managers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Renderer;$(ProjectDir)Engine\SystemFile;$(ProjectDir)Managers;$(ProjectDir)Engine\Math;$(ProjectDir)Engine\Environment;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -368,7 +368,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <TreatWarningAsError>true</TreatWarningAsError>
       <Optimization>Disabled</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Renderer;$(ProjectDir)Engine\SystemFile;$(ProjectDir)Managers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Renderer;$(ProjectDir)Engine\SystemFile;$(ProjectDir)Managers;$(ProjectDir)Engine\Math;$(ProjectDir)Engine\Environment;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

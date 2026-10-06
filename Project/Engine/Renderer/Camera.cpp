@@ -1,9 +1,9 @@
 #define NOMINMAX
 #include "Camera.h"
 #include "../../Managers/InputManager.h"
-#include "../Math/Math.h"
+#include "../Math/MyMath.h"
 #include "../SystemFile/GlobalVariables.h"
-#include "../../Environment.h"
+#include "../Environment/Environment.h"
 #include "../SystemFile/GameSystem.h"
 #include "../Renderer/Renderer.h"
 #include "../Math/Collision.h"

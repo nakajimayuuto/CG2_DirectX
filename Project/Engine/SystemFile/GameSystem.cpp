@@ -12,7 +12,7 @@
 #include "../../Managers/ModelManager.h"
 #include "../../Managers/ParticleManager.h"
 #include "../../Managers/CollisionManager.h"
-#include "../../Environment.h"
+#include "../Environment/Environment.h"
 #include "../Math/Random.h"
 #include "GlobalVariables.h"
 #include <strsafe.h>

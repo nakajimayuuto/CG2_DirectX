@@ -1,5 +1,5 @@
 #pragma once
-#include "../Satlib.h"
+#include "Satlib.h"
 #include <vector>
 struct StageData {
 	std::string name; // ステージ名.
