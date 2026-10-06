@@ -5,7 +5,7 @@ on:
       - master
       
 env:
-  SOLUTION_FIRE_PATH: project/CG2.sln
+  SOLUTION_FIRE_PATH: Project/CG2_DirectX.sln
   CONFIGURATION: Debug
 jobs:
   build:
