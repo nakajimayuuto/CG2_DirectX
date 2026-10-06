@@ -29,6 +29,7 @@ bld/
 #[Oo]bj/
 [Ll]og/
 [Ll]ogs/
+Generated/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
@@ -369,3 +370,4 @@ imgui.ini
 Dumps/
 
 DebugSettings.ini
+/DebugSettings.ini
