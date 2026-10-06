@@ -1,2 +1,3 @@
-[![DebugBuild](https://github.com/nakajimayuuto/CG2_DirectX/actions/workflows/DebugBuild.yml/badge.svg?branch=master)](https://github.com/nakajimayuuto/CG2_DirectX/actions/workflows/DebugBuild.yml)
-[![ReleaseBuild](https://github.com/nakajimayuuto/CG2_DirectX/actions/workflows/ReleaseBuild.yml/badge.svg?branch=master)](https://github.com/nakajimayuuto/CG2_DirectX/actions/workflows/ReleaseBuild.yml)
+Debug : [![DebugBuild](https://github.com/nakajimayuuto/CG2_DirectX/actions/workflows/DebugBuild.yml/badge.svg?branch=master)](https://github.com/nakajimayuuto/CG2_DirectX/actions/workflows/DebugBuild.yml)
+Develop : [![DevelopBuild](https://github.com/nakajimayuuto/CG2_DirectX/actions/workflows/DevelopBuild.yml/badge.svg?branch=master)](https://github.com/nakajimayuuto/CG2_DirectX/actions/workflows/DevelopBuild.yml)
+Release : [![ReleaseBuild](https://github.com/nakajimayuuto/CG2_DirectX/actions/workflows/ReleaseBuild.yml/badge.svg?branch=master)](https://github.com/nakajimayuuto/CG2_DirectX/actions/workflows/ReleaseBuild.yml)
