@@ -6,7 +6,7 @@ on:
       
 env:
   SOLUTION_FIRE_PATH: Project/CG2_DirectX.sln
-  CONFIGURATION: Develop
+  CONFIGURATION: Development
 jobs:
   build:
     runs-on: windows-2025-vs2026
