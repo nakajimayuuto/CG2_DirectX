@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: リポジトリをチェックアウト
-        uses: actions/checkput@v4
+        uses: actions/checkput@v6
 
       - name: 不要なファイルとディレクトリを検索(bash)
         run:
