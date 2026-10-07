@@ -179,8 +179,16 @@ public:
 
 	void SetSize(Vector2 size);
 	void SetSize(WindowSize windowSize);
-
 	Vector2 GetSize()const { return size_; };
+
+	void SetAncor(const Vector2& ancorPoint) { anchorPoint_ = ancorPoint; AdaptationSize(); };
+	Vector2 GetAncor()const { return anchorPoint_; };
+
+	void SetIsFlipX(bool isFlipX) { isFlipX_ = isFlipX; };
+	bool GetIsFlipX()const { return isFlipX_; };
+
+	void SetIsFlipY(bool isFlipY) { isFlipY_ = isFlipY; };
+	bool GetIsFlipY()const { return isFlipY_; };
 
 	ModelElement* GetModelElement()const;
 
@@ -194,6 +202,11 @@ private:
 	Vector2 size_;
 
 	Transform uvTransform_;
+
+	Vector2 anchorPoint_;
+
+	bool isFlipX_;
+	bool isFlipY_;
 
 	Material* materialData_ = nullptr;
 

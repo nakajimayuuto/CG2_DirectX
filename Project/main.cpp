@@ -15,12 +15,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	LoadDatas();
 
 	SceneManager::GetInstance()->Initialize();
+	Sprite sprite;
+	sprite.Initialize(TextureManager::GetInstance()->GetTextureInfo("bullet_bounce"));
 #ifndef _DEBUG
 	Environment::GetInstance()->SetWindowMode(WindowMode::kFullscreen);
 #endif // _DEBUG
 
 	Vector3 color_;
-	color_ = {1.0f,1.0f,1.0f};
+	color_ = { 1.0f,1.0f,1.0f };
+	float r = 0.0f;
 	float num_ = 1024.0f;
 	// ウィンドウのxボタンが押されるまでループ.
 	while (system->ProcessMessage()) {
@@ -34,10 +37,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			SceneManager::GetInstance()->Update();
 #ifdef _DEBUG
 			ImGui::Begin("aa");
-			ImGui::DragFloat("intensity", &LightManager::GetInstance()->GetDirectionalLightData()->intensity,0.01f,0.0f,200.0f);
-			ImGui::DragFloat("num", &num_,0.01f,0.0f,10000.0f);
+			r = Degree(r);
+			ImGui::DragFloat("spriteRotate", &r, 1.0f, -360.0f, 360.0f);
+			Vector2 anchor = sprite.GetAncor();
+			ImGui::DragFloat2("spriteAncor", reinterpret_cast<float*>(&anchor), 0.01f, -1.0f, 2.0f);
+			sprite.SetAncor(anchor);
+			r = Radian(r);
+			ImGui::DragFloat("intensity", &LightManager::GetInstance()->GetDirectionalLightData()->intensity, 0.01f, 0.0f, 200.0f);
+			ImGui::DragFloat("num", &num_, 0.01f, 0.0f, 10000.0f);
 			ImGui::ColorEdit3("parColor", reinterpret_cast<float*>(&color_));
-			
+
 			if (ImGui::Button("numcreate")) {
 				ParticleManager::GetInstance()->SpawnNumbers(num_, Transform::GetInitialValue(), color_);
 			}
@@ -48,6 +57,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			以下にゲームの描画処理を記述.
 			=============================================================*/
 			//system->DrawSetup();
+
+			sprite.Draw(Transform2D::GetTransformValue({ 1.0f,1.0f }, r, {0.0f,0.0f}));
 
 			SceneManager::GetInstance()->Draw();
 
@@ -84,15 +95,15 @@ void LoadDatas() {
 	TextureManager::GetInstance()->RegisterTexture("effect_slash", "Resources/effects/effect_slash.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_cross", "Resources/effects/effect_cross.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_star", "Resources/effects/effect_star.png");
-	ParticleManager::GetInstance()->CreateNewParticles("normal",TextureManager::GetInstance()->GetTextureInfo("effect_plane"), BillboardType::kAllAxis,Particles::Move::kNormal);
-	ParticleManager::GetInstance()->CreateNewParticles("fire",TextureManager::GetInstance()->GetTextureInfo("effect_fire"), BillboardType::kAllAxis,Particles::Move::kFire);
-	ParticleManager::GetInstance()->SetParticleSize("fire", {0.2f,0.2f,0.2f});
-	ParticleManager::GetInstance()->CreateNewParticles("blue_fire",TextureManager::GetInstance()->GetTextureInfo("effect_blue_fire"), BillboardType::kAllAxis,Particles::Move::kFire);
-	ParticleManager::GetInstance()->SetParticleSize("blue_fire", {0.2f,0.2f,0.2f});
-	ParticleManager::GetInstance()->CreateNewParticles("slash",TextureManager::GetInstance()->GetTextureInfo("effect_slash"), BillboardType::kAllAxis,Particles::Move::kSlash);
-	ParticleManager::GetInstance()->SetParticleSize("slash", {0.5f,0.5f,0.5f});
-	ParticleManager::GetInstance()->CreateNewParticles("cross",TextureManager::GetInstance()->GetTextureInfo("effect_cross"), BillboardType::kAllAxis,Particles::Move::kSlash);
-	ParticleManager::GetInstance()->SetParticleSize("cross", {0.2f,0.2f,0.2f});
+	ParticleManager::GetInstance()->CreateNewParticles("normal", TextureManager::GetInstance()->GetTextureInfo("effect_plane"), BillboardType::kAllAxis, Particles::Move::kNormal);
+	ParticleManager::GetInstance()->CreateNewParticles("fire", TextureManager::GetInstance()->GetTextureInfo("effect_fire"), BillboardType::kAllAxis, Particles::Move::kFire);
+	ParticleManager::GetInstance()->SetParticleSize("fire", { 0.2f,0.2f,0.2f });
+	ParticleManager::GetInstance()->CreateNewParticles("blue_fire", TextureManager::GetInstance()->GetTextureInfo("effect_blue_fire"), BillboardType::kAllAxis, Particles::Move::kFire);
+	ParticleManager::GetInstance()->SetParticleSize("blue_fire", { 0.2f,0.2f,0.2f });
+	ParticleManager::GetInstance()->CreateNewParticles("slash", TextureManager::GetInstance()->GetTextureInfo("effect_slash"), BillboardType::kAllAxis, Particles::Move::kSlash);
+	ParticleManager::GetInstance()->SetParticleSize("slash", { 0.5f,0.5f,0.5f });
+	ParticleManager::GetInstance()->CreateNewParticles("cross", TextureManager::GetInstance()->GetTextureInfo("effect_cross"), BillboardType::kAllAxis, Particles::Move::kSlash);
+	ParticleManager::GetInstance()->SetParticleSize("cross", { 0.2f,0.2f,0.2f });
 	ParticleManager::GetInstance()->CreateNewParticles("big_fire", TextureManager::GetInstance()->GetTextureInfo("effect_big_fire"), BillboardType::kAllAxis, Particles::Move::kFire);
 	ParticleManager::GetInstance()->SetParticleSize("big_fire", { 0.5f,0.5f,0.5f });
 	ParticleManager::GetInstance()->CreateNewParticles("big_blue_fire", TextureManager::GetInstance()->GetTextureInfo("effect_big_blue_fire"), BillboardType::kAllAxis, Particles::Move::kFire);

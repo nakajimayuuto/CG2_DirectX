@@ -56,7 +56,7 @@ public:
 	static Transform2D GetInitialValue(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
 
 	static Transform GetTransformValue(const Vector2& scale, const float rotate, const Vector2& translate,float depth);
-	static Transform GetTransformValue(const Vector2& scale, const float rotate, const Vector2& translate) { GetTransformValue(scale,rotate,translate,0.0f); };
+	static Transform GetTransformValue(const Vector2& scale, const float rotate, const Vector2& translate) { return GetTransformValue(scale,rotate,translate,0.0f); };
 	Transform GetTransformValue();
 public:
 	Vector2 scale;

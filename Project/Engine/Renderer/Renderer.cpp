@@ -368,6 +368,8 @@ void Sprite::Initialize(TextureInfo info) {
 	blendMode_ = BlendMode::kNormal;
 	uvTransform_.Initialize();
 
+	anchorPoint_ = {0.5f,0.5f};
+
 	textureInfo_ = info;
 	/*=============================================================
 	Sprite用のResourceとView.
@@ -454,94 +456,7 @@ void Sprite::Initialize(TextureInfo info) {
 }
 
 void Sprite::Initialize() {
-	isVisible_ = true;
-
-	blendMode_ = BlendMode::kNormal;
-	uvTransform_.Initialize();
-
-	textureInfo_ = TextureManager::GetInstance()->GetTextureInfo("white_template");
-	/*=============================================================
-	Sprite用のResourceとView.
-	=============================================================*/
-	// 【VertexResourceを生成する】
-	// 実際に頂点リソースを作る.
-	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * 4);
-
-	// 頂点バッファビューを作成する.
-	// リソースの先頭のアドレスから使う.
-	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
-	// 使用するリソースのサイズは頂点3つ分のサイズ.
-	vertexBufferView_.SizeInBytes = sizeof(VertexData) * 4;
-	// 1頂点あたりのサイズ.
-	vertexBufferView_.StrideInBytes = sizeof(VertexData);
-
-	// 【IndexResourceを生成する】
-	// 実際に頂点リソースを作る.
-	indexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * 6);
-
-	// 頂点バッファビューを作成する.
-	// リソースの先頭のアドレスから使う.
-	indexBufferView_.BufferLocation = indexResource_->GetGPUVirtualAddress();
-	// 使用するリソースのサイズはインデックス6つ分のサイズ.
-	indexBufferView_.SizeInBytes = sizeof(uint32_t) * 6;
-	// インデックスはuint32_tとする.
-	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
-
-
-	// 【MaterialResourceを生成する】
-	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
-	materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
-	// マテリアルにデータを書き込む.
-	// 書き込むためのアドレスを取得.
-	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
-	// 今回は赤を書き込んでみる
-	materialData_->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	materialData_->lightingType = static_cast<uint32_t>(LightingType::kNone);
-	materialData_->uvTransform = Matrix4x4::Identity();
-
-	// 【TransformationMatrix】
-	//Sprite用のTransformationMatrixを作る。Matrix4x4 1つ分のサイズを用意する.
-	transformationMatrixResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
-	// データを書き込む.
-	// 書き込むためのアドレスを取得.
-	transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_));
-	// 単位行列を書き込んでおく.
-	transformationMatrixData_->WVP = Matrix4x4::Identity();
-	transformationMatrixData_->World = Matrix4x4::Identity();
-
-	// 【Resourceにデータを書き込む】
-
-	// 頂点リソースにデータを書き込む.
-	// 書き込むためのアドレスを取得.
-	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	// 1枚目の三角形.
-	vertexData[0].position = { 0.0f,360.0f,0.0f,1.0f }; // 左下.
-	vertexData[0].texcoord = { 0.0f,1.0f };
-	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f }; // 左上.
-	vertexData[1].texcoord = { 0.0f,0.0f };
-	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[2].position = { 640.0f,360.0f,0.0f,1.0f }; // 右下.
-	vertexData[2].texcoord = { 1.0f,1.0f };
-	vertexData[2].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[3].position = { 640.0f,0.0f,0.0f,1.0f }; // 右上.
-	vertexData[3].texcoord = { 1.0f,0.0f };
-	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
-
-	// インデックスリソースにデータを書き込む.
-	uint32_t* indexDataSprite = nullptr;
-	// 書き込むためのアドレスを取得.
-	indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
-	// 1枚目の三角形.
-	indexDataSprite[0] = 0;
-	indexDataSprite[1] = 1;
-	indexDataSprite[2] = 2;
-	indexDataSprite[3] = 1;
-	indexDataSprite[4] = 3;
-	indexDataSprite[5] = 2;
-
-	size_ = { static_cast<float>(textureInfo_.width),static_cast<float>(textureInfo_.height) };
-	AdaptationSize();
+	Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
 }
 
 void Sprite::Draw(const Transform& transform) {
@@ -596,16 +511,16 @@ void Sprite::SetSize(WindowSize windowSize) {
 
 void Sprite::AdaptationSize() {
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	vertexData[0].position = { -size_.x / 2.0f,size_.y / 2.0f,0.0f,1.0f }; // 左下.
+	vertexData[0].position = { -size_.x * anchorPoint_.x,size_.y * (1.0f -anchorPoint_.y),0.0f,1.0f }; // 左下.
 	vertexData[0].texcoord = { 0.0f,1.0f };
 	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[1].position = { -size_.x / 2.0f,-size_.y / 2.0f,0.0f,1.0f }; // 左上.
+	vertexData[1].position = { -size_.x * anchorPoint_.x,-size_.y * anchorPoint_.y,0.0f,1.0f }; // 左上.
 	vertexData[1].texcoord = { 0.0f,0.0f };
 	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[2].position = { size_.x / 2.0f,size_.y / 2.0f,0.0f,1.0f }; // 右下.
+	vertexData[2].position = { size_.x * (1.0f - anchorPoint_.x),size_.y * (1.0f - anchorPoint_.y),0.0f,1.0f }; // 右下.
 	vertexData[2].texcoord = { 1.0f,1.0f };
 	vertexData[2].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[3].position = { size_.x / 2.0f,-size_.y / 2.0f,0.0f,1.0f }; // 右上.
+	vertexData[3].position = { size_.x * (1.0f - anchorPoint_.x),-size_.y * anchorPoint_.y,0.0f,1.0f }; // 右上.
 	vertexData[3].texcoord = { 1.0f,0.0f };
 	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
 }
