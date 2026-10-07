@@ -47,7 +47,7 @@ jobs:
             echo "::error::不要なファイルまたはディレクトリが見つかりました！"
             echo "$UNWANTED_LIST"
             exit 1
-          files
+          fi
 
           echo "リポジトリはクリーンです。"
           
