@@ -302,7 +302,7 @@ void Player::BehaviorRootInitialize() {
 }
 
 void Player::BehaviorRootUpdate() {
-		MapChipDigUpdate();
+	MapChipDigUpdate();
 
 	MovingUpdate();
 
@@ -329,12 +329,12 @@ void Player::BehaviorShotUpdate() {
 }
 
 void Player::BlockShot(const Vector2& shotDir) {
-	ProjectileManager::GetInstance()->CreateBullet(transform_, {shotDir.x * kJumpAcceleration,shotDir.y * kJumpAcceleration,0.0f},BulletType::kBlock,CollisionAttributeName::kCollisionPlayerAttack,10.0f,1.0f);
+	ProjectileManager::GetInstance()->CreateBullet(transform_, { shotDir.x * kJumpAcceleration,shotDir.y * kJumpAcceleration,0.0f }, BulletType::kBlock, CollisionAttributeName::kCollisionPlayerAttack, 10.0f, 1.0f);
 }
 
 void Player::MapChipDigUpdate() {
 	if (InputManager::GetInstance()->TriggerAction(InputAction::ATTACK)) {
-	MapChipManager::GetInstance()->DeleteBlock(transform_.translate, 0, -1);
+		MapChipManager::GetInstance()->DeleteBlock(transform_.translate, 0, -1);
 	}
 }
 
@@ -346,20 +346,34 @@ void Player::BlockShotUpdate() {
 		attenuation = kJumpAttenuation;
 	}
 
-	Vector2 direction = {0.0f,1.0f};
+	Vector2 direction = { 0.0f,1.0f };
 
 	direction = InputManager::GetInstance()->GetActionDirection();
 
 	if (direction.x == 0.0f && direction.y == 0.0f) {
-		direction.y = -1.0f;
+		if (coyoteShotTimer_ > kCoyoteShotTimerMax) {
+			direction.y = -1.0f;
+		} else {
+			direction = preDirection_;
+		}
+	} else {
+		coyoteShotTimer_ = 0.0f;
 	}
+	coyoteShotTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
 
 	if (InputManager::GetInstance()->ReleaseAction(InputAction::JUMP)) {
 		BlockShot(direction);
 		behaviorRequest_ = Behavior::kRoot;
-		velocity_ = Vector3(-direction.x * kJumpAcceleration, -direction.y * kJumpAcceleration,0.0f);
+		if (direction.x >= 0.5f || direction.x <= -0.5f) {
+			velocity_.x = 0.0f;
+		}
+		if (direction.y >= 0.5f || direction.y <= -0.5f) {
+			velocity_.y = 0.0f;
+		}
+		velocity_ += Vector3(-direction.x * kJumpAcceleration, -direction.y * kJumpAcceleration, 0.0f);
 		DeltaTime::GetInstance()->SetGameTimeSpeed(1.0f);
 	}
+	preDirection_ = direction;
 
 	// 非入力時は移動減衰をかける.
 	if (velocity_.x <= 0.01f && velocity_.x >= -0.01f) {
@@ -436,6 +450,8 @@ void Player::MovingUpdate() {
 
 	if (InputManager::GetInstance()->TriggerAction(InputAction::JUMP)) {
 		behaviorRequest_ = Behavior::kShot;
+		coyoteShotTimer_ = 0.0f;
+		preDirection_ = { 0.0f,-1.0f };
 	}
 
 
@@ -478,7 +494,7 @@ void Player::IsGroundUpdate(const CollisionMapInfo& info) {
 	}
 }
 
-void Player::IsInBlockUpdate(const CollisionMapInfo& info){
+void Player::IsInBlockUpdate(const CollisionMapInfo& info) {
 }
 
 void Player::TurningControl() {
