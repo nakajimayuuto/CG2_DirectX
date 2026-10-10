@@ -208,6 +208,9 @@
     <Filter Include="Engine\SystemFile\WinApp">
       <UniqueIdentifier>{79ea8616-0475-467f-a001-5cd496789e24}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\SystemFile\Pipeline">
+      <UniqueIdentifier>{5422ab74-05e3-4b68-a3f5-734a040700fb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -404,6 +407,9 @@
     </ClCompile>
     <ClCompile Include="Engine\SystemFile\WinApp.cpp">
       <Filter>Engine\SystemFile\WinApp</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\SystemFile\Pipeline.cpp">
+      <Filter>Engine\SystemFile\Pipeline</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -616,6 +622,9 @@
     </ClInclude>
     <ClInclude Include="Engine\SystemFile\WinApp.h">
       <Filter>Engine\SystemFile\WinApp</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\SystemFile\Pipeline.h">
+      <Filter>Engine\SystemFile\Pipeline</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

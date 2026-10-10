@@ -53,22 +53,7 @@ struct D3DResourceLeakChecker {
 	}
 };
 
-enum class BlendMode {
-	kNone, // ブレンドモード無し.
-	kNormal, // 通常.
-	kAdd, // 加算.
-	kSubtract, // 減算.
-	kMultily, // 乗算.
-	kScreen, // スクリーン.
 
-	kNormalCullNone, // 通常ブレンド。背面カリング無し.
-	kLine, // 線の描画に使用.
-
-	kParticleNone, // パーティクル用
-	kParticleNormal, // パーティクル用の通常.
-	kParticleCount,
-	kCount, // ブレンドモードの最大数.
-};
 
 enum class ShaderType {
 	kObject3d, // オブジェクト3D.
@@ -279,7 +264,7 @@ private:
 
 	HANDLE fenceEvent;
 
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap = nullptr;
+	//Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap = nullptr;
 
 	uint32_t descriptorSizeSRV;
 
@@ -293,11 +278,11 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource = nullptr;
 
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
 	//Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
 	//
 	//Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
 
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
 
 	Pipeline pipeline_[static_cast<uint32_t>(BlendMode::kCount) * static_cast<uint32_t>(ShaderType::kCount)];
 
