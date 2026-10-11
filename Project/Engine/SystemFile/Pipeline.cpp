@@ -14,11 +14,11 @@ void Pipeline::CreateAllPipeline() {
 	}
 
 	for (uint32_t i = 0; i < static_cast<uint32_t>(BlendMode::kCount); i++) {
-		pipelineSprite_[i] = PipelineCreate(static_cast<BlendMode>(i),ShaderType::kNormal,D3D12_DEPTH_WRITE_MASK_ALL,kUsingFilter_,D3D12_CULL_MODE_NONE);
+		pipelineSprite_[i] = PipelineCreate(static_cast<BlendMode>(i),ShaderType::kSprite,D3D12_DEPTH_WRITE_MASK_ALL,kUsingFilter_,D3D12_CULL_MODE_NONE);
 	}
 
 	for (uint32_t i = 0; i < static_cast<uint32_t>(BlendMode::kCount); i++) {
-		pipelineSprite_[i] = PipelineCreate(static_cast<BlendMode>(i),ShaderType::kParticle,D3D12_DEPTH_WRITE_MASK_ALL,kUsingFilter_,D3D12_CULL_MODE_NONE);
+		pipelineParticle_[i] = PipelineCreate(static_cast<BlendMode>(i),ShaderType::kParticle,D3D12_DEPTH_WRITE_MASK_ALL,kUsingFilter_,D3D12_CULL_MODE_NONE);
 	}
 
 	pipelineLine_ = PipelineCreate(BlendMode::kNormal, ShaderType::kLine, D3D12_DEPTH_WRITE_MASK_ALL, kUsingFilter_, D3D12_CULL_MODE_NONE);
@@ -256,7 +256,7 @@ void Pipeline::CreateDescriptorTable(D3D12_ROOT_PARAMETER& rootParameter, D3D12_
 	
 	// SpotLightData.
 	rootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; //DescriptorTableを使う.
-	rootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
+	rootParameter.ShaderVisibility = shaderVisibility; // PixelShaderで使う.
 	rootParameter.DescriptorTable.pDescriptorRanges = descriptorRange; // Tableの中身の配列を指定.
 	rootParameter.DescriptorTable.NumDescriptorRanges = numDescriptorRanges; // Tableで利用する数.
 }
@@ -270,7 +270,7 @@ void Pipeline::CreateRootParameters(D3D12_ROOT_SIGNATURE_DESC& rootSignature, Sh
 	switch (shaderType) {
 	case ShaderType::kParticle:
 		CreateConstantBufferView(rootParametersParticle[0],D3D12_SHADER_VISIBILITY_PIXEL, 0);
-		CreateDescriptorTable(rootParametersParticle[1],D3D12_SHADER_VISIBILITY_PIXEL, descriptorRangeForInstancing, _countof(descriptorRangeForInstancing));
+		CreateDescriptorTable(rootParametersParticle[1],D3D12_SHADER_VISIBILITY_VERTEX, descriptorRangeForInstancing, _countof(descriptorRangeForInstancing));
 		CreateDescriptorTable(rootParametersParticle[2],D3D12_SHADER_VISIBILITY_PIXEL, descriptorRange, _countof(descriptorRange));
 		rootSignature.pParameters = rootParametersParticle; // ルートパラメータ配列へのポインタ.
 		rootSignature.NumParameters = _countof(rootParametersParticle); // 配列の長さ.
