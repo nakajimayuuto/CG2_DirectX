@@ -264,7 +264,7 @@ private:
 
 	HANDLE fenceEvent;
 
-	//Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap = nullptr;
 
 	uint32_t descriptorSizeSRV;
 

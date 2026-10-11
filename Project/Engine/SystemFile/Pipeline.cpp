@@ -11,15 +11,13 @@ void Pipeline::PipelineCreate(BlendMode blendMode, D3D12_DEPTH_WRITE_MASK mask) 
 	=============================================================*/
 	depthStencilResource = CreateDepthStencilTextureResource(GameSystem::GetInstance()->GetDevice(), static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().width), static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().height));
 
-	// DSV用のヒープでディスクリプタ数は1。DSVはShader内で触れるものではないので、ShaderVisibleはfalse.
-	dsvDescriptorHeap = GameSystem::CreateDescriptorHeap(GameSystem::GetInstance()->GetDevice(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
-
+	
 	// DSVの設定.
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
 	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // Format。基本的にResourceに合わせる.
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D; // 2dTexture.
 	// DSVHeapの先頭にDSVをつくる.
-	GameSystem::GetInstance()->GetDevice()->CreateDepthStencilView(depthStencilResource.Get(), &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	GameSystem::GetInstance()->GetDevice()->CreateDepthStencilView(depthStencilResource.Get(), &dsvDesc, GameSystem::GetInstance()-GetCPUDescriptorHandleForHeapStart());
 
 	// DepthStencilStateの設定.
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};

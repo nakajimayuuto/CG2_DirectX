@@ -350,6 +350,9 @@ void GameSystem::ShaderCompile(){
 }
 
 void GameSystem::PipelineInitialize(){
+	// DSV用のヒープでディスクリプタ数は1。DSVはShader内で触れるものではないので、ShaderVisibleはfalse.
+	dsvDescriptorHeap = GameSystem::CreateDescriptorHeap(GameSystem::GetInstance()->GetDevice(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
+	
 	for (uint32_t j = 0; j < static_cast<uint32_t>(ShaderType::kCount); j++) {
 		for (uint32_t i = 0; i < static_cast<uint32_t>(BlendMode::kCount); i++) {
 			CreatePipeline(static_cast<BlendMode>(i), static_cast<ShaderType>(j));
