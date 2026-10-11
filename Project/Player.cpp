@@ -4,7 +4,7 @@ void Player::Initialize() {
 	transform_.Initialize();
 	targetRotateY = 0.0f;
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("drill_ghost"));
-	model_.SetBlendMode(BlendMode::kNormalCullNone);
+	model_.SetBlendMode(BlendMode::kNormal);
 	transform_.translate = { 0.0f, kTranslateBlankY,-30.0f };
 
 	/// HPGauge.

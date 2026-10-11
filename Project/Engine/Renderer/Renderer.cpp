@@ -137,6 +137,7 @@ void Model::Draw(const Transform& transform, bool useTransparent){
 
 		GameSystem::GetInstance()->DrawCommand(
 			blendMode_,
+			ShaderType::kNormal,
 			&vetexBufferView,
 			nullptr,
 			D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
@@ -474,6 +475,7 @@ void Sprite::Draw(const Transform& transform) {
 	// Spriteの描画。変更が必要なものだけ変更する.
 	GameSystem::GetInstance()->DrawCommand(
 		blendMode_,
+		ShaderType::kSprite,
 		&vertexBufferView_,
 		&indexBufferView_,
 		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
@@ -656,6 +658,7 @@ void Renderer::DrawLineAll() {
 
 	GameSystem::GetInstance()->DrawCommand(
 		lineElement_->blendMode_,
+		ShaderType::kLine,
 		&lineElement_->vertexBufferView_,
 		nullptr,
 		D3D_PRIMITIVE_TOPOLOGY_LINELIST,
@@ -809,6 +812,7 @@ void Renderer::DrawSphere(const Transform& transform, const TextureInfo& texture
 	newElement->indexInstanceNum_ = kSphereSubdivision_ * kSphereSubdivision_ * 6;
 	GameSystem::GetInstance()->DrawCommand(
 		newElement->blendMode_,
+		ShaderType::kNormal,
 		&newElement->vertexBufferView_,
 		&newElement->indexBufferView_,
 		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
@@ -837,6 +841,7 @@ void Renderer::DrawSphere(const Transform& transform, const TextureInfo& texture
 	newElement->indexInstanceNum_ = kSphereSubdivision_ * kSphereSubdivision_ * 6;
 	GameSystem::GetInstance()->DrawCommand(
 		newElement->blendMode_,
+		ShaderType::kNormal,
 		&newElement->vertexBufferView_,
 		&newElement->indexBufferView_,
 		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
@@ -865,6 +870,7 @@ void Renderer::DrawTorus(const Transform& transform, float majorRadius, float mi
 	newElement->indexInstanceNum_ = kTorusSubdivision_ * kTorusSubdivision_ * 6;
 	GameSystem::GetInstance()->DrawCommand(
 		newElement->blendMode_,
+		ShaderType::kNormal,
 		&newElement->vertexBufferView_,
 		&newElement->indexBufferView_,
 		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
@@ -937,6 +943,7 @@ void Renderer::DrawBox(const Transform& transform, const Transform& uvTransform,
 	=============================================================*/
 	GameSystem::GetInstance()->DrawCommand(
 		newElement->blendMode_,
+		ShaderType::kNormal,
 		&newElement->vertexBufferView_,
 		nullptr,
 		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
@@ -1122,6 +1129,7 @@ void Renderer::DrawModel(const Transform& transform, const ModelInfo& modelInfo,
 		=============================================================*/
 		GameSystem::GetInstance()->DrawCommand(
 			blendMode_,
+			ShaderType::kNormal,
 			&(*newElements)[i].vertexBufferView_,
 			nullptr,
 			D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
@@ -1165,6 +1173,7 @@ void Renderer::DrawModel(const Transform& transform, const Model* model, bool us
 		=============================================================*/
 		GameSystem::GetInstance()->DrawCommand(
 			blendMode_,
+			ShaderType::kNormal,
 			&(*newElements)[i].vertexBufferView_,
 			nullptr,
 			D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
@@ -1214,6 +1223,7 @@ void Renderer::DrawSprite(const Transform& transform, const TextureInfo& texture
 	=============================================================*/
 	GameSystem::GetInstance()->DrawCommand(
 		blendMode_,
+		ShaderType::kSprite,
 		&newElement->vertexBufferView_,
 		&newElement->indexBufferView_,
 		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
@@ -1262,6 +1272,7 @@ void Renderer::DrawSprite(const Transform& transform, const Vector2& size, const
 	=============================================================*/
 	GameSystem::GetInstance()->DrawCommand(
 		blendMode_,
+		ShaderType::kSprite,
 		&newElement->vertexBufferView_,
 		&newElement->indexBufferView_,
 		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
@@ -1298,6 +1309,7 @@ void Renderer::DrawSprite(const Transform& transform, const Sprite& sprite) {
 	=============================================================*/
 	GameSystem::GetInstance()->DrawCommand(
 		blendMode_,
+		ShaderType::kSprite,
 		&newElement->vertexBufferView_,
 		&newElement->indexBufferView_,
 		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
@@ -1333,6 +1345,7 @@ void Renderer::DrawShadow(const Transform& transform, const Model* model) {
 		=============================================================*/
 		GameSystem::GetInstance()->DrawCommand(
 			blendMode_,
+			ShaderType::kNormal,
 			&(*newElements)[i].vertexBufferView_,
 			nullptr,
 			D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
@@ -1368,6 +1381,7 @@ void Renderer::DrawShadow(const Transform& transform, const Model* model, const 
 		=============================================================*/
 		GameSystem::GetInstance()->DrawCommand(
 			blendMode_,
+			ShaderType::kNormal,
 			&newElements.get()[i].data()->vertexBufferView_,
 			nullptr,
 			D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
@@ -1417,6 +1431,7 @@ void Renderer::DrawShadow(const Transform& transform, const ModelInfo& modelInfo
 		=============================================================*/
 		GameSystem::GetInstance()->DrawCommand(
 			blendMode_,
+			ShaderType::kNormal,
 			&(*newElements)[i].vertexBufferView_,
 			nullptr,
 			D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
@@ -1430,7 +1445,7 @@ void Renderer::DrawShadow(const Transform& transform, const ModelInfo& modelInfo
 
 void Renderer::CreateLine(ModelElement* newElement) {
 	newElement->modelData_.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesGPU;
-	newElement->blendMode_ = BlendMode::kLine;
+	newElement->blendMode_ = BlendMode::kNormal;
 
 	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
 	newElement->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexDataLine) * maxLineNum_);

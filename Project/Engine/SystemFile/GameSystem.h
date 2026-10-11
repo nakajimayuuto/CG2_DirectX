@@ -13,6 +13,7 @@
 #include <vector>
 #include <numbers>
 #include "WinApp.h"
+#include "Pipeline.h"
 
 
 #include "../Math/Vector4.h"
@@ -53,21 +54,10 @@ struct D3DResourceLeakChecker {
 	}
 };
 
-
-
-enum class ShaderType {
-	kObject3d, // オブジェクト3D.
-	kNoTexture, // テクスチャ無しモデル.
-	kParticle, // パーティクル.
-	kCount // 最大数.
-};
-
 struct ModelElement;
 
 class GameSystem {
 private:
-	static inline const D3D12_FILTER kUsingFilter_ = D3D12_FILTER_MIN_MAG_MIP_POINT; // D3D12_FILTER_MIN_MAG_MIP_LINEAR.
-
 	static inline const uint32_t kSrvDescriptorHeapNumMax = 128;
 public:
 	static GameSystem* GetInstance();
@@ -102,10 +92,6 @@ private:
 
 	void ScissorInitialize();
 
-	void DXCompilerInitialize();
-
-	void ShaderCompile();
-
 	void PipelineInitialize();
 	
 	void ImGuiInitialize();
@@ -119,10 +105,6 @@ private:
 	uint32_t descriptorSizeRTV_;
 
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc_{};
-
-	Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils_ = nullptr;
-	Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler_ = nullptr;
-	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler_ = nullptr;
 public:
 	void RegisterGlobalVariables();
 	void ApplyGlobalVariables();
@@ -149,20 +131,13 @@ public:
 
 	void SetViewport(D3D12_VIEWPORT setViewport) { viewport = setViewport; };
 
-	struct Pipeline {
-		Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
-		Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
-	};
-
-	// シェーダーの設定はここでやる.
-	void CreatePipeline(BlendMode blendMode, ShaderType shaderType);
-
-	void SetPipeline(BlendMode blendMode);
+	void SetPipeline(BlendMode blendMode,ShaderType shaderType);
 
 	void SetParticlePipeline(BlendMode blendMode);
 
 	void DrawCommand(
 		BlendMode blendMode,
+		ShaderType shaderType,
 		D3D12_VERTEX_BUFFER_VIEW* vertexBufferView,
 		D3D12_INDEX_BUFFER_VIEW* indexBufferView,
 		D3D_PRIMITIVE_TOPOLOGY topology,
@@ -227,6 +202,12 @@ private:
 	=============================================================*/
 	std::unique_ptr<WinApp> winApp_;
 
+	/*=============================================================
+	PSO
+	=============================================================*/
+	std::unique_ptr<Pipeline> pipeline_;
+
+
 	uint32_t drawCount_;
 
 	/*=============================================================
@@ -283,25 +264,5 @@ private:
 	//
 	//Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
 
-
-	Pipeline pipeline_[static_cast<uint32_t>(BlendMode::kCount) * static_cast<uint32_t>(ShaderType::kCount)];
-
-	// Shaderをコンパイルする.
-	// 【VertexShader】
-	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob3dObject;
-	// 【PixelShader】
-	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob3dObject;
-	// 【VertexShader】
-	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlobParticle;
-	// 【PixelShader】
-	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlobParticle;
-	// 【VertexShader】
-	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlobLine;
-	// 【PixelShader】
-	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlobLine;
-	// 【VertexShader】
-	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlobNoTexture;
-	// 【PixelShader】
-	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlobNoTexture;
 };
 

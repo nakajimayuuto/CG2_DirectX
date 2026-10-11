@@ -234,7 +234,7 @@ void Bullet::Initialize(const Transform& transform, const Vector3& velocity, Bul
 	collisionAttribute_ = CollisionManager::GetInstance()->GetCollisionAttribute(colliderName);
 	colliderDimensionType_ = ColliderDimensionType::k3D;
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("bullet_crystal"));
-	model_.SetBlendMode(BlendMode::kNormalCullNone);
+	model_.SetBlendMode(BlendMode::kNormal);
 	model_.SetLightingType(LightingType::kNone);
 
 	damage_ = damage;
@@ -568,7 +568,7 @@ void TutorialObstacles::Initialize(const Transform& transform, CollisionAttribut
 		colliderType_ = ColliderType::kSphere;
 		colliderDimensionType_ = ColliderDimensionType::k3D;
 		model_.Initialize(ModelManager::GetInstance()->GetModelInfo("bullet_crystal"));
-		model_.SetBlendMode(BlendMode::kNormalCullNone);
+		model_.SetBlendMode(BlendMode::kNormal);
 		model_.SetLightingType(LightingType::kNone);
 		break;
 	case TutorialObstaclesType::kSpike:
