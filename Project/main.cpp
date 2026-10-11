@@ -46,6 +46,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat("intensity", &LightManager::GetInstance()->GetDirectionalLightData()->intensity, 0.01f, 0.0f, 200.0f);
 			ImGui::DragFloat("num", &num_, 0.01f, 0.0f, 10000.0f);
 			ImGui::ColorEdit3("parColor", reinterpret_cast<float*>(&color_));
+			Vector2 lt = sprite.GetLeftTop();
+			ImGui::DragFloat2("leftTop", reinterpret_cast<float*>(&lt), 1.0f, 0.0f, 100.0f);
+			sprite.SetLeftTop(lt);
+			Vector2 si = sprite.GetCutSize();
+			ImGui::DragFloat2("cutSize", reinterpret_cast<float*>(&si), 1.0f, 0.0f, 100.0f);
+			sprite.SetCutSize(si);
 
 			if (ImGui::Button("numcreate")) {
 				ParticleManager::GetInstance()->SpawnNumbers(num_, Transform::GetInitialValue(), color_);

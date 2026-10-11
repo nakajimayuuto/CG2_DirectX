@@ -106,6 +106,9 @@ void Model::Initialize(const std::string& name) {
 	Initialize(ModelManager::GetInstance()->GetModelInfo(name));
 }
 
+void Model::Draw() {
+	Draw(transform_);
+}
 void Model::Draw(const Transform& transform) {
 	Draw(transform, true);
 }
@@ -453,6 +456,7 @@ void Sprite::Initialize(TextureInfo info) {
 	indexDataSprite[5] = 2;
 
 	size_ = { static_cast<float>(textureInfo_.width),static_cast<float>(textureInfo_.height) };
+	cutSize_ = size_;
 	AdaptationSize();
 }
 
@@ -460,6 +464,9 @@ void Sprite::Initialize() {
 	Initialize(TextureManager::GetInstance()->GetTextureInfo("white_template"));
 }
 
+void Sprite::Draw() {
+	Draw(transform_);
+}
 void Sprite::Draw(const Transform& transform) {
 	if (!isVisible_) {
 		return;
@@ -512,18 +519,23 @@ void Sprite::SetSize(WindowSize windowSize) {
 }
 
 void Sprite::AdaptationSize() {
+	float texLeft = leftTop_.x / size_.x;
+	float texRight = (leftTop_.x + cutSize_.x) / size_.x;
+	float texTop = leftTop_.y/ size_.y;
+	float texBottom = (leftTop_.y + cutSize_.y) / size_.y;
+
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	vertexData[0].position = { -size_.x * anchorPoint_.x,size_.y * (1.0f -anchorPoint_.y),0.0f,1.0f }; // 左下.
-	vertexData[0].texcoord = { 0.0f,1.0f };
+	vertexData[0].position = { -cutSize_.x * anchorPoint_.x,cutSize_.y * (1.0f -anchorPoint_.y),0.0f,1.0f }; // 左下.
+	vertexData[0].texcoord = { texLeft, texBottom };
 	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[1].position = { -size_.x * anchorPoint_.x,-size_.y * anchorPoint_.y,0.0f,1.0f }; // 左上.
-	vertexData[1].texcoord = { 0.0f,0.0f };
+	vertexData[1].position = { -cutSize_.x * anchorPoint_.x,-cutSize_.y * anchorPoint_.y,0.0f,1.0f }; // 左上.
+	vertexData[1].texcoord = { texLeft, texTop };
 	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[2].position = { size_.x * (1.0f - anchorPoint_.x),size_.y * (1.0f - anchorPoint_.y),0.0f,1.0f }; // 右下.
-	vertexData[2].texcoord = { 1.0f,1.0f };
+	vertexData[2].position = { cutSize_.x * (1.0f - anchorPoint_.x),cutSize_.y * (1.0f - anchorPoint_.y),0.0f,1.0f }; // 右下.
+	vertexData[2].texcoord = { texRight, texBottom };
 	vertexData[2].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[3].position = { size_.x * (1.0f - anchorPoint_.x),-size_.y * anchorPoint_.y,0.0f,1.0f }; // 右上.
-	vertexData[3].texcoord = { 1.0f,0.0f };
+	vertexData[3].position = { cutSize_.x * (1.0f - anchorPoint_.x),-cutSize_.y * anchorPoint_.y,0.0f,1.0f }; // 右上.
+	vertexData[3].texcoord = { texRight, texTop };
 	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
 }
 

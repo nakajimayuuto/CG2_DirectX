@@ -82,6 +82,7 @@ public:
 	void Initialize(const ModelInfo& info);
 	void Initialize(const std::string& name);
 
+	void Draw();
 	void Draw(const Transform& transform);
 
 	void Draw(const Transform& transform,bool useTransparent);
@@ -125,6 +126,9 @@ public:
 	uint32_t GetModelCountMax()const { return modelMax_; };
 
 	ModelElements  GetModelElement()const;
+
+	void SetTransform(const Transform& transform) { transform_ = transform; };
+	Transform GetTransform() { return transform_; };
 private:
 	uint32_t modelMax_;
 
@@ -151,6 +155,9 @@ private:
 	std::vector<Transform> uvTransform_;
 
 	BlendMode blendMode_;
+
+	Transform transform_;
+	Matrix4x4 worldMatrix_;
 };
 
 class Sprite {
@@ -159,6 +166,7 @@ public:
 	void Initialize();
 
 	void Draw(const Transform& transform);
+	void Draw();
 
 	void Draw(const Transform2D& transform);
 
@@ -196,12 +204,25 @@ public:
 
 	void SetBlendMode(BlendMode blendMode) { blendMode_ = blendMode; };
 	void SetTranslateZ(float depth) { depth_ = depth; };
+
+	void SetTransform(const Transform& transform) { transform_ = transform; };
+	Transform GetTransform() {return transform_; };
+
+	void SetLeftTop(const Vector2& leftTop) { leftTop_ = leftTop; };
+	Vector2 GetLeftTop() { return leftTop_; };
+
+	void SetCutSize(const Vector2& cutSize) { cutSize_ = cutSize; };
+	Vector2 GetCutSize() { return cutSize_; };
 private:
 	void AdaptationSize();
 private:
+	Vector2 leftTop_ = { 0.0f,0.0f };
+	Vector2 cutSize_ = { 10.0f,10.0f };
+
 	Vector2 size_;
 
 	Transform uvTransform_;
+	Transform transform_;
 
 	Vector2 anchorPoint_;
 
