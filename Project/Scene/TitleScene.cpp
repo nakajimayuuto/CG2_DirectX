@@ -43,8 +43,9 @@ void TitleScene::Initialize() {
 		}
 	}
 
-	LightManager::GetInstance()->CreatePointLight("halberd_title_light");
+	LightManager::GetInstance()->CreateSpotLight("halberd_title_light");
 	LightManager::GetInstance()->GetLightData("halberd_title_light")->color = { 1.0f,1.0f,1.0f,1.0f };
+	LightManager::GetInstance()->GetLightData("halberd_title_light")->direction = { 0.0f,-1.0f,0.0f};
 	LightManager::GetInstance()->GetLightData("halberd_title_light")->radius = 10.0f;
 	LightManager::GetInstance()->GetLightData("halberd_title_light")->intensity = 1.0f;
 	LightManager::GetInstance()->GetLightData("halberd_title_light")->position = { 0.0f,5.0f,0.0f };
