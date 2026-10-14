@@ -395,51 +395,53 @@ void Player::GravityUpdate() {
 }
 
 void Player::MovingUpdate() {
-	
-	if (jumpBlankTimer_ >= kJumpBlankTimeMax) {
-		jumpBlankTimer_ = kJumpBlankTimeMax;
-	} else {
-		jumpBlankTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
-	}
 
 	float attenuation = 1.0f;
 	if (onGround_) {
 		attenuation = kAttenuation;
+		jumpBlankTimer_ = kJumpBlankTimeMax;
 	} else {
 		attenuation = kJumpAttenuation;
+
+		if (jumpBlankTimer_ >= kJumpBlankTimeMax) {
+			jumpBlankTimer_ = kJumpBlankTimeMax;
+		} else {
+			jumpBlankTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
+		}
 	}
 
 	if (InputManager::GetInstance()->PressAction(InputAction::RIGHT) || InputManager::GetInstance()->PressAction(InputAction::LEFT)) {
 		// 左右加速.
 		Vector3 acceleration = {};
+		if (jumpBlankTimer_ >= kJumpBlankTimeMax) {
+			if (InputManager::GetInstance()->PressAction(InputAction::RIGHT)) {
+				// 左移動中の右入力.
+				if (velocity_.x < 0.0f) {
+					velocity_.x *= (1.0f - attenuation);
+				}
 
-		if (InputManager::GetInstance()->PressAction(InputAction::RIGHT)) {
-			// 左移動中の右入力.
-			if (velocity_.x < 0.0f) {
-				velocity_.x *= (1.0f - attenuation);
-			}
+				acceleration.x += kAcceleration;
 
-			acceleration.x += kAcceleration;
+				if (lrDirection_ != LRDirection::kRight) {
+					lrDirection_ = LRDirection::kRight;
 
-			if (lrDirection_ != LRDirection::kRight) {
-				lrDirection_ = LRDirection::kRight;
+					turnFirstRotationY_ = transform_.rotate.y;
+					turnTimer_ = kTimeTurn;
+				}
+			} else if (InputManager::GetInstance()->PressAction(InputAction::LEFT)) {
+				// 右移動中の左入力.
+				if (velocity_.x > 0.0f) {
+					velocity_.x *= (1.0f - attenuation);
+				}
 
-				turnFirstRotationY_ = transform_.rotate.y;
-				turnTimer_ = kTimeTurn;
-			}
-		} else if (InputManager::GetInstance()->PressAction(InputAction::LEFT)) {
-			// 右移動中の左入力.
-			if (velocity_.x > 0.0f) {
-				velocity_.x *= (1.0f - attenuation);
-			}
+				acceleration.x -= kAcceleration;
 
-			acceleration.x -= kAcceleration;
+				if (lrDirection_ != LRDirection::kLeft) {
+					lrDirection_ = LRDirection::kLeft;
 
-			if (lrDirection_ != LRDirection::kLeft) {
-				lrDirection_ = LRDirection::kLeft;
-
-				turnFirstRotationY_ = transform_.rotate.y;
-				turnTimer_ = kTimeTurn;
+					turnFirstRotationY_ = transform_.rotate.y;
+					turnTimer_ = kTimeTurn;
+				}
 			}
 		}
 
