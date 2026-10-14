@@ -6,6 +6,7 @@
 enum class MapChipType {
 	kBlank, // 空白.
 	kBlock, // ブロック.
+	kHeavyBlock, // ブロック.
 	kPlayer, // プレイヤー.
 	kEnemy, // 敵.
 };
@@ -41,6 +42,7 @@ public:
 	void SetMapChipTypeByIndexType(uint32_t xIndex, uint32_t yIndex,MapChipType type);
 
 	uint8_t GetMapChipSubIDByIndex(uint32_t xIndex, uint32_t yIndex);
+	void SetMapChipSubIDByIndex(uint32_t xIndex, uint32_t yIndex,uint32_t subID);
 
 	uint32_t GetNumBlockVertical() { return kNumBlockVertical; };
 	uint32_t GetNumBlockHorizontal() { return kNumBlockHorizontal; };
@@ -60,7 +62,7 @@ private:
 	static inline const float kBlockWidth = 1.0f;
 	static inline const float kBlockHeight = 1.0f;
 	// 要素数
-	static inline const uint32_t kNumBlockVertical = 20;
+	static inline const uint32_t kNumBlockVertical =32;
 	static inline const uint32_t kNumBlockHorizontal = 100;
 
 	MapChipData mapChipData_;

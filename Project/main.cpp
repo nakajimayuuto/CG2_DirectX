@@ -75,6 +75,7 @@ void LoadDatas() {
 	TextureManager::GetInstance()->RegisterTexture("bullet_bounce", "Resource/Bullet/bullet_bounce.png");
 	TextureManager::GetInstance()->RegisterTexture("wall_soul", "Resource/wall/wall_soul.png");
 	TextureManager::GetInstance()->RegisterTexture("door", "Resource/wall/door.png");
+	TextureManager::GetInstance()->RegisterTexture("heavy_block", "Resource/HeavyBlock.png");
 	//TextureManager::GetInstance()->RegisterTexture("halberd_soul", "Resource/Halberd/halberd_soul.png");
 
 	TextureManager::GetInstance()->RegisterTexture("effect_plane", "Resource/effects/effect_plane.png");

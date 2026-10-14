@@ -61,7 +61,7 @@ void Player::Initialize() {
 	LightManager::GetInstance()->CreatePointLight("player_light");
 	LightManager::GetInstance()->GetLightData("player_light")->color = { 0.5f,0.5f,1.0f,1.0f };
 	LightManager::GetInstance()->GetLightData("player_light")->radius = 5.0f;
-	LightManager::GetInstance()->GetLightData("player_light")->intensity = 1.0f;
+	LightManager::GetInstance()->GetLightData("player_light")->intensity = 5.0f;
 
 	tutorialTimer_ = 0.0f;
 
@@ -248,7 +248,7 @@ void Player::Update() {
 
 		//TutorialWallClamp();
 
-	CircleWallClamp();
+	//CircleWallClamp();
 
 
 	GameCamera::GetInstance()->SetTargetIsMove(isMoving_);
@@ -362,6 +362,7 @@ void Player::BlockShotUpdate() {
 	coyoteShotTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
 
 	if (InputManager::GetInstance()->ReleaseAction(InputAction::JUMP)) {
+		jumpBlankTimer_ = 0.0f;
 		BlockShot(direction);
 		behaviorRequest_ = Behavior::kRoot;
 		if (direction.x >= 0.5f || direction.x <= -0.5f) {
@@ -384,6 +385,7 @@ void Player::BlockShotUpdate() {
 }
 
 void Player::GravityUpdate() {
+
 	if (!onGround_) {
 		// 落下速度.
 		velocity_ += Vector3(0.0f, -kGravityAcceleration, 0.0f);
@@ -393,6 +395,13 @@ void Player::GravityUpdate() {
 }
 
 void Player::MovingUpdate() {
+	
+	if (jumpBlankTimer_ >= kJumpBlankTimeMax) {
+		jumpBlankTimer_ = kJumpBlankTimeMax;
+	} else {
+		jumpBlankTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
+	}
+
 	float attenuation = 1.0f;
 	if (onGround_) {
 		attenuation = kAttenuation;

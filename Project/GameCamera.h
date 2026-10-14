@@ -41,6 +41,8 @@ private:
 
 	//void IncrementEaseTimer();
 private:
+	Vector3 minPosition = { 12.0f, 7.0f,-100.0f };
+	Vector3 maxPosition = { 200.0f, 30.0f,0.0f };
 	static inline float kNormalFovY = 0.45f;
 	static inline float kDashFovY = 0.60f;
 
@@ -48,7 +50,7 @@ private:
 
 	static inline float kAutoCompletionRate = 0.025f;
 
-	static inline Vector3 kOffset = { 0.0f,2.0f,-20.0f };
+	static inline Vector3 kOffset = { 0.0f,3.0f,-30.0f };
 
 	static inline float kRotateSpeed = Radian(1.0f);
 

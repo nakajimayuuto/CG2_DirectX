@@ -163,7 +163,7 @@ void GameScene::Update() {
 }
 
 void GameScene::Draw() {
-	ground_->Draw();
+	//ground_->Draw();
 	Renderer* renderer = Renderer::GetInstance();
 
 

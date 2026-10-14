@@ -142,6 +142,9 @@ private:
 	Vector3 velocity_ = {};
 
 	// ジャンプ.v
+	static inline const float kJumpBlankTimeMax = 1.0f;
+	float jumpBlankTimer_ = 0.0f;
+	
 	static inline const float kLimitFallSpeed = 30.0f;
 	static inline const float kJumpAcceleration =30.0f;
 

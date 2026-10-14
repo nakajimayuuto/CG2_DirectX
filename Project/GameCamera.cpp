@@ -141,24 +141,6 @@ void GameCamera::FollowedControlAction() {
 		isMove_ = isMove_;
 	}
 
-	if (input->IsGamePadConnect()) {
-		input->SetIsCursorFixed(false);
-		input->SetIsCursorVisible(true);
-		destinationPlayerAngleY_ += input->GetRightStickDirection().x * kRotateSpeed;
-
-		if (input->TriggerPadButton(PadButtons::INPUT_R3)) {
-			Reset();
-		}
-	} else {
-		//input->SetIsCursorFixed(true);
-		//input->SetIsCursorVisible(false);
-		destinationPlayerAngleY_ += input->GetMouse().GetMove().x * kMouseRotateSpeed;
-
-		if (input->TriggerKey(DIK_C)) {
-			Reset();
-		}
-	}
-
 	Vector3 offset = GetOffset();
 	float newAngleDirection = 0.0f;
 
@@ -210,6 +192,16 @@ void GameCamera::TutorialWallClamp() {
 }
 
 void GameCamera::FollowedWallClamp() {
+	if (transform_.translate.x < minPosition.x) {
+		transform_.translate.x = minPosition.x;
+	}
+	if (transform_.translate.y < minPosition.y) {
+		transform_.translate.y = minPosition.y;
+	}
+
+	Camera::GetInstance()->SetPosition(transform_.GetWorldPosition());
+
+	return;
 	/// ここから地獄
 	distanceToCenter_ = interOffsetTarget_.Length();
 

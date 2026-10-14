@@ -48,8 +48,13 @@ void MapChipManager::DeleteBlock(const Vector3& position, int offsetX, int offse
 	MapChipField::IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(position);
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex + offsetX, mapChipField_->GetNumBlockVertical() - 1 - offsetY - indexSet.yIndex);
+	uint32_t subID = mapChipField_->GetMapChipSubIDByIndex(indexSet.xIndex + offsetX, mapChipField_->GetNumBlockVertical() - 1 - offsetY - indexSet.yIndex);
 
 	if (mapChipType != MapChipType::kBlock) {
+		return;
+	}
+
+	if (subID == 2) {
 		return;
 	}
 
@@ -81,6 +86,7 @@ void MapChipManager::CreateBlock(const Vector3& position) {
 	}
 
 	mapChipField_->SetMapChipTypeByIndexType(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - 1 - indexSet.yIndex, MapChipType::kBlock);
+	mapChipField_->SetMapChipSubIDByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - 1 - indexSet.yIndex, 1);
 
 	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
 		if (i != mapChipField_->GetNumBlockVertical() - 1 - indexSet.yIndex) {
@@ -124,13 +130,18 @@ void MapChipManager::GenerateFieldObjects() {
 	}
 
 	//BaseEnemy* newEnemy;
-
+	uint8_t subID;
+	std::string modelName;
 	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
 		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+			subID = mapChipField_->GetMapChipSubIDByIndex(j, i);
 			switch (mapChipField_->GetMapChipTypeByIndex(j, i)) {
 			case MapChipType::kBlock:
 				modelBlocks_[i][j].first = std::make_unique<Model>();
 				modelBlocks_[i][j].first->Initialize("block_template");
+				if (subID == 2) {
+					modelBlocks_[i][j].first->ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("heavy_block"));
+				}
 
 				modelBlocks_[i][j].second = std::make_unique<Transform>();
 				modelBlocks_[i][j].second->Initialize();
