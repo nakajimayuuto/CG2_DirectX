@@ -41,6 +41,15 @@ private:
 
 	//void IncrementEaseTimer();
 private:
+	static inline Vector3 tutorialMinPos = {12.0f,21.0f,-100.0f};
+	static inline Vector3 tutorialMaxPos = { 200.0f, 21.0f,0.0f };
+
+	static inline Vector3 phase1MinPos = { 12.0f,21.0f,-100.0f };
+	static inline Vector3 phase1MaxPos = { 200.0f, 21.0f,0.0f };
+
+	static inline Vector3 phase2MinPos = { 12.0f,7.0f,-100.0f };
+	static inline Vector3 phase2MaxPos = { 200.0f, 7.0f,0.0f };
+
 	Vector3 minPosition = { 12.0f, 7.0f,-100.0f };
 	Vector3 maxPosition = { 200.0f, 30.0f,0.0f };
 	static inline float kNormalFovY = 0.45f;

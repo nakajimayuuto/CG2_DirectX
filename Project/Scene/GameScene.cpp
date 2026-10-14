@@ -95,6 +95,10 @@ void GameScene::Update() {
 	if (InputManager::GetInstance()->TriggerKey(DIK_F6)) {
 		isClear_ = true;
 	}
+
+	if (InputManager::GetInstance()->TriggerKey(DIK_F2)) {
+		MapChipManager::GetInstance()->ChangeSolidMode();
+	}
 #endif // _DEBUG
 
 	if (gameOverMenu_->GetIsActive()) {

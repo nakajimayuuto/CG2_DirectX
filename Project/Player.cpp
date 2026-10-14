@@ -9,7 +9,7 @@ void Player::Initialize() {
 	model_.Initialize("drill_ghost");
 	model_.SetBlendMode(BlendMode::kNormalCullNone);
 	//transform_.translate = { 0.0f, kTranslateBlankY,-30.0f };
-	transform_.translate = { 5.0f, kTranslateBlankY + 1.0f,0.0f };
+	transform_.translate = { 5.0f, kTranslateBlankY + kStartPosY,0.0f };
 
 	/// HPGauge.
 	maxHP_ = 200.0f;
@@ -362,7 +362,6 @@ void Player::BlockShotUpdate() {
 	coyoteShotTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
 
 	if (InputManager::GetInstance()->ReleaseAction(InputAction::JUMP)) {
-		jumpBlankTimer_ = 0.0f;
 		BlockShot(direction);
 		behaviorRequest_ = Behavior::kRoot;
 		if (direction.x >= 0.5f || direction.x <= -0.5f) {
@@ -371,7 +370,12 @@ void Player::BlockShotUpdate() {
 		if (direction.y >= 0.5f || direction.y <= -0.5f) {
 			velocity_.y = 0.0f;
 		}
+		if (direction.x != 0.0f) {
+			jumpBlankTimer_ = 0.0f;
+		}
+
 		velocity_ += Vector3(-direction.x * kJumpAcceleration, -direction.y * kJumpAcceleration, 0.0f);
+		
 		DeltaTime::GetInstance()->SetGameTimeSpeed(1.0f);
 	}
 	preDirection_ = direction;

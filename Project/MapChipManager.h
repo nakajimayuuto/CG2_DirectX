@@ -51,6 +51,8 @@ public:
 	void DeleteBlock(const Vector3& position,int offsetX,int offsetY);
 
 	void CreateBlock(const Vector3& position);
+
+	void ChangeSolidMode();
 private:
 	void CreateStage();
 
@@ -62,6 +64,8 @@ private:
 	//static inline const float kWidth = 0.8f;
 	//static inline const float kHeight = 0.8f;
 	static inline const float kBlank = 0.2f;
+
+	bool isWireFlame_;
 
 	// 要素数.
 	uint32_t kNumBlockVertical = 20;

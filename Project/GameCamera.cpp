@@ -20,6 +20,10 @@ void GameCamera::Initialize() {
 
 	dashEaseTimer_ = 0.0f;
 	targetEaseTimer_ = 0.0f;
+
+	//minPosition = { 12.0f, 7.0f,-100.0f };
+	minPosition = tutorialMinPos;
+	maxPosition = tutorialMaxPos;
 }
 
 void GameCamera::Update() {
@@ -147,7 +151,7 @@ void GameCamera::FollowedControlAction() {
 	float targetY = interTarget_.y;
 	interTarget_ = Lerp(interTarget_, target_->translate, kCompletionRate);
 	float direction = 0.0f;
-	interTarget_.y = targetY;
+	//interTarget_.y = targetY;
 
 
 	distanceToCenter_ = (interTarget_ + offset).Length();
@@ -197,6 +201,12 @@ void GameCamera::FollowedWallClamp() {
 	}
 	if (transform_.translate.y < minPosition.y) {
 		transform_.translate.y = minPosition.y;
+	}
+	if (transform_.translate.x > maxPosition.x) {
+		transform_.translate.x = maxPosition.x;
+	}
+	if (transform_.translate.y > maxPosition.y) {
+		transform_.translate.y = maxPosition.y;
 	}
 
 	Camera::GetInstance()->SetPosition(transform_.GetWorldPosition());

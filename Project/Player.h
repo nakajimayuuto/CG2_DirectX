@@ -119,6 +119,8 @@ private:
 
 	void MapCollisionUpdate();
 private:
+	static inline const float kStartPosY = 22.0f;
+
 	// ブロック.
 	static inline const float kWidth = 0.8f;
 	static inline const float kHeight = 0.8f;
@@ -142,11 +144,11 @@ private:
 	Vector3 velocity_ = {};
 
 	// ジャンプ.v
-	static inline const float kJumpBlankTimeMax = 1.0f;
+	static inline const float kJumpBlankTimeMax = 0.5f;
 	float jumpBlankTimer_ = 0.0f;
 	
 	static inline const float kLimitFallSpeed = 30.0f;
-	static inline const float kJumpAcceleration =30.0f;
+	static inline const float kJumpAcceleration =25.0f;
 
 	float coyoteShotTimer_ = 0.0f;
 	static inline float kCoyoteShotTimerMax = 0.1f;

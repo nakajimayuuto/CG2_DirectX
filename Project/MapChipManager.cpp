@@ -15,6 +15,12 @@ void MapChipManager::Initialize() {
 	CreateStage();
 
 	GenerateFieldObjects();
+
+	isWireFlame_ = false;
+#ifdef _DEBUG
+	isWireFlame_ = true;
+#endif // _DEBUG
+
 }
 
 void MapChipManager::Update() {
@@ -28,7 +34,18 @@ void MapChipManager::Draw() {
 				continue;
 			}
 
-			modelBlocks_[i][j].first->Draw(*modelBlocks_[i][j].second);
+			if (isWireFlame_) {
+				MapChipField::IndexSet indexSet;
+				indexSet = mapChipField_->GetMapChipIndexSetByPosition(modelBlocks_[i][j].second->translate);
+				uint32_t subID = mapChipField_->GetMapChipSubIDByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - 1 - indexSet.yIndex);
+				Vector4 color = { 0.2f,0.1f,0.1f,1.0f };
+				if (subID == 2) {
+					color = { 0.01f,0.01f,0.01f,1.0f };
+				}
+				Renderer::GetInstance()->DrawBoxWireFrame(*modelBlocks_[i][j].second, { 1.0f,1.0f,1.0f }, color);
+			} else {
+				modelBlocks_[i][j].first->Draw(*modelBlocks_[i][j].second);
+			}
 		}
 	}
 }
@@ -105,6 +122,14 @@ void MapChipManager::CreateBlock(const Vector3& position) {
 
 			break;
 		}
+	}
+}
+
+void MapChipManager::ChangeSolidMode() {
+	if (isWireFlame_) {
+		isWireFlame_ = false;
+	} else {
+		isWireFlame_ = true;
 	}
 }
 

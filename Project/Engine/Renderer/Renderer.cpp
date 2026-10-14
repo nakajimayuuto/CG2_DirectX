@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "Renderer.h"
 #include "Camera.h"
 
@@ -1029,6 +1030,10 @@ void Renderer::DrawBox(const Transform& transform, const Transform& uvTransform,
 }
 
 void Renderer::DrawBoxWireFrame(const Transform& transform, const Vector3& size, const Vector4& color) {
+	if (!Camera::GetInstance()->IsInCameraFrustum(transform.GetWorldPosition(), std::max(size.x,std::max(size.y, size.z)) * transform.GetMaxScale())) {
+		return;
+	}
+
 	std::vector<Vector3> vertices;
 
 	Transform VertexTransform;
