@@ -99,7 +99,7 @@ private:
 
 	// 3 判定結果を反映して移動.
 
-	void CollisionMoveUpdate(const CollisionMapInfo& info);
+	void CollisionMoveUpdate(CollisionMapInfo& info);
 
 	// 4 天井に接触している場合の処理.
 	void CellingCollisionUpdate(const CollisionMapInfo& info);

@@ -370,12 +370,12 @@ void Player::BlockShotUpdate() {
 		if (direction.y >= 0.5f || direction.y <= -0.5f) {
 			velocity_.y = 0.0f;
 		}
-		if (direction.x != 0.0f) {
+		if (direction.x >= 0.3f || direction.x <= -0.3f) {
 			jumpBlankTimer_ = 0.0f;
 		}
 
 		velocity_ += Vector3(-direction.x * kJumpAcceleration, -direction.y * kJumpAcceleration, 0.0f);
-		
+
 		DeltaTime::GetInstance()->SetGameTimeSpeed(1.0f);
 	}
 	preDirection_ = direction;
@@ -473,8 +473,26 @@ void Player::MovingUpdate() {
 	GravityUpdate();
 }
 
-void Player::CollisionMoveUpdate(const CollisionMapInfo& info) {
+void Player::CollisionMoveUpdate(CollisionMapInfo& info) {
+	CollisionMapInfo collisionMapInfo;
 	transform_.translate += static_cast<Vector3>(info.movementAmount);
+
+	if ((info.isLanding || onGround_) && info.isWallCollision) {
+		collisionMapInfo.movementAmount.x = velocity_.x * DeltaTime::GetInstance()->GetGameTime();
+		collisionMapInfo.movementAmount.y = 0.0f;
+		collisionMapInfo.movementAmount.z = 0.0f;
+		collisionMapInfo.width = kWidth;
+		collisionMapInfo.height = kHeight;
+
+		MapChipManager::GetInstance()->MapCollision(Vector3(transform_.translate.x, transform_.translate.y + 1.0f, transform_.translate.z), collisionMapInfo);
+		transform_.translate += static_cast<Vector3>(collisionMapInfo.movementAmount);
+		
+		if (!collisionMapInfo.isWallCollision) {
+			info.isWallCollision = false;
+			transform_.translate.y += 1.0f;
+		}
+	}
+
 }
 
 void Player::CellingCollisionUpdate(const CollisionMapInfo& info) {
