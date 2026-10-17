@@ -1,6 +1,7 @@
 #include "GameScene.h"
 #include "../Satlib.h"
 #include "../ProjectileManager.h"
+#include "../EnemyManager.h"
 
 GameScene::~GameScene() {
 }
@@ -27,6 +28,14 @@ void GameScene::Initialize() {
 	//} else if (gGamePhase == GamePhase::kBossPhaseChangeAnim || gGamePhase == GamePhase::kBossPhase2) {
 	//	SoundManager::GetInstance()->SoundPlay("mus_phase2_intro", 1.0f, 0.25f, kBGM, false, "mus_phase2_intro");
 	//}
+
+	boss_ = std::make_unique<Boss>();
+	boss_->Initialize();
+	boss_->SetTargetTransform(player_->GetTransform());
+	boss_->SetTargetIsAttact(player_->GetIsAttack());
+	boss_->SetPosition({126.0f,22.0f,0.0f});
+	
+	EnemyManager::GetInstance()->Initialize();
 
 	skydome_ = std::make_unique<Skydome>();
 	skydome_->Initialize();
@@ -70,6 +79,8 @@ void GameScene::Initialize() {
 	isGameOver_ = false;
 
 	MapChipManager::GetInstance()->Initialize();
+
+	isTutorial_ = true;
 }
 
 void GameScene::Update() {
@@ -135,6 +146,19 @@ void GameScene::Update() {
 	}
 
 	player_->Update();
+	boss_->Update();
+	EnemyManager::GetInstance()->Update();
+
+	if (isTutorial_) {
+		if (player_->GetWorldPosition().x > kTutorialFinishPosX + 4.0f) {
+			isTutorial_ = false;
+			GameCamera::GetInstance()->StartAriaChange(1,0.5f);
+			MapChipManager::GetInstance()->CreateBlock(MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(static_cast<uint32_t>(kTutorialFinishPosX),10),2);
+			MapChipManager::GetInstance()->CreateBlock(MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(static_cast<uint32_t>(kTutorialFinishPosX),11),2);
+			MapChipManager::GetInstance()->CreateBlock(MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(static_cast<uint32_t>(kTutorialFinishPosX),12),2);
+		}
+	}
+
 
 	if (gameOverMenu_->GetIsActive()) {
 	} else {
@@ -169,6 +193,7 @@ void GameScene::Update() {
 void GameScene::Draw() {
 	//ground_->Draw();
 	Renderer* renderer = Renderer::GetInstance();
+	//renderer->DrawSprite(Transform::GetInitialValue( { 1280.0f,720.0f,0.0f },  { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,100.0f }), "white_template", { 0.6f,0.6f,1.0f,1.0f });
 
 
 	//renderer->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "wall", { 1.0f,1.0f,1.0f,1.0f }, false);
@@ -180,6 +205,8 @@ void GameScene::Draw() {
 
 
 	player_->Draw();
+	boss_->Draw();
+	EnemyManager::GetInstance()->Draw();
 
 	TutorialDraw();
 

@@ -72,8 +72,8 @@ private:
 
 	// Block
 	static inline float kBlockGravityAccelerationY = 20.0f;
-	static inline const float kBlockWidth = 0.05f;
-	static inline const float kBlockHeight = 0.05f;
+	static inline const float kBlockWidth = 0.00f;
+	static inline const float kBlockHeight = 0.00f;
 
 	float spikeRotatePosX_;
 	float spikeRotateY_;
@@ -160,6 +160,39 @@ private:
 	bool isActive_;
 };
 
+class Lightning :Collider{
+public:
+	void Initialize(const Transform& transform, CollisionAttributeName colliderName, float damage, float damageCoolTime);
+
+	void Update();
+
+	void Draw();
+
+	bool GetIsActive() { return isActive_; };
+
+	Collider* GetCollider() { return collider_.get(); };
+private:
+	Model model_;
+	Model warningBlock_;
+	float speed_;
+
+	uint32_t phase_;
+
+	float lifeTimer_ = 0.0f;
+	float lifeTimeMax_ = 1.0f;
+
+	float warningTimer_ = 0.0f;
+	uint32_t warningCount_ = 0;
+	uint32_t warningCountMax_ = 0;
+	static inline float kWarningGlowTimeMax_ = 0.2f;
+	static inline uint32_t kBasicWarningCountMax_ = 10;
+
+	std::unique_ptr<Collider> collider_;
+
+	bool isColorRed_;
+	bool isActive_;
+};
+
 enum class TutorialObstaclesType {
 	kBullet,
 	kSpike,
@@ -211,6 +244,8 @@ public:
 	void CreateSpike(const Transform& transform, uint32_t size, CollisionAttributeName colliderName, float damage, float damageCoolTime);
 
 	void CreateExplode(const Transform& transform, float radius, CollisionAttributeName colliderName, float damage, float damageCoolTime);
+	
+	void CreateLightning(const Transform& transform, CollisionAttributeName colliderName, float damage, float damageCoolTime);
 
 	void CreateTutorialObstacle(const Vector3& position, TutorialObstaclesType type);
 private:
@@ -218,6 +253,7 @@ private:
 	std::vector<std::unique_ptr<Wave>> waves;
 	std::vector<std::unique_ptr<Spike>> spikes;
 	std::vector<std::unique_ptr<Explode>> explodes;
+	std::vector<std::unique_ptr<Lightning>> lightnings;
 	std::vector<std::unique_ptr<TutorialObstacles>> tutorials;
 	std::vector<std::string> lightNames_;
 	const uint32_t kBulletLightMax_ = 30;

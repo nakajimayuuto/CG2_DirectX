@@ -11,10 +11,6 @@ public:
 	void Update() override;
 
 	void Draw() override;
-
-	void OnCollision(GameScene* scene, Player* player) override;
-
-	AABB GetAABB() override;
 private:
 	enum class Behavior {
 		kUnknown, // リクエスト無し.

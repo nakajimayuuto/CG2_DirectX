@@ -9,6 +9,8 @@ struct CollisionMapInfo {
 	Vector3 movementAmount;
 	float width = 0.8f;
 	float height = 0.8f;
+	MapChipType type = MapChipType::kBlank;
+	uint32_t subID = -1;
 };
 
 class MapChipManager{
@@ -34,6 +36,7 @@ public:
 
 	// 2 移動量を加味して衝突判定を処理.
 	void MapCollision(const Vector3& position,CollisionMapInfo& info);
+	void MapCollisionNoCenter(const Vector3& position,CollisionMapInfo& info);
 
 	void MapCollisionUp(const Vector3& position, CollisionMapInfo& info);
 	void MapCollisionDown(const Vector3& position, CollisionMapInfo& info);
@@ -51,6 +54,7 @@ public:
 	void DeleteBlock(const Vector3& position,int offsetX,int offsetY);
 
 	void CreateBlock(const Vector3& position);
+	void CreateBlock(const Vector3& position,uint32_t subID);
 
 	void ChangeSolidMode();
 private:

@@ -16,6 +16,10 @@ public:
 
 	void SetColor(const Vector3& color) { color_ = color; };
 	void SetBackColor(const Vector3& color) { backColor_ = color; };
+
+	void SetGaugeLine(bool isActive) { isActiveLine_ = isActive; };
+
+	void SetGaugeLineInterval(uint32_t interval) { lineInterval_ = interval; };
 private:
 	float* targetHP_;
 	float maxHP_;
@@ -23,6 +27,9 @@ private:
 	Vector2 size_;
 
 	float alpha_;
+
+	bool isActiveLine_;
+	uint32_t lineInterval_;
 
 	Vector3 color_;
 	Vector3 backColor_;

@@ -387,7 +387,7 @@
     <ClCompile Include="BaseEnemy.cpp">
       <Filter>ソース ファイル\Enemy</Filter>
     </ClCompile>
-    <ClCompile Include="Enemy.cpp">
+    <ClCompile Include="Dummy.cpp">
       <Filter>ソース ファイル\Enemy</Filter>
     </ClCompile>
     <ClCompile Include="ShieldEnemy.cpp">
@@ -407,6 +407,9 @@
     </ClCompile>
     <ClCompile Include="Boss.cpp">
       <Filter>ソース ファイル\Boss</Filter>
+    </ClCompile>
+    <ClCompile Include="EnemyManager.cpp">
+      <Filter>ソース ファイル\Enemy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -602,7 +605,7 @@
     <ClInclude Include="BaseEnemy.h">
       <Filter>ソース ファイル\Enemy</Filter>
     </ClInclude>
-    <ClInclude Include="Enemy.h">
+    <ClInclude Include="Dummy.h">
       <Filter>ソース ファイル\Enemy</Filter>
     </ClInclude>
     <ClInclude Include="ShieldEnemy.h">
@@ -622,6 +625,9 @@
     </ClInclude>
     <ClInclude Include="Boss.h">
       <Filter>ソース ファイル\Boss</Filter>
+    </ClInclude>
+    <ClInclude Include="EnemyManager.h">
+      <Filter>ソース ファイル\Enemy</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

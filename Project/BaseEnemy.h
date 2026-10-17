@@ -3,7 +3,7 @@
 class Player;
 class GameScene;
 
-class BaseEnemy {
+class BaseEnemy : public Collider{
 public:
 	virtual void Initialize(const Vector3& position) = 0;
 
@@ -11,15 +11,9 @@ public:
 
 	virtual void Draw() = 0;
 
-	virtual void OnCollision(GameScene* scene, Player* player) = 0;
-
-	virtual AABB GetAABB() = 0;
-
 	Vector3	GetWorldPosition();
 
 	bool GetIsDead() { return isDead_; };
-
-	bool GetIsCollisionDisable() { return isCollisionDisable_; };
 
 protected:
 	bool isCollisionDisable_ = false;
@@ -28,8 +22,6 @@ protected:
 	bool isDead_ = false;
 
 	Model model_;
-
-	Transform transform_;
 
 };
 

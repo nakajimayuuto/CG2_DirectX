@@ -1,10 +1,8 @@
 #pragma once
 #include "Satlib.h"
 #include "BaseEnemy.h"
-class Player;
-class GameScene;
 
-class Enemy final : public BaseEnemy{
+class Dummy final : public BaseEnemy{
 public:
 	void Initialize(const Vector3& position) override;
 
@@ -12,9 +10,7 @@ public:
 
 	void Draw() override;
 
-	void OnCollision(GameScene* scene, Player* player) override;
-
-	AABB GetAABB() override;
+	void OnCollision([[maybe_unused]] Collider* other) override;
 private:
 	enum class Behavior {
 		kUnknown, // リクエスト無し.
@@ -22,17 +18,11 @@ private:
 		kDeathAnimation, // 攻撃中.
 	};
 
-	void WalkAnimationUpdate();
-
 	// 【Behavior】
 	// Root.
 
 	void BehaviorRootInitialize();
 	void BehaviorRootUpdate();
-
-	//DeathAnimation.
-	void BehaviorDeathAnimationInitialize();
-	void BehaviorDeathAnimationUpdate();
 private:
 	/*===========================================================
 	Behavior.
@@ -62,6 +52,9 @@ private:
 	// 当たり判定.
 	static inline const float kWidth = 0.8f;
 	static inline const float kHeight = 0.8f;
+
+	static inline const float kStartPosY = 0.5f;
+	static inline const float kDamageEffectPosY = 1.0f;
 
 	// アニメーション.
 	// 最初の角度.

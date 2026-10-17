@@ -22,22 +22,22 @@ void Boss::Initialize() {
 	model_.Initialize("boss");
 	model_.SetBlendMode(BlendMode::kNormalCullNone);
 	halberdModel_.Initialize("halberd");
-	anchorPointCenter_ = Vector3(0.0f, kBasicPositionY, 0.0f);
+	anchorPointCenter_ = Vector3(20.0f, kBasicPositionY, 0.0f);
 	anchorPoints_.push_back(anchorPointCenter_);
 
-	for (uint32_t i = 0; i < 8; i++) {
-		Vector3 pos = { 0.0f,0.5f,0.0f };
-		pos.x = Rotate({ 30.0f,0.0f }, { anchorPointCenter_.x,anchorPointCenter_.z }, (i * 45.0f)).x;
-		pos.z = Rotate({ 30.0f,0.0f }, { anchorPointCenter_.x,anchorPointCenter_.z }, (i * 45.0f)).y;
-		anchorPoints_.push_back(anchorPointCenter_ + pos);
-	}
-
-	for (uint32_t i = 0; i < 16; i++) {
-		Vector3 pos = { 0.0f,0.5f,0.0f };
-		pos.x = Rotate({ 60.0f,0.0f }, { anchorPointCenter_.x,anchorPointCenter_.z }, (i * 22.5f)).x;
-		pos.z = Rotate({ 60.0f,0.0f }, { anchorPointCenter_.x,anchorPointCenter_.z }, (i * 22.5f)).y;
-		anchorPoints_.push_back(anchorPointCenter_ + pos);
-	}
+	//for (uint32_t i = 0; i < 8; i++) {
+	//	Vector3 pos = { 0.0f,0.5f,0.0f };
+	//	pos.x = Rotate({ 30.0f,0.0f }, { anchorPointCenter_.x,anchorPointCenter_.z }, (i * 45.0f)).x;
+	//	pos.z = Rotate({ 30.0f,0.0f }, { anchorPointCenter_.x,anchorPointCenter_.z }, (i * 45.0f)).y;
+	//	anchorPoints_.push_back(anchorPointCenter_ + pos);
+	//}
+	//
+	//for (uint32_t i = 0; i < 16; i++) {
+	//	Vector3 pos = { 0.0f,0.5f,0.0f };
+	//	pos.x = Rotate({ 60.0f,0.0f }, { anchorPointCenter_.x,anchorPointCenter_.z }, (i * 22.5f)).x;
+	//	pos.z = Rotate({ 60.0f,0.0f }, { anchorPointCenter_.x,anchorPointCenter_.z }, (i * 22.5f)).y;
+	//	anchorPoints_.push_back(anchorPointCenter_ + pos);
+	//}
 
 	currentAttack_ = Attacks::kWarp;
 	transform_.Initialize();
@@ -73,7 +73,7 @@ void Boss::Initialize() {
 
 	switch (DifficultyManager::GetInstance()->GetCurrentDifficulty()) {
 	case kDifficultyEasy:
-		maxHP_ = 1500.0f;
+		maxHP_ = 500.0f;
 		bossName_ = "name_easy";
 		bossNameMirror_ = "name_easy_mirror";
 		break;
@@ -104,11 +104,13 @@ void Boss::Initialize() {
 	hpGauge->Initialize(&currentHP_, maxHP_, { 800.0f,30.0f });
 	hpGauge->SetPosition({ 0.0f,-270.0f });
 	hpGauge->SetScale({ 1.0f, 1.0f });
+	hpGauge->SetGaugeLine(true);
+	hpGauge->SetGaugeLineInterval(10);
 	bossNameScaleX_ = 1.0f;
 
 	DifficultyManager::GetInstance()->SetBossHPData(&currentHP_, maxHP_);
 
-	GameCamera::GetInstance()->SetEnemyTransform(&transform_);
+	//GameCamera::GetInstance()->SetEnemyTransform(&transform_);
 
 	phase_ = Phase::kPhase1;
 	Phase1Initialize();
@@ -436,149 +438,22 @@ void Boss::OnCollision(Collider* other) {
 		return;
 	}
 	//if ((other->GetCollisionAttribute() & CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionPlayerAttack)) == 0x0) {
-	switch (other->GetDamageType()) {
-	case 1:
-		if (damageCountFirst_ <= 0) {
-			currentHP_ -= other->GetDamage() * downDamageMangification_ * tempMag;
 
-			DeltaTime::GetInstance()->SetHitStop(0.05f);
-			damageCountFirst_++;
-			SoundManager::GetInstance()->SoundPlay(sndName, 1.0f, 1.0f, kSoundEffect);
-			InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.25f);
+	if (damageCoolTimer_ <= 0.0f) {
+		currentHP_ -= other->GetDamage() * downDamageMangification_ * tempMag;
 
-			if (tempMag == 0.0f) {
-				ParticleManager::GetInstance()->SpawnNumbers(0.0f, damageTransform, { 0.4f,0.4f,0.4f });
-			} else {
-				ParticleManager::GetInstance()->SpawnNumbers(other->GetDamage() * downDamageMangification_, damageTransform, { 0.5f,0.5f,1.0f });
-			}
+		DeltaTime::GetInstance()->SetHitStop(0.05f);
+		other->SetActive(false);
+		damageCoolTimer_ = 0.0f;//other->GetDamageCoolTime();
+		SoundManager::GetInstance()->SoundPlay(sndName, 1.0f, 1.0f, kSoundEffect);
+		InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.25f);
+
+		if (tempMag == 0.0f) {
+			ParticleManager::GetInstance()->SpawnNumbers(0.0f, damageTransform, { 0.4f,0.4f,0.4f });
+		} else {
+			ParticleManager::GetInstance()->SpawnNumbers(other->GetDamage() * downDamageMangification_, damageTransform, { 0.5f,0.5f,1.0f });
 		}
-		break;
-	case 2:
-		if (damageCountSecond_ <= 1) {
-			if (damageCoolTimer_ <= 0.0f) {
-				currentHP_ -= other->GetDamage() * downDamageMangification_ * tempMag;
-
-				DeltaTime::GetInstance()->SetHitStop(0.05f);
-
-				damageCoolTimer_ = other->GetDamageCoolTime();
-
-				damageCountSecond_++;
-				SoundManager::GetInstance()->SoundPlay(sndName, 1.0f, 1.0f, kSoundEffect);
-				InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.25f);
-
-				if (tempMag == 0.0f) {
-					ParticleManager::GetInstance()->SpawnNumbers(0.0f, damageTransform, { 0.4f,0.4f,0.4f });
-				} else {
-					ParticleManager::GetInstance()->SpawnNumbers(other->GetDamage() * downDamageMangification_, damageTransform, { 0.5f,0.5f,1.0f });
-				}
-			}
-		}
-		break;
-	case 3:
-		if (damageCountThird_ <= 4) {
-			if (damageCoolTimer_ <= 0.0f) {
-				currentHP_ -= other->GetDamage() * downDamageMangification_ * tempMag;
-				DeltaTime::GetInstance()->SetHitStop(0.05f);
-
-				damageCoolTimer_ = other->GetDamageCoolTime();
-				damageCountThird_++;
-				SoundManager::GetInstance()->SoundPlay(sndName, 1.0f, 1.0f, kSoundEffect);
-				InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.25f);
-
-				if (tempMag == 0.0f) {
-					ParticleManager::GetInstance()->SpawnNumbers(0.0f, damageTransform, { 0.4f,0.4f,0.4f });
-				} else {
-					ParticleManager::GetInstance()->SpawnNumbers(other->GetDamage() * downDamageMangification_, damageTransform, { 0.5f,0.5f,1.0f });
-				}
-
-				if (damageCountFirst_ >= 1) {
-					if (damageCountSecond_ >= 2) {
-						if (damageCountThird_ == 4) {
-							if (currentAttack_ != Attacks::kDown
-								&& currentAttack_ != Attacks::kWarp
-								) {
-								DeltaTime::GetInstance()->SetHitStop(0.2f);
-								AttackFinished();
-								attackRequest_ = Attacks::kDown;
-								AttackInitialize();
-							}
-						}
-					}
-				}
-
-				if (currentAttack_ == Attacks::kDown) {
-					damageCountFirst_ = 0;
-					damageCountSecond_ = 0;
-				}
-			}
-		}
-		break;
-	default:
-		if (damageCoolTimer_ <= 0.0f) {
-			currentHP_ -= other->GetDamage() * downDamageMangification_ * tempMag;
-
-			DeltaTime::GetInstance()->SetHitStop(0.05f);
-
-			damageCoolTimer_ = other->GetDamageCoolTime();
-			SoundManager::GetInstance()->SoundPlay(sndName, 1.0f, 1.0f, kSoundEffect);
-			InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.25f);
-
-			if (tempMag == 0.0f) {
-				ParticleManager::GetInstance()->SpawnNumbers(0.0f, damageTransform, { 0.4f,0.4f,0.4f });
-			} else {
-				ParticleManager::GetInstance()->SpawnNumbers(other->GetDamage() * downDamageMangification_, damageTransform, { 0.5f,0.5f,1.0f });
-			}
-		}
-		break;
 	}
-
-	//if (currentAttack_ == Attacks::kThreeWayWave) {
-	//	if (isPlayAttack_) {
-	//		DeltaTime::GetInstance()->SetHitStop(0.5f);
-	//		AttackFinished();
-	//		attackRequest_ = Attacks::kSuperDown;
-	//		isDownThreeWayShot_ = true;
-	//		AttackInitialize();
-	//	}
-	//}
-	//
-	//if (phase_ == Phase::kPhase1) {
-	//	if (currentHP_ < (maxHP_ / 2.0f)) {
-	//		DeltaTime::GetInstance()->SetHitStop(0.5f);
-	//		phase_ = Phase::kPhase2;
-	//		isChangePhase_ = true;
-	//		gGameProgress = GameProgress::kPhase2Clear;
-	//		SoundManager::GetInstance()->SoundPause("mus_phase1_intro");
-	//		SoundManager::GetInstance()->SoundPause("mus_phase1");
-	//		InputManager::GetInstance()->SetVibration(0.5f, 0.5f, 0.5f);
-	//	}
-	//}
-	//
-	//if (phase_ == Phase::kPhase2) {
-	//	if (currentHP_ < 1.0f) {
-	//		currentHP_ = 1.0f;
-	//		AttackFinished();
-	//		DeltaTime::GetInstance()->SetHitStop(0.5f);
-	//		attackRequest_ = Attacks::kLastDown;
-	//		phase_ = Phase::kPhase3;
-	//		SoundManager::GetInstance()->SoundPause("mus_phase2_intro");
-	//		SoundManager::GetInstance()->SoundPause("mus_phase2");
-	//		InputManager::GetInstance()->SetVibration(0.5f, 0.5f, 0.5f);
-	//		AttackInitialize();
-	//
-	//	}
-	//}
-	//
-	//if (phase_ == Phase::kPhase3) {
-	//	if (currentHP_ < 0.0f) {
-	//		currentHP_ = 0.0f;
-	//		DeltaTime::GetInstance()->SetHitStop(1.0f);
-	//		DeltaTime::GetInstance()->SetGameTimeSpeed(0.2f);
-	//		phase_ = Phase::kFinished;
-	//		InputManager::GetInstance()->SetVibration(0.5f, 0.5f, 0.5f);
-	//		isChangePhase_ = true;
-	//	}
-	//}
 
 	damageAmountRecord_ += preHP - currentHP_;
 }
@@ -1053,9 +928,9 @@ void Boss::PhaseChangeAnimationUpdate() {
 		animCameraTransform_.translate.y = Easing(kAnimPhaseChangeHalSpawnCameraPos.y, kBasicPositionY, animTimer_, animTimerMax_, EaseType::kEaseInOut);
 		camera->SetPosition(animCameraTransform_.GetWorldPosition());
 		camera->SetRotate({ 0.0f,Easing(0.0f,Radian(360.0f),animTimer_,animTimerMax_,EaseType::kEaseInOut),0.0f });
-		
+
 		halberdTransform_.translate = Easing(kAnimPhaseChangeHalSpawnHalberdPos, kAnimPhaseChangeCameraHalRotateHalberdPos, animTimer_, animTimerMax_, EaseType::kEaseInOut);
-		
+
 
 		if (animTimer_ >= animTimerMax_) {
 			NextAnimPhase(kAnimPhaseChangeCameraHalRotateBlankTimerMax);
@@ -1088,7 +963,7 @@ void Boss::PhaseChangeAnimationUpdate() {
 		halberdTransform_.translate = Easing(kAnimPhaseChangeCameraHalRotateHalberdPos, kAnimPhaseChangeAttackHalberdPos, animTimer_, animTimerMax_, EaseType::kEaseOut);
 		camera->SetPosition(Easing(kAnimPhaseChangeJumpCameraPos, kAnimPhaseChangeAttackCameraPos, animTimer_, animTimerMax_, EaseType::kEaseOut));
 		camera->SetRotate(Easing(kAnimPhaseChangeJumpCameraRotate, kAnimPhaseChangeAttackCameraRotate, animTimer_, animTimerMax_, EaseType::kEaseOut));
-		
+
 
 		if (animTimer_ >= animTimerMax_) {
 			SoundManager::GetInstance()->SoundPlay("snd_wave_shot", 1.0f, 1.0f, kSoundEffect);
@@ -1113,7 +988,7 @@ void Boss::PhaseChangeAnimationUpdate() {
 		halberdTransform_.translate = Easing(kAnimStartAttackHalberdPos, kAnimStartFinishHalberdPos, animTimer_, animTimerMax_, EaseType::kEaseInOut);
 		camera->SetPosition(Easing(kAnimPhaseChangeNameShowCameraPos, preCameraTransform_.translate, animTimer_, animTimerMax_, EaseType::kEaseInOut));
 		camera->SetRotate(Easing(kAnimPhaseChangeAttackCameraRotate, preCameraTransform_.rotate, animTimer_, animTimerMax_, EaseType::kEaseInOut));
-	
+
 		if (animTimer_ >= animTimerMax_) {
 			phase_ = Phase::kPhase2;
 		}

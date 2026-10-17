@@ -151,37 +151,3 @@ void ShieldEnemy::WalkAnimationUpdate() {
 	transform_.rotate.y = Radian(degree - 90.0f);
 
 }
-
-AABB ShieldEnemy::GetAABB() {
-	Vector3 worldPos = GetWorldPosition();
-
-	AABB aabb;
-
-	aabb.min = { worldPos.x - kWidth / 2.0f,worldPos.y - kHeight / 2.0f,worldPos.z - kWidth / 2.0f };
-	aabb.max = { worldPos.x + kWidth / 2.0f,worldPos.y + kHeight / 2.0f,worldPos.z + kWidth / 2.0f };
-
-	return aabb;
-}
-
-void ShieldEnemy::OnCollision(GameScene* scene, Player* player) {
-	if (behavior_ == Behavior::kDeathAnimation) {
-		return;
-	}
-
-	//if (player->IsAttack()) {
-	//	Vector3 effectPos = ((GetWorldPosition() + player->GetWorldPosition())) * 0.5f;
-	//
-	//	if ((player->GetLRDirection() == Player::LRDirection::kRight && lrDirection_ == LRDirection::kLeft) ||
-	//		(player->GetLRDirection() == Player::LRDirection::kLeft && lrDirection_ == LRDirection::kRight)) {
-	//		scene->CreateEffect(effectPos, BaseEffect::EffectType::kGuard);
-	//		player->KnockBackRequest();
-	//
-	//		behaviorRequest_ = Behavior::kGuard;
-	//		return;
-	//	}
-	//
-	//	behaviorRequest_ = Behavior::kDeathAnimation;
-	//
-	//	scene->CreateEffect(effectPos, BaseEffect::EffectType::kHit);
-	//}
-}

@@ -43,6 +43,8 @@ public:
 	bool GetIsDeath() { return isDeath_; };
 
 	void EffectUpdate();
+
+	void SetPosition(const Vector3& position) { transform_.translate = position; };
 private:
 	void SlashEffectCreate(Transform* targetTransform, uint32_t num);
 

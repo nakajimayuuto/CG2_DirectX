@@ -62,7 +62,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 }
 
 void LoadDatas() {
-	//ModelManager::GetInstance()->RegisterObj("boss", "Resource/boss", "boss_ghost.obj", false);
+	ModelManager::GetInstance()->RegisterObj("boss", "Resource/boss", "boss_ghost.obj", false);
+	ModelManager::GetInstance()->RegisterObj("dummy", "Resource/Dummy", "dummy.obj", true);
+	ModelManager::GetInstance()->RegisterObj("lightning", "Resource/Lightning", "lightning.obj", true);
 	ModelManager::GetInstance()->RegisterObj("ground", "Resource/Ground", "ground.obj");
 	ModelManager::GetInstance()->RegisterObj("celling", "Resource/Ground", "celling.obj");
 	ModelManager::GetInstance()->RegisterObj("drill_ghost", "Resource/drill_ghost", "drill_ghost.obj", false);
@@ -75,8 +77,13 @@ void LoadDatas() {
 	TextureManager::GetInstance()->RegisterTexture("bullet_bounce", "Resource/Bullet/bullet_bounce.png");
 	TextureManager::GetInstance()->RegisterTexture("wall_soul", "Resource/wall/wall_soul.png");
 	TextureManager::GetInstance()->RegisterTexture("door", "Resource/wall/door.png");
-	TextureManager::GetInstance()->RegisterTexture("heavy_block", "Resource/HeavyBlock.png");
-	//TextureManager::GetInstance()->RegisterTexture("halberd_soul", "Resource/Halberd/halberd_soul.png");
+
+	TextureManager::GetInstance()->RegisterTexture("heavy_block", "Resource/block_textures/heavy_block.png");
+	TextureManager::GetInstance()->RegisterTexture("soul_block", "Resource/block_textures/soul_block.png");
+	TextureManager::GetInstance()->RegisterTexture("explode_block", "Resource/block_textures/explode_block_kari.png");
+	TextureManager::GetInstance()->RegisterTexture("skeleton_block_blue", "Resource/block_textures/skeleton_block_blue.png");
+	TextureManager::GetInstance()->RegisterTexture("skeleton_block_red", "Resource/block_textures/skeleton_block_red.png");
+	TextureManager::GetInstance()->RegisterTexture("skeleton_block_warning", "Resource/block_textures/skeleton_block_warning.png");
 
 	TextureManager::GetInstance()->RegisterTexture("effect_plane", "Resource/effects/effect_plane.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_fire", "Resource/effects/effect_fire.png");

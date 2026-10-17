@@ -5,6 +5,7 @@
 #include "../Skydome.h"
 #include "../Ground.h"
 #include "../Player.h"
+#include "../Boss.h"
 #include "../GameCamera.h"
 #include "../Fade.h"
 #include "../PauseMenu.h"
@@ -25,6 +26,7 @@ private:
 	void AnimSkipFadeUpdate();
 private:
 	std::unique_ptr<Player> player_;
+	std::unique_ptr<Boss> boss_;
 	std::unique_ptr<Skydome> skydome_;
 	std::unique_ptr<Ground> ground_;
 
@@ -58,6 +60,9 @@ private:
 
 	bool isClear_;
 	bool isGameOver_;
+
+	bool isTutorial_;
+	static inline float kTutorialFinishPosX = 105.0f;
 private:
 	SoundData musPhase1_;
 	SoundData musPhase1Intro_;

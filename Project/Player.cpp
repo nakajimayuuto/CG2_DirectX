@@ -329,7 +329,8 @@ void Player::BehaviorShotUpdate() {
 }
 
 void Player::BlockShot(const Vector2& shotDir) {
-	ProjectileManager::GetInstance()->CreateBullet(transform_, { shotDir.x * kJumpAcceleration,shotDir.y * kJumpAcceleration,0.0f }, BulletType::kBlock, CollisionAttributeName::kCollisionPlayerAttack, 10.0f, 1.0f);
+	ProjectileManager::GetInstance()->CreateBullet(transform_, { shotDir.x * kJumpAcceleration,shotDir.y * kJumpAcceleration,0.0f }, BulletType::kBlock, CollisionAttributeName::kCollisionPlayerAttack, 10.0f, 3.0f);
+	ProjectileManager::GetInstance()->CreateLightning(transform_, CollisionAttributeName::kCollisionEnemyAttack, 10.0f, 3.0f);
 }
 
 void Player::MapChipDigUpdate() {
@@ -484,7 +485,7 @@ void Player::CollisionMoveUpdate(CollisionMapInfo& info) {
 		collisionMapInfo.width = kWidth;
 		collisionMapInfo.height = kHeight;
 
-		MapChipManager::GetInstance()->MapCollision(Vector3(transform_.translate.x, transform_.translate.y + 1.0f, transform_.translate.z), collisionMapInfo);
+		MapChipManager::GetInstance()->MapCollisionNoCenter(Vector3(transform_.translate.x, transform_.translate.y + 1.0f, transform_.translate.z), collisionMapInfo);
 		transform_.translate += static_cast<Vector3>(collisionMapInfo.movementAmount);
 		
 		if (!collisionMapInfo.isWallCollision) {

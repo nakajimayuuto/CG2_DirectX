@@ -63,7 +63,7 @@ private:
 	static inline const float kBlockHeight = 1.0f;
 	// 要素数
 	static inline const uint32_t kNumBlockVertical =32;
-	static inline const uint32_t kNumBlockHorizontal = 100;
+	static inline const uint32_t kNumBlockHorizontal = 150;
 
 	MapChipData mapChipData_;
 

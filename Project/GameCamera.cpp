@@ -24,11 +24,21 @@ void GameCamera::Initialize() {
 	//minPosition = { 12.0f, 7.0f,-100.0f };
 	minPosition = tutorialMinPos;
 	maxPosition = tutorialMaxPos;
+
+	currentAriaNumber_ = 0;
+
+	cameraArias_[0].currentPos = tutorialMinPos;
+	cameraArias_[0].minPos = tutorialMinPos;
+	cameraArias_[0].maxPos = tutorialMaxPos;
+
+	cameraArias_[1].currentPos = phase1MinPos;
+	cameraArias_[1].minPos = phase1MinPos;
+	cameraArias_[1].maxPos = phase1MaxPos;
 }
 
 void GameCamera::Update() {
-		FollowedUpdate();
-	
+	FollowedUpdate();
+
 
 	Camera::GetInstance()->SetTransform(transform_);
 }
@@ -48,6 +58,22 @@ void GameCamera::Reset() {
 	transform_.translate = interTarget_ + offset;
 
 	Camera::GetInstance()->SetTransform(transform_);
+}
+
+void GameCamera::StartAriaChange(uint32_t number, float timerMax){
+	isAriaChange_ = true;
+	preInterOffsetTarget_ = interOffsetTarget_;
+	ariaChangeTimeMax_ = timerMax;
+	ariaChangeTimer_ = 0.0f;
+	currentAriaNumber_ = number;
+
+	if (
+		preInterOffsetTarget_.x == cameraArias_[currentAriaNumber_].currentPos.x &&
+		preInterOffsetTarget_.y == cameraArias_[currentAriaNumber_].currentPos.y &&
+		preInterOffsetTarget_.z == cameraArias_[currentAriaNumber_].currentPos.z
+		) {
+		isAriaChange_ = false;
+	}
 }
 
 void GameCamera::FollowedUpdate() {
@@ -108,18 +134,18 @@ void GameCamera::FollowedUpdate() {
 		//destinationAngleY_ = std::atan2(targetEnemy_->translate.x - transform_.translate.x, targetEnemy_->translate.z - transform_.translate.z);
 	}
 
-	
-		destinationPlayerAngleY_ = LerpShortAngle(destinationPlayerAngleY_, destinationTargetAngleY_, targetEaseTimer_);
+
+	destinationPlayerAngleY_ = LerpShortAngle(destinationPlayerAngleY_, destinationTargetAngleY_, targetEaseTimer_);
 	destinationAngleY_ = LerpShortAngle(destinationPlayerAngleY_, destinationDashAngleY_, dashEaseTimer_);
 
 	destinationPlayerAngleY_ = destinationAngleY_;
 	destinationTargetAngleY_ = destinationAngleY_;
 	destinationDashAngleY_ = destinationAngleY_;
 
-	transform_.translate = interOffsetTarget_;
+	//transform_.translate = interOffsetTarget_;
 
-		//TutorialWallClamp();
-		FollowedWallClamp();
+	//TutorialWallClamp();
+	FollowedWallClamp();
 
 	transform_.rotate.y = LerpShortAngle(transform_.rotate.y, destinationAngleY_, kCompletionRate);
 
@@ -196,18 +222,24 @@ void GameCamera::TutorialWallClamp() {
 }
 
 void GameCamera::FollowedWallClamp() {
-	if (transform_.translate.x < minPosition.x) {
-		transform_.translate.x = minPosition.x;
+	for (size_t i = 0; i != cameraArias_.size(); ++i) {
+		cameraArias_[i].currentPos = interOffsetTarget_;
+		if (cameraArias_[i].currentPos.x < cameraArias_[i].minPos.x) {
+			cameraArias_[i].currentPos.x = cameraArias_[i].minPos.x;
+		}
+		if (cameraArias_[i].currentPos.y < cameraArias_[i].minPos.y) {
+			cameraArias_[i].currentPos.y = cameraArias_[i].minPos.y;
+		}
+		if (cameraArias_[i].currentPos.x > cameraArias_[i].maxPos.x) {
+			cameraArias_[i].currentPos.x = cameraArias_[i].maxPos.x;
+		}
+		if (cameraArias_[i].currentPos.y > cameraArias_[i].maxPos.y) {
+			cameraArias_[i].currentPos.y = cameraArias_[i].maxPos.y;
+		}
 	}
-	if (transform_.translate.y < minPosition.y) {
-		transform_.translate.y = minPosition.y;
-	}
-	if (transform_.translate.x > maxPosition.x) {
-		transform_.translate.x = maxPosition.x;
-	}
-	if (transform_.translate.y > maxPosition.y) {
-		transform_.translate.y = maxPosition.y;
-	}
+	interOffsetTarget_ = GetAriaChangEasePos();// Lerp(interOffsetTarget_, cameraArias_[currentAriaNumber_].currentPos, kCompletionRate);
+
+	transform_.translate = interOffsetTarget_;
 
 	Camera::GetInstance()->SetPosition(transform_.GetWorldPosition());
 
@@ -250,4 +282,15 @@ void GameCamera::FollowedTarget() {
 Vector3 GameCamera::GetOffset() const {
 	Matrix4x4 cameraRotateMatrix = Matrix4x4::MakeRotateYMatrix(transform_.rotate.y);
 	return cameraRotateMatrix.TransformNomal(kOffset);
+}
+
+Vector3 GameCamera::GetAriaChangEasePos(){
+	if (!isAriaChange_) {
+		return cameraArias_[currentAriaNumber_].currentPos;
+	}
+	ariaChangeTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
+	if (ariaChangeTimer_ >= ariaChangeTimeMax_) {
+		isAriaChange_ = false;
+	}
+	return Easing(preInterOffsetTarget_,cameraArias_[currentAriaNumber_].currentPos,ariaChangeTimer_,ariaChangeTimeMax_,EaseType::kEaseOut);
 }

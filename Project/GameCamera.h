@@ -3,6 +3,19 @@
 
 class GameCamera {
 public:
+	class CameraAriaData {
+	public:
+		Vector3 minPos;
+		Vector3 maxPos;
+		Vector3 currentPos;
+
+		void Initialize() {
+			minPos = {0.0f,0.0f,-100.0f};
+			maxPos = {0.0f,0.0f,0.0f};
+			currentPos = {0.0f,0.0f,0.0f};
+		}
+	};
+
 	static GameCamera* GetInstance();
 
 	void Initialize();
@@ -24,6 +37,11 @@ public:
 	void SetTargetIsAutoHalAttack(bool isAutoHalAttack) { isAutoHalAttack_ = isAutoHalAttack; };
 
 	void Reset();
+
+	void SetCurrentAriaNumber(uint32_t number) { currentAriaNumber_ = static_cast<size_t>(number); };
+	uint32_t GetCurrentAriaNumber() const {return static_cast<uint32_t>(currentAriaNumber_); };
+
+	void StartAriaChange(uint32_t number,float timerMax);
 private:
 	void FollowedUpdate();
 
@@ -39,13 +57,25 @@ private:
 
 	Vector3 GetOffset()const;
 
+	Vector3 GetAriaChangEasePos();
+
 	//void IncrementEaseTimer();
 private:
-	static inline Vector3 tutorialMinPos = {12.0f,21.0f,-100.0f};
-	static inline Vector3 tutorialMaxPos = { 200.0f, 21.0f,0.0f };
+	size_t currentAriaNumber_ = 0;
 
-	static inline Vector3 phase1MinPos = { 12.0f,21.0f,-100.0f };
-	static inline Vector3 phase1MaxPos = { 200.0f, 21.0f,0.0f };
+	std::map<size_t, CameraAriaData> cameraArias_;
+
+	Vector3 preInterOffsetTarget_;
+
+	bool isAriaChange_;
+	static inline float ariaChangeTimeMax_;
+	float ariaChangeTimer_;
+
+	static inline Vector3 tutorialMinPos = {12.0f,21.0f,-100.0f};
+	static inline Vector3 tutorialMaxPos = { 117.0f, 21.0f,0.0f };
+
+	static inline Vector3 phase1MinPos = { 117.0f,21.0f,-100.0f };
+	static inline Vector3 phase1MaxPos = { 117.0f, 21.0f,0.0f };
 
 	static inline Vector3 phase2MinPos = { 12.0f,7.0f,-100.0f };
 	static inline Vector3 phase2MaxPos = { 200.0f, 7.0f,0.0f };

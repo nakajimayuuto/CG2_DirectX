@@ -5,6 +5,7 @@ class Vector4{
 public:
 	void InitializeColor() { x = 1.0f; y = 1.0f; z = 1.0f; w = 1.0f; };
 	void SetColorWithoutAlpha(Vector3 rgb, float alpha) { x = rgb.x; y = rgb.y; z = rgb.z; w = alpha; };
+	static Vector4 MakeColorWithoutAlpha(Vector3 rgb, float alpha) { return { rgb.x ,rgb.y,rgb.z,alpha}; };
 public:
 	float x;
 	float y;
