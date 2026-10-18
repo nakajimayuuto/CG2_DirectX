@@ -1,5 +1,6 @@
 #include "TextureManager.h"
 #include "../Engine/SystemFile/GameSystem.h"
+#include "SrvManager.h"
 TextureManager* TextureManager::GetInstance() {
 	static TextureManager instance;
 	return &instance;
@@ -59,25 +60,27 @@ TextureInfo TextureManager::RegisterTexture(const std::string& name, const std::
 	=============================================================*/
 	// metaDataを基にSRVの設定.
 
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-	srvDesc.Format = metadata.format;
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; // 2Dテクスチャ.
-	if (useMipMap) {
-		srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
-	} else {
-		srvDesc.Texture2D.MipLevels = 1;
-	}
-
-	// SRVを生成するDescriptorHeapを決める.
-	textures_[name].textureSrvHandlesCPU = GameSystem::GetCPUDescriptorHandle(GameSystem::GetInstance()->GetSrvDescriptorHeap(), GameSystem::GetInstance()->GetDescriptorSizeSRV(), GameSystem::GetInstance()->GetSrvDescriptorHeapNum());
-	textures_[name].textureSrvHandlesGPU = GameSystem::GetGPUDescriptorHandle(GameSystem::GetInstance()->GetSrvDescriptorHeap(), GameSystem::GetInstance()->GetDescriptorSizeSRV(), GameSystem::GetInstance()->GetSrvDescriptorHeapNum());
-	textures_[name].number = GameSystem::GetInstance()->GetSrvDescriptorHeapNum();
-
-	// SRVの生成.
-	GameSystem::GetInstance()->GetDevice()->CreateShaderResourceView(textures_[name].textureResource.Get(), &srvDesc, textures_[name].textureSrvHandlesCPU);
-	GameSystem::GetInstance()->SrvDescriptorHeapNumIncrement();
-
+	//D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	//srvDesc.Format = metadata.format;
+	//srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	//srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; // 2Dテクスチャ.
+	//if (useMipMap) {
+	//	srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
+	//} else {
+	//	srvDesc.Texture2D.MipLevels = 1;
+	//}
+	//
+	//// SRVを生成するDescriptorHeapを決める.
+	//textures_[name].textureSrvHandlesCPU = GameSystem::GetCPUDescriptorHandle(GameSystem::GetInstance()->GetSrvDescriptorHeap(), GameSystem::GetInstance()->GetDescriptorSizeSRV(), GameSystem::GetInstance()->GetSrvDescriptorHeapNum());
+	//textures_[name].textureSrvHandlesGPU = GameSystem::GetGPUDescriptorHandle(GameSystem::GetInstance()->GetSrvDescriptorHeap(), GameSystem::GetInstance()->GetDescriptorSizeSRV(), GameSystem::GetInstance()->GetSrvDescriptorHeapNum());
+	//textures_[name].number = GameSystem::GetInstance()->GetSrvDescriptorHeapNum();
+	//
+	//// SRVの生成.
+	//GameSystem::GetInstance()->GetDevice()->CreateShaderResourceView(textures_[name].textureResource.Get(), &srvDesc, textures_[name].textureSrvHandlesCPU);
+	//GameSystem::GetInstance()->SrvDescriptorHeapNumIncrement();
+	TextureInfo newCPUandGPU = SrvManager::GetInstance()->CreateSRVforTexture2D(textures_[name].textureResource.Get(),metadata.format,metadata.mipLevels,useMipMap);
+	textures_[name].textureSrvHandlesCPU = newCPUandGPU.textureSrvHandlesCPU;
+	textures_[name].textureSrvHandlesGPU = newCPUandGPU.textureSrvHandlesGPU;
 	return textures_[name];
 }
 

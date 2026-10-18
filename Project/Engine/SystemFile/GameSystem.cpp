@@ -12,6 +12,7 @@
 #include "../../Managers/ModelManager.h"
 #include "../../Managers/ParticleManager.h"
 #include "../../Managers/CollisionManager.h"
+#include "../../Managers/SrvManager.h"
 #include "../Environment/Environment.h"
 #include "../Math/Random.h"
 #include "GlobalVariables.h"
@@ -251,10 +252,11 @@ void GameSystem::DescriptorInitialize() {
 	rtvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
 	descriptorSizeRTV_ = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-	srvDescriptorHeapNum_ = 1;
-	// SRV用のヒープでディスクリプタの数は128。SRVはShader内で触るものなので、ShaderVisibleはtrue.
-	srvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, kSrvDescriptorHeapNumMax, true);
-	descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	SrvManager::GetInstance()->Initialize();
+	//srvDescriptorHeapNum_ = 1;
+	//// SRV用のヒープでディスクリプタの数は128。SRVはShader内で触るものなので、ShaderVisibleはtrue.
+	//srvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, kSrvDescriptorHeapNumMax, true);
+	//descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	// SwapChainからResourceを引っ張ってくる.
 	HRESULT hr = swapChain->GetBuffer(0, IID_PPV_ARGS(&swapChainResource[0]));
@@ -347,9 +349,9 @@ void GameSystem::ImGuiInitialize() {
 	ImGui_ImplDX12_Init(device.Get(),
 		swapChainDesc_.BufferCount,
 		rtvDesc_.Format,
-		srvDescriptorHeap.Get(),
-		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
-		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+		SrvManager::GetInstance()->GetDescriptorHeap().Get(),
+		SrvManager::GetInstance()->GetDescriptorHeap()->GetCPUDescriptorHandleForHeapStart(),
+		SrvManager::GetInstance()->GetDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
 	ImGuiIO& io = ImGui::GetIO();
 	io.Fonts->Build();
 #endif // USE_IMGUI
@@ -489,10 +491,10 @@ bool GameSystem::BeginFrame() {
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 
 
-
+	//SrvManager::GetInstance()->PreDraw();
 	// 描画用のDescriptorHeapの設定.
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { srvDescriptorHeap.Get() };
-	commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { SrvManager::GetInstance()->GetDescriptorHeap().Get()};
+	GameSystem::GetInstance()->GetCommandList()->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
 
 
 	commandList->RSSetViewports(1, &viewport); // Viewportを設定.
@@ -803,26 +805,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> GameSystem::CreateBufferResource(Microsof
 }
 
 Microsoft::WRL::ComPtr<ID3D12Resource> GameSystem::CreateBufferResource(size_t sizeInBytes) {
-	// リソース用のヒープの設定.
-	D3D12_HEAP_PROPERTIES uploadHeapProperties{};
-	uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD; // UploadHeapを使う.
-	// リソースの設定.
-	D3D12_RESOURCE_DESC resourceDesc{};
-	// バッファリソース。テクスチャの場合はまた別の設定をする.
-	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	resourceDesc.Width = sizeInBytes;
-	// バッファの場合はこれは1にする決まり.
-	resourceDesc.Height = 1;
-	resourceDesc.DepthOrArraySize = 1;
-	resourceDesc.MipLevels = 1;
-	resourceDesc.SampleDesc.Count = 1;
-	// バッファの場合はこれにする決まり.
-	resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-	// 実際にリソースを作る.
-	Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
-	HRESULT hr = GameSystem::GetInstance()->GetDevice()->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE, &resourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&resource));
-	assert(SUCCEEDED(hr));
-	return resource;
+	return CreateBufferResource(device,sizeInBytes);
 }
 
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GameSystem::CreateDescriptorHeap(Microsoft::WRL::ComPtr<ID3D12Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDiscriptors, bool shaderVisible) {
@@ -838,16 +821,8 @@ Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GameSystem::CreateDescriptorHeap(Mi
 	return descriptorHeap;
 }
 
-void GameSystem::SrvDescriptorHeapNumIncrement() {
-	if (srvDescriptorHeapNum_ >= kSrvDescriptorHeapNumMax) {
-#ifdef _DEBUG
-
-		assert(false, "現在使えるsrvDescriptorHeapのサイズ(128)を使い切りました");
-
-#endif // _DEBUG
-		return;
-	}
-	srvDescriptorHeapNum_++;
+Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GameSystem::CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDiscriptors, bool shaderVisible){
+	return CreateDescriptorHeap(device,heapType,numDiscriptors,shaderVisible);
 }
 
 DirectX::ScratchImage GameSystem::LoadTexture(const std::string& filePath) {

@@ -211,6 +211,9 @@
     <Filter Include="Engine\SystemFile\Pipeline">
       <UniqueIdentifier>{5422ab74-05e3-4b68-a3f5-734a040700fb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Managers\SrvManager">
+      <UniqueIdentifier>{51d2c69a-42fd-40d4-84f7-14836179ca7d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -410,6 +413,9 @@
     </ClCompile>
     <ClCompile Include="Engine\SystemFile\Pipeline.cpp">
       <Filter>Engine\SystemFile\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\SrvManager.cpp">
+      <Filter>Managers\SrvManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -625,6 +631,12 @@
     </ClInclude>
     <ClInclude Include="Engine\SystemFile\Pipeline.h">
       <Filter>Engine\SystemFile\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\SrvManager.h">
+      <Filter>Managers\SrvManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\TextureInfo.h">
+      <Filter>Managers\TextureManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

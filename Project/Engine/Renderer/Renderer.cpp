@@ -2,6 +2,7 @@
 #include "Camera.h"
 
 #include "../../Managers/SoundManager.h"
+#include "../../Managers/SrvManager.h"
 #include <vector>
 Model::~Model() {
 
@@ -1990,20 +1991,7 @@ void TestParticle::Initialize(const ModelInfo& info, uint32_t numInstanced) {
 		instancingData_[index].World = Matrix4x4::Identity();
 	}
 
-	instancingSrvDesc.Format = DXGI_FORMAT_UNKNOWN;
-	instancingSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	instancingSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-	instancingSrvDesc.Buffer.FirstElement = 0;
-	instancingSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-	instancingSrvDesc.Buffer.NumElements = numInstance_;
-	instancingSrvDesc.Buffer.StructureByteStride = sizeof(TransformationMatrix);
-
-	instancingSrvHandleCPU = GameSystem::GetInstance()->GetCPUDescriptorHandle(GameSystem::GetInstance()->GetSrvDescriptorHeap(), GameSystem::GetInstance()->GetDescriptorSizeSRV(), GameSystem::GetInstance()->GetSrvDescriptorHeapNum());
-	instancingSrvHandleGPU = GameSystem::GetInstance()->GetGPUDescriptorHandle(GameSystem::GetInstance()->GetSrvDescriptorHeap(), GameSystem::GetInstance()->GetDescriptorSizeSRV(), GameSystem::GetInstance()->GetSrvDescriptorHeapNum());
-
-	GameSystem::GetInstance()->SrvDescriptorHeapNumIncrement();
-
-	GameSystem::GetInstance()->GetDevice()->CreateShaderResourceView(instancingResource_.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
+	SrvManager::GetInstance()->CreateSRVforStructureBuffer(instancingResource_.Get(), numInstance_, sizeof(TransformationMatrix));
 }
 
 void TestParticle::Draw(const Transform& transform) const {

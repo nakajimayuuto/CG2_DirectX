@@ -1,5 +1,6 @@
 #include "PointLight.h"
 #include "../SystemFile/GameSystem.h"
+#include "../../Managers/SrvManager.h"
 
 //PointLight* PointLight::GetInstance() {
 //	static PointLight instance;
@@ -19,19 +20,5 @@ void PointLight::Initialize() {
 	pointLightData->decay = 1.0f;
 
 
-
-	pointLightSrvDesc.Format = DXGI_FORMAT_UNKNOWN;
-	pointLightSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	pointLightSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-	pointLightSrvDesc.Buffer.FirstElement = 0;
-	pointLightSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-	pointLightSrvDesc.Buffer.NumElements = kLightMax;
-	pointLightSrvDesc.Buffer.StructureByteStride = sizeof(PointLightData);
-
-	pointLightSrvHandleCPU = GameSystem::GetInstance()->GetCPUDescriptorHandle(GameSystem::GetInstance()->GetSrvDescriptorHeap(), GameSystem::GetInstance()->GetDescriptorSizeSRV(), GameSystem::GetInstance()->GetSrvDescriptorHeapNum());
-	pointLightSrvHandleGPU = GameSystem::GetInstance()->GetGPUDescriptorHandle(GameSystem::GetInstance()->GetSrvDescriptorHeap(), GameSystem::GetInstance()->GetDescriptorSizeSRV(), GameSystem::GetInstance()->GetSrvDescriptorHeapNum());
-
-	GameSystem::GetInstance()->GetDevice()->CreateShaderResourceView(pointLightResource.Get(), &pointLightSrvDesc, pointLightSrvHandleCPU);
-
-	GameSystem::GetInstance()->SrvDescriptorHeapNumIncrement();
+	pointLightSrvHandleGPU =  SrvManager::GetInstance()->CreateSRVforStructureBuffer(pointLightResource.Get(), kLightMax, sizeof(PointLightData));
 }

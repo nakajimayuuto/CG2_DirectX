@@ -122,6 +122,7 @@
     <ClCompile Include="Scene\TitleScene.cpp" />
     <ClCompile Include="ShieldEnemy.cpp" />
     <ClCompile Include="Skydome.cpp" />
+    <ClCompile Include="Managers\SrvManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseEnemy.h" />
@@ -133,6 +134,7 @@
     <ClInclude Include="HPGauge.h" />
     <ClInclude Include="Managers\DifficultyManager.h" />
     <ClInclude Include="Managers\StageManager.h" />
+    <ClInclude Include="Managers\TextureInfo.h" />
     <ClInclude Include="MapChipField.h" />
     <ClInclude Include="MapChipManager.h" />
     <ClInclude Include="PauseMenu.h" />
@@ -195,6 +197,7 @@
     <ClInclude Include="Scene\TitleScene.h" />
     <ClInclude Include="ShieldEnemy.h" />
     <ClInclude Include="Skydome.h" />
+    <ClInclude Include="Managers\SrvManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Line.hlsli" />

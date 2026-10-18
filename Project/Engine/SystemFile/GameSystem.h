@@ -58,7 +58,6 @@ struct ModelElement;
 
 class GameSystem {
 private:
-	static inline const uint32_t kSrvDescriptorHeapNumMax = 128;
 public:
 	static GameSystem* GetInstance();
 
@@ -118,9 +117,6 @@ public:
 	Microsoft::WRL::ComPtr<ID3D12Fence> GetFence() { return fence; };
 
 	HANDLE GetFenceEvent() { return fenceEvent; };
-
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetSrvDescriptorHeap() { return srvDescriptorHeap; };
-	uint32_t GetDescriptorSizeSRV() { return descriptorSizeSRV; };
 	HWND GetHWND() { return winApp_->GetHWND(); };
 
 	std::ofstream& GetLogStream() { return logStream; };
@@ -164,15 +160,15 @@ public:
 
 	// BufferResourceを作る関数.
 	static Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr<ID3D12Device> device, size_t sizeInBytes);
-	static Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
 
 	// DescriptorHeap関数(どうやってファイル分けするかね).
 	static Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(
 		Microsoft::WRL::ComPtr<ID3D12Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDiscriptors, bool shaderVisible);
+	
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(
+		D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDiscriptors, bool shaderVisible);
 
-	void SrvDescriptorHeapNumIncrement();
-
-	uint32_t GetSrvDescriptorHeapNum()const { return srvDescriptorHeapNum_; };
 
 	// Textureデータを読む(TextureManager的な奴に入れる).
 	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
@@ -233,10 +229,6 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap = nullptr;
 
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvDescriptorHeap = nullptr;
-
-	uint32_t srvDescriptorHeapNum_;
-
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
 
 	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
@@ -247,7 +239,7 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap = nullptr;
 
-	uint32_t descriptorSizeSRV;
+	
 
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle;
 
