@@ -491,10 +491,10 @@ bool GameSystem::BeginFrame() {
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 
 
-	//SrvManager::GetInstance()->PreDraw();
+	SrvManager::GetInstance()->PreDraw();
 	// 描画用のDescriptorHeapの設定.
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { SrvManager::GetInstance()->GetDescriptorHeap().Get()};
-	GameSystem::GetInstance()->GetCommandList()->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
+	//Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { SrvManager::GetInstance()->GetDescriptorHeap().Get()};
+	//GameSystem::GetInstance()->GetCommandList()->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
 
 
 	commandList->RSSetViewports(1, &viewport); // Viewportを設定.
