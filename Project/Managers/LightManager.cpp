@@ -23,9 +23,9 @@ void LightData::Initialize(LightType newType) {
 void LightManager::Initialize() {
 	lightDatas_.clear();
 
-	directionalLight_ = new DirectionalLight();
-	pointLight_ = new PointLight();
-	spotLight_ = new SpotLight();
+	directionalLight_ = std::make_unique<DirectionalLight>();
+	pointLight_ = std::make_unique<PointLight>();
+	spotLight_ = std::make_unique<SpotLight>();
 
 	directionalLight_->Initialize();
 	pointLight_->Initialize();
@@ -34,6 +34,7 @@ void LightManager::Initialize() {
 	lightNumResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(LightNumData));
 	// データを書き込む.
 	// 書き込むためのアドレスを取得.
+
 	lightNumResource_->Map(0, nullptr, reinterpret_cast<void**>(&lightNumData_));
 	// 単位行列を書き込んでおく.
 	lightNumData_->pointLightNum = 0;
@@ -47,7 +48,7 @@ void LightManager::Update() {
 	PointLightData pointLightData;
 	SpotLightData spotLightData;
 
-	for (std::pair<std::string, LightData*> lightData : lightDatas_) {
+	for (auto& lightData : lightDatas_) {
 		if (!lightData.second->isActive) {
 			continue;
 		}
@@ -94,7 +95,7 @@ LightData* LightManager::GetLightData(std::string name){
 
 #endif // _DEBUG
 
-	return lightDatas_[name];
+	return lightDatas_[name].get();
 }
 
 void LightManager::CreatePointLight(std::string name){
@@ -110,7 +111,7 @@ void LightManager::CreatePointLight(std::string name){
 		return;
 	}
 
-	lightDatas_[name] = new LightData();
+	lightDatas_[name] = std::make_unique<LightData>();
 	lightDatas_[name]->Initialize(LightType::kPoint);
 }
 
@@ -127,7 +128,7 @@ void LightManager::CreateSpotLight(std::string name){
 		return;
 	}
 
-	lightDatas_[name] = new LightData();
+	lightDatas_[name] = std::make_unique<LightData>();
 	lightDatas_[name]->Initialize(LightType::kSpot);
 
 }
@@ -161,5 +162,5 @@ void LightManager::ClearLight(){
 }
 
 void LightManager::DeleteLight(std::string name){
-	delete lightDatas_[name];
+	lightDatas_.erase(name);
 }

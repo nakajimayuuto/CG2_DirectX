@@ -19,20 +19,22 @@
     <Text Include="externals\imgui\LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BaseEnemy.cpp" />
-    <ClCompile Include="Enemy.cpp" />
+    <ClCompile Include="Application\Application.cpp" />
+    <ClCompile Include="Application\BaseEnemy.cpp" />
+    <ClCompile Include="Application\Enemy.cpp" />
     <ClCompile Include="Engine\Renderer\TextRenderer.cpp" />
     <ClCompile Include="Engine\SystemFile\WinApp.cpp" />
-    <ClCompile Include="Fade.cpp" />
-    <ClCompile Include="HPGauge.cpp" />
+    <ClCompile Include="Application\Fade.cpp" />
+    <ClCompile Include="Application\HPGauge.cpp" />
+    <ClCompile Include="Engine\SystemFile\Framework.cpp" />
     <ClCompile Include="Managers\DifficultyManager.cpp" />
     <ClCompile Include="Managers\StageManager.cpp" />
-    <ClCompile Include="MapChipField.cpp" />
-    <ClCompile Include="MapChipManager.cpp" />
-    <ClCompile Include="PauseMenu.cpp" />
+    <ClCompile Include="Application\MapChipField.cpp" />
+    <ClCompile Include="Application\MapChipManager.cpp" />
+    <ClCompile Include="Application\PauseMenu.cpp" />
     <ClCompile Include="Engine\SystemFile\Pipeline.cpp" />
-    <ClCompile Include="ProjectileManager.cpp" />
-    <ClCompile Include="ContactRecord.cpp" />
+    <ClCompile Include="Application\ProjectileManager.cpp" />
+    <ClCompile Include="Application\ContactRecord.cpp" />
     <ClCompile Include="Engine\Math\Beats.cpp" />
     <ClCompile Include="Engine\Math\Collider.cpp" />
     <ClCompile Include="Engine\Math\Collision.cpp" />
@@ -104,8 +106,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="GameCamera.cpp" />
-    <ClCompile Include="Ground.cpp" />
+    <ClCompile Include="Application\GameCamera.cpp" />
+    <ClCompile Include="Application\Ground.cpp" />
     <ClCompile Include="main.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
     </ClCompile>
@@ -117,30 +119,32 @@
     <ClCompile Include="Managers\SceneManager.cpp" />
     <ClCompile Include="Managers\SoundManager.cpp" />
     <ClCompile Include="Managers\TextureManager.cpp" />
-    <ClCompile Include="Player.cpp" />
-    <ClCompile Include="Scene\GameScene.cpp" />
-    <ClCompile Include="Scene\TitleScene.cpp" />
-    <ClCompile Include="ShieldEnemy.cpp" />
-    <ClCompile Include="Skydome.cpp" />
+    <ClCompile Include="Application\Player.cpp" />
+    <ClCompile Include="Application\Scene\GameScene.cpp" />
+    <ClCompile Include="Application\Scene\TitleScene.cpp" />
+    <ClCompile Include="Application\ShieldEnemy.cpp" />
+    <ClCompile Include="Application\Skydome.cpp" />
     <ClCompile Include="Managers\SrvManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BaseEnemy.h" />
-    <ClInclude Include="Enemy.h" />
+    <ClInclude Include="Application\Application.h" />
+    <ClInclude Include="Application\BaseEnemy.h" />
+    <ClInclude Include="Application\Enemy.h" />
     <ClInclude Include="Engine\Renderer\TextRenderer.h" />
     <ClInclude Include="Engine\SystemFile\WinApp.h" />
     <ClInclude Include="externals\magic_enum\magic_enum.hpp" />
-    <ClInclude Include="Fade.h" />
-    <ClInclude Include="HPGauge.h" />
+    <ClInclude Include="Application\Fade.h" />
+    <ClInclude Include="Application\HPGauge.h" />
+    <ClInclude Include="Engine\SystemFile\Framework.h" />
     <ClInclude Include="Managers\DifficultyManager.h" />
     <ClInclude Include="Managers\StageManager.h" />
     <ClInclude Include="Managers\TextureInfo.h" />
-    <ClInclude Include="MapChipField.h" />
-    <ClInclude Include="MapChipManager.h" />
-    <ClInclude Include="PauseMenu.h" />
+    <ClInclude Include="Application\MapChipField.h" />
+    <ClInclude Include="Application\MapChipManager.h" />
+    <ClInclude Include="Application\PauseMenu.h" />
     <ClInclude Include="Engine\SystemFile\Pipeline.h" />
-    <ClInclude Include="ProjectileManager.h" />
-    <ClInclude Include="ContactRecord.h" />
+    <ClInclude Include="Application\ProjectileManager.h" />
+    <ClInclude Include="Application\ContactRecord.h" />
     <ClInclude Include="Engine\Math\Beats.h" />
     <ClInclude Include="Engine\Math\Collider.h" />
     <ClInclude Include="Engine\Math\Collision.h" />
@@ -180,8 +184,8 @@
     <ClInclude Include="externals\imgui\imstb_rectpack.h" />
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
-    <ClInclude Include="GameCamera.h" />
-    <ClInclude Include="Ground.h" />
+    <ClInclude Include="Application\GameCamera.h" />
+    <ClInclude Include="Application\Ground.h" />
     <ClInclude Include="Managers\CollisionManager.h" />
     <ClInclude Include="Managers\InputManager.h" />
     <ClInclude Include="Managers\LightManager.h" />
@@ -190,13 +194,13 @@
     <ClInclude Include="Managers\SceneManager.h" />
     <ClInclude Include="Managers\SoundManager.h" />
     <ClInclude Include="Managers\TextureManager.h" />
-    <ClInclude Include="Player.h" />
+    <ClInclude Include="Application\Player.h" />
     <ClInclude Include="Engine\Environment\Satlib.h" />
-    <ClInclude Include="Scene\GameScene.h" />
-    <ClInclude Include="Scene\IScene.h" />
-    <ClInclude Include="Scene\TitleScene.h" />
-    <ClInclude Include="ShieldEnemy.h" />
-    <ClInclude Include="Skydome.h" />
+    <ClInclude Include="Application\Scene\GameScene.h" />
+    <ClInclude Include="Application\Scene\IScene.h" />
+    <ClInclude Include="Application\Scene\TitleScene.h" />
+    <ClInclude Include="Application\ShieldEnemy.h" />
+    <ClInclude Include="Application\Skydome.h" />
     <ClInclude Include="Managers\SrvManager.h" />
   </ItemGroup>
   <ItemGroup>
@@ -320,7 +324,7 @@
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Renderer;$(ProjectDir)Engine\SystemFile;$(ProjectDir)Managers;$(ProjectDir)Engine\Math;$(ProjectDir)Engine\Environment;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Renderer;$(ProjectDir)Engine\SystemFile;$(ProjectDir)Managers;$(ProjectDir)Engine\Math;$(ProjectDir)Engine\Environment;$(ProjectDir)Application;$(ProjectDir)Application\Scene;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -344,7 +348,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Renderer;$(ProjectDir)Engine\SystemFile;$(ProjectDir)Managers;$(ProjectDir)Engine\Math;$(ProjectDir)Engine\Environment;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Renderer;$(ProjectDir)Engine\SystemFile;$(ProjectDir)Managers;$(ProjectDir)Engine\Math;$(ProjectDir)Engine\Environment;$(ProjectDir)Application;$(ProjectDir)Application\Scene;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -373,7 +377,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <TreatWarningAsError>true</TreatWarningAsError>
       <Optimization>Disabled</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Renderer;$(ProjectDir)Engine\SystemFile;$(ProjectDir)Managers;$(ProjectDir)Engine\Math;$(ProjectDir)Engine\Environment;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Renderer;$(ProjectDir)Engine\SystemFile;$(ProjectDir)Managers;$(ProjectDir)Engine\Math;$(ProjectDir)Engine\Environment;$(ProjectDir)Application;$(ProjectDir)Application\Scene;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

@@ -62,14 +62,15 @@ public:
 
 	void DeleteLight(std::string name);
 private:
-	std::map<std::string, LightData*> lightDatas_;
+	std::map<std::string, std::unique_ptr<LightData>> lightDatas_;
 
-	DirectionalLight* directionalLight_;
-	PointLight* pointLight_;
-	SpotLight* spotLight_;
+	std::unique_ptr<DirectionalLight> directionalLight_;
+	std::unique_ptr<PointLight> pointLight_;
+	std::unique_ptr<SpotLight> spotLight_;
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> lightNumResource_ = nullptr;
 
+	//std::unique_ptr<LightNumData> lightNumData_ = nullptr;
 	LightNumData* lightNumData_ = nullptr;
 	LightNumData lightNum;
 };

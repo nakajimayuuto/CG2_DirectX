@@ -2,13 +2,13 @@
 #include <list>
 #include "IScene.h"
 #include "Satlib.h"
-#include "../Skydome.h"
-#include "../Ground.h"
-#include "../Player.h"
-#include "../GameCamera.h"
-#include "../Fade.h"
-#include "../PauseMenu.h"
-#include "../MapChipManager.h"
+#include "Skydome.h"
+#include "Ground.h"
+#include "Player.h"
+#include "GameCamera.h"
+#include "Fade.h"
+#include "PauseMenu.h"
+#include "MapChipManager.h"
 
 class GameScene : public IScene {
 public:

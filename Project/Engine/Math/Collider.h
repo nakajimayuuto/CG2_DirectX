@@ -3,7 +3,7 @@
 #include "Shape.h"
 #include "CollisionConfig.h"
 #include "Transform.h"
-#include "../../ContactRecord.h"
+#include "ContactRecord.h"
 
 enum class ColliderType {
 	kSphere,

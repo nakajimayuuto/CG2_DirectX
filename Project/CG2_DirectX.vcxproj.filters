@@ -13,12 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Scene">
-      <UniqueIdentifier>{9bdabbde-5d1a-4352-af41-22d42fa3fa6a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scene\GameScene">
-      <UniqueIdentifier>{db5a2186-fa07-429f-9c95-7e420a69d02b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Managers">
       <UniqueIdentifier>{9302c9a7-66fe-44e9-a284-c96e5f371ae2}</UniqueIdentifier>
     </Filter>
@@ -103,9 +97,6 @@
     <Filter Include="Engine\SystemFile\Debug">
       <UniqueIdentifier>{4b1105c9-fff6-4a45-9f33-cfcb6e3cf94f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Scene\TitleScene">
-      <UniqueIdentifier>{b5ab3c07-8cbf-405a-b63f-1a53b445a335}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Engine\Math\TimedCall">
       <UniqueIdentifier>{75576351-e183-47e7-863c-652a1c589cbe}</UniqueIdentifier>
     </Filter>
@@ -114,9 +105,6 @@
     </Filter>
     <Filter Include="Managers\CollisionManager">
       <UniqueIdentifier>{75e4a3fa-ae68-4f4e-b8c3-7ab462d16ebc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\Skydome">
-      <UniqueIdentifier>{3c17d3d0-3b88-4e69-adb3-22aedd773e33}</UniqueIdentifier>
     </Filter>
     <Filter Include="hlsl">
       <UniqueIdentifier>{6c70db76-b338-4b22-88ad-361c35de6470}</UniqueIdentifier>
@@ -145,18 +133,6 @@
     <Filter Include="Managers\LightManager">
       <UniqueIdentifier>{fec221c6-34a5-4b71-bc71-5781863f3d7f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Player">
-      <UniqueIdentifier>{37ad8884-6e01-4c76-a20f-a98864940bff}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\Ground">
-      <UniqueIdentifier>{b52ee5ee-5eac-4b95-959b-5d6437fc92b1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\ContactRecord">
-      <UniqueIdentifier>{206fc2d1-1100-47c3-9446-75d9f020f81f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\GameCamera">
-      <UniqueIdentifier>{c44faba6-95e3-4233-a697-58728d0da2c0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="hlsl\Line">
       <UniqueIdentifier>{35f66e28-054b-4a86-8811-c9fd21879c0b}</UniqueIdentifier>
     </Filter>
@@ -169,9 +145,6 @@
     <Filter Include="hlsl\NoTexture">
       <UniqueIdentifier>{45463921-b44e-47d9-8819-3c82493703f3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Bullet">
-      <UniqueIdentifier>{09fd979a-538a-4f10-999a-1312ef95cd20}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Engine\SystemFile\externals">
       <UniqueIdentifier>{c7c7cb2c-f375-4217-8afd-c3ff9c8d5438}</UniqueIdentifier>
     </Filter>
@@ -181,26 +154,11 @@
     <Filter Include="Engine\SystemFile\externals\imgui\ImGuiLibrary">
       <UniqueIdentifier>{58b25aba-c5fb-4a4c-9377-9f8c3a31634c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\HPGauge">
-      <UniqueIdentifier>{0aea4edf-9a9e-4ec6-96ea-b73a16137429}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Managers\DifficultyManager">
       <UniqueIdentifier>{a46b1c6e-4237-48a7-a6db-26c516211610}</UniqueIdentifier>
     </Filter>
     <Filter Include="Engine\Renderer\TextRenderer">
       <UniqueIdentifier>{3d2b152b-129d-4259-b37f-40e221e1ee01}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\Fade">
-      <UniqueIdentifier>{42a1fabf-f152-4e62-98dc-369db65b5a9f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\PauseMenu">
-      <UniqueIdentifier>{561c0cc8-ab3a-4957-99a1-7d68f89e4cea}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\Enemy">
-      <UniqueIdentifier>{492833a1-8a78-4ce6-b083-54190d7b4acc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\MapChip">
-      <UniqueIdentifier>{8dead884-e55b-4007-9574-18ef0c5db8e6}</UniqueIdentifier>
     </Filter>
     <Filter Include="Managers\StageManager">
       <UniqueIdentifier>{4b3dc800-e706-4bc0-9f9c-77f7e27d4596}</UniqueIdentifier>
@@ -214,6 +172,54 @@
     <Filter Include="Managers\SrvManager">
       <UniqueIdentifier>{51d2c69a-42fd-40d4-84f7-14836179ca7d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Application">
+      <UniqueIdentifier>{1dc98d41-890d-48f6-8032-7f0856f84b3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application\Player">
+      <UniqueIdentifier>{37ad8884-6e01-4c76-a20f-a98864940bff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application\Skydome">
+      <UniqueIdentifier>{3c17d3d0-3b88-4e69-adb3-22aedd773e33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application\PauseMenu">
+      <UniqueIdentifier>{561c0cc8-ab3a-4957-99a1-7d68f89e4cea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application\MapChip">
+      <UniqueIdentifier>{8dead884-e55b-4007-9574-18ef0c5db8e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application\Ground">
+      <UniqueIdentifier>{b52ee5ee-5eac-4b95-959b-5d6437fc92b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application\HPGauge">
+      <UniqueIdentifier>{0aea4edf-9a9e-4ec6-96ea-b73a16137429}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application\GameCamera">
+      <UniqueIdentifier>{c44faba6-95e3-4233-a697-58728d0da2c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application\Enemy">
+      <UniqueIdentifier>{492833a1-8a78-4ce6-b083-54190d7b4acc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application\Fade">
+      <UniqueIdentifier>{42a1fabf-f152-4e62-98dc-369db65b5a9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application\ContactRecord">
+      <UniqueIdentifier>{206fc2d1-1100-47c3-9446-75d9f020f81f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application\Bullet">
+      <UniqueIdentifier>{09fd979a-538a-4f10-999a-1312ef95cd20}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application\Scene">
+      <UniqueIdentifier>{9bdabbde-5d1a-4352-af41-22d42fa3fa6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application\Scene\GameScene">
+      <UniqueIdentifier>{db5a2186-fa07-429f-9c95-7e420a69d02b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application\Scene\TitleScene">
+      <UniqueIdentifier>{b5ab3c07-8cbf-405a-b63f-1a53b445a335}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\SystemFile\Framework">
+      <UniqueIdentifier>{89f56dd9-582c-49f0-b773-342d7242a6fc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -222,9 +228,6 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="externals\imgui\imgui.cpp">
       <Filter>Engine\SystemFile\externals\imgui</Filter>
     </ClCompile>
@@ -300,8 +303,8 @@
     <ClCompile Include="Managers\TextureManager.cpp">
       <Filter>Managers\TextureManager</Filter>
     </ClCompile>
-    <ClCompile Include="Scene\GameScene.cpp">
-      <Filter>Scene\GameScene</Filter>
+    <ClCompile Include="Application\Scene\GameScene.cpp">
+      <Filter>Application\Scene\GameScene</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Math\Random.cpp">
       <Filter>Engine\Math\Random</Filter>
@@ -327,8 +330,8 @@
     <ClCompile Include="Engine\SystemFile\Debug.cpp">
       <Filter>Engine\SystemFile\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="Scene\TitleScene.cpp">
-      <Filter>Scene\TitleScene</Filter>
+    <ClCompile Include="Application\Scene\TitleScene.cpp">
+      <Filter>Application\Scene\TitleScene</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Math\TimedCall.cpp">
       <Filter>Engine\Math\TimedCall</Filter>
@@ -339,8 +342,8 @@
     <ClCompile Include="Managers\CollisionManager.cpp">
       <Filter>Managers\CollisionManager</Filter>
     </ClCompile>
-    <ClCompile Include="Skydome.cpp">
-      <Filter>ソース ファイル\Skydome</Filter>
+    <ClCompile Include="Application\Skydome.cpp">
+      <Filter>Application\Skydome</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Renderer\Particles.cpp">
       <Filter>Engine\Renderer\Particle</Filter>
@@ -360,23 +363,23 @@
     <ClCompile Include="Managers\LightManager.cpp">
       <Filter>Managers\LightManager</Filter>
     </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>ソース ファイル\Player</Filter>
+    <ClCompile Include="Application\Player.cpp">
+      <Filter>Application\Player</Filter>
     </ClCompile>
-    <ClCompile Include="Ground.cpp">
-      <Filter>ソース ファイル\Ground</Filter>
+    <ClCompile Include="Application\Ground.cpp">
+      <Filter>Application\Ground</Filter>
     </ClCompile>
-    <ClCompile Include="ContactRecord.cpp">
-      <Filter>ソース ファイル\ContactRecord</Filter>
+    <ClCompile Include="Application\ContactRecord.cpp">
+      <Filter>Application\ContactRecord</Filter>
     </ClCompile>
-    <ClCompile Include="GameCamera.cpp">
-      <Filter>ソース ファイル\GameCamera</Filter>
+    <ClCompile Include="Application\GameCamera.cpp">
+      <Filter>Application\GameCamera</Filter>
     </ClCompile>
-    <ClCompile Include="ProjectileManager.cpp">
-      <Filter>ソース ファイル\Bullet</Filter>
+    <ClCompile Include="Application\ProjectileManager.cpp">
+      <Filter>Application\Bullet</Filter>
     </ClCompile>
-    <ClCompile Include="HPGauge.cpp">
-      <Filter>ソース ファイル\HPGauge</Filter>
+    <ClCompile Include="Application\HPGauge.cpp">
+      <Filter>Application\HPGauge</Filter>
     </ClCompile>
     <ClCompile Include="Managers\DifficultyManager.cpp">
       <Filter>Managers\DifficultyManager</Filter>
@@ -384,26 +387,26 @@
     <ClCompile Include="Engine\Renderer\TextRenderer.cpp">
       <Filter>Engine\Renderer\TextRenderer</Filter>
     </ClCompile>
-    <ClCompile Include="Fade.cpp">
-      <Filter>ソース ファイル\Fade</Filter>
+    <ClCompile Include="Application\Fade.cpp">
+      <Filter>Application\Fade</Filter>
     </ClCompile>
-    <ClCompile Include="PauseMenu.cpp">
-      <Filter>ソース ファイル\PauseMenu</Filter>
+    <ClCompile Include="Application\PauseMenu.cpp">
+      <Filter>Application\PauseMenu</Filter>
     </ClCompile>
-    <ClCompile Include="BaseEnemy.cpp">
-      <Filter>ソース ファイル\Enemy</Filter>
+    <ClCompile Include="Application\BaseEnemy.cpp">
+      <Filter>Application\Enemy</Filter>
     </ClCompile>
-    <ClCompile Include="Enemy.cpp">
-      <Filter>ソース ファイル\Enemy</Filter>
+    <ClCompile Include="Application\Enemy.cpp">
+      <Filter>Application\Enemy</Filter>
     </ClCompile>
-    <ClCompile Include="ShieldEnemy.cpp">
-      <Filter>ソース ファイル\Enemy</Filter>
+    <ClCompile Include="Application\ShieldEnemy.cpp">
+      <Filter>Application\Enemy</Filter>
     </ClCompile>
-    <ClCompile Include="MapChipField.cpp">
-      <Filter>ソース ファイル\MapChip</Filter>
+    <ClCompile Include="Application\MapChipField.cpp">
+      <Filter>Application\MapChip</Filter>
     </ClCompile>
-    <ClCompile Include="MapChipManager.cpp">
-      <Filter>ソース ファイル\MapChip</Filter>
+    <ClCompile Include="Application\MapChipManager.cpp">
+      <Filter>Application\MapChip</Filter>
     </ClCompile>
     <ClCompile Include="Managers\StageManager.cpp">
       <Filter>Managers\StageManager</Filter>
@@ -416,6 +419,15 @@
     </ClCompile>
     <ClCompile Include="Managers\SrvManager.cpp">
       <Filter>Managers\SrvManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Application\Application.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\SystemFile\Framework.cpp">
+      <Filter>Engine\SystemFile\Framework</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -509,11 +521,11 @@
     <ClInclude Include="Engine\Environment\Satlib.h">
       <Filter>Environment</Filter>
     </ClInclude>
-    <ClInclude Include="Scene\GameScene.h">
-      <Filter>Scene\GameScene</Filter>
+    <ClInclude Include="Application\Scene\GameScene.h">
+      <Filter>Application\Scene\GameScene</Filter>
     </ClInclude>
-    <ClInclude Include="Scene\IScene.h">
-      <Filter>Scene</Filter>
+    <ClInclude Include="Application\Scene\IScene.h">
+      <Filter>Application\Scene</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Math\Random.h">
       <Filter>Engine\Math\Random</Filter>
@@ -539,8 +551,8 @@
     <ClInclude Include="Engine\SystemFile\Debug.h">
       <Filter>Engine\SystemFile\Debug</Filter>
     </ClInclude>
-    <ClInclude Include="Scene\TitleScene.h">
-      <Filter>Scene\TitleScene</Filter>
+    <ClInclude Include="Application\Scene\TitleScene.h">
+      <Filter>Application\Scene\TitleScene</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Math\TimedCall.h">
       <Filter>Engine\Math\TimedCall</Filter>
@@ -551,8 +563,8 @@
     <ClInclude Include="Managers\CollisionManager.h">
       <Filter>Managers\CollisionManager</Filter>
     </ClInclude>
-    <ClInclude Include="Skydome.h">
-      <Filter>ソース ファイル\Skydome</Filter>
+    <ClInclude Include="Application\Skydome.h">
+      <Filter>Application\Skydome</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Renderer\Particles.h">
       <Filter>Engine\Renderer\Particle</Filter>
@@ -572,20 +584,20 @@
     <ClInclude Include="Managers\LightManager.h">
       <Filter>Managers\LightManager</Filter>
     </ClInclude>
-    <ClInclude Include="Player.h">
-      <Filter>ソース ファイル\Player</Filter>
+    <ClInclude Include="Application\Player.h">
+      <Filter>Application\Player</Filter>
     </ClInclude>
-    <ClInclude Include="Ground.h">
-      <Filter>ソース ファイル\Ground</Filter>
+    <ClInclude Include="Application\Ground.h">
+      <Filter>Application\Ground</Filter>
     </ClInclude>
-    <ClInclude Include="ContactRecord.h">
-      <Filter>ソース ファイル\ContactRecord</Filter>
+    <ClInclude Include="Application\ContactRecord.h">
+      <Filter>Application\ContactRecord</Filter>
     </ClInclude>
-    <ClInclude Include="GameCamera.h">
-      <Filter>ソース ファイル\GameCamera</Filter>
+    <ClInclude Include="Application\GameCamera.h">
+      <Filter>Application\GameCamera</Filter>
     </ClInclude>
-    <ClInclude Include="ProjectileManager.h">
-      <Filter>ソース ファイル\Bullet</Filter>
+    <ClInclude Include="Application\ProjectileManager.h">
+      <Filter>Application\Bullet</Filter>
     </ClInclude>
     <ClInclude Include="externals\magic_enum\magic_enum.hpp">
       <Filter>Engine\SystemFile\externals</Filter>
@@ -593,8 +605,8 @@
     <ClInclude Include="Engine\Math\CollisionConfig.h">
       <Filter>Managers\CollisionManager</Filter>
     </ClInclude>
-    <ClInclude Include="HPGauge.h">
-      <Filter>ソース ファイル\HPGauge</Filter>
+    <ClInclude Include="Application\HPGauge.h">
+      <Filter>Application\HPGauge</Filter>
     </ClInclude>
     <ClInclude Include="Managers\DifficultyManager.h">
       <Filter>Managers\DifficultyManager</Filter>
@@ -602,26 +614,26 @@
     <ClInclude Include="Engine\Renderer\TextRenderer.h">
       <Filter>Engine\Renderer\TextRenderer</Filter>
     </ClInclude>
-    <ClInclude Include="Fade.h">
-      <Filter>ソース ファイル\Fade</Filter>
+    <ClInclude Include="Application\Fade.h">
+      <Filter>Application\Fade</Filter>
     </ClInclude>
-    <ClInclude Include="PauseMenu.h">
-      <Filter>ソース ファイル\PauseMenu</Filter>
+    <ClInclude Include="Application\PauseMenu.h">
+      <Filter>Application\PauseMenu</Filter>
     </ClInclude>
-    <ClInclude Include="BaseEnemy.h">
-      <Filter>ソース ファイル\Enemy</Filter>
+    <ClInclude Include="Application\BaseEnemy.h">
+      <Filter>Application\Enemy</Filter>
     </ClInclude>
-    <ClInclude Include="Enemy.h">
-      <Filter>ソース ファイル\Enemy</Filter>
+    <ClInclude Include="Application\Enemy.h">
+      <Filter>Application\Enemy</Filter>
     </ClInclude>
-    <ClInclude Include="ShieldEnemy.h">
-      <Filter>ソース ファイル\Enemy</Filter>
+    <ClInclude Include="Application\ShieldEnemy.h">
+      <Filter>Application\Enemy</Filter>
     </ClInclude>
-    <ClInclude Include="MapChipField.h">
-      <Filter>ソース ファイル\MapChip</Filter>
+    <ClInclude Include="Application\MapChipField.h">
+      <Filter>Application\MapChip</Filter>
     </ClInclude>
-    <ClInclude Include="MapChipManager.h">
-      <Filter>ソース ファイル\MapChip</Filter>
+    <ClInclude Include="Application\MapChipManager.h">
+      <Filter>Application\MapChip</Filter>
     </ClInclude>
     <ClInclude Include="Managers\StageManager.h">
       <Filter>Managers\StageManager</Filter>
@@ -637,6 +649,12 @@
     </ClInclude>
     <ClInclude Include="Managers\TextureInfo.h">
       <Filter>Managers\TextureManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Application\Application.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\SystemFile\Framework.h">
+      <Filter>Engine\SystemFile\Framework</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
