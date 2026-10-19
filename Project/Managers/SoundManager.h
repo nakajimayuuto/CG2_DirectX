@@ -87,7 +87,6 @@ public:
 
 	PlaySoundData* GetPlaySoundData(const std::string& name);
 
-	SoundData SoundLoadWave(const char* fileName);
 
 	void SoundUnload(SoundData* soundData);
 

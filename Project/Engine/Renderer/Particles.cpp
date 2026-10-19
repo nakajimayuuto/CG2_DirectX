@@ -7,9 +7,6 @@
 #include "Renderer.h"
 
 Particles::~Particles() {
-	delete vertexData;
-	delete materialData_;
-	delete instancingData_;
 }
 
 void Particles::Initialize(const ModelInfo& info) {

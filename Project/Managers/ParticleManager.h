@@ -56,8 +56,8 @@ public:
 private:
 	void CheckCollision();
 private:
-	std::map<std::string, Particles*> particles_;
-	std::map<std::string, Emitter*> emitters_;
-	std::map<std::string, Field*> fields_;
+	std::map<std::string, std::unique_ptr<Particles>> particles_;
+	std::map<std::string, std::unique_ptr<Emitter>> emitters_;
+	std::map<std::string, std::unique_ptr<Field>> fields_;
 };
 

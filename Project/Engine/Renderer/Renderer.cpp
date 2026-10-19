@@ -541,20 +541,19 @@ void Sprite::AdaptationSize() {
 }
 
 ModelElement* Sprite::GetModelElement() const {
-	ModelElement* modelElement;
-	modelElement = new ModelElement();
-	modelElement->materialData_ = materialData_;
-	modelElement->wvpData_ = transformationMatrixData_;
-	modelElement->modelData_.textureSrvHandlesGPU = textureInfo_.textureSrvHandlesGPU;
-	modelElement->vertexResource_ = vertexResource_;
-	modelElement->materialResource_ = materialResource_;
-	modelElement->wvpResource_ = transformationMatrixResource_;
-	modelElement->vertexBufferView_ = vertexBufferView_;
-	modelElement->uvTransform_ = uvTransform_;
-	modelElement->indexResource_ = indexResource_;
-	modelElement->indexBufferView_ = indexBufferView_;
-	modelElement->blendMode_ = blendMode_;
-	return modelElement;
+	ModelElement modelElement;
+	modelElement.materialData_ = materialData_;
+	modelElement.wvpData_ = transformationMatrixData_;
+	modelElement.modelData_.textureSrvHandlesGPU = textureInfo_.textureSrvHandlesGPU;
+	modelElement.vertexResource_ = vertexResource_;
+	modelElement.materialResource_ = materialResource_;
+	modelElement.wvpResource_ = transformationMatrixResource_;
+	modelElement.vertexBufferView_ = vertexBufferView_;
+	modelElement.uvTransform_ = uvTransform_;
+	modelElement.indexResource_ = indexResource_;
+	modelElement.indexBufferView_ = indexBufferView_;
+	modelElement.blendMode_ = blendMode_;
+	return &modelElement;
 }
 
 Renderer* Renderer::GetInstance() {
@@ -578,8 +577,8 @@ void Renderer::Initialize() {
 
 	reflectionType_ = ReflectionType::kBlinnPhong;
 
-	lineElement_ = new ModelElement();
-	CreateLine(lineElement_);
+	lineElement_ = std::make_unique<ModelElement>();
+	CreateLine(lineElement_.get());
 	modelInstances.clear();
 	modelInstances.resize(maxModelNum);
 
@@ -809,31 +808,7 @@ void Renderer::CreateTorusResource() {
 }
 
 void Renderer::DrawSphere(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color) {
-	Matrix4x4 worldMatrix = transform.GetAffineMatrix();
-	ModelElement* newElement;
-	newElement = new ModelElement();
-	CreateSphere(newElement);
-
-	newElement->modelData_.textureSrvHandlesGPU = textureInfo.textureSrvHandlesGPU;
-
-	newElement->wvpData_->World = worldMatrix;
-	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
-	newElement->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
-	/*=============================================================
-	三角形の描画のコマンド.
-	=============================================================*/
-	newElement->indexInstanceNum_ = kSphereSubdivision_ * kSphereSubdivision_ * 6;
-	GameSystem::GetInstance()->DrawCommand(
-		newElement->blendMode_,
-		ShaderType::kNormal,
-		&newElement->vertexBufferView_,
-		&newElement->indexBufferView_,
-		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
-		newElement->materialResource_,
-		newElement->wvpResource_,
-		newElement->modelData_.textureSrvHandlesGPU,
-		newElement->indexInstanceNum_
-	);
+	DrawSphere(transform,textureInfo,color,Transform::GetInitialValue());
 }
 
 void Renderer::DrawSphere(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color, const Transform& uvTransform){
@@ -1301,11 +1276,10 @@ void Renderer::DrawSprite(const Transform& transform, const Sprite& sprite) {
 
 	Vector2 size = sprite.GetSize();
 
-	ModelElement* newElement;
-	newElement = new ModelElement();
-	newElement = sprite.GetModelElement();
+	std::unique_ptr<ModelElement> newElement;
+	newElement = std::make_unique<ModelElement>();
 
-	CreateSprite(newElement, size.x, size.y);
+	CreateSprite(newElement.get(), sprite.GetModelElement(), size.x, size.y);
 
 	worldTransform.translate.x = transform.translate.x - (size.x / 2.0f);
 	worldTransform.translate.y = transform.translate.y - (size.y / 2.0f);
@@ -1316,7 +1290,7 @@ void Renderer::DrawSprite(const Transform& transform, const Sprite& sprite) {
 	newElement->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(worldMatrix);
 	newElement->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
 
-	newElement->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(newElement->uvTransform_);
+	//newElement->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(newElement->uvTransform_);
 	/*=============================================================
 	三角形のSpriteの描画のコマンド.
 	=============================================================*/
@@ -1831,33 +1805,38 @@ void Renderer::CreateNewSprite(ModelElement* newElement, float width, float heig
 	newElement->vertexData[3].normal = { 0.0f,0.0f,-1.0f };
 }
 
-void Renderer::CreateSprite(ModelElement* newElement, float width, float height) {
+void Renderer::CreateSprite(ModelElement* newElement, ModelElement* targetElement, float width, float height) {
 	//newElement->blendMode_ = BlendMode::kNormal;
 	newElement->uvTransform_.Initialize();
 	/*=============================================================
 	Sprite用のResourceとView.
 	=============================================================*/
+
+	newElement->vertexResource_ = spriteInstances[currentDrawSpriteIndex_]->vertexResource_;
+	newElement->indexResource_ = spriteInstances[currentDrawSpriteIndex_]->indexResource_;
+	newElement->materialResource_ = spriteInstances[currentDrawSpriteIndex_]->materialResource_;
+	newElement->wvpResource_ = spriteInstances[currentDrawSpriteIndex_]->wvpResource_;
+	currentDrawSpriteIndex_++;
 	// 【VertexResourceを生成する】
 	// 実際に頂点リソースを作る.
 	// 頂点バッファビューを作成する.
 	// リソースの先頭のアドレスから使う.
 	newElement->vertexBufferView_.BufferLocation = newElement->vertexResource_->GetGPUVirtualAddress();
 	// 使用するリソースのサイズは頂点3つ分のサイズ.
-	newElement->vertexBufferView_.SizeInBytes = sizeof(VertexData) * 4;
+	newElement->vertexBufferView_.SizeInBytes = targetElement->vertexBufferView_.SizeInBytes;
 	// 1頂点あたりのサイズ.
-	newElement->vertexBufferView_.StrideInBytes = sizeof(VertexData);
+	newElement->vertexBufferView_.StrideInBytes = targetElement->vertexBufferView_.StrideInBytes;
 
 	// 【IndexResourceを生成する】
 	// 実際に頂点リソースを作る.
-	newElement->indexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * 6);
 
 	// 頂点バッファビューを作成する.
 	// リソースの先頭のアドレスから使う.
 	newElement->indexBufferView_.BufferLocation = newElement->indexResource_->GetGPUVirtualAddress();
 	// 使用するリソースのサイズはインデックス6つ分のサイズ.
-	newElement->indexBufferView_.SizeInBytes = sizeof(uint32_t) * 6;
+	newElement->indexBufferView_.SizeInBytes = targetElement->indexBufferView_.SizeInBytes;
 	// インデックスはuint32_tとする.
-	newElement->indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+	newElement->indexBufferView_.Format = targetElement->indexBufferView_.Format;
 
 
 	// 【MaterialResourceを生成する】
@@ -1865,6 +1844,7 @@ void Renderer::CreateSprite(ModelElement* newElement, float width, float height)
 	// マテリアルにデータを書き込む.
 	// 書き込むためのアドレスを取得.
 	newElement->materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->materialData_));
+	newElement->materialData_ = targetElement->materialData_;
 	// 今回は赤を書き込んでみる
 	// 【TransformationMatrix】
 	//Sprite用のTransformationMatrixを作る。Matrix4x4 1つ分のサイズを用意する.
@@ -1881,18 +1861,12 @@ void Renderer::CreateSprite(ModelElement* newElement, float width, float height)
 	// 頂点リソースにデータを書き込む.
 	// 書き込むためのアドレスを取得.
 	newElement->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&newElement->vertexData));
-	newElement->vertexData[0].position = { 0.0f,height,0.0f,1.0f }; // 左下.
-	newElement->vertexData[0].texcoord = { 0.0f,1.0f };
-	newElement->vertexData[0].normal = { 0.0f,0.0f,-1.0f };
-	newElement->vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f }; // 左上.
-	newElement->vertexData[1].texcoord = { 0.0f,0.0f };
-	newElement->vertexData[1].normal = { 0.0f,0.0f,-1.0f };
-	newElement->vertexData[2].position = { width,height,0.0f,1.0f }; // 右下.
-	newElement->vertexData[2].texcoord = { 1.0f,1.0f };
-	newElement->vertexData[2].normal = { 0.0f,0.0f,-1.0f };
-	newElement->vertexData[3].position = { width,0.0f,0.0f,1.0f }; // 右上.
-	newElement->vertexData[3].texcoord = { 1.0f,0.0f };
-	newElement->vertexData[3].normal = { 0.0f,0.0f,-1.0f };
+	for (uint32_t i = 0; i < 4;i++) {
+		newElement->vertexData[i].position = targetElement->vertexData[i].position; // 左下.
+		newElement->vertexData[i].texcoord = targetElement->vertexData[i].texcoord;
+		newElement->vertexData[i].normal = targetElement->vertexData[i].normal;
+	}
+
 
 	// インデックスリソースにデータを書き込む.
 	uint32_t* indexDataSprite = nullptr;

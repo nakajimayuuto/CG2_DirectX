@@ -404,7 +404,7 @@ public:
 	void DrawSprite(const Transform& transform, const Vector2& size, const std::string& name, const Vector4& color) { DrawSprite(transform,size, TextureManager::GetInstance()->GetTextureInfo(name), color); };
 
 	/// <summary>
-	/// スプライトの描画.
+	/// スプライトの描画(不完全).
 	/// </summary>
 	/// <param name="transform">トランスフォーム</param>
 	/// <param name="sprite">スプライト</param>
@@ -437,7 +437,7 @@ private:
 
 	void CreateNewSprite(ModelElement* newElement,float width,float height);
 
-	void CreateSprite(ModelElement* newElement, float width, float height);
+	void CreateSprite(ModelElement* newElement, ModelElement* targetElement, float width, float height);
 private:
 	// SphereResource.
 	const uint32_t kSphereSubdivision_ = 16;
@@ -466,7 +466,7 @@ private:
 
 
 
-	ModelElement* lineElement_;
+	std::unique_ptr<ModelElement> lineElement_;
 
 	BlendMode blendMode_;
 

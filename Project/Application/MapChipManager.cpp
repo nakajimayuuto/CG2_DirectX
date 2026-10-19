@@ -62,8 +62,6 @@ void MapChipManager::GenerateFieldObjects() {
 
 	}
 
-	//BaseEnemy* newEnemy;
-
 	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
 		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
 			switch (mapChipField_->GetMapChipTypeByIndex(j, i)) {
@@ -76,27 +74,8 @@ void MapChipManager::GenerateFieldObjects() {
 				modelBlocks_[i][j].second->translate = mapChipField_->GetMapChipPositionByIndex(j, i);
 				break;
 			case MapChipType::kPlayer:
-				//assert(player_ == nullptr && "自キャラを二重に配置しようとしています");
-				//player_ = new Player();
-				//player_->Initialize(mapChipField_->GetMapChipPositionByIndex(j, i));
-				//player_->SetMapChipField(mapChipField_);
 				break;
 			case MapChipType::kEnemy:
-				//uint8_t subID = mapChipField_->GetMapChipSubIDByIndex(j, i);
-				//switch (subID) {
-				//case 0:
-				//	newEnemy = new Enemy();
-				//	newEnemy->Initialize(mapChipField_->GetMapChipPositionByIndex(j, i));
-				//
-				//	enemies_.push_back(newEnemy);
-				//	break;
-				//case 1:
-				//	newEnemy = new ShieldEnemy();
-				//	newEnemy->Initialize(mapChipField_->GetMapChipPositionByIndex(j, i));
-				//
-				//	enemies_.push_back(newEnemy);
-				//	break;
-				//}
 				break;
 			}
 		}

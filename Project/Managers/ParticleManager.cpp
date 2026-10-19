@@ -24,35 +24,35 @@ void ParticleManager::ParticleClear() {
 
 void ParticleManager::Update() {
 
-	for (std::pair<std::string, Emitter*> emitter : emitters_) {
+	for (auto& emitter : emitters_) {
 		emitter.second->Update();
 	}
 
 	CheckCollision();
 
-	for (std::pair<std::string, Particles*> particles : particles_) {
+	for (auto& particles : particles_) {
 		particles.second->Update();
 	}
 
 }
 
 void ParticleManager::Draw() {
-	for (std::pair<std::string, Emitter*> emitter : emitters_) {
+	for (auto& emitter : emitters_) {
 		emitter.second->DebugDraw();
 	}
 
-	for (std::pair<std::string, Field*> field : fields_) {
+	for (auto& field : fields_) {
 		field.second->DebugDraw();
 	}
 
-	for (std::pair<std::string, Particles*> particles : particles_) {
+	for (auto& particles : particles_) {
 		particles.second->Draw();
 	}
 }
 
 void ParticleManager::CheckCollision() {
-	for (std::pair<std::string, Field*> field : fields_) {
-		for (std::pair<std::string, Particles*> particles : particles_) {
+	for (auto& field : fields_) {
+		for (auto& particles : particles_) {
 			particles.second->CheckCollision(*field.second);
 		}
 	}
@@ -114,7 +114,7 @@ void ParticleManager::CreateNewParticles(const std::string& name, const TextureI
 		return;
 	}
 
-	particles_[name] = new Particles();
+	particles_[name] = std::make_unique<Particles>();
 	particles_[name]->Initialize(info);
 }
 
@@ -123,7 +123,7 @@ void ParticleManager::CreateNewParticles(const std::string& name, const TextureI
 		return;
 	}
 
-	particles_[name] = new Particles();
+	particles_[name] = std::make_unique<Particles>();
 	particles_[name]->Initialize(info);
 	particles_[name]->SetBillboardType(billType);
 	particles_[name]->SetMoveType(moveType);
@@ -134,7 +134,7 @@ void ParticleManager::CreateNewParticles(const std::string& name, const ModelInf
 		return;
 	}
 
-	particles_[name] = new Particles();
+	particles_[name] = std::make_unique<Particles>();
 	particles_[name]->Initialize(info);
 }
 
@@ -143,7 +143,7 @@ void ParticleManager::CreateNewEmitter(const std::string& name, const std::strin
 		return;
 	}
 
-	emitters_[name] = new Emitter();
+	emitters_[name] = std::make_unique<Emitter>();
 	emitters_[name]->Initialize(transform, count, frequency);
 	emitters_[name]->SetParticle(GetParticles(setParticleName));
 }
@@ -153,7 +153,7 @@ void ParticleManager::CreateNewEmitter(const std::string& name, const std::strin
 		return;
 	}
 
-	emitters_[name] = new Emitter();
+	emitters_[name] = std::make_unique<Emitter>();
 	emitters_[name]->Initialize(Transform::GetInitialValue(), 3, 0.3f);
 	emitters_[name]->SetParticle(GetParticles(setParticleName));
 }
@@ -163,12 +163,12 @@ void ParticleManager::CreateNewField(const std::string& name, const AABB& aabb, 
 		return;
 	}
 
-	fields_[name] = new Field();
+	fields_[name] = std::make_unique<Field>();
 	fields_[name]->Initialize(acceleration, aabb);
 }
 
 void ParticleManager::SetBillboardType(BillboardType type) {
-	for (std::pair<std::string, Particles*> particles : particles_) {
+	for (auto& particles : particles_) {
 		if (particles.second->GetBillboardType() == type) {
 			continue;
 		}
@@ -273,11 +273,11 @@ Particles* ParticleManager::GetParticles(const std::string& name) {
 #ifdef _DEBUG
 	assert(it != particles_.end(), std::format("name : {}と一致するParticlesが見つかりませんでした", name));
 #endif // _DEBUG
-	return it->second;
+	return it->second.get();
 }
 
 void ParticleManager::ClearParticles() {
-	for (std::pair<std::string, Particles*> particles : particles_) {
+	for (auto& particles : particles_) {
 		particles.second->ClearParticle();
 	}
 }
