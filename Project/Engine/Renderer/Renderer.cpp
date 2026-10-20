@@ -540,7 +540,7 @@ void Sprite::AdaptationSize() {
 	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
 }
 
-ModelElement* Sprite::GetModelElement() const {
+ModelElement Sprite::GetModelElement() const {
 	ModelElement modelElement;
 	modelElement.materialData_ = materialData_;
 	modelElement.wvpData_ = transformationMatrixData_;
@@ -553,7 +553,7 @@ ModelElement* Sprite::GetModelElement() const {
 	modelElement.indexResource_ = indexResource_;
 	modelElement.indexBufferView_ = indexBufferView_;
 	modelElement.blendMode_ = blendMode_;
-	return &modelElement;
+	return modelElement;
 }
 
 Renderer* Renderer::GetInstance() {
@@ -1279,7 +1279,10 @@ void Renderer::DrawSprite(const Transform& transform, const Sprite& sprite) {
 	std::unique_ptr<ModelElement> newElement;
 	newElement = std::make_unique<ModelElement>();
 
-	CreateSprite(newElement.get(), sprite.GetModelElement(), size.x, size.y);
+	std::unique_ptr<ModelElement> targetElement;
+	targetElement = std::make_unique<ModelElement>(sprite.GetModelElement());
+
+	CreateSprite(newElement.get(), targetElement.get(), size.x, size.y);
 
 	worldTransform.translate.x = transform.translate.x - (size.x / 2.0f);
 	worldTransform.translate.y = transform.translate.y - (size.y / 2.0f);

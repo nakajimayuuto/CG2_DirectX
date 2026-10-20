@@ -198,7 +198,7 @@ public:
 	void SetIsFlipY(bool isFlipY) { isFlipY_ = isFlipY; };
 	bool GetIsFlipY()const { return isFlipY_; };
 
-	ModelElement* GetModelElement()const;
+	ModelElement GetModelElement()const;
 
 	TextureInfo GetTextureInfo() { return textureInfo_; };
 

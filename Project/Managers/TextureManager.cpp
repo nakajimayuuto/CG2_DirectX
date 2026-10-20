@@ -78,7 +78,7 @@ TextureInfo TextureManager::RegisterTexture(const std::string& name, const std::
 	//// SRVの生成.
 	//GameSystem::GetInstance()->GetDevice()->CreateShaderResourceView(textures_[name].textureResource.Get(), &srvDesc, textures_[name].textureSrvHandlesCPU);
 	//GameSystem::GetInstance()->SrvDescriptorHeapNumIncrement();
-	TextureInfo newCPUandGPU = SrvManager::GetInstance()->CreateSRVforTexture2D(textures_[name].textureResource.Get(),metadata.format,metadata.mipLevels,useMipMap);
+	TextureInfo newCPUandGPU = SrvManager::GetInstance()->CreateSRVforTexture2D(textures_[name].textureResource.Get(),metadata.format,static_cast<UINT>(metadata.mipLevels),useMipMap);
 	textures_[name].textureSrvHandlesCPU = newCPUandGPU.textureSrvHandlesCPU;
 	textures_[name].textureSrvHandlesGPU = newCPUandGPU.textureSrvHandlesGPU;
 	return textures_[name];
