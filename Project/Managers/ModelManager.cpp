@@ -1,6 +1,11 @@
 #include "ModelManager.h"
 #include "../Engine/SystemFile/GameSystem.h"
 #include "TextureManager.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
+
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"dxguid.lib")
@@ -22,7 +27,7 @@ void ModelManager::RegisterObj(const std::string& name, const std::string& direc
 	if (models_.find(name) != models_.end()) {
 		return;
 	}
-
+	
 	models_[name].modelData = LoadObjFile(directoryPath, fileName);
 	Vector3 min = { 0.0f,0.0f,0.0f };
 	Vector3 max = { 0.0f,0.0f,0.0f };
@@ -151,9 +156,62 @@ MaterialData ModelManager::LoadMaterialTemplateFile(const std::string& directory
 }
 
 std::vector<ModelData>ModelManager::LoadObjFile(const std::string& directoryPath, const std::string& fileName) {
-	// 1. 中で必要となる変数の宣言.
 	ModelData modelData; // 構築するModelData.
 	std::vector<ModelData> returnData; // 構築するModelData.
+
+	Assimp::Importer importer;
+	std::string filePath = directoryPath + "/" + fileName;
+	const aiScene* scene = importer.ReadFile(filePath.c_str(), aiProcess_FlipWindingOrder | aiProcess_FlipUVs | aiProcess_Triangulate);
+	assert(scene->HasMeshes());
+
+	for (uint32_t meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex) {
+		aiMesh* mesh = scene->mMeshes[meshIndex];
+		assert(mesh->HasNormals());
+		assert(mesh->HasTextureCoords(0));
+		for (uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; ++faceIndex) {
+			aiFace& face = mesh->mFaces[faceIndex];
+			//assert(face.mNumIndices == 3); // 三角形のみサポート、後々四角形対応します.
+			for (uint32_t element = 0; element < face.mNumIndices; ++element) {
+				uint32_t vertexIndex = face.mIndices[element];
+				aiVector3D& position = mesh->mVertices[vertexIndex];
+				aiVector3D& normal = mesh->mNormals[vertexIndex];
+				aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
+				VertexData vertex;
+				vertex.position = { position.x,position.y,position.z,1.0f };
+				vertex.normal = { normal.x,normal.y,normal.z };
+				vertex.texcoord = { texcoord.x,texcoord.y };
+
+				vertex.position.x *= -1.0f;
+				vertex.normal.x *= -1.0f;
+
+				modelData.vertices.push_back(vertex);
+			}
+		}
+	}
+
+	for (uint32_t materialIndex = 0; materialIndex < scene->mNumMaterials; ++materialIndex) {
+		aiMaterial* material = scene->mMaterials[materialIndex];
+		if (material->GetTextureCount(aiTextureType_DIFFUSE) != 0) {
+			aiString textureFilePath;
+			material->GetTexture(aiTextureType_DIFFUSE, 0, &textureFilePath);
+			aiString materialName;
+			aiUVTransform uvTransform;
+			aiColor3D diffuseColor(1.f, 1.f, 1.f);
+			material->Get(AI_MATKEY_NAME, materialName);
+			material->Get(AI_MATKEY_UVTRANSFORM(aiTextureType_DIFFUSE, materialIndex), uvTransform);
+			material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor);
+			modelData.materialData.textureFilePath = directoryPath + "/" + textureFilePath.C_Str();
+			modelData.materialData.matarial.uvTransform = Matrix4x4::MakeScaleMatrix({uvTransform.mScaling.x,uvTransform.mScaling.y,1.0f});
+			modelData.materialData.matarial.color = { diffuseColor.r,diffuseColor.g,diffuseColor.b,1.0f};
+			modelData.materialData.textureName = materialName.C_Str();
+			//modelData.materialData = LoadMaterialTemplateFile(directoryPath,textureFilePath.C_Str(),materialName.C_Str());
+			returnData.push_back(modelData);
+		}
+	}
+
+	return returnData;
+
+	// 1. 中で必要となる変数の宣言.
 	std::vector<Vector4> positions; // 位置.
 	std::vector<Vector3> normals; // 法線.
 	std::vector<Vector2> texcoords; // テクスチャ座標.
