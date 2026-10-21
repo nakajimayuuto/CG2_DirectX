@@ -167,9 +167,14 @@ PixelShaderOutput main(VertexShaderOutput input){
         float32_t cosAngle = dot(spotLightDirectionOnSurface, gSpotLight[j].direction);
         float32_t falloffFactor = saturate((cosAngle - gSpotLight[j].cosAngle) / (gSpotLight[j].cosFalloffStart - gSpotLight[j].cosAngle));
         factor = 1.0f / (gSpotLight[j].distance * gSpotLight[j].distance); //pow(saturate(-gSpotLight.distance /1.0f), gSpotLight.decay);
-    
+        
         output.color.rgb = output.color.rgb +(GetOutputRGB(input.worldPosition, input.normal, textureColor.rgb, gSpotLight[j].color.rgb, spotLightDirectionOnSurface, gSpotLight[j].intensity) * factor * falloffFactor);
+        //float32_t3 pointLightDirection = normalize(input.worldPosition - gSpotLight[j].position);
+        //float32_t3 distance = length(gSpotLight[j].position - input.worldPosition);
+        //factor = pow(saturate(-distance / 5.0f + 1.0f), gSpotLight[j].decay);
     
+        //output.color.rgb = output.color.rgb + (GetOutputRGB(input.worldPosition, input.normal, textureColor.rgb, gSpotLight[j].color.rgb, pointLightDirection, gSpotLight[j].intensity) * factor);
+   
     }
     
     output.color.a = gMaterial.color.a * textureColor.a;
