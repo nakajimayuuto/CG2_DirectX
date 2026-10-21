@@ -81,8 +81,7 @@ void LoadDatas() {
 	TextureManager::GetInstance()->RegisterTexture("heavy_block", "Resource/block_textures/heavy_block.png");
 	TextureManager::GetInstance()->RegisterTexture("soul_block", "Resource/block_textures/soul_block.png");
 	TextureManager::GetInstance()->RegisterTexture("explode_block", "Resource/block_textures/explode_block_kari.png");
-	TextureManager::GetInstance()->RegisterTexture("skeleton_block_blue", "Resource/block_textures/skeleton_block_blue.png");
-	TextureManager::GetInstance()->RegisterTexture("skeleton_block_red", "Resource/block_textures/skeleton_block_red.png");
+	TextureManager::GetInstance()->RegisterTexture("skeleton_block", "Resource/block_textures/skeleton_block.png");
 	TextureManager::GetInstance()->RegisterTexture("skeleton_block_warning", "Resource/block_textures/skeleton_block_warning.png");
 
 	TextureManager::GetInstance()->RegisterTexture("effect_plane", "Resource/effects/effect_plane.png");

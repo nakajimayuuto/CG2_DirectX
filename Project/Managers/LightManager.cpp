@@ -13,8 +13,8 @@ void LightData::Initialize(LightType newType) {
 	radius = 3.0f; // ライトの届く最大距離(これはPointLightのみ).
 	direction = {0.0f,1.0f,0.0f}; // ライトの向き(これはSpotLightのみ).
 	distance = 7.0f; // ライトの届く最大距離(これはSpotLightのみ).
-	cosAngle = Radian(60.0f); // ライトの余弦(これはSpotLightのみ).
-	cosFalloffStart = Radian(30.0f); // falloff(ライトの光が減衰し始める角度)の余弦(これはSpotLightのみ).
+	cosAngle = std::cos(Radian(60.0f)); // ライトの余弦(これはSpotLightのみ).
+	cosFalloffStart = std::cos(Radian(30.0f)); // falloff(ライトの光が減衰し始める角度)の余弦(これはSpotLightのみ).
 	type = newType; // PointLightかSpotLightか.
 	isActive = true;
 

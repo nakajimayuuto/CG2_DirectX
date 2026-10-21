@@ -330,7 +330,8 @@ void Player::BehaviorShotUpdate() {
 
 void Player::BlockShot(const Vector2& shotDir) {
 	ProjectileManager::GetInstance()->CreateBullet(transform_, { shotDir.x * kJumpAcceleration,shotDir.y * kJumpAcceleration,0.0f }, BulletType::kBlock, CollisionAttributeName::kCollisionPlayerAttack, 10.0f, 3.0f);
-	ProjectileManager::GetInstance()->CreateLightning(transform_, CollisionAttributeName::kCollisionEnemyAttack, 10.0f, 3.0f);
+	//ProjectileManager::GetInstance()->CreateLightning(transform_, CollisionAttributeName::kCollisionEnemyAttack, 10.0f, 3.0f);
+	ProjectileManager::GetInstance()->CreateMeteor(transform_, CollisionAttributeName::kCollisionEnemyAttack, 10.0f, 3.0f);
 }
 
 void Player::MapChipDigUpdate() {

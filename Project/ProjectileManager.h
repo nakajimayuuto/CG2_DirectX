@@ -170,6 +170,12 @@ public:
 
 	bool GetIsActive() { return isActive_; };
 
+	Transform GetTranasform() { return transform_; };
+
+	uint32_t GetPhase() { return phase_; };
+
+	float GetAlpha() { return alpha_; };
+
 	Collider* GetCollider() { return collider_.get(); };
 private:
 	Model model_;
@@ -188,6 +194,45 @@ private:
 	static inline uint32_t kBasicWarningCountMax_ = 10;
 
 	std::unique_ptr<Collider> collider_;
+
+	float alpha_;
+
+	bool isColorRed_;
+	bool isActive_;
+};
+
+class Meteor :Collider{
+public:
+	void Initialize(const Transform& transform, CollisionAttributeName colliderName, float damage, float damageCoolTime);
+
+	void Update();
+
+	void Draw();
+
+	bool GetIsActive() { return isActive_; };
+
+	Transform GetTranasform() { return transform_; };
+
+	Collider* GetCollider() { return collider_.get(); };
+private:
+	Model model_;
+	Model warningBlock_;
+	float speed_;
+
+	uint32_t phase_;
+
+	float lifeTimer_ = 0.0f;
+	float lifeTimeMax_ = 1.0f;
+
+	float warningTimer_ = 0.0f;
+	uint32_t warningCount_ = 0;
+	uint32_t warningCountMax_ = 0;
+	static inline float kWarningGlowTimeMax_ = 0.2f;
+	static inline uint32_t kBasicWarningCountMax_ = 10;
+
+	std::unique_ptr<Collider> collider_;
+
+	float alpha_;
 
 	bool isColorRed_;
 	bool isActive_;
@@ -246,6 +291,7 @@ public:
 	void CreateExplode(const Transform& transform, float radius, CollisionAttributeName colliderName, float damage, float damageCoolTime);
 	
 	void CreateLightning(const Transform& transform, CollisionAttributeName colliderName, float damage, float damageCoolTime);
+	void CreateMeteor(const Transform& transform, CollisionAttributeName colliderName, float damage, float damageCoolTime);
 
 	void CreateTutorialObstacle(const Vector3& position, TutorialObstaclesType type);
 private:
@@ -254,6 +300,7 @@ private:
 	std::vector<std::unique_ptr<Spike>> spikes;
 	std::vector<std::unique_ptr<Explode>> explodes;
 	std::vector<std::unique_ptr<Lightning>> lightnings;
+	std::vector<std::unique_ptr<Meteor>> meteors;
 	std::vector<std::unique_ptr<TutorialObstacles>> tutorials;
 	std::vector<std::string> lightNames_;
 	const uint32_t kBulletLightMax_ = 30;

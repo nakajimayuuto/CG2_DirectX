@@ -11,6 +11,8 @@ void ProjectileManager::Initialize() {
 	waves.clear();
 	spikes.clear();
 	explodes.clear();
+	lightnings.clear();
+	meteors.clear();
 
 	for (uint32_t i = 0; i < kBulletLightMax_; i++) {
 		lightNames_.push_back(std::format("bullet_{}", i));
@@ -100,6 +102,22 @@ void ProjectileManager::Update() {
 
 	for (auto& lightning : lightnings) {
 		lightning->Update();
+#ifndef _DEBUG
+		if (currentLightNum_ < kBulletLightMax_) {
+
+			if (lightning->GetPhase() == 0) {
+				LightManager::GetInstance()->GetLightData(lightNames_[currentLightNum_])->color = { 1.0f,0.0f,0.0f,1.0f };
+			} else {
+				LightManager::GetInstance()->GetLightData(lightNames_[currentLightNum_])->color = { 0.5f,0.5f,1.0f,1.0f };
+			}
+
+			LightManager::GetInstance()->SetLightPos(lightNames_[currentLightNum_], lightning->GetTranasform().GetWorldPosition());
+			LightManager::GetInstance()->GetLightData(lightNames_[currentLightNum_])->intensity = 10.0f * lightning->GetAlpha();
+			LightManager::GetInstance()->GetLightData(lightNames_[currentLightNum_])->radius = 2.0f;
+			LightManager::GetInstance()->SetLightIsActive(lightNames_[currentLightNum_], true);
+			currentLightNum_++;
+		}
+#endif // _DEBUG
 	}
 
 	for (auto it = lightnings.begin(); it != lightnings.end(); ) {
@@ -112,6 +130,22 @@ void ProjectileManager::Update() {
 
 	for (auto& lightning : lightnings) {
 		CollisionManager::GetInstance()->AddColliderList(lightning->GetCollider());
+	}
+
+	for (auto& meteor : meteors) {
+		meteor->Update();
+	}
+
+	for (auto it = meteors.begin(); it != meteors.end(); ) {
+		if (!(*it)->GetIsActive()) {
+			it = meteors.erase(it);
+		} else {
+			++it;
+		}
+	}
+
+	for (auto& meteor : meteors) {
+		CollisionManager::GetInstance()->AddColliderList(meteor->GetCollider());
 	}
 
 	for (auto& tutorial : tutorials) {
@@ -146,6 +180,10 @@ void ProjectileManager::Draw() {
 
 	for (auto& lightning : lightnings) {
 		lightning->Draw();
+	}
+
+	for (auto& meteor : meteors) {
+		meteor->Draw();
 	}
 
 	for (auto& tutorial : tutorials) {
@@ -219,11 +257,18 @@ void ProjectileManager::CreateExplode(const Transform& transform, float radius, 
 	explodes.push_back(std::move(explode));
 }
 
-void ProjectileManager::CreateLightning(const Transform& transform, CollisionAttributeName colliderName, float damage, float damageCoolTime){
+void ProjectileManager::CreateLightning(const Transform& transform, CollisionAttributeName colliderName, float damage, float damageCoolTime) {
 	std::unique_ptr<Lightning> lightning;
 	lightning = std::make_unique<Lightning>();
 	lightning->Initialize(transform, colliderName, damage, damageCoolTime);
 	lightnings.push_back(std::move(lightning));
+}
+
+void ProjectileManager::CreateMeteor(const Transform& transform, CollisionAttributeName colliderName, float damage, float damageCoolTime) {
+	std::unique_ptr<Meteor> meteor;
+	meteor = std::make_unique<Meteor>();
+	meteor->Initialize(transform, colliderName, damage, damageCoolTime);
+	meteors.push_back(std::move(meteor));
 }
 
 void ProjectileManager::CreateTutorialObstacle(const Vector3& position, TutorialObstaclesType type) {
@@ -717,10 +762,11 @@ void Lightning::Initialize(const Transform& transform, CollisionAttributeName co
 	collider_->SetDamage(damage);
 	collider_->SetDamageCoolTime(damageCoolTime);
 	model_.Initialize("lightning");
+	model_.SetLightingType(LightingType::kNone);
 	warningBlock_.Initialize("block_template");
 	warningBlock_.ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("skeleton_block_warning"));
 	warningBlock_.SetColor({ 1.0f,0.0f,0.0f,1.0f });
-	collider_->SetSize({0.5f, 20.0f,0.5f});
+	collider_->SetSize({ 0.5f, 20.0f,0.5f });
 	collider_->SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
 	collider_->SetColliderType(ColliderType::kBox);
 	collider_->SetActive(false);
@@ -738,6 +784,7 @@ void Lightning::Initialize(const Transform& transform, CollisionAttributeName co
 	warningCountMax_ = kBasicWarningCountMax_;
 
 	phase_ = 0;
+	alpha_ = 1.0f;
 	isColorRed_ = true;
 }
 
@@ -745,21 +792,21 @@ void Lightning::Update() {
 	Transform colliderTransform = transform_;
 	colliderTransform.translate.y = transform_.translate.y + 20.0f;
 	collider_->SetTransform(colliderTransform);
-	switch (phase_){
+	switch (phase_) {
 	case 0:
 		warningTimer_ += DeltaTime::GetInstance()->GetGameTime();
-		
+
 		if (warningTimer_ >= kWarningGlowTimeMax_) {
 			if (warningCount_ >= warningCountMax_) {
 				phase_ = 1;
 				transform_.translate.y -= 0.5f;
 				collider_->SetActive(true);
-				MapChipManager::GetInstance()->DeleteBlock(transform_.GetWorldPosition(),0,0);
+				MapChipManager::GetInstance()->DeleteBlock(transform_.GetWorldPosition(), 0, 0);
 			}
-			
+
 			if (isColorRed_) {
 				isColorRed_ = false;
-				warningBlock_.SetColor({1.0f,0.0f,0.0f,1.0f});
+				warningBlock_.SetColor({ 1.0f,0.0f,0.0f,1.0f });
 			} else {
 				isColorRed_ = true;
 				warningBlock_.SetColor({ 1.0f,1.0f,0.0f,1.0f });
@@ -771,7 +818,8 @@ void Lightning::Update() {
 		break;
 	case 1:
 		lifeTimer_ += DeltaTime::GetInstance()->GetGameTime();
-		model_.SetColor(Vector4::MakeColorWithoutAlpha({1.0f,1.0f,1.0f},Easing(1.0f,0.0f,lifeTimer_,lifeTimeMax_,EaseType::kConstant)));
+		alpha_ = Easing(1.0f, 0.0f, lifeTimer_, lifeTimeMax_, EaseType::kConstant);
+		model_.SetColor(Vector4::MakeColorWithoutAlpha({ 1.0f,1.0f,1.0f }, alpha_));
 		if (lifeTimer_ >= lifeTimeMax_) {
 			isActive_ = false;
 		}
@@ -785,6 +833,124 @@ void Lightning::Draw() {
 	switch (phase_) {
 	case 0:
 		warningBlock_.Draw(transform_);
+		break;
+	case 1:
+		model_.Draw(transform_);
+		break;
+	}
+}
+
+void Meteor::Initialize(const Transform& transform, CollisionAttributeName colliderName, float damage, float damageCoolTime) {
+	transform_ = transform;
+	transform_.rotate = { 0.0f,0.0f,0.0f };
+	collider_ = std::make_unique<Collider>();
+	collider_->SetDamage(damage);
+	collider_->SetDamageCoolTime(damageCoolTime);
+	model_.Initialize("block_template");
+	model_.SetLightingType(LightingType::kNone);
+	warningBlock_.Initialize("block_template");
+	warningBlock_.ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("skeleton_block"));
+	warningBlock_.SetColor({ 1.0f,0.0f,0.0f,1.0f });
+	collider_->SetSize({ 0.5f, 20.0f,0.5f });
+	collider_->SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
+	collider_->SetColliderType(ColliderType::kBox);
+	collider_->SetActive(false);
+	collider_->SetRadius(20.0f);
+	collider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(colliderName));
+	isActive_ = true;
+	isColliderActive_ = false;
+
+	lifeTimer_ = 0.0f;
+	lifeTimeMax_ = 1.0f;
+
+	warningTimer_ = 0.0f;
+
+	warningCount_ = 0;
+	warningCountMax_ = kBasicWarningCountMax_;
+
+	phase_ = 0;
+	alpha_ = 1.0f;
+	isColorRed_ = true;
+}
+
+void Meteor::Update() {
+	MapChipField::IndexSet indexSet;
+	Vector3 newPos = transform_.translate;
+	newPos.y = 35.0f;
+	indexSet = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipIndexSetByPosition(newPos);
+	uint32_t yIndex = 0;
+	uint32_t count = 0;
+	bool isExplode = false;
+	while (true) {
+		MapChipType type = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipTypeByIndex(indexSet.xIndex, yIndex);
+		uint32_t subId = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipSubIDByIndex(indexSet.xIndex, yIndex);
+		if (type == MapChipType::kBlock) {
+			count++;
+			if (subId == 2) {
+				isExplode = true;
+				break;
+			}
+		}
+
+		if (count > 2) {
+			break;
+		}
+		yIndex++;
+	}
+	transform_.translate = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(indexSet.xIndex, yIndex - 1);
+
+	Transform colliderTransform = transform_;
+	colliderTransform.translate.y = transform_.translate.y + 20.0f;
+	collider_->SetTransform(colliderTransform);
+	switch (phase_) {
+	case 0:
+		if (isExplode) {
+			warningBlock_.SetColor({ 1.0f,0.0f,0.0f,1.0f });
+		} else {
+			warningBlock_.SetColor({ 0.5f,0.5f,1.0f,1.0f });
+		}
+
+		//warningTimer_ += DeltaTime::GetInstance()->GetGameTime();
+		//
+		//if (warningTimer_ >= kWarningGlowTimeMax_) {
+		//	if (warningCount_ >= warningCountMax_) {
+		//		phase_ = 1;
+		//		transform_.translate.y -= 0.5f;
+		//		collider_->SetActive(true);
+		//		MapChipManager::GetInstance()->DeleteBlock(transform_.GetWorldPosition(), 0, 0);
+		//	}
+		//
+		//	if (isColorRed_) {
+		//		isColorRed_ = false;
+		//		warningBlock_.SetColor({ 1.0f,0.0f,0.0f,1.0f });
+		//	} else {
+		//		isColorRed_ = true;
+		//		warningBlock_.SetColor({ 1.0f,1.0f,0.0f,1.0f });
+		//	}
+		//
+		//	warningTimer_ -= kWarningGlowTimeMax_;
+		//}
+		break;
+	case 1:
+		lifeTimer_ += DeltaTime::GetInstance()->GetGameTime();
+		alpha_ = Easing(1.0f, 0.0f, lifeTimer_, lifeTimeMax_, EaseType::kConstant);
+		model_.SetColor(Vector4::MakeColorWithoutAlpha({ 1.0f,1.0f,1.0f }, alpha_));
+		if (lifeTimer_ >= lifeTimeMax_) {
+			isActive_ = false;
+		}
+		break;
+	}
+
+	//collider_->DrawCollider();
+}
+
+void Meteor::Draw() {
+	Transform warningBlockTransform = transform_;
+
+	warningBlockTransform.scale = { 3.0f,3.0f,1.0f };
+	warningBlock_.Draw(warningBlockTransform);
+	switch (phase_) {
+	case 0:
 		break;
 	case 1:
 		model_.Draw(transform_);
