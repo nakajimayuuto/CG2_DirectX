@@ -842,7 +842,9 @@ void Lightning::Draw() {
 
 void Meteor::Initialize(const Transform& transform, CollisionAttributeName colliderName, float damage, float damageCoolTime) {
 	transform_ = transform;
+	transform_.translate.y = 30.0f;
 	transform_.rotate = { 0.0f,0.0f,0.0f };
+	transform_.scale = { 3.0f,3.0f,1.0f };
 	collider_ = std::make_unique<Collider>();
 	collider_->SetDamage(damage);
 	collider_->SetDamageCoolTime(damageCoolTime);
@@ -851,7 +853,7 @@ void Meteor::Initialize(const Transform& transform, CollisionAttributeName colli
 	warningBlock_.Initialize("block_template");
 	warningBlock_.ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("skeleton_block"));
 	warningBlock_.SetColor({ 1.0f,0.0f,0.0f,1.0f });
-	collider_->SetSize({ 0.5f, 20.0f,0.5f });
+	collider_->SetSize({ 3.0f, 3.0f,3.0f });
 	collider_->SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
 	collider_->SetColliderType(ColliderType::kBox);
 	collider_->SetActive(false);
@@ -865,8 +867,11 @@ void Meteor::Initialize(const Transform& transform, CollisionAttributeName colli
 
 	warningTimer_ = 0.0f;
 
+	warningBlockTransform_.scale = { 3.0f,3.0f,1.0f };
 	warningCount_ = 0;
 	warningCountMax_ = kBasicWarningCountMax_;
+
+	hitCount_ = 0;
 
 	phase_ = 0;
 	alpha_ = 1.0f;
@@ -892,12 +897,12 @@ void Meteor::Update() {
 			}
 		}
 
-		if (count > 2) {
+		if (count >= kHitCountMax_ - hitCount_) {
 			break;
 		}
 		yIndex++;
 	}
-	transform_.translate = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(indexSet.xIndex, yIndex - 1);
+	warningBlockTransform_.translate = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(indexSet.xIndex, yIndex - 1);
 
 	Transform colliderTransform = transform_;
 	colliderTransform.translate.y = transform_.translate.y + 20.0f;
@@ -910,7 +915,12 @@ void Meteor::Update() {
 			warningBlock_.SetColor({ 0.5f,0.5f,1.0f,1.0f });
 		}
 
-		//warningTimer_ += DeltaTime::GetInstance()->GetGameTime();
+		warningTimer_ += DeltaTime::GetInstance()->GetGameTime();
+		if (warningTimer_ >= kWarningTimeMax_) {
+			;
+			phase_++;
+		}
+
 		//
 		//if (warningTimer_ >= kWarningGlowTimeMax_) {
 		//	if (warningCount_ >= warningCountMax_) {
@@ -932,12 +942,18 @@ void Meteor::Update() {
 		//}
 		break;
 	case 1:
-		lifeTimer_ += DeltaTime::GetInstance()->GetGameTime();
-		alpha_ = Easing(1.0f, 0.0f, lifeTimer_, lifeTimeMax_, EaseType::kConstant);
-		model_.SetColor(Vector4::MakeColorWithoutAlpha({ 1.0f,1.0f,1.0f }, alpha_));
-		if (lifeTimer_ >= lifeTimeMax_) {
-			isActive_ = false;
+		transform_.translate.y -= 10.0f * DeltaTime::GetInstance()->GetGameTime();
+		if (isExplode) {
+			warningBlock_.SetColor({ 1.0f,0.0f,0.0f,1.0f });
+		} else {
+			warningBlock_.SetColor({ 0.5f,0.5f,1.0f,1.0f });
 		}
+		lifeTimer_ += DeltaTime::GetInstance()->GetGameTime();
+		//alpha_ = Easing(1.0f, 0.0f, lifeTimer_, lifeTimeMax_, EaseType::kConstant);
+		//model_.SetColor(Vector4::MakeColorWithoutAlpha({ 1.0f,1.0f,1.0f }, alpha_));
+		//if (lifeTimer_ >= lifeTimeMax_) {
+		//	isActive_ = false;
+		//}
 		break;
 	}
 
@@ -945,15 +961,12 @@ void Meteor::Update() {
 }
 
 void Meteor::Draw() {
-	Transform warningBlockTransform = transform_;
-
-	warningBlockTransform.scale = { 3.0f,3.0f,1.0f };
-	warningBlock_.Draw(warningBlockTransform);
+	warningBlock_.Draw(warningBlockTransform_);
+	model_.Draw(transform_);
 	switch (phase_) {
 	case 0:
 		break;
 	case 1:
-		model_.Draw(transform_);
 		break;
 	}
 }

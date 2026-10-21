@@ -227,6 +227,8 @@ private:
 	float warningTimer_ = 0.0f;
 	uint32_t warningCount_ = 0;
 	uint32_t warningCountMax_ = 0;
+	static inline float kWarningTimeMax_ = 5.0f;
+
 	static inline float kWarningGlowTimeMax_ = 0.2f;
 	static inline uint32_t kBasicWarningCountMax_ = 10;
 
@@ -234,8 +236,13 @@ private:
 
 	float alpha_;
 
+	uint32_t hitCount_;
+	static inline uint32_t kHitCountMax_ = 3;
+
 	bool isColorRed_;
 	bool isActive_;
+
+	Transform warningBlockTransform_;
 };
 
 enum class TutorialObstaclesType {
