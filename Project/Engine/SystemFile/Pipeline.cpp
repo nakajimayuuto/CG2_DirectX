@@ -447,7 +447,7 @@ IDxcBlob* Pipeline::CompileShader(const std::wstring& filePath, const wchar_t* p
 	// これからシェーダーをコンパイルする旨をログに出す.
 	GameSystem::GetInstance()->ExportLog(Convert::ConvertString(std::format(L"Begin CompileShader, path:{},profile:{}\n", filePath, profile)));
 	// hlslファイルを読む.
-	IDxcBlobEncoding* shaderSource = nullptr;
+	Microsoft::WRL::ComPtr<IDxcBlobEncoding> shaderSource = nullptr;
 	HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
 	// 読めなかったら止める.
 	assert(SUCCEEDED(hr));
@@ -469,7 +469,7 @@ IDxcBlob* Pipeline::CompileShader(const std::wstring& filePath, const wchar_t* p
 		L"-Zpr", // メモリレイアウトは行優先.
 	};
 	// 実際にコンパイルする.
-	IDxcResult* shaderResult = nullptr;
+	Microsoft::WRL::ComPtr<IDxcResult> shaderResult = nullptr;
 	hr = dxcCompiler->Compile(
 		&shaderSourceBuffer, // 読み込んだファイル.
 		argument, // コンパイルオプション.
@@ -484,7 +484,7 @@ IDxcBlob* Pipeline::CompileShader(const std::wstring& filePath, const wchar_t* p
 	// 3. 警告・エラーが出ていないかを確認する.
 
 	// 警告・エラーが出てたらログに出して止める.
-	IDxcBlobUtf8* shaderError = nullptr;
+	Microsoft::WRL::ComPtr < IDxcBlobUtf8> shaderError = nullptr;
 	shaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), nullptr);
 	if (shaderError != nullptr && shaderError->GetStringLength() != 0) {
 		GameSystem::GetInstance()->ExportLog(shaderError->GetStringPointer());
@@ -500,8 +500,6 @@ IDxcBlob* Pipeline::CompileShader(const std::wstring& filePath, const wchar_t* p
 	// 成功したログを出す.
 	GameSystem::GetInstance()->ExportLog(Convert::ConvertString(std::format(L"Compile Succeeded, path:{}, profile:{}\n", filePath, profile)));
 	// もう使わないリソースを解放.
-	shaderSource->Release();
-	shaderResult->Release();
 	// 実行用のバイナリを返却.
 	return shaderBlob;
 }

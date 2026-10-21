@@ -30,12 +30,6 @@ void MapChipManager::Draw() {
 }
 
 void MapChipManager::Finalize() {
-	for (std::vector<std::pair<std::unique_ptr<Model>, std::unique_ptr<Transform>>>& modelBlockLine : modelBlocks_) {
-		for (std::pair<std::unique_ptr<Model>, std::unique_ptr<Transform>>& modelBlock : modelBlockLine) {
-			modelBlock.first.release();
-			modelBlock.second.release();
-		}
-	}
 	modelBlocks_.clear();
 }
 

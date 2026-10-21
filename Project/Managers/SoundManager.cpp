@@ -409,8 +409,8 @@ void SoundManager::ResetBGM() {
 
 		it->second->voice->Stop();
 		it->second->voice->FlushSourceBuffers();
+		it->second->voice->DestroyVoice();
 
-		it->second.release();
 		it = playSoundDatas_.erase(it);
 	}
 

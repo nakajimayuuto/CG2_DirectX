@@ -147,17 +147,6 @@ public:
 
 	static void ExportLog(const std::string& message);
 
-	// CompileShader関数(どうやってファイル分けするかね).
-	static IDxcBlob* CompileShader(
-		// CompilerするShaderファイルへのパス.
-		const std::wstring& filePath,
-		// Compilerに使用するProfile.
-		const wchar_t* profile,
-		// 初期化で生成したものを3つ.
-		IDxcUtils* dxcUtils,
-		IDxcCompiler3* dxcCompiler,
-		IDxcIncludeHandler* includeHandler);
-
 	// BufferResourceを作る関数.
 	static Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr<ID3D12Device> device, size_t sizeInBytes);
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
