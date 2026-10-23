@@ -145,7 +145,23 @@ void ProjectileManager::Update() {
 	}
 
 	for (auto& meteor : meteors) {
-		CollisionManager::GetInstance()->AddColliderList(meteor->GetCollider());
+		CollisionManager::GetInstance()->AddColliderList(reinterpret_cast<Collider*>(meteor.get()));
+	}
+
+	for (auto& enemyBlock : enemyBlocks) {
+		enemyBlock->Update();
+	}
+
+	for (auto it = enemyBlocks.begin(); it != enemyBlocks.end(); ) {
+		if (!(*it)->GetIsActive()) {
+			it = enemyBlocks.erase(it);
+		} else {
+			++it;
+		}
+	}
+
+	for (auto& enemyBlock : enemyBlocks) {
+		CollisionManager::GetInstance()->AddColliderList(reinterpret_cast<Collider*>(enemyBlock.get()));
 	}
 
 	for (auto& tutorial : tutorials) {
@@ -184,6 +200,10 @@ void ProjectileManager::Draw() {
 
 	for (auto& meteor : meteors) {
 		meteor->Draw();
+	}
+
+	for (auto& enemyBlock : enemyBlocks) {
+		enemyBlock->Draw();
 	}
 
 	for (auto& tutorial : tutorials) {
@@ -269,6 +289,13 @@ void ProjectileManager::CreateMeteor(const Transform& transform, CollisionAttrib
 	meteor = std::make_unique<Meteor>();
 	meteor->Initialize(transform, colliderName, damage, damageCoolTime);
 	meteors.push_back(std::move(meteor));
+}
+
+void ProjectileManager::CreateEnemyBlock(const Transform& transform, const Transform& targetTransform, CollisionAttributeName colliderName, float damage, uint32_t type) {
+	std::unique_ptr<EnemyBlock> enemyBlock;
+	enemyBlock = std::make_unique<EnemyBlock>();
+	enemyBlock->Initialize(transform, targetTransform, colliderName, damage, static_cast<float>(type));
+	enemyBlocks.push_back(std::move(enemyBlock));
 }
 
 void ProjectileManager::CreateTutorialObstacle(const Vector3& position, TutorialObstaclesType type) {
@@ -799,7 +826,7 @@ void Lightning::Update() {
 		if (warningTimer_ >= kWarningGlowTimeMax_) {
 			if (warningCount_ >= warningCountMax_) {
 				phase_ = 1;
-				transform_.translate.y -= 0.5f;
+				transform_.translate.y -= 1.5f;
 				collider_->SetActive(true);
 				MapChipManager::GetInstance()->DeleteBlock(transform_.GetWorldPosition(), 0, 0);
 			}
@@ -845,25 +872,24 @@ void Meteor::Initialize(const Transform& transform, CollisionAttributeName colli
 	transform_.translate.y = 30.0f;
 	transform_.rotate = { 0.0f,0.0f,0.0f };
 	transform_.scale = { 3.0f,3.0f,1.0f };
-	collider_ = std::make_unique<Collider>();
-	collider_->SetDamage(damage);
-	collider_->SetDamageCoolTime(damageCoolTime);
+	damage_ = damage;
+	damageCoolTime_ = damageCoolTime;
 	model_.Initialize("block_template");
 	model_.SetLightingType(LightingType::kNone);
 	warningBlock_.Initialize("block_template");
 	warningBlock_.ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("skeleton_block"));
 	warningBlock_.SetColor({ 1.0f,0.0f,0.0f,1.0f });
-	collider_->SetSize({ 3.0f, 3.0f,3.0f });
-	collider_->SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
-	collider_->SetColliderType(ColliderType::kBox);
-	collider_->SetActive(false);
-	collider_->SetRadius(20.0f);
-	collider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(colliderName));
+	colliderSize_ = { 1.5f,1.5f,1.0f };
+	colliderColor_ = { 1.0f,0.0f,0.0f,1.0f };
+	colliderType_ = ColliderType::kBox;
+	isColliderActive_ = true;
+	colliderRadius_ = 20.0f;
+	collisionAttribute_ = CollisionManager::GetInstance()->GetCollisionAttribute(colliderName);
 	isActive_ = true;
 	isColliderActive_ = false;
 
 	lifeTimer_ = 0.0f;
-	lifeTimeMax_ = 1.0f;
+	lifeTimeMax_ = 10.0f;
 
 	warningTimer_ = 0.0f;
 
@@ -872,10 +898,18 @@ void Meteor::Initialize(const Transform& transform, CollisionAttributeName colli
 	warningCountMax_ = kBasicWarningCountMax_;
 
 	hitCount_ = 0;
+	MapChipField::IndexSet indexSet;
+	Vector3 newPos = transform_.translate;
+	newPos.y = 35.0f;
+	indexSet = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipIndexSetByPosition(newPos);
+	transform_.translate = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(indexSet.xIndex, indexSet.yIndex);
 
 	phase_ = 0;
 	alpha_ = 1.0f;
 	isColorRed_ = true;
+
+	hitStopTimer_ = 0.0f;
+	hitStopTimeMax_ = 0.2f;
 }
 
 void Meteor::Update() {
@@ -887,14 +921,21 @@ void Meteor::Update() {
 	uint32_t count = 0;
 	bool isExplode = false;
 	while (true) {
-		MapChipType type = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipTypeByIndex(indexSet.xIndex, yIndex);
-		uint32_t subId = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipSubIDByIndex(indexSet.xIndex, yIndex);
-		if (type == MapChipType::kBlock) {
-			count++;
-			if (subId == 2) {
-				isExplode = true;
+		MapChipType type;
+		uint32_t subId;
+		for (uint32_t i = 0; i < 3; i++) {
+			type = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipTypeByIndex(indexSet.xIndex - 1 + i, yIndex);
+			subId = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipSubIDByIndex(indexSet.xIndex - 1 + i, yIndex);
+			if (type == MapChipType::kBlock) {
+				count++;
 				break;
 			}
+		}
+
+		if (subId == 2) {
+			isExplode = true;
+			yIndex--;
+			break;
 		}
 
 		if (count >= kHitCountMax_ - hitCount_) {
@@ -904,9 +945,6 @@ void Meteor::Update() {
 	}
 	warningBlockTransform_.translate = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(indexSet.xIndex, yIndex - 1);
 
-	Transform colliderTransform = transform_;
-	colliderTransform.translate.y = transform_.translate.y + 20.0f;
-	collider_->SetTransform(colliderTransform);
 	switch (phase_) {
 	case 0:
 		if (isExplode) {
@@ -917,47 +955,74 @@ void Meteor::Update() {
 
 		warningTimer_ += DeltaTime::GetInstance()->GetGameTime();
 		if (warningTimer_ >= kWarningTimeMax_) {
-			;
 			phase_++;
 		}
-
-		//
-		//if (warningTimer_ >= kWarningGlowTimeMax_) {
-		//	if (warningCount_ >= warningCountMax_) {
-		//		phase_ = 1;
-		//		transform_.translate.y -= 0.5f;
-		//		collider_->SetActive(true);
-		//		MapChipManager::GetInstance()->DeleteBlock(transform_.GetWorldPosition(), 0, 0);
-		//	}
-		//
-		//	if (isColorRed_) {
-		//		isColorRed_ = false;
-		//		warningBlock_.SetColor({ 1.0f,0.0f,0.0f,1.0f });
-		//	} else {
-		//		isColorRed_ = true;
-		//		warningBlock_.SetColor({ 1.0f,1.0f,0.0f,1.0f });
-		//	}
-		//
-		//	warningTimer_ -= kWarningGlowTimeMax_;
-		//}
 		break;
 	case 1:
-		transform_.translate.y -= 10.0f * DeltaTime::GetInstance()->GetGameTime();
 		if (isExplode) {
 			warningBlock_.SetColor({ 1.0f,0.0f,0.0f,1.0f });
 		} else {
 			warningBlock_.SetColor({ 0.5f,0.5f,1.0f,1.0f });
 		}
+
+		if (hitStopTimer_ > 0.0f) {
+			hitStopTimer_ -= DeltaTime::GetInstance()->GetGameTime();
+			break;
+		}
 		lifeTimer_ += DeltaTime::GetInstance()->GetGameTime();
+		Vector3 collisionPosition = transform_.GetWorldPosition();
+		collisionPosition.x -= 1.0f;
+		collisionPosition.y -= 1.0f;
+		CollisionMapInfo info;
+		info.width = 0.9f;
+		info.height = 0.9f;
+		info.movementAmount = { 0.0f,0.0f,0.0f };
+		info.movementAmount.y = -kFallingSpeed * DeltaTime::GetInstance()->GetGameTime();
+		for (uint32_t i = 0; i < 3; i++) {
+			MapChipManager::GetInstance()->MapCollisionNoCenter(collisionPosition, info);
+			if (info.isLanding) {
+				if (hitCount_ >= kHitCountMax_) {
+					collisionPosition = transform_.GetWorldPosition();
+					collisionPosition.y = transform_.GetWorldPosition().y - 1.0f;
+					for (uint32_t i = 0; i < 3; i++) {
+						collisionPosition.x = transform_.GetWorldPosition().x - 1.0f;
+						for (uint32_t j = 0; j < 3; j++) {
+							MapChipManager::GetInstance()->CreateBlock(collisionPosition);
+							collisionPosition.x += 1.0f;
+						}
+						collisionPosition.y += 1.0f;
+					}
+					isActive_ = false;
+				}
+				if (info.subID == 2) {
+					isActive_ = false;
+					break;
+				}
+				MapChipManager::GetInstance()->DeleteBlock(transform_.GetWorldPosition(), -1, -2);
+				MapChipManager::GetInstance()->DeleteBlock(transform_.GetWorldPosition(), 0, -2);
+				MapChipManager::GetInstance()->DeleteBlock(transform_.GetWorldPosition(), 1, -2);
+				hitStopTimer_ = hitStopTimeMax_;
+				hitCount_++;
+				break;
+			}
+			collisionPosition.x += 1.0f;
+		}
+
+		transform_.translate += info.movementAmount;
+
+
 		//alpha_ = Easing(1.0f, 0.0f, lifeTimer_, lifeTimeMax_, EaseType::kConstant);
 		//model_.SetColor(Vector4::MakeColorWithoutAlpha({ 1.0f,1.0f,1.0f }, alpha_));
-		//if (lifeTimer_ >= lifeTimeMax_) {
-		//	isActive_ = false;
-		//}
+		if (lifeTimer_ >= lifeTimeMax_) {
+			isActive_ = false;
+		}
+		if (transform_.translate.y <= -4.0f) {
+			isActive_ = false;
+		}
 		break;
 	}
 
-	//collider_->DrawCollider();
+	DrawCollider();
 }
 
 void Meteor::Draw() {
@@ -969,4 +1034,112 @@ void Meteor::Draw() {
 	case 1:
 		break;
 	}
+}
+
+void EnemyBlock::Initialize(const Transform& transform, const Transform& targetTransform, CollisionAttributeName colliderName, float damage, float damageCoolTime) {
+	InitializeTemplate(transform, colliderName, damage, damageCoolTime);
+	//anchorPoint_.push_back(transform.GetWorldPosition() + (Vector3(0.3f, -1.0f, 0.0f) * (transform.GetWorldPosition() - targetTransform.GetWorldPosition()).Length()));
+	//anchorPoint_.push_back(transform.GetWorldPosition());
+	anchorPoint_.push_back(transform.GetWorldPosition());
+	Vector3 centerPosition = ((transform.GetWorldPosition() - targetTransform.GetWorldPosition()) / 2.0f) + targetTransform.GetWorldPosition();
+	centerPosition.y = 30.0f;
+	anchorPoint_.push_back(centerPosition);
+	anchorPoint_.push_back(targetTransform.GetWorldPosition());
+	float length = (transform.GetWorldPosition() - centerPosition).Length() + (centerPosition - targetTransform.GetWorldPosition()).Length();
+	anchorPoint_.push_back(targetTransform.GetWorldPosition() + (Vector3(0.0f, -1.0f, 0.0f) * length));
+	type = kBlockToPlayer;
+	moveTimer_ = 0.0f;
+}
+
+void EnemyBlock::Initialize(const Transform& transform, uint32_t mapIndexX, CollisionAttributeName colliderName, float damage, float damageCoolTime)
+{
+	InitializeTemplate(transform, colliderName, damage, damageCoolTime);
+	//anchorPoint_.push_back(transform.GetWorldPosition() + (Vector3(0.3f, -1.0f, 0.0f) * (transform.GetWorldPosition() - targetTransform.GetWorldPosition()).Length()));
+	//anchorPoint_.push_back(transform.GetWorldPosition());
+	anchorPoint_.push_back(transform.GetWorldPosition());
+	MapChipField::IndexSet indexSet;
+	indexSet = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipIndexSetByPosition(transform.translate);
+	uint32_t yIndex = 0;
+	while (true) {
+		MapChipType type = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipTypeByIndex(indexSet.xIndex, yIndex);
+		if (type == MapChipType::kBlock) {
+			break;
+		}
+		yIndex++;
+	}
+	Vector3 finalPos = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(mapIndexX, yIndex);
+	Vector3 centerPosition = ((transform.GetWorldPosition() - finalPos) / 2.0f) + finalPos;
+	centerPosition.y = 30.0f;
+	anchorPoint_.push_back(centerPosition);
+	anchorPoint_.push_back(finalPos);
+	float length = (transform.GetWorldPosition() - centerPosition).Length() + (centerPosition - finalPos).Length();
+	anchorPoint_.push_back(finalPos + (Vector3(0.0f, -1.0f, 0.0f) * length));
+	type = kBlockToField;
+	moveTimer_ = 0.0f;
+}
+
+void EnemyBlock::Update() {
+	switch (type) {
+	case EnemyBlock::kBlockToPlayer:
+	case EnemyBlock::kBlockToField:
+		switch (phase_) {
+		case 0:
+			moveTimer_ += DeltaTime::GetInstance()->GetGameTime();
+			transform_.translate = CatmullRomInterpolation(anchorPoint_, moveTimer_, kMoveTimerMax_);
+			moveAmount_ = (prePos_ - transform_.translate);
+			if (moveTimer_ >= kMoveTimerMax_) {
+				isActive_ = false;
+			}
+			break;
+		}
+		prePos_ = transform_.translate;
+
+		CollisionMapInfo collisionMapInfo;
+
+		collisionMapInfo.movementAmount = { 0.0f,-1.0f,0.0f };
+		collisionMapInfo.width = 0.0f;
+		collisionMapInfo.height = 0.0f;
+
+		MapChipManager::GetInstance()->MapCollision(prePos_, collisionMapInfo);
+
+		if (collisionMapInfo.isLanding) {
+			MapChipManager::GetInstance()->CreateBlock(prePos_, static_cast<uint32_t>(damageCoolTime_));
+			isActive_ = false;
+			return;
+		}
+	}
+
+
+	DrawCollider();
+}
+
+void EnemyBlock::Draw() {
+	model_.Draw(transform_);
+	if (phase_ == 2) {
+	}
+}
+
+void EnemyBlock::InitializeTemplate(const Transform& transform, CollisionAttributeName colliderName, float damage, float damageCoolTime) {
+	transform_ = transform;
+	transform_.translate.y = 30.0f;
+	transform_.rotate = { 0.0f,0.0f,0.0f };
+	transform_.scale = { 1.0f,1.0f,1.0f };
+	model_.Initialize("block_template");
+	model_.SetLightingType(LightingType::kNone);
+
+
+	damage_ = damage;
+	damageCoolTime_ = damageCoolTime;
+	colliderSize_ = { 1.0f,1.0f,1.0f };
+	colliderColor_ = { 1.0f,0.0f,0.0f,1.0f };
+	colliderType_ = ColliderType::kBox;
+	isColliderActive_ = true;
+	colliderRadius_ = 20.0f;
+	collisionAttribute_ = CollisionManager::GetInstance()->GetCollisionAttribute(colliderName);
+
+	isActive_ = true;
+	isColliderActive_ = true;
+
+	lifeTimer_ = 0.0f;
+	phase_ = 0;
 }

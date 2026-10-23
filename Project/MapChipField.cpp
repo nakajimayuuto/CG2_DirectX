@@ -129,7 +129,10 @@ void MapChipField::SetMapChipSubIDByIndex(uint32_t xIndex, uint32_t yIndex, uint
 }
 
 Vector3 MapChipField::GetMapChipPositionByIndex(uint32_t xIndex, uint32_t yIndex) {
-	return Vector3(kBlockWidth * xIndex, kBlockHeight * (kNumBlockVertical - 1 - yIndex), 0);
+	return Vector3(
+		std::clamp(kBlockWidth * static_cast<float>(xIndex),0.0f, static_cast<float>(kNumBlockHorizontal)),
+		std::clamp(kBlockHeight * (kNumBlockVertical - 1 - yIndex),0.0f, static_cast<float>(kNumBlockVertical)),
+		0.0f);
 }
 
 MapChipField::IndexSet MapChipField::GetMapChipIndexSetByPosition(const Vector3& position) {

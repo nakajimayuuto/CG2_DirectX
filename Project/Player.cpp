@@ -12,12 +12,15 @@ void Player::Initialize() {
 	transform_.translate = { 5.0f, kTranslateBlankY + kStartPosY,0.0f };
 
 	/// HPGauge.
-	maxHP_ = 200.0f;
+	maxHP_ = 50.0f;
 	currentHP_ = maxHP_;
 
 	hpGauge_ = std::make_unique<HPGauge>();
 	hpGauge_->Initialize(&currentHP_, maxHP_, { 200.0f,20.0f });
 	hpGauge_->SetPosition({ -500.0f,300.0f });
+	hpGauge_->SetScale({ 1.0f, 1.0f });
+	hpGauge_->SetGaugeLine(true);
+	hpGauge_->SetGaugeLineInterval(10);
 
 	// 後々削除
 	transformColliderOffset.Initialize();
@@ -52,7 +55,7 @@ void Player::Initialize() {
 	//emitter_->Initialize(transform_, 3, 0.5f);
 
 	colliderRadius_ = 2.0f;
-	colliderSize_ = { 0.5f,1.0f,0.5f };
+	colliderSize_ = { 0.25f,0.25f,0.25f };
 	colliderType_ = ColliderType::kBox;
 
 
@@ -330,8 +333,6 @@ void Player::BehaviorShotUpdate() {
 
 void Player::BlockShot(const Vector2& shotDir) {
 	ProjectileManager::GetInstance()->CreateBullet(transform_, { shotDir.x * kJumpAcceleration,shotDir.y * kJumpAcceleration,0.0f }, BulletType::kBlock, CollisionAttributeName::kCollisionPlayerAttack, 10.0f, 3.0f);
-	//ProjectileManager::GetInstance()->CreateLightning(transform_, CollisionAttributeName::kCollisionEnemyAttack, 10.0f, 3.0f);
-	ProjectileManager::GetInstance()->CreateMeteor(transform_, CollisionAttributeName::kCollisionEnemyAttack, 10.0f, 3.0f);
 }
 
 void Player::MapChipDigUpdate() {
@@ -377,6 +378,11 @@ void Player::BlockShotUpdate() {
 		}
 
 		velocity_ += Vector3(-direction.x * kJumpAcceleration, -direction.y * kJumpAcceleration, 0.0f);
+		if (onGround_) {
+			if (velocity_.y <= 0.0f) {
+				velocity_.y = 0.0f;
+			}
+		}
 
 		DeltaTime::GetInstance()->SetGameTimeSpeed(1.0f);
 	}
@@ -648,7 +654,8 @@ void Player::OnCollision([[maybe_unused]] Collider* other) {
 	colliderColor_ = { 1.0f,0.0f,0.0f,1.0f };
 
 	if (damageCoolTimer_ <= 0.0f) {
-		currentHP_ -= (other->GetDamage() * DifficultyManager::GetInstance()->GetDamageMagnification());
+		//currentHP_ -= (other->GetDamage() * DifficultyManager::GetInstance()->GetDamageMagnification());
+		currentHP_ -= (other->GetDamage());
 
 		DeltaTime::GetInstance()->SetHitStop(other->GetDamage() * 0.01f);
 		if (other->GetDamageCoolTime() == -1.0f) {
@@ -660,7 +667,7 @@ void Player::OnCollision([[maybe_unused]] Collider* other) {
 		ParticleManager::GetInstance()->SpawnNumbers(other->GetDamage(), damageTransform, { 1.0f,0.5f,0.5f });
 		InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.5f);
 
-		if (currentHP_ < 0.0f) {
+		if (currentHP_ <= 0.0f) {
 			currentHP_ = 0.0f;
 			isDeath_ = true;
 			for (uint32_t i = 0; i < 30; i++) {

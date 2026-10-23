@@ -6,12 +6,17 @@ void (Boss::* Boss::pInitializeFunc[])() = {
 		&Boss::WarpInitialize,
 		&Boss::DownInitialize,
 		&Boss::BulletInitialize,
+		&Boss::DashInitialize,
+		&Boss::NearLightningInitialize,
+		&Boss::MeteorInitialize,
 };
 
 void (Boss::* Boss::pUpdateFunc[])() = {
 		&Boss::WarpUpdate,
-		&Boss::BulletUpdate,
 		&Boss::DownUpdate,
+		&Boss::BulletUpdate,
+		&Boss::NearLightningUpdate,
+		&Boss::MeteorUpdate,
 };
 
 Boss::~Boss() {
@@ -24,20 +29,6 @@ void Boss::Initialize() {
 	halberdModel_.Initialize("halberd");
 	anchorPointCenter_ = Vector3(20.0f, kBasicPositionY, 0.0f);
 	anchorPoints_.push_back(anchorPointCenter_);
-
-	//for (uint32_t i = 0; i < 8; i++) {
-	//	Vector3 pos = { 0.0f,0.5f,0.0f };
-	//	pos.x = Rotate({ 30.0f,0.0f }, { anchorPointCenter_.x,anchorPointCenter_.z }, (i * 45.0f)).x;
-	//	pos.z = Rotate({ 30.0f,0.0f }, { anchorPointCenter_.x,anchorPointCenter_.z }, (i * 45.0f)).y;
-	//	anchorPoints_.push_back(anchorPointCenter_ + pos);
-	//}
-	//
-	//for (uint32_t i = 0; i < 16; i++) {
-	//	Vector3 pos = { 0.0f,0.5f,0.0f };
-	//	pos.x = Rotate({ 60.0f,0.0f }, { anchorPointCenter_.x,anchorPointCenter_.z }, (i * 22.5f)).x;
-	//	pos.z = Rotate({ 60.0f,0.0f }, { anchorPointCenter_.x,anchorPointCenter_.z }, (i * 22.5f)).y;
-	//	anchorPoints_.push_back(anchorPointCenter_ + pos);
-	//}
 
 	currentAttack_ = Attacks::kWarp;
 	transform_.Initialize();
@@ -152,6 +143,13 @@ void Boss::Initialize() {
 	downSpecialAttackCount_ = 0;
 
 	downDamageMangification_ = 1.0f;
+
+	attackCount_ = 0;
+
+	blockModel_.Initialize("boss_block");
+	blockModel_.SetBlendMode(BlendMode::kNormalCullNone);
+	modelBlockTransform_.Initialize();
+	modelBlockTransform_.SetParent(&modelTransform_);
 }
 
 void Boss::SetAttackData(Attacks attackName, float weight) {
@@ -314,6 +312,8 @@ void Boss::DistanceCheckUpdate() {
 }
 
 void Boss::RootUpdate() {
+	modelBlockTransform_.rotate.y += kBlockRotate_ * DeltaTime::GetInstance()->GetGameTime();
+
 	if (isPlayAttack_) {
 		return;
 	}
@@ -340,6 +340,11 @@ void Boss::AttackSelect(std::vector<AttackData> attackDatas) {
 	std::vector<std::pair<Attacks, float>> randomData;
 	float weightMax = 0.0f;
 	float selectNum;
+
+	if (attackCount_ >= kAttackCountMax_) {
+		attackCount_++;
+		attackRequest_ = Attacks::kBulletShot;
+	}
 
 	for (AttackData& data : attackDatas) {
 		float weight = data.weight * std::pow(0.5f, static_cast<float>(data.continuousCount)) * data.magnification * 10000.0f;
@@ -378,13 +383,6 @@ void Boss::ClearAttackDatas() {
 }
 
 void Boss::HalberdStanceUpdate() {
-	basicHalberdPos = kBasicHalberdNearPos;
-	basicHalberdRotate = kBasicHalberdNearRotate;
-
-	basicHalberdLeftRotate.x = kBasicHalberdNormalLeftRotateX;
-	basicHalberdRightRotate.x = kBasicHalberdNormalRightRotateX;
-	halberdLeftAttackTimer_ = 0.0f;
-	halberdRightAttackTimer_ = kHalberdFarAttackTimerMax_ / 2.0f;
 }
 
 void Boss::Phase2HalberdFarAttackUpdate() {
@@ -398,6 +396,8 @@ void Boss::Draw() {
 	//model_.Draw(modelTransform_,true);
 	renderer->DrawModel(modelTransform_, &model_, true);
 	renderer->DrawShadow(modelTransform_, &model_, { 0.0f,0.0f,0.0f,1.0f });
+	renderer->DrawModel(modelBlockTransform_, &blockModel_, true);
+	renderer->DrawShadow(modelBlockTransform_, &blockModel_, { 0.0f,0.0f,0.0f,1.0f });
 
 	renderer->DrawModel(halberdTransform_, &halberdModel_, true);
 	renderer->DrawShadow(halberdTransform_, &halberdModel_, { 0.0f,0.0f,0.0f,1.0f });
@@ -647,9 +647,12 @@ void Boss::DownUpdate() {
 void Boss::BulletInitialize() {
 	kMaxAttackTimer = kBulletStartGapTimerMax;
 	bulletShotDirectionTemp_ = { 0.0f,0.0f,1.0f };
+	ProjectileManager::GetInstance()->CreateEnemyBlock(transform_,*targetTransform_, CollisionAttributeName::kCollisionEnemyAttack, 10.0f, 1.0f);
+	AttackFinished();
 }
 
 void Boss::BulletUpdate() {
+	return;
 	switch (currentAttackPhase) {
 	case 0: // ハルバードを前に向ける.
 		modelTransform_.rotate.y = Easing(0.0f, Radian(kBulletAnimRotateY), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
@@ -685,6 +688,60 @@ void Boss::BulletUpdate() {
 		}
 		break;
 	}
+}
+
+void Boss::DashInitialize(){
+	
+}
+
+void Boss::DashUpdate(){
+	switch (currentAttackPhase) {
+	case 0: // ハルバードを前に向ける.
+		modelTransform_.rotate.y = Easing(0.0f, Radian(kBulletAnimRotateY), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.translate = Easing(basicHalberdPos, kBulletHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.rotate = Easing(basicHalberdRotate, kBasicHalberdFarRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		transform_.rotate.y = atan2(transform_.translate.x - targetTransform_->translate.x, transform_.translate.z - targetTransform_->translate.z);
+
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kBulletStayTimerMax);
+			if ((targetTransform_->translate - halberdTransform_.GetWorldPosition()).Length() != 0.0f) {
+				bulletShotDirectionTemp_ = GetBulletDire();
+			}
+		}
+		break;
+	case 1: // 攻撃の前隙.
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			SoundManager::GetInstance()->SoundPlay("snd_bullet_shot", 1.0f, 1.0f, kSoundEffect);
+			NextAttackPhase(kBulletStayTimerMax);
+			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, bulletShotDirectionTemp_ * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, 10.0f, 3.0f);
+		}
+		break;
+	case 2: // 攻撃の後隙.
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kBulletFinishedGapTimerMax);
+		}
+		break;
+	case 3: // 見た目を戻す.
+		modelTransform_.rotate.y = Easing(Radian(kBulletAnimRotateY), 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.translate = Easing(kBulletHalberdPos, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.rotate = Easing(kBasicHalberdFarRotate, basicHalberdRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			AttackFinished();
+		}
+		break;
+	}
+}
+
+void Boss::NearLightningInitialize(){
+}
+
+void Boss::NearLightningUpdate(){
+}
+
+void Boss::MeteorInitialize(){
+}
+
+void Boss::MeteorUpdate(){
 }
 
 void Boss::StartAnimInitialize() {

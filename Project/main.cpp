@@ -62,7 +62,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 }
 
 void LoadDatas() {
-	ModelManager::GetInstance()->RegisterObj("boss", "Resource/boss", "boss_ghost.obj", false);
+	ModelManager::GetInstance()->RegisterObj("boss", "Resource/boss", "boss_lightning.obj", false);
+	ModelManager::GetInstance()->RegisterObj("boss_block", "Resource/boss", "boss_lightning_block.obj", false);
 	ModelManager::GetInstance()->RegisterObj("dummy", "Resource/Dummy", "dummy.obj", true);
 	ModelManager::GetInstance()->RegisterObj("lightning", "Resource/Lightning", "lightning.obj", true);
 	ModelManager::GetInstance()->RegisterObj("ground", "Resource/Ground", "ground.obj");

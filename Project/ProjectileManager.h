@@ -212,8 +212,6 @@ public:
 	bool GetIsActive() { return isActive_; };
 
 	Transform GetTranasform() { return transform_; };
-
-	Collider* GetCollider() { return collider_.get(); };
 private:
 	Model model_;
 	Model warningBlock_;
@@ -224,15 +222,18 @@ private:
 	float lifeTimer_ = 0.0f;
 	float lifeTimeMax_ = 1.0f;
 
+	float hitStopTimer_ = 0.0f;
+	static inline float hitStopTimeMax_ = 0.2f;
+
 	float warningTimer_ = 0.0f;
 	uint32_t warningCount_ = 0;
 	uint32_t warningCountMax_ = 0;
-	static inline float kWarningTimeMax_ = 5.0f;
+	static inline float kWarningTimeMax_ = 2.0f;
 
 	static inline float kWarningGlowTimeMax_ = 0.2f;
 	static inline uint32_t kBasicWarningCountMax_ = 10;
 
-	std::unique_ptr<Collider> collider_;
+	static inline float kFallingSpeed = 5.0f;
 
 	float alpha_;
 
@@ -243,6 +244,45 @@ private:
 	bool isActive_;
 
 	Transform warningBlockTransform_;
+};
+
+class EnemyBlock :Collider{
+public:
+	enum MoveType {
+		kBlockToPlayer,
+		kBlockToField,
+	};
+	void Initialize(const Transform& transform, const Transform& targetTransform, CollisionAttributeName colliderName, float damage, float damageCoolTime);
+
+	void Initialize(const Transform& transform,uint32_t mapIndexX, CollisionAttributeName colliderName, float damage, float damageCoolTime);
+
+	void Update();
+
+	void Draw();
+
+	bool GetIsActive() { return isActive_; };
+
+	Transform GetTranasform() { return transform_; };
+private:
+	void InitializeTemplate(const Transform& transform, CollisionAttributeName colliderName, float damage, float damageCoolTime);
+private:
+	std::vector<Vector3> anchorPoint_;
+	Vector3 afterVelocity_;
+	Vector3 moveAmount_;
+	Vector3 prePos_;
+	Model model_;
+	float speed_;
+
+	uint32_t phase_;
+
+	float moveTimer_ = 0.0f;
+	static inline float kMoveTimerMax_ = 3.0f;
+	float lifeTimer_ = 0.0f;
+	static inline float kLifeTimeMax_ = 5.0f;
+
+	bool isActive_;
+
+	MoveType type;
 };
 
 enum class TutorialObstaclesType {
@@ -300,6 +340,8 @@ public:
 	void CreateLightning(const Transform& transform, CollisionAttributeName colliderName, float damage, float damageCoolTime);
 	void CreateMeteor(const Transform& transform, CollisionAttributeName colliderName, float damage, float damageCoolTime);
 
+	void CreateEnemyBlock(const Transform& transform, const Transform& targetTransform, CollisionAttributeName colliderName, float damage, uint32_t type);
+
 	void CreateTutorialObstacle(const Vector3& position, TutorialObstaclesType type);
 private:
 	std::vector<std::unique_ptr<Bullet>> bullets;
@@ -308,6 +350,7 @@ private:
 	std::vector<std::unique_ptr<Explode>> explodes;
 	std::vector<std::unique_ptr<Lightning>> lightnings;
 	std::vector<std::unique_ptr<Meteor>> meteors;
+	std::vector<std::unique_ptr<EnemyBlock>> enemyBlocks;
 	std::vector<std::unique_ptr<TutorialObstacles>> tutorials;
 	std::vector<std::string> lightNames_;
 	const uint32_t kBulletLightMax_ = 30;

@@ -148,7 +148,7 @@ private:
 	float jumpBlankTimer_ = 0.0f;
 	
 	static inline const float kLimitFallSpeed = 30.0f;
-	static inline const float kJumpAcceleration =25.0f;
+	static inline const float kJumpAcceleration =20.0f;
 
 	float coyoteShotTimer_ = 0.0f;
 	static inline float kCoyoteShotTimerMax = 0.1f;

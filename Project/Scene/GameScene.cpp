@@ -110,6 +110,18 @@ void GameScene::Update() {
 	if (InputManager::GetInstance()->TriggerKey(DIK_F2)) {
 		MapChipManager::GetInstance()->ChangeSolidMode();
 	}
+
+	if (InputManager::GetInstance()->PressKey(DIK_RETURN)) {
+		if (InputManager::GetInstance()->TriggerKey(DIK_1)) {
+			ProjectileManager::GetInstance()->CreateLightning(*player_->GetTransform(), CollisionAttributeName::kCollisionEnemyAttack, 10.0f, 3.0f);
+		}
+		if (InputManager::GetInstance()->TriggerKey(DIK_2)) {
+			ProjectileManager::GetInstance()->CreateMeteor(*player_->GetTransform(), CollisionAttributeName::kCollisionEnemyAttack, 10.0f, 3.0f);
+		}
+		if (InputManager::GetInstance()->TriggerKey(DIK_3)) {
+			ProjectileManager::GetInstance()->CreateEnemyBlock(*boss_->GetTransform(), *player_->GetTransform(), CollisionAttributeName::kCollisionEnemyAttack, 10.0f, 1.0f);
+		}
+	}
 #endif // _DEBUG
 
 	if (gameOverMenu_->GetIsActive()) {
