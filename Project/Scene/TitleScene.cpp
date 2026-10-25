@@ -116,7 +116,11 @@ void TitleScene::TitleUpdate() {
 		InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.5f);
 		currentMenuSelectNum_ = 0;
 		//currentPhase_ = TitlePhase::kMenuSelect;
-		currentPhase_ = TitlePhase::kDifficultySelect;
+		//currentPhase_ = TitlePhase::kDifficultySelect;
+
+		currentPhase_ = TitlePhase::kTitle;
+		isSubmit_ = true;
+		fade_->Start(Fade::Status::FadeOut, 1.0f);
 	}
 
 	if (TriggerChancel()) {

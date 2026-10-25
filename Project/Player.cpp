@@ -74,6 +74,19 @@ void Player::Initialize() {
 
 	deathTimer_ = 0.0f;
 	onGround_ = true;
+
+	subIds_.clear();
+
+	blockRotateY_ = 0.0f;
+
+	onGround_ = true;
+
+	for (uint32_t i = 0; i < 5; i++) {
+		std::unique_ptr<Model> model;
+		model = std::make_unique<Model>();
+		model->Initialize("block_template");
+		blockUIs_.push_back(std::move(model));
+	}
 }
 
 void Player::InitializeFloatingGimmick() {
@@ -202,6 +215,12 @@ void Player::Update() {
 	LightManager::GetInstance()->SetLightIsActive("player_light", true);
 
 	CheckTutorialFlag();
+
+	if (blockRotateY_ >= Radian(360.0f)) {
+		blockRotateY_ -= Radian(360.0f);
+	}
+
+	blockRotateY_ += Radian(kBlockRotateYSpeed) * DeltaTime::GetInstance()->GetGameTime();
 
 	if (behaviorRequest_) {
 		behavior_ = behaviorRequest_.value();
@@ -332,12 +351,26 @@ void Player::BehaviorShotUpdate() {
 }
 
 void Player::BlockShot(const Vector2& shotDir) {
-	ProjectileManager::GetInstance()->CreateBullet(transform_, { shotDir.x * kJumpAcceleration,shotDir.y * kJumpAcceleration,0.0f }, BulletType::kBlock, CollisionAttributeName::kCollisionPlayerAttack, 10.0f, 3.0f);
+	uint32_t bulletId;
+	for (auto it = subIds_.begin(); it != subIds_.end();) {
+		if (it == subIds_.end() - 1) {
+			bulletId = *it;
+			it = subIds_.erase(it);
+		} else {
+			it++;
+		}
+	}
+	ProjectileManager::GetInstance()->CreateBullet(transform_, { shotDir.x * kJumpAcceleration,shotDir.y * kJumpAcceleration,0.0f }, BulletType::kBlock, CollisionAttributeName::kCollisionPlayerAttack, 10.0f, static_cast<float>(bulletId));
 }
 
 void Player::MapChipDigUpdate() {
 	if (InputManager::GetInstance()->TriggerAction(InputAction::ATTACK)) {
-		MapChipManager::GetInstance()->DeleteBlock(transform_.translate, 0, -1);
+		if (subIds_.size() < 5) {
+			uint32_t id = MapChipManager::GetInstance()->DeleteBlock(transform_.translate, 0, -1);
+			if (id != -1) {
+				subIds_.push_back(id);
+			}
+		}
 	}
 }
 
@@ -400,7 +433,7 @@ void Player::GravityUpdate() {
 
 	if (!onGround_) {
 		// 落下速度.
-		velocity_ += Vector3(0.0f, -kGravityAcceleration, 0.0f);
+ 		velocity_ += Vector3(0.0f, -kGravityAcceleration, 0.0f) * std::min(DeltaTime::GetInstance()->GetGameTime(),1.0f / 30.0f);
 		// 速度制限.
 		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
 	}
@@ -472,9 +505,11 @@ void Player::MovingUpdate() {
 	}
 
 	if (InputManager::GetInstance()->TriggerAction(InputAction::JUMP)) {
-		behaviorRequest_ = Behavior::kShot;
-		coyoteShotTimer_ = 0.0f;
-		preDirection_ = { 0.0f,-1.0f };
+		if (!subIds_.empty()) {
+			behaviorRequest_ = Behavior::kShot;
+			coyoteShotTimer_ = 0.0f;
+			preDirection_ = { 0.0f,-1.0f };
+		}
 	}
 
 
@@ -494,7 +529,7 @@ void Player::CollisionMoveUpdate(CollisionMapInfo& info) {
 
 		MapChipManager::GetInstance()->MapCollisionNoCenter(Vector3(transform_.translate.x, transform_.translate.y + 1.0f, transform_.translate.z), collisionMapInfo);
 		transform_.translate += static_cast<Vector3>(collisionMapInfo.movementAmount);
-		
+
 		if (!collisionMapInfo.isWallCollision) {
 			info.isWallCollision = false;
 			transform_.translate.y += 1.0f;
@@ -618,6 +653,19 @@ void Player::Draw() {
 	//particles_->Draw();
 	hpGauge_->Draw();
 
+	Transform newTransform = transform_; 
+	newTransform.scale = { 0.5f,0.5f,0.5f };
+	for (uint32_t i = 0; i < 5; i++) {
+		if (i >= subIds_.size()) {
+			continue;
+		}
+		newTransform.translate.x = Rotate({-1.5f,0.0f}, {transform_.translate.x,transform_.translate.y},static_cast<float>(i) * -45.0f).x;
+		newTransform.translate.y = Rotate({-1.5f,0.0f}, {transform_.translate.x,transform_.translate.y},static_cast<float>(i) * -45.0f).y;
+		newTransform.rotate.y = blockRotateY_ + Radian(15.0f * static_cast<float>(i)); 
+
+		Renderer::GetInstance()->DrawModel(newTransform,blockUIs_[i].get(), false);
+	}
+
 
 	DrawCollider();
 }
@@ -656,6 +704,7 @@ void Player::OnCollision([[maybe_unused]] Collider* other) {
 	if (damageCoolTimer_ <= 0.0f) {
 		//currentHP_ -= (other->GetDamage() * DifficultyManager::GetInstance()->GetDamageMagnification());
 		currentHP_ -= (other->GetDamage());
+		other->SetActive(false);
 
 		DeltaTime::GetInstance()->SetHitStop(other->GetDamage() * 0.01f);
 		if (other->GetDamageCoolTime() == -1.0f) {

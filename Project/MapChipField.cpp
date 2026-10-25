@@ -74,25 +74,34 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 			// マップチップのサブIDを設定.
 			mapChipData_.data[i][j].subID = static_cast<uint8_t>(word[kChipSubID] - '0');
 
-			
+
 
 		}
 	}
 }
 
 MapChipType MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex) {
-	if (xIndex < 0 || kNumBlockHorizontal - 1 < xIndex) {
-		return MapChipType::kBlank;
+	uint32_t x = xIndex;
+	uint32_t y = yIndex;
+	if (xIndex < 0) {
+		x = 0;
+	}
+	if (kNumBlockHorizontal - 1 < xIndex) {
+		x = kNumBlockHorizontal - 1;
 	}
 
-	if (yIndex < 0 || kNumBlockVertical - 1 < yIndex) {
-		return MapChipType::kBlank;
+	if (yIndex < 0) {
+		y = yIndex;
 	}
 
-	return mapChipData_.data[yIndex][xIndex].type;
+	if (kNumBlockVertical - 1 < yIndex) {
+		y = kNumBlockVertical - 1;
+	}
+
+	return mapChipData_.data[y][x].type;
 }
 
-void MapChipField::SetMapChipTypeByIndexType(uint32_t xIndex, uint32_t yIndex, MapChipType type){
+void MapChipField::SetMapChipTypeByIndexType(uint32_t xIndex, uint32_t yIndex, MapChipType type) {
 	if (xIndex < 0 || kNumBlockHorizontal - 1 < xIndex) {
 		return;
 	}
@@ -104,7 +113,7 @@ void MapChipField::SetMapChipTypeByIndexType(uint32_t xIndex, uint32_t yIndex, M
 	mapChipData_.data[yIndex][xIndex].type = type;
 }
 
-uint8_t MapChipField::GetMapChipSubIDByIndex(uint32_t xIndex, uint32_t yIndex){
+uint8_t MapChipField::GetMapChipSubIDByIndex(uint32_t xIndex, uint32_t yIndex) {
 	if (xIndex < 0 || kNumBlockHorizontal - 1 < xIndex) {
 		return -1;
 	}
@@ -116,7 +125,7 @@ uint8_t MapChipField::GetMapChipSubIDByIndex(uint32_t xIndex, uint32_t yIndex){
 	return mapChipData_.data[yIndex][xIndex].subID;
 }
 
-void MapChipField::SetMapChipSubIDByIndex(uint32_t xIndex, uint32_t yIndex, uint32_t subID){
+void MapChipField::SetMapChipSubIDByIndex(uint32_t xIndex, uint32_t yIndex, uint32_t subID) {
 	if (xIndex < 0 || kNumBlockHorizontal - 1 < xIndex) {
 		return;
 	}
@@ -130,8 +139,8 @@ void MapChipField::SetMapChipSubIDByIndex(uint32_t xIndex, uint32_t yIndex, uint
 
 Vector3 MapChipField::GetMapChipPositionByIndex(uint32_t xIndex, uint32_t yIndex) {
 	return Vector3(
-		std::clamp(kBlockWidth * static_cast<float>(xIndex),0.0f, static_cast<float>(kNumBlockHorizontal)),
-		std::clamp(kBlockHeight * (kNumBlockVertical - 1 - yIndex),0.0f, static_cast<float>(kNumBlockVertical)),
+		std::clamp(kBlockWidth * static_cast<float>(xIndex), 0.0f, static_cast<float>(kNumBlockHorizontal)),
+		std::clamp(kBlockHeight * (kNumBlockVertical - 1 - yIndex), 0.0f, static_cast<float>(kNumBlockVertical)),
 		0.0f);
 }
 

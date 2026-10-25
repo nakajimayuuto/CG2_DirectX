@@ -1,21 +1,27 @@
 #include "Boss.h"
+#include "MapChipManager.h"
 #include "ProjectileManager.h"
 #include "GameCamera.h"
 
 void (Boss::* Boss::pInitializeFunc[])() = {
 		&Boss::WarpInitialize,
 		&Boss::DownInitialize,
+		&Boss::ResetBlockInitialize,
 		&Boss::BulletInitialize,
 		&Boss::DashInitialize,
 		&Boss::NearLightningInitialize,
+		&Boss::LightningInitialize,
 		&Boss::MeteorInitialize,
 };
 
 void (Boss::* Boss::pUpdateFunc[])() = {
 		&Boss::WarpUpdate,
 		&Boss::DownUpdate,
+		&Boss::ResetBlockUpdate,
 		&Boss::BulletUpdate,
+		&Boss::DashUpdate,
 		&Boss::NearLightningUpdate,
+		&Boss::LightningUpdate,
 		&Boss::MeteorUpdate,
 };
 
@@ -27,12 +33,15 @@ void Boss::Initialize() {
 	model_.Initialize("boss");
 	model_.SetBlendMode(BlendMode::kNormalCullNone);
 	halberdModel_.Initialize("halberd");
-	anchorPointCenter_ = Vector3(20.0f, kBasicPositionY, 0.0f);
+	anchorPointCenter_ = Vector3(108.0f, 21.0f, 0.0f);
+	anchorPoints_.push_back(anchorPointCenter_);
+	anchorPointCenter_ = Vector3(126.0f, 21.0f, 0.0f);
 	anchorPoints_.push_back(anchorPointCenter_);
 
 	currentAttack_ = Attacks::kWarp;
 	transform_.Initialize();
 	transform_.translate.y = kBasicPositionY;
+	transform_.translate = Vector3(126.0f, 21.0f, 0.0f);
 	modelTransform_.Initialize();
 	modelTransform_.SetParent(&transform_);
 	halberdTransform_.Initialize();
@@ -64,27 +73,27 @@ void Boss::Initialize() {
 
 	switch (DifficultyManager::GetInstance()->GetCurrentDifficulty()) {
 	case kDifficultyEasy:
-		maxHP_ = 500.0f;
+		maxHP_ = 400.0f;
 		bossName_ = "name_easy";
 		bossNameMirror_ = "name_easy_mirror";
 		break;
 	case kDifficultyNormal:
-		maxHP_ = 3000.0f;
+		maxHP_ = 400.0f;
 		bossName_ = "name_normal";
 		bossNameMirror_ = "name_normal_mirror";
 		break;
 	case kDifficultyHard:
-		maxHP_ = 10000.0f;
+		maxHP_ = 400.0f;
 		bossName_ = "name_hard";
 		bossNameMirror_ = "name_hard_mirror";
 		break;
 	case kDifficultyHell:
-		maxHP_ = 100000.0f;
+		maxHP_ = 400.0f;
 		bossName_ = "name_hard";
 		bossNameMirror_ = "name_hard_mirror";
 		break;
 	default:
-		maxHP_ = 3000.0f;
+		maxHP_ = 400.0f;
 		bossName_ = "name_normal";
 		bossNameMirror_ = "name_normal_mirror";
 		break;
@@ -97,7 +106,7 @@ void Boss::Initialize() {
 	hpGauge->SetScale({ 1.0f, 1.0f });
 	hpGauge->SetGaugeLine(true);
 	hpGauge->SetGaugeLineInterval(10);
-	bossNameScaleX_ = 1.0f;
+	bossNameScaleX_ = 0.0f;
 
 	DifficultyManager::GetInstance()->SetBossHPData(&currentHP_, maxHP_);
 
@@ -150,6 +159,10 @@ void Boss::Initialize() {
 	blockModel_.SetBlendMode(BlendMode::kNormalCullNone);
 	modelBlockTransform_.Initialize();
 	modelBlockTransform_.SetParent(&modelTransform_);
+
+	isActive_ = true;
+	isFight_ = false;
+	startTimer_ = 0.0f;
 }
 
 void Boss::SetAttackData(Attacks attackName, float weight) {
@@ -164,7 +177,9 @@ void Boss::SetAttackData(Attacks attackName, float weight) {
 void Boss::Phase1Initialize() {
 	attackDatasPhase1_.clear();
 
-	SetAttackData(Attacks::kBulletShot, 1.0f);
+	SetAttackData(Attacks::kNearLightning, 1.0f);
+	SetAttackData(Attacks::kMeteor, 1.0f);
+	SetAttackData(Attacks::kLightning, 1.0f);
 
 }
 
@@ -175,6 +190,31 @@ void Boss::Phase2Initialize() {
 }
 
 void Boss::Update() {
+	if (!isActive_) {
+		return;
+	}
+
+	if (isDeath_) {
+		for (uint32_t i = 0; i < 50; i++) {
+			ParticleManager::GetInstance()->SpawnParticles("death_cross",transform_.GetWorldPosition());
+		}
+		isActive_ = false;
+		return;
+	}
+	if (!isFight_) {
+		return;
+	}
+
+	if (startTimer_ >= kStartTimerMax_) {
+		startTimer_ = kStartTimerMax_;
+		bossNameScaleX_ = 1.0f;
+	} else {
+		startTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
+		bossNameScaleX_ = Easing(0.0f,1.0f,startTimer_,kStartTimerMax_,EaseType::kEaseOut);
+	}
+
+	hpGauge->SetScale({ bossNameScaleX_ ,1.0f});
+
 	dopamineSpeed_ = DifficultyManager::GetInstance()->GetDopamineSpeed();
 
 	difficultyMagnificationTime = DifficultyManager::GetInstance()->GetSpeedMagnification();
@@ -336,14 +376,76 @@ void Boss::RootUpdate() {
 	}
 }
 
+Vector3 Boss::GetAnchorPointPos(AnchorPointType type) {
+	Vector3 anchorPointPos = transform_.translate;
+	float leftLenght = 0.0f;
+	float rightLenght = 0.0f;
+	switch (type) {
+	case Boss::AnchorPointType::kLeft:
+		anchorPointPos = anchorPoints_[0];
+		break;
+	case Boss::AnchorPointType::kRight:
+		anchorPointPos = anchorPoints_[1];
+		break;
+	case Boss::AnchorPointType::kNear:
+		leftLenght = (anchorPointPos - anchorPoints_[0]).Length();
+		rightLenght = (anchorPointPos - anchorPoints_[1]).Length();
+		if (leftLenght < rightLenght) {
+			anchorPointPos = anchorPoints_[0];
+		} else {
+			anchorPointPos = anchorPoints_[1];
+		}
+		break;
+	case Boss::AnchorPointType::kFar:
+		leftLenght = (anchorPointPos - anchorPoints_[0]).Length();
+		rightLenght = (anchorPointPos - anchorPoints_[1]).Length();
+		if (leftLenght > rightLenght) {
+			anchorPointPos = anchorPoints_[0];
+		} else {
+			anchorPointPos = anchorPoints_[1];
+		}
+		break;
+	}
+	return anchorPointPos;
+}
+
+Boss::AnchorPointType Boss::GetAnchorPointType(AnchorPointType type) {
+	float leftLenght = 0.0f;
+	float rightLenght = 0.0f;
+	Vector3 anchorPointPos = transform_.translate;
+	AnchorPointType returnType = type;
+	switch (type) {
+	case Boss::AnchorPointType::kNear:
+		leftLenght = (anchorPointPos - anchorPoints_[0]).Length();
+		rightLenght = (anchorPointPos - anchorPoints_[1]).Length();
+		if (leftLenght < rightLenght) {
+			returnType = AnchorPointType::kLeft;
+		} else {
+			returnType = AnchorPointType::kRight;
+		}
+		break;
+	case Boss::AnchorPointType::kFar:
+		leftLenght = (anchorPointPos - anchorPoints_[0]).Length();
+		rightLenght = (anchorPointPos - anchorPoints_[1]).Length();
+		if (leftLenght > rightLenght) {
+			returnType = AnchorPointType::kLeft;
+		} else {
+			returnType = AnchorPointType::kRight;
+		}
+		break;
+	}
+	return returnType;
+}
+
 void Boss::AttackSelect(std::vector<AttackData> attackDatas) {
 	std::vector<std::pair<Attacks, float>> randomData;
 	float weightMax = 0.0f;
 	float selectNum;
 
-	if (attackCount_ >= kAttackCountMax_) {
+	if (attackCount_ < kAttackCountMax_) {
 		attackCount_++;
 		attackRequest_ = Attacks::kBulletShot;
+		return;
 	}
 
 	for (AttackData& data : attackDatas) {
@@ -358,6 +460,14 @@ void Boss::AttackSelect(std::vector<AttackData> attackDatas) {
 
 	weightMax = 0.0f;
 
+	if (superAttackCount_ >= kSuperAttackCountMax_) {
+		superAttackCount_ = 0;
+		attackCount_ = 0;
+		attackRequest_ = Attacks::kDash;
+		moveAttackCount_++;
+		return;
+	}
+
 	for (std::pair<Attacks, float>& data : randomData) {
 		weightMax += data.second;
 		if (selectNum < weightMax) {
@@ -366,6 +476,8 @@ void Boss::AttackSelect(std::vector<AttackData> attackDatas) {
 		}
 	}
 
+	attackCount_ = 0;
+	superAttackCount_++;
 	ClearAttackDatas();
 }
 
@@ -392,6 +504,10 @@ void Boss::Phase2HalberdFarAttackUpdate() {
 }
 
 void Boss::Draw() {
+	if (!isActive_) {
+		return;
+	}
+
 	Renderer* renderer = Renderer::GetInstance();
 	//model_.Draw(modelTransform_,true);
 	renderer->DrawModel(modelTransform_, &model_, true);
@@ -411,7 +527,10 @@ void Boss::Draw() {
 
 	DrawCollider();
 
-	hpGauge->Draw();
+	if (isFight_) {
+		hpGauge->Draw();
+	}
+
 	renderer->DrawSprite(Transform::GetInitialValue(Vector3(bossNameScaleX_, 1.0f, 1.0f) * 0.5f, { 0.0f,0.0f,0.0f }, { 0.0f,-320.0f,0.0f }), bossName_, { 1.0f,1.0f,1.0f,1.0f });
 
 }
@@ -454,8 +573,15 @@ void Boss::OnCollision(Collider* other) {
 			ParticleManager::GetInstance()->SpawnNumbers(other->GetDamage() * downDamageMangification_, damageTransform, { 0.5f,0.5f,1.0f });
 		}
 	}
+	if (!isDeath_) {
+		if (currentHP_ <= 0.0f) {
+			DeltaTime::GetInstance()->SetHitStop(0.5f);
+			isDeath_ = true;
+		}
+	}
 
 	damageAmountRecord_ += preHP - currentHP_;
+
 }
 
 void Boss::SlashEffectCreate(Transform* targetTransform, uint32_t num) {
@@ -540,6 +666,11 @@ void Boss::AttackFinished() {
 	attackTempCollider_->SetDamage(10.0f);
 	halberdTransform_.SetParent(&transform_);
 	SetCurrentDistanceHalberdTransform();
+
+	if (moveAttackCount_ >= kMoveAttackCountMax_) {
+		moveAttackCount_ = 0;
+		attackRequest_ = Attacks::kResetBlock;
+	}
 }
 
 void Boss::NextAttackPhase(float timerMax) {
@@ -576,6 +707,8 @@ void Boss::WarpUpdate() {
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			AttackFinished();
+			attackRequest_ = Attacks::kResetBlock;
+			AttackInitialize();
 		}
 		break;
 	}
@@ -608,7 +741,7 @@ void Boss::DownUpdate() {
 		}
 		break;
 	case 1:
-		transform_.translate.y = Easing(kDownStartPosY, kDownStayPosY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		transform_.translate.y = Easing(kDownStartPosY, kBasicPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		transform_.rotate.x = Easing(kDownStayRotateX / 2.0f, kDownStayRotateX, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
@@ -627,7 +760,6 @@ void Boss::DownUpdate() {
 		}
 		break;
 	case 3:
-		transform_.translate.y = Easing(kDownStayPosY, kBasicPositionY, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		destinationHalberdTransform_.translate = Easing(kDownHalberdPos_, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		destinationHalberdTransform_.rotate = Easing(kDownHalberdRotate_, basicHalberdRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 		transform_.rotate.x = Easing(kDownStayRotateX, Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
@@ -643,45 +775,118 @@ void Boss::DownUpdate() {
 	downEmitter_->DebugDraw();
 }
 
+void Boss::ResetBlockInitialize() {
+	kMaxAttackTimer = kBlockResetStartGapTimerMax;
+}
+
+void Boss::ResetBlockUpdate() {
+	switch (currentAttackPhase) {
+	case 0: // ワープの始まり.
+		destinationHalberdTransform_.rotate.x = Easing(basicHalberdRotate.x, basicHalberdRotate.x - Radian(180.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			currentAttackTimer_ = 0;
+			kMaxAttackTimer = kBlockResetFinishedGapTimerMax;
+			currentAttackPhase = 1;
+			MapChipManager::GetInstance()->ResetBlock(106, 0, 129, 31);
+			SoundManager::GetInstance()->SoundPlay("snd_parry", 1.0f, 1.0f, kSoundEffect);
+		}
+
+		break;
+	case 1: // ワープの終わり.
+		destinationHalberdTransform_.rotate.x = Easing(basicHalberdRotate.x - Radian(180.0f), basicHalberdRotate.x - Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			AttackFinished();
+		}
+		break;
+	}
+}
+
 
 void Boss::BulletInitialize() {
-	kMaxAttackTimer = kBulletStartGapTimerMax;
-	bulletShotDirectionTemp_ = { 0.0f,0.0f,1.0f };
-	ProjectileManager::GetInstance()->CreateEnemyBlock(transform_,*targetTransform_, CollisionAttributeName::kCollisionEnemyAttack, 10.0f, 1.0f);
+	//kMaxAttackTimer = kBulletStartGapTimerMax;
+	//bulletShotDirectionTemp_ = { 0.0f,0.0f,1.0f };
+	ProjectileManager::GetInstance()->CreateEnemyBlock(transform_, *targetTransform_, CollisionAttributeName::kCollisionEnemyAttack, 10.0f, 1);
 	AttackFinished();
 }
 
 void Boss::BulletUpdate() {
 	return;
+	//switch (currentAttackPhase) {
+	//case 0: // ハルバードを前に向ける.
+	//	modelTransform_.rotate.y = Easing(0.0f, Radian(kBulletAnimRotateY), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+	//	destinationHalberdTransform_.translate = Easing(basicHalberdPos, kBulletHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+	//	destinationHalberdTransform_.rotate = Easing(basicHalberdRotate, kBasicHalberdFarRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+	//	transform_.rotate.y = atan2(transform_.translate.x - targetTransform_->translate.x, transform_.translate.z - targetTransform_->translate.z);
+	//
+	//	if (currentAttackTimer_ >= kMaxAttackTimer) {
+	//		NextAttackPhase(kBulletStayTimerMax);
+	//		if ((targetTransform_->translate - halberdTransform_.GetWorldPosition()).Length() != 0.0f) {
+	//			bulletShotDirectionTemp_ = GetBulletDire();
+	//		}
+	//	}
+	//	break;
+	//case 1: // 攻撃の前隙.
+	//	if (currentAttackTimer_ >= kMaxAttackTimer) {
+	//		SoundManager::GetInstance()->SoundPlay("snd_bullet_shot", 1.0f, 1.0f, kSoundEffect);
+	//		NextAttackPhase(kBulletStayTimerMax);
+	//		ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, bulletShotDirectionTemp_ * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, 10.0f, 3.0f);
+	//	}
+	//	break;
+	//case 2: // 攻撃の後隙.
+	//	if (currentAttackTimer_ >= kMaxAttackTimer) {
+	//		NextAttackPhase(kBulletFinishedGapTimerMax);
+	//	}
+	//	break;
+	//case 3: // 見た目を戻す.
+	//	modelTransform_.rotate.y = Easing(Radian(kBulletAnimRotateY), 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+	//	destinationHalberdTransform_.translate = Easing(kBulletHalberdPos, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+	//	destinationHalberdTransform_.rotate = Easing(kBasicHalberdFarRotate, basicHalberdRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+	//	if (currentAttackTimer_ >= kMaxAttackTimer) {
+	//		AttackFinished();
+	//	}
+	//	break;
+	//}
+}
+
+void Boss::DashInitialize() {
+	kMaxAttackTimer = kDashStartGapTimerMax;
+
+}
+
+void Boss::DashUpdate() {
+	CollisionMapInfo info;
 	switch (currentAttackPhase) {
 	case 0: // ハルバードを前に向ける.
-		modelTransform_.rotate.y = Easing(0.0f, Radian(kBulletAnimRotateY), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-		destinationHalberdTransform_.translate = Easing(basicHalberdPos, kBulletHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		destinationHalberdTransform_.translate = Easing(basicHalberdPos, kDashHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		destinationHalberdTransform_.rotate = Easing(basicHalberdRotate, kBasicHalberdFarRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-		transform_.rotate.y = atan2(transform_.translate.x - targetTransform_->translate.x, transform_.translate.z - targetTransform_->translate.z);
 
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
-			NextAttackPhase(kBulletStayTimerMax);
-			if ((targetTransform_->translate - halberdTransform_.GetWorldPosition()).Length() != 0.0f) {
-				bulletShotDirectionTemp_ = GetBulletDire();
-			}
+			dashBeforePosition_ = transform_.translate;
+			dashAfterPosition_ = GetAnchorPointPos(AnchorPointType::kFar);
+			NextAttackPhase(kDashMoveTimerMax);
 		}
 		break;
 	case 1: // 攻撃の前隙.
+		transform_.translate = Easing(dashBeforePosition_, dashAfterPosition_, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
+
+		info.width = 0.9f;
+		info.height = 2.0f;
+		info.movementAmount = { ((dashAfterPosition_.x - dashBeforePosition_.x) / kMaxAttackTimer) * DeltaTime::GetInstance()->GetGameTime(),0.0f,0.0f };
+		MapChipManager::GetInstance()->MapCollisionNoCenter(transform_.GetWorldPosition(), info);
+
+		if (info.isWallCollision) {
+			AttackFinished();
+			attackRequest_ = Attacks::kDown;
+			AttackInitialize();
+		}
+
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
-			SoundManager::GetInstance()->SoundPlay("snd_bullet_shot", 1.0f, 1.0f, kSoundEffect);
-			NextAttackPhase(kBulletStayTimerMax);
-			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, bulletShotDirectionTemp_ * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, 10.0f, 3.0f);
+			NextAttackPhase(kDashFinishedGapTimerMax);
+			SoundManager::GetInstance()->SoundPlay("snd_parry", 1.0f, 1.0f, kSoundEffect);
 		}
 		break;
-	case 2: // 攻撃の後隙.
-		if (currentAttackTimer_ >= kMaxAttackTimer) {
-			NextAttackPhase(kBulletFinishedGapTimerMax);
-		}
-		break;
-	case 3: // 見た目を戻す.
-		modelTransform_.rotate.y = Easing(Radian(kBulletAnimRotateY), 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-		destinationHalberdTransform_.translate = Easing(kBulletHalberdPos, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+	case 2: // 見た目を戻す.
+		destinationHalberdTransform_.translate = Easing(kDashHalberdPos, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		destinationHalberdTransform_.rotate = Easing(kBasicHalberdFarRotate, basicHalberdRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			AttackFinished();
@@ -690,41 +895,37 @@ void Boss::BulletUpdate() {
 	}
 }
 
-void Boss::DashInitialize(){
-	
+void Boss::NearLightningInitialize() {
+	kMaxAttackTimer = kNearLightningStartGapTimerMax;
 }
 
-void Boss::DashUpdate(){
+void Boss::NearLightningUpdate() {
 	switch (currentAttackPhase) {
-	case 0: // ハルバードを前に向ける.
-		modelTransform_.rotate.y = Easing(0.0f, Radian(kBulletAnimRotateY), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-		destinationHalberdTransform_.translate = Easing(basicHalberdPos, kBulletHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-		destinationHalberdTransform_.rotate = Easing(basicHalberdRotate, kBasicHalberdFarRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-		transform_.rotate.y = atan2(transform_.translate.x - targetTransform_->translate.x, transform_.translate.z - targetTransform_->translate.z);
-
+	case 0: // ワープの始まり.
+		destinationHalberdTransform_.rotate.x = Easing(basicHalberdRotate.x, basicHalberdRotate.x - Radian(180.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
-			NextAttackPhase(kBulletStayTimerMax);
-			if ((targetTransform_->translate - halberdTransform_.GetWorldPosition()).Length() != 0.0f) {
-				bulletShotDirectionTemp_ = GetBulletDire();
+			NextAttackPhase(kNearLightningStayTimerMax);
+			float blank = 1.0f;
+			if (GetAnchorPointType(AnchorPointType::kNear) == AnchorPointType::kRight) {
+				blank = -6.0f;
 			}
+
+			for (uint32_t i = 0; i < 5; i++) {
+				Transform transform = transform_;
+				transform.translate.x += blank + static_cast<float>(i);
+				ProjectileManager::GetInstance()->CreateLightning(transform, CollisionAttributeName::kCollisionEnemyAttack, 10.0f, 1.0f);
+			}
+			SoundManager::GetInstance()->SoundPlay("snd_parry", 1.0f, 1.0f, kSoundEffect);
 		}
+
 		break;
-	case 1: // 攻撃の前隙.
+	case 1: // ワープの終わり.
+		destinationHalberdTransform_.rotate.x = Easing(basicHalberdRotate.x - Radian(180.0f), basicHalberdRotate.x - Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
-			SoundManager::GetInstance()->SoundPlay("snd_bullet_shot", 1.0f, 1.0f, kSoundEffect);
-			NextAttackPhase(kBulletStayTimerMax);
-			ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, bulletShotDirectionTemp_ * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, 10.0f, 3.0f);
+			NextAttackPhase(kNearLightningFinishedGapTimerMax);
 		}
 		break;
-	case 2: // 攻撃の後隙.
-		if (currentAttackTimer_ >= kMaxAttackTimer) {
-			NextAttackPhase(kBulletFinishedGapTimerMax);
-		}
-		break;
-	case 3: // 見た目を戻す.
-		modelTransform_.rotate.y = Easing(Radian(kBulletAnimRotateY), 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-		destinationHalberdTransform_.translate = Easing(kBulletHalberdPos, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-		destinationHalberdTransform_.rotate = Easing(kBasicHalberdFarRotate, basicHalberdRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+	case 2: // ワープの終わり.
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			AttackFinished();
 		}
@@ -732,16 +933,74 @@ void Boss::DashUpdate(){
 	}
 }
 
-void Boss::NearLightningInitialize(){
+void Boss::LightningInitialize() {
+	kMaxAttackTimer = kLightningStartGapTimerMax;
 }
 
-void Boss::NearLightningUpdate(){
+void Boss::LightningUpdate() {
+	switch (currentAttackPhase) {
+	case 0: // ワープの始まり.
+		destinationHalberdTransform_.rotate.x = Easing(basicHalberdRotate.x, basicHalberdRotate.x - Radian(180.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kLightningStayTimerMax);
+			uint32_t blank = static_cast<uint32_t>(Random::GetInstance()->RandomFloat(0.0f, 3.0f));
+
+
+			for (uint32_t i = 0; i < 21; i++) {
+				if (i % 4 == blank || i % 4 == (blank + 1)) {
+					Transform transform = transform_;
+					transform.translate.x = static_cast<float>(i) + 106.0f;
+					ProjectileManager::GetInstance()->CreateLightning(transform, CollisionAttributeName::kCollisionEnemyAttack, 10.0f, 1.0f);
+				}
+			}
+			SoundManager::GetInstance()->SoundPlay("snd_parry", 1.0f, 1.0f, kSoundEffect);
+		}
+
+		break;
+	case 1: // ワープの終わり.
+		destinationHalberdTransform_.rotate.x = Easing(basicHalberdRotate.x - Radian(180.0f), basicHalberdRotate.x - Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kLightningFinishedGapTimerMax);
+		}
+		break;
+	case 2: // ワープの終わり.
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			AttackFinished();
+		}
+		break;
+	}
 }
 
-void Boss::MeteorInitialize(){
+void Boss::MeteorInitialize() {
+	kMaxAttackTimer = kMeteorStartGapTimerMax;
+
 }
 
-void Boss::MeteorUpdate(){
+void Boss::MeteorUpdate() {
+	switch (currentAttackPhase) {
+	case 0: // ワープの始まり.
+		destinationHalberdTransform_.rotate.x = Easing(basicHalberdRotate.x, basicHalberdRotate.x - Radian(180.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kMeteorStayTimerMax);
+
+			ProjectileManager::GetInstance()->CreateMeteor(*targetTransform_, CollisionAttributeName::kCollisionEnemyAttack, 10.0f, 1.0f);
+
+			SoundManager::GetInstance()->SoundPlay("snd_parry", 1.0f, 1.0f, kSoundEffect);
+		}
+
+		break;
+	case 1: // ワープの終わり.
+		destinationHalberdTransform_.rotate.x = Easing(basicHalberdRotate.x - Radian(180.0f), basicHalberdRotate.x - Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kMeteorFinishedGapTimerMax);
+		}
+		break;
+	case 2: // ワープの終わり.
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			AttackFinished();
+		}
+		break;
+	}
 }
 
 void Boss::StartAnimInitialize() {

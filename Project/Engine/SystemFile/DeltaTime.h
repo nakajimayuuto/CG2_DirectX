@@ -12,8 +12,12 @@ public:
 
 	void Update();
 
+	void Reset() { deltaTime = 0.0f; };
+
 	float GetDeltaTime() const { return deltaTime; };
-	float GetGameTime() const { return gameTime; };
+	float GetGameTime() const {
+		return gameTime;
+	};
 	float GetGameTimePerFrame() const { return gameTime * 60.0f; };
 
 	float GetDeltaTimePerFrame() const { return deltaTime * 60.0f; };

@@ -61,7 +61,7 @@ void MapChipManager::Finalize() {
 	modelBlocks_.clear();
 }
 
-void MapChipManager::DeleteBlock(const Vector3& position, int offsetX, int offsetY) {
+uint32_t MapChipManager::DeleteBlock(const Vector3& position, int offsetX, int offsetY) {
 	MapChipType mapChipType;
 	MapChipField::IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(position);
@@ -69,13 +69,14 @@ void MapChipManager::DeleteBlock(const Vector3& position, int offsetX, int offse
 	uint32_t subID = mapChipField_->GetMapChipSubIDByIndex(indexSet.xIndex + offsetX, mapChipField_->GetNumBlockVertical() - 1 - offsetY - indexSet.yIndex);
 
 	if (mapChipType != MapChipType::kBlock) {
-		return;
+		return -1;
 	}
 
 	if (subID == 2) {
-		return;
+		return-1;
 	}
 
+	uint32_t returnId = mapChipField_->GetMapChipSubIDByIndex(indexSet.xIndex + offsetX, mapChipField_->GetNumBlockVertical() - 1 - offsetY - indexSet.yIndex);
 	mapChipField_->SetMapChipTypeByIndexType(indexSet.xIndex + offsetX, mapChipField_->GetNumBlockVertical() - 1 - offsetY - indexSet.yIndex, MapChipType::kBlank);
 
 	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
@@ -91,13 +92,15 @@ void MapChipManager::DeleteBlock(const Vector3& position, int offsetX, int offse
 			break;
 		}
 	}
+
+	return returnId;
 }
 
 void MapChipManager::CreateBlock(const Vector3& position) {
 	CreateBlock(position, 1);
 }
 
-void MapChipManager::CreateBlock(const Vector3& position, uint32_t subID){
+void MapChipManager::CreateBlock(const Vector3& position, uint32_t subID) {
 	MapChipType mapChipType;
 	MapChipField::IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(position);
@@ -147,6 +150,115 @@ void MapChipManager::ChangeSolidMode() {
 		isWireFlame_ = false;
 	} else {
 		isWireFlame_ = true;
+	}
+}
+
+void MapChipManager::ResetBlock(uint32_t leftTopIndexX, uint32_t leftTopIndexY, uint32_t rightBottomIndexX, uint32_t rightBottomIndexY) {
+	uint8_t subID = 0;
+	std::string modelName;
+	for (uint32_t i = leftTopIndexY; i < rightBottomIndexY; ++i) {
+		for (uint32_t j = leftTopIndexX; j < rightBottomIndexX; ++j) {
+			//modelBlocks_[i][j].first = nullptr;
+			if (i >= 13 && i <= 16) {
+				subID = 1;
+				if (modelBlocks_[i][j].first) {
+					if (subID == mapChipField_->GetMapChipSubIDByIndex(j, i)) {
+						continue;
+					}
+				}
+			} else if (i == 17) {
+				subID = 2;
+				if (modelBlocks_[i][j].first) {
+					if (subID == mapChipField_->GetMapChipSubIDByIndex(j, i)) {
+						continue;
+					}
+				}
+			} else {
+				if (!modelBlocks_[i][j].first) {
+					continue;
+				}
+			}
+
+			switch (subID) {
+			case 0:
+				modelBlocks_[i][j].first.reset();
+				mapChipField_->SetMapChipTypeByIndexType(j, i, MapChipType::kBlank);
+				for (uint32_t k = 0; k < 10; k++) {
+					ParticleManager::GetInstance()->SpawnParticles("death_cross", mapChipField_->GetMapChipPositionByIndex(j, i));
+				}
+				break;
+			case 1:
+				modelBlocks_[i][j].first = std::make_unique<Model>();
+				modelBlocks_[i][j].first->Initialize("block_template");
+
+				mapChipField_->SetMapChipTypeByIndexType(j, i, MapChipType::kBlock);
+				mapChipField_->SetMapChipSubIDByIndex(j, i, 1);
+
+				modelBlocks_[i][j].second = std::make_unique<Transform>();
+				modelBlocks_[i][j].second->Initialize();
+				modelBlocks_[i][j].second->translate = mapChipField_->GetMapChipPositionByIndex(j, i);
+				for (uint32_t k = 0; k < 10; k++) {
+					ParticleManager::GetInstance()->SpawnParticles("death_cross", mapChipField_->GetMapChipPositionByIndex(j, i));
+				}
+				break;
+			case 2:
+				modelBlocks_[i][j].first = std::make_unique<Model>();
+				modelBlocks_[i][j].first->Initialize("block_template");
+				modelBlocks_[i][j].first->ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("heavy_block"));
+
+				mapChipField_->SetMapChipTypeByIndexType(j, i, MapChipType::kBlock);
+				mapChipField_->SetMapChipSubIDByIndex(j, i, 2);
+
+				modelBlocks_[i][j].second = std::make_unique<Transform>();
+				modelBlocks_[i][j].second->Initialize();
+				modelBlocks_[i][j].second->translate = mapChipField_->GetMapChipPositionByIndex(j, i);
+				for (uint32_t k = 0; k < 10; k++) {
+					ParticleManager::GetInstance()->SpawnParticles("death_cross", mapChipField_->GetMapChipPositionByIndex(j, i));
+				}
+				break;
+			}
+
+			continue;
+			subID = mapChipField_->GetMapChipSubIDByIndex(j, i);
+			switch (mapChipField_->GetMapChipTypeByIndex(j, i)) {
+			case MapChipType::kBlock:
+				modelBlocks_[i][j].first = std::make_unique<Model>();
+				modelBlocks_[i][j].first->Initialize("block_template");
+
+				switch (subID) {
+				case 2:
+					modelBlocks_[i][j].first->ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("heavy_block"));
+					break;
+				case 3:
+					modelBlocks_[i][j].first->ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("soul_block"));
+					break;
+				case 4:
+					modelBlocks_[i][j].first->ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("explode_block"));
+					break;
+				}
+
+				modelBlocks_[i][j].second = std::make_unique<Transform>();
+				modelBlocks_[i][j].second->Initialize();
+				modelBlocks_[i][j].second->translate = mapChipField_->GetMapChipPositionByIndex(j, i);
+				break;
+			case MapChipType::kPlayer:
+				//assert(player_ == nullptr && "自キャラを二重に配置しようとしています");
+				//player_ = new Player();
+				//player_->Initialize(mapChipField_->GetMapChipPositionByIndex(j, i));
+				//player_->SetMapChipField(mapChipField_);
+				break;
+			case MapChipType::kEnemy:
+				uint8_t subID = mapChipField_->GetMapChipSubIDByIndex(j, i);
+				switch (subID) {
+				case 0:
+					EnemyManager::GetInstance()->CreateEnemy(mapChipField_->GetMapChipPositionByIndex(j, i), EnemyManager::kDummy);
+					break;
+				case 1:
+					break;
+				}
+				break;
+			}
+		}
 	}
 }
 
@@ -208,7 +320,7 @@ void MapChipManager::GenerateFieldObjects() {
 				uint8_t subID = mapChipField_->GetMapChipSubIDByIndex(j, i);
 				switch (subID) {
 				case 0:
-					EnemyManager::GetInstance()->CreateEnemy(mapChipField_->GetMapChipPositionByIndex(j, i),EnemyManager::kDummy);
+					EnemyManager::GetInstance()->CreateEnemy(mapChipField_->GetMapChipPositionByIndex(j, i), EnemyManager::kDummy);
 					break;
 				case 1:
 					break;
@@ -237,10 +349,10 @@ void MapChipManager::MapCollision(const Vector3& position, CollisionMapInfo& inf
 	MapCollisionDown(position, info);
 	MapCollisionRight(position, info);
 	MapCollisionLeft(position, info);
- 	MapCollisionCenter(position, info);
+	MapCollisionCenter(position, info);
 }
 
-void MapChipManager::MapCollisionNoCenter(const Vector3& position, CollisionMapInfo& info){
+void MapChipManager::MapCollisionNoCenter(const Vector3& position, CollisionMapInfo& info) {
 	MapCollisionUp(position, info);
 	MapCollisionDown(position, info);
 	MapCollisionRight(position, info);
@@ -508,6 +620,14 @@ void MapChipManager::MapCollisionCenter(const Vector3& position, CollisionMapInf
 
 		if (mapChipType == MapChipType::kBlock) {
 			newPosY += 1.0f;
+
+			if (indexSet.xIndex < 0 || kNumBlockHorizontal - 1 < indexSet.xIndex ) {
+				break;
+			}
+
+			if (indexSet.yIndex < 0 || kNumBlockVertical - 1 < indexSet.yIndex) {
+				break;
+			}
 		} else {
 			break;
 		}

@@ -48,6 +48,9 @@ public:
 	static void RegisterGlobalVariables();
 	static void ApplyGlobalVariables();
 
+	void SetPosition(const Vector3& position) { transform_.translate = position; };
+	void PositionReset() { transform_.translate = { 5.0f, kTranslateBlankY + kStartPosY,0.0f }; };
+
 	Vector3 GetWorldPosition() override { return transform_.GetAffineMatrix().GetMatrixToTranslate(); };
 
 	bool GetIsAttack() { return isAttack_; };
@@ -125,6 +128,11 @@ private:
 	static inline const float kWidth = 0.8f;
 	static inline const float kHeight = 0.8f;
 
+	std::vector<uint32_t> subIds_;
+	std::vector<std::unique_ptr<Model>> blockUIs_;
+	float blockRotateY_;
+	static inline float kBlockRotateYSpeed = 90.0f;
+
 	float knockbackParameter_ = 0.0f;
 	static inline const float kKnockbackParameterBack = 0.2f;
 	static inline const float kKnockbackParameterStop = 0.2f;
@@ -136,7 +144,7 @@ private:
 
 	// 移動.
 	static inline const float kAcceleration = 0.8f;
-	static inline const float kAttenuation = 0.1f;
+	static inline const float kAttenuation = 0.5f;
 	static inline const float kJumpAttenuation = 0.01f;
 	static inline const float kLimitRunSpeed = 20.0f;
 
@@ -148,7 +156,7 @@ private:
 	float jumpBlankTimer_ = 0.0f;
 	
 	static inline const float kLimitFallSpeed = 30.0f;
-	static inline const float kJumpAcceleration =20.0f;
+	static inline const float kJumpAcceleration =25.0f;
 
 	float coyoteShotTimer_ = 0.0f;
 	static inline float kCoyoteShotTimerMax = 0.1f;
@@ -204,7 +212,7 @@ private:
 	static inline float kJumpFirstSpeed_ = 7.0f;
 	static inline float kDashJumpFirstSpeed_ = 12.0f;
 
-	static inline float kGravityAcceleration = 1.0f;
+	static inline float kGravityAcceleration = 60.0f;
 
 	bool isMoving_;
 

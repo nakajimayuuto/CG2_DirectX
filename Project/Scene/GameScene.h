@@ -50,6 +50,7 @@ private:
 
 	float gameclearTimer_;
 	float gameclearTimerMax_ = 0.5f;
+	float gameclearFadeTimerMax_ = 3.5f;
 
 	float gameoverTimer_;
 	float gameoverTimerMax_ = 0.5f;

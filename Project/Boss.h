@@ -42,10 +42,18 @@ public:
 
 	bool GetIsDeath() { return isDeath_; };
 
+	void FightStart() { isFight_ = true; };
+
 	void EffectUpdate();
 
 	void SetPosition(const Vector3& position) { transform_.translate = position; };
 private:
+	enum class AnchorPointType {
+		kLeft,
+		kRight,
+		kNear,
+		kFar
+	};
 	void SlashEffectCreate(Transform* targetTransform, uint32_t num);
 
 	Vector3 GetMoveAnchorPointFindAll();
@@ -54,13 +62,19 @@ private:
 	void DistanceCheckUpdate();
 
 	void RootUpdate();
+
+	Vector3 GetAnchorPointPos(AnchorPointType type);
+
+	AnchorPointType GetAnchorPointType(AnchorPointType type);
 private:
 	enum class Attacks {
 		kWarp,
 		kDown,
+		kResetBlock,
 		kBulletShot,
 		kDash,
 		kNearLightning,
+		kLightning,
 		kMeteor,
 
 		kCountMax,
@@ -129,6 +143,11 @@ private:
 	float movingRadius_ = 72.0f;
 
 	bool isDeath_;
+	bool isActive_;
+	bool isFight_;
+
+	float startTimer_;
+	static inline float kStartTimerMax_ = 1.0f;
 private:
 	void SetAttackData(Attacks attackName, float weight);
 
@@ -163,6 +182,9 @@ private:
 	void DownInitialize();
 	void DownUpdate();
 
+	void ResetBlockInitialize();
+	void ResetBlockUpdate();
+
 	void BulletInitialize();
 	void BulletUpdate();
 
@@ -171,6 +193,9 @@ private:
 
 	void NearLightningInitialize();
 	void NearLightningUpdate();
+
+	void LightningInitialize();
+	void LightningUpdate();
 
 	void MeteorInitialize();
 	void MeteorUpdate();
@@ -182,16 +207,23 @@ private:
 	std::vector<AttackData> attackDatasPhase1_;
 
 private:
+
 	//Debug.
 	bool useDebugUpdateStop = false;
 
 	uint32_t attackCount_;
-	static inline uint32_t kAttackCountMax_ = 3;
+	static inline uint32_t kAttackCountMax_ = 2;
+
+	uint32_t superAttackCount_;
+	static inline uint32_t kSuperAttackCountMax_ = 2;
+
+	uint32_t moveAttackCount_;
+	static inline uint32_t kMoveAttackCountMax_ = 2;
 
 	// Anim
 	Transform destinationHalberdTransform_;
 	static inline float kDestinationCompletionRate = 0.25f;
-	static inline float kBasicPositionY = 2.5f;
+	static inline float kBasicPositionY = 21.0f;
 
 	Vector3 basicHalberdPos = { -1.0f,0.0f,0.0f };
 	Vector3 basicHalberdRotate = { -Radian(90.0f) ,0.0f,0.0f };
@@ -276,19 +308,41 @@ private:
 	static inline Vector3 kDownHalberdPos_ = { -2.0f,-1.0f,0.0f };
 	static inline Vector3 kDownHalberdRotate_ = { Radian(30.0f),Radian(0.0f),0.0f };
 
-	static inline float kDownStartPosY = 7.0f;
-	static inline float kDownStayRotateX = Radian(270.0f);
-	static inline float kDownStayPosY = 0.6f;
+	static inline float kDownStartPosY = 28.0f;
+	static inline float kDownStayRotateX = Radian(360.0f);
+
+	// BlockReset
+	static inline float kBlockResetStartGapTimerMax = 0.15f;
+	static inline float kBlockResetFinishedGapTimerMax = 0.15f;
 
 	// Dash.
-	static inline float kBulletStartGapTimerMax = 0.2f;
-	static inline float kBulletStayTimerMax = 0.2f;
-	static inline float kBulletFinishedGapTimerMax = 0.3f;
+	static inline float kDashStartGapTimerMax = 1.0f;
+	static inline float kDashMoveTimerMax = 1.0f;
+	static inline float kDashFinishedGapTimerMax = 0.3f;
 
-	static inline Vector3 kBulletHalberdPos = { -2.0f,0.0f,-3.0f };
-	static inline float kBulletAnimRotateY = -45.0f;
+	static inline Vector3 kDashHalberdPos = { -2.0f,0.0f,-3.0f };
+	static inline float kDashAnimRotateY = -45.0f;
 
-	Vector3 bulletShotDirectionTemp_;
+	Vector3 dashBeforePosition_;
+	Vector3 dashAfterPosition_;
+
+	// NearLightning.
+	static inline float kNearLightningStartGapTimerMax = 0.2f;
+	static inline float kNearLightningStayTimerMax = 1.0f;
+	static inline float kNearLightningFinishedGapTimerMax = 0.3f;
+
+	// Meteor.
+	static inline float kMeteorStartGapTimerMax = 0.2f;
+	static inline float kMeteorStayTimerMax = 1.0f;
+	static inline float kMeteorFinishedGapTimerMax = 0.3f;
+
+	// NearLightning.
+	static inline float kLightningStartGapTimerMax = 0.2f;
+	static inline float kLightningStayTimerMax = 1.0f;
+	static inline float kLightningFinishedGapTimerMax = 0.3f;
+
+	//static inline Vector3 kDashHalberdPos = { -2.0f,0.0f,-3.0f };
+	//static inline float kDashAnimRotateY = -45.0f;
 
 	
 

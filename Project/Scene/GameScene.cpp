@@ -33,8 +33,8 @@ void GameScene::Initialize() {
 	boss_->Initialize();
 	boss_->SetTargetTransform(player_->GetTransform());
 	boss_->SetTargetIsAttact(player_->GetIsAttack());
-	boss_->SetPosition({126.0f,22.0f,0.0f});
-	
+	//boss_->SetPosition({126.0f,22.0f,0.0f});
+
 	EnemyManager::GetInstance()->Initialize();
 
 	skydome_ = std::make_unique<Skydome>();
@@ -81,6 +81,8 @@ void GameScene::Initialize() {
 	MapChipManager::GetInstance()->Initialize();
 
 	isTutorial_ = true;
+	player_->PositionReset();
+	DeltaTime::GetInstance()->Reset();
 }
 
 void GameScene::Update() {
@@ -124,6 +126,7 @@ void GameScene::Update() {
 	}
 #endif // _DEBUG
 
+
 	if (gameOverMenu_->GetIsActive()) {
 		if (gameOverMenu_->GetCanGameUpdate()) {
 			gameOverMenu_->Update();
@@ -163,23 +166,63 @@ void GameScene::Update() {
 
 	if (isTutorial_) {
 		if (player_->GetWorldPosition().x > kTutorialFinishPosX + 4.0f) {
+			SoundManager::GetInstance()->SoundPlay("mus_phase1_intro", 1.0f, 0.25f, kBGM, false, "mus_phase1_intro");
 			isTutorial_ = false;
-			GameCamera::GetInstance()->StartAriaChange(1,0.5f);
-			MapChipManager::GetInstance()->CreateBlock(MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(static_cast<uint32_t>(kTutorialFinishPosX),10),2);
-			MapChipManager::GetInstance()->CreateBlock(MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(static_cast<uint32_t>(kTutorialFinishPosX),11),2);
-			MapChipManager::GetInstance()->CreateBlock(MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(static_cast<uint32_t>(kTutorialFinishPosX),12),2);
+			boss_->FightStart();
+			GameCamera::GetInstance()->StartAriaChange(1, 0.5f);
+			MapChipManager::GetInstance()->CreateBlock(MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(static_cast<uint32_t>(kTutorialFinishPosX), 10), 2);
+			MapChipManager::GetInstance()->CreateBlock(MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(static_cast<uint32_t>(kTutorialFinishPosX), 11), 2);
+			MapChipManager::GetInstance()->CreateBlock(MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(static_cast<uint32_t>(kTutorialFinishPosX), 12), 2);
+		}
+	} else {
+		if (!gameOverMenu_->GetIsActive()) {
+			if (!boss_->GetIsDeath()) {
+				if (SoundManager::GetInstance()->IsFinishedSound("mus_phase1_intro")) {
+					SoundManager::GetInstance()->SoundPlay("mus_phase1", 1.0f, 0.25f, kBGM, true, "mus_phase1");
+				}
+			}
 		}
 	}
 
 
 	if (gameOverMenu_->GetIsActive()) {
+		if (gameOverMenu_->GetCanGameUpdate()) {
+			gameOverMenu_->Update();
+			worldFrameEmitter_->Update();
+			worldBigFrameEmitter_->Update();
+			fade_->Update();
+
+			Camera::GetInstance()->Update();
+			return;
+		} else {
+			gameOverMenu_->Update();
+		}
 	} else {
-		if (isClear_) {
-			if (gameclearTimer_ >= gameclearTimerMax_) {
-				gameclearTimer_ = gameclearTimerMax_;
+		if (boss_->GetIsDeath()) {
+			if (gameclearTimer_ >= gameclearFadeTimerMax_) {
+				if (!isClear_) {
+					gameclearTimer_ = gameclearFadeTimerMax_;
+
+					isClear_ = true;
+					fade_->Start(Fade::Status::FadeOut, 1.0f);
+				}
+			} else if (gameclearTimer_ >= gameclearTimerMax_) {
+				gameclearTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
 			} else {
+				SoundManager::GetInstance()->SoundStop("mus_phase1");
 				gameclearTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
 			}
+		}
+	}
+
+	if (player_->GetIsDeath()) {
+		if ((!gameOverMenu_->GetIsActive())) {
+			gameOverMenu_->ShowMenu();
+
+			SoundManager::GetInstance()->SoundPause("mus_phase1_intro");
+			SoundManager::GetInstance()->SoundPause("mus_phase1");
+			//SoundManager::GetInstance()->SoundPause("mus_phase2_intro");
+			//SoundManager::GetInstance()->SoundPause("mus_phase2");
 		}
 	}
 
@@ -195,6 +238,17 @@ void GameScene::Update() {
 	AnimSkipUpdate();
 	fade_->Update();
 	TutorialUpdate();
+
+	if (boss_->GetIsDeath()) {
+		if (gameclearTimer_ >= gameclearFadeTimerMax_) {
+			if (isClear_) {
+				if (fade_->isFinished()) {
+					SceneManager::GetInstance()->ChengeScene(SceneName::kTitleScene);
+				}
+			}
+		}
+
+	}
 
 	Camera::GetInstance()->Update();
 	CheckAllCollisions();
@@ -241,7 +295,7 @@ void GameScene::Draw() {
 		}
 	}
 
-	if (isClear_) {
+	if (boss_->GetIsDeath()) {
 		renderer->DrawSprite(Transform::GetInitialValue(Easing({ 100.0f,100.0f,100.0f }, { 1.0f,1.0f,1.0f }, gameclearTimer_, gameclearTimerMax_, EaseType::kEaseOut), { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "gameclear", { 1.0f,1.0f,1.0f,Easing(0.0f,1.0f, gameclearTimer_, gameclearTimerMax_, EaseType::kEaseOut) });
 	}
 
@@ -255,7 +309,7 @@ void GameScene::CheckAllCollisions() {
 }
 
 void GameScene::AnimSkipUpdate() {
-
+	return;
 	if (!fade_->isFinished()) {
 		return;
 	}

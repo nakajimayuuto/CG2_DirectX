@@ -886,7 +886,7 @@ void Meteor::Initialize(const Transform& transform, CollisionAttributeName colli
 	colliderRadius_ = 20.0f;
 	collisionAttribute_ = CollisionManager::GetInstance()->GetCollisionAttribute(colliderName);
 	isActive_ = true;
-	isColliderActive_ = false;
+	isColliderActive_ = true;
 
 	lifeTimer_ = 0.0f;
 	lifeTimeMax_ = 10.0f;
@@ -945,6 +945,11 @@ void Meteor::Update() {
 	}
 	warningBlockTransform_.translate = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(indexSet.xIndex, yIndex - 1);
 
+	if (!isColliderActive_) {
+		isActive_ = false;
+		return;
+	}
+
 	switch (phase_) {
 	case 0:
 		if (isExplode) {
@@ -993,6 +998,7 @@ void Meteor::Update() {
 						collisionPosition.y += 1.0f;
 					}
 					isActive_ = false;
+					break;
 				}
 				if (info.subID == 2) {
 					isActive_ = false;
@@ -1079,6 +1085,11 @@ void EnemyBlock::Initialize(const Transform& transform, uint32_t mapIndexX, Coll
 }
 
 void EnemyBlock::Update() {
+	if (!isColliderActive_) {
+		isActive_ = false;
+		return;
+	}
+
 	switch (type) {
 	case EnemyBlock::kBlockToPlayer:
 	case EnemyBlock::kBlockToField:
@@ -1130,7 +1141,7 @@ void EnemyBlock::InitializeTemplate(const Transform& transform, CollisionAttribu
 
 	damage_ = damage;
 	damageCoolTime_ = damageCoolTime;
-	colliderSize_ = { 1.0f,1.0f,1.0f };
+	colliderSize_ = {0.4f,0.4f,0.4f};
 	colliderColor_ = { 1.0f,0.0f,0.0f,1.0f };
 	colliderType_ = ColliderType::kBox;
 	isColliderActive_ = true;
