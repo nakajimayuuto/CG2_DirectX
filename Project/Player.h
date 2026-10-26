@@ -89,6 +89,7 @@ private:
 
 	void BlockShot(const Vector2& shotDir);
 
+	uint32_t BlockDig();
 
 	void InitializeFloatingGimmick();
 
@@ -127,6 +128,9 @@ private:
 	// ブロック.
 	static inline const float kWidth = 0.8f;
 	static inline const float kHeight = 0.8f;
+	MapChipField::IndexSet digIndexSet_;
+	
+	std::unique_ptr<Model> selectBlock_;
 
 	std::vector<uint32_t> subIds_;
 	std::vector<std::unique_ptr<Model>> blockUIs_;

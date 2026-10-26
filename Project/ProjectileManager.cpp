@@ -793,7 +793,7 @@ void Lightning::Initialize(const Transform& transform, CollisionAttributeName co
 	warningBlock_.Initialize("block_template");
 	warningBlock_.ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("skeleton_block_warning"));
 	warningBlock_.SetColor({ 1.0f,0.0f,0.0f,1.0f });
-	collider_->SetSize({ 0.5f, 20.0f,0.5f });
+	collider_->SetSize({ 0.25f, 20.0f,0.25f });
 	collider_->SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
 	collider_->SetColliderType(ColliderType::kBox);
 	collider_->SetActive(false);

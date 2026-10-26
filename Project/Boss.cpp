@@ -12,6 +12,7 @@ void (Boss::* Boss::pInitializeFunc[])() = {
 		&Boss::NearLightningInitialize,
 		&Boss::LightningInitialize,
 		&Boss::MeteorInitialize,
+		&Boss::GroundShakeInitialize,
 };
 
 void (Boss::* Boss::pUpdateFunc[])() = {
@@ -23,6 +24,7 @@ void (Boss::* Boss::pUpdateFunc[])() = {
 		&Boss::NearLightningUpdate,
 		&Boss::LightningUpdate,
 		&Boss::MeteorUpdate,
+		&Boss::GroundShakeUpdate,
 };
 
 Boss::~Boss() {
@@ -103,7 +105,7 @@ void Boss::Initialize() {
 	hpGauge = std::make_unique<HPGauge>();
 	hpGauge->Initialize(&currentHP_, maxHP_, { 800.0f,30.0f });
 	hpGauge->SetPosition({ 0.0f,-270.0f });
-	hpGauge->SetScale({ 1.0f, 1.0f });
+	hpGauge->SetScale({ 0.0f, 1.0f });
 	hpGauge->SetGaugeLine(true);
 	hpGauge->SetGaugeLineInterval(10);
 	bossNameScaleX_ = 0.0f;
@@ -163,6 +165,8 @@ void Boss::Initialize() {
 	isActive_ = true;
 	isFight_ = false;
 	startTimer_ = 0.0f;
+
+	isVisibleGroundShakeWarningBlock_ = false;
 }
 
 void Boss::SetAttackData(Attacks attackName, float weight) {
@@ -180,6 +184,7 @@ void Boss::Phase1Initialize() {
 	SetAttackData(Attacks::kNearLightning, 1.0f);
 	SetAttackData(Attacks::kMeteor, 1.0f);
 	SetAttackData(Attacks::kLightning, 1.0f);
+	SetAttackData(Attacks::kGroundShake, 1.0f);
 
 }
 
@@ -196,7 +201,7 @@ void Boss::Update() {
 
 	if (isDeath_) {
 		for (uint32_t i = 0; i < 50; i++) {
-			ParticleManager::GetInstance()->SpawnParticles("death_cross",transform_.GetWorldPosition());
+			ParticleManager::GetInstance()->SpawnParticles("death_cross", transform_.GetWorldPosition());
 		}
 		isActive_ = false;
 		return;
@@ -205,15 +210,19 @@ void Boss::Update() {
 		return;
 	}
 
+	if (!isColliderActive_) {
+		isColliderActive_ = true;
+	}
+
 	if (startTimer_ >= kStartTimerMax_) {
 		startTimer_ = kStartTimerMax_;
 		bossNameScaleX_ = 1.0f;
 	} else {
 		startTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
-		bossNameScaleX_ = Easing(0.0f,1.0f,startTimer_,kStartTimerMax_,EaseType::kEaseOut);
+		bossNameScaleX_ = Easing(0.0f, 1.0f, startTimer_, kStartTimerMax_, EaseType::kEaseOut);
 	}
 
-	hpGauge->SetScale({ bossNameScaleX_ ,1.0f});
+	hpGauge->SetScale({ bossNameScaleX_ ,1.0f });
 
 	dopamineSpeed_ = DifficultyManager::GetInstance()->GetDopamineSpeed();
 
@@ -326,6 +335,10 @@ void Boss::Update() {
 		}
 	}
 
+
+	if (isColliderActive_) {
+		false;
+	}
 	RootUpdate();
 
 	AttackInitialize();
@@ -525,6 +538,24 @@ void Boss::Draw() {
 
 #endif // _DEBUG
 
+	if(isVisibleGroundShakeWarningBlock_){
+	for (uint32_t i = 0; i < 23; i++) {
+		uint32_t xIndex = i + 106;
+		Transform newTransform;
+		newTransform.Initialize();
+		for (uint32_t j = 0; j < 32; j++) {
+			MapChipType type = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipTypeByIndex(xIndex, j);
+			if (type != MapChipType::kBlock) {
+				continue;
+			}
+			uint32_t subId = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipSubIDByIndex(xIndex, j);
+			newTransform.translate = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(xIndex, j);
+			renderer->DrawBox(newTransform, "skeleton_block_warning", { 1.0f,0.0f,0.0f,1.0f });
+			break;
+		}
+	}
+	}
+
 	DrawCollider();
 
 	if (isFight_) {
@@ -655,6 +686,7 @@ void Boss::AttackUpdate() {
 }
 
 void Boss::AttackFinished() {
+	isVisibleGroundShakeWarningBlock_ = false;
 	autoHalberdStop_ = false;
 	isPlayAttack_ = false;
 	isColliderActive_ = true;
@@ -715,6 +747,7 @@ void Boss::WarpUpdate() {
 }
 
 void Boss::DownInitialize() {
+	isColliderActive_ = true;
 	SoundManager::GetInstance()->SoundPlay("snd_parry", 1.0f, 1.0f, kSoundEffect);
 	kMaxAttackTimer = kDonwStartTimer;
 	donwAnimHalberdVelocityY_ = 2.0f;
@@ -811,41 +844,6 @@ void Boss::BulletInitialize() {
 
 void Boss::BulletUpdate() {
 	return;
-	//switch (currentAttackPhase) {
-	//case 0: // ハルバードを前に向ける.
-	//	modelTransform_.rotate.y = Easing(0.0f, Radian(kBulletAnimRotateY), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-	//	destinationHalberdTransform_.translate = Easing(basicHalberdPos, kBulletHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-	//	destinationHalberdTransform_.rotate = Easing(basicHalberdRotate, kBasicHalberdFarRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-	//	transform_.rotate.y = atan2(transform_.translate.x - targetTransform_->translate.x, transform_.translate.z - targetTransform_->translate.z);
-	//
-	//	if (currentAttackTimer_ >= kMaxAttackTimer) {
-	//		NextAttackPhase(kBulletStayTimerMax);
-	//		if ((targetTransform_->translate - halberdTransform_.GetWorldPosition()).Length() != 0.0f) {
-	//			bulletShotDirectionTemp_ = GetBulletDire();
-	//		}
-	//	}
-	//	break;
-	//case 1: // 攻撃の前隙.
-	//	if (currentAttackTimer_ >= kMaxAttackTimer) {
-	//		SoundManager::GetInstance()->SoundPlay("snd_bullet_shot", 1.0f, 1.0f, kSoundEffect);
-	//		NextAttackPhase(kBulletStayTimerMax);
-	//		ProjectileManager::GetInstance()->CreateBullet(halberdTransform_, bulletShotDirectionTemp_ * 30.0f, BulletType::kNormal, kCollisionEnemyAttack, 10.0f, 3.0f);
-	//	}
-	//	break;
-	//case 2: // 攻撃の後隙.
-	//	if (currentAttackTimer_ >= kMaxAttackTimer) {
-	//		NextAttackPhase(kBulletFinishedGapTimerMax);
-	//	}
-	//	break;
-	//case 3: // 見た目を戻す.
-	//	modelTransform_.rotate.y = Easing(Radian(kBulletAnimRotateY), 0.0f, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-	//	destinationHalberdTransform_.translate = Easing(kBulletHalberdPos, basicHalberdPos, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-	//	destinationHalberdTransform_.rotate = Easing(kBasicHalberdFarRotate, basicHalberdRotate, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
-	//	if (currentAttackTimer_ >= kMaxAttackTimer) {
-	//		AttackFinished();
-	//	}
-	//	break;
-	//}
 }
 
 void Boss::DashInitialize() {
@@ -946,7 +944,7 @@ void Boss::LightningUpdate() {
 			uint32_t blank = static_cast<uint32_t>(Random::GetInstance()->RandomFloat(0.0f, 3.0f));
 
 
-			for (uint32_t i = 0; i < 21; i++) {
+			for (uint32_t i = 0; i < 23; i++) {
 				if (i % 4 == blank || i % 4 == (blank + 1)) {
 					Transform transform = transform_;
 					transform.translate.x = static_cast<float>(i) + 106.0f;
@@ -996,6 +994,60 @@ void Boss::MeteorUpdate() {
 		}
 		break;
 	case 2: // ワープの終わり.
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			AttackFinished();
+		}
+		break;
+	}
+}
+
+void Boss::GroundShakeInitialize() {
+	kMaxAttackTimer = kGroundShakeStartGapTimerMax;
+	isVisibleGroundShakeWarningBlock_ = true;
+}
+
+void Boss::GroundShakeUpdate() {
+	switch (currentAttackPhase) {
+	case 0: // ワープの始まり.
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kGroundShakeStayTimerMax);
+		}
+
+		break;
+	case 1: // ワープの終わり.
+		destinationHalberdTransform_.rotate.x = Easing(basicHalberdRotate.x, basicHalberdRotate.x - Radian(180.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			SoundManager::GetInstance()->SoundPlay("snd_parry", 1.0f, 1.0f, kSoundEffect);
+			for (uint32_t i = 0; i < 23; i++) {
+				uint32_t xIndex = i + 106;
+				Transform newTransform;
+				newTransform.Initialize();
+				for (uint32_t j = 0; j < 32; j++) {
+					MapChipType type = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipTypeByIndex(xIndex, j);
+					if (type != MapChipType::kBlock) {
+						continue;
+					}
+					uint32_t subId = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipSubIDByIndex(xIndex, j);
+					if (subId == 2) {
+						continue;
+					}
+					newTransform.translate = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(xIndex, j);
+					MapChipManager::GetInstance()->DeleteBlock(newTransform.translate, 0, 0);
+					ProjectileManager::GetInstance()->CreateBullet(newTransform, { 0.0f,5.0f,0.0f }, BulletType::kBlock, CollisionAttributeName::kCollisionEnemyAttack, 10.0f, static_cast<float>(subId));
+					break;
+				}
+			}
+			isVisibleGroundShakeWarningBlock_ = false;
+			NextAttackPhase(kGroundShakeStayTimerMax);
+		}
+		break;
+	case 2: // ワープの終わり.
+		destinationHalberdTransform_.rotate.x = Easing(basicHalberdRotate.x - Radian(180.0f), basicHalberdRotate.x - Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kGroundShakeFinishedGapTimerMax);
+		}
+		break;
+	case 3: // ワープの終わり.
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			AttackFinished();
 		}

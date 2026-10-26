@@ -76,6 +76,7 @@ private:
 		kNearLightning,
 		kLightning,
 		kMeteor,
+		kGroundShake,
 
 		kCountMax,
 		kFireBulletShot,
@@ -199,6 +200,9 @@ private:
 
 	void MeteorInitialize();
 	void MeteorUpdate();
+
+	void GroundShakeInitialize();
+	void GroundShakeUpdate();
 
 private:
 	static void (Boss::* pInitializeFunc[])();
@@ -340,6 +344,13 @@ private:
 	static inline float kLightningStartGapTimerMax = 0.2f;
 	static inline float kLightningStayTimerMax = 1.0f;
 	static inline float kLightningFinishedGapTimerMax = 0.3f;
+
+	// GroundShake.
+	static inline float kGroundShakeStartGapTimerMax = 2.0f;
+	static inline float kGroundShakeStayTimerMax = 0.2f;
+	static inline float kGroundShakeFinishedGapTimerMax = 0.3f;
+
+	bool isVisibleGroundShakeWarningBlock_;
 
 	//static inline Vector3 kDashHalberdPos = { -2.0f,0.0f,-3.0f };
 	//static inline float kDashAnimRotateY = -45.0f;

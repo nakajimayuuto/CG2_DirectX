@@ -87,6 +87,12 @@ void Player::Initialize() {
 		model->Initialize("block_template");
 		blockUIs_.push_back(std::move(model));
 	}
+
+	selectBlock_ = std::make_unique<Model>();
+	selectBlock_->Initialize("block_template");
+	selectBlock_->ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("skeleton_block"));
+	selectBlock_->SetColor({ 0.0f,0.0f,1.0f,1.0f });
+
 }
 
 void Player::InitializeFloatingGimmick() {
@@ -261,6 +267,7 @@ void Player::Update() {
 		damageCoolTimer_ -= DeltaTime::GetInstance()->GetGameTime();
 		if (damageCoolTimer_ <= 0.0f) {
 			damageCoolTimer_ = 0.0f;
+			isColliderActive_ = true;
 		}
 	}
 
@@ -364,14 +371,56 @@ void Player::BlockShot(const Vector2& shotDir) {
 }
 
 void Player::MapChipDigUpdate() {
+	uint32_t id;
+	MapChipField::IndexSet indexSet;
+	digIndexSet_.xIndex = 0;
+	digIndexSet_.yIndex = -1;
+	if (InputManager::GetInstance()->PressAction(InputAction::LEFT)) {
+		digIndexSet_ = { -1, 0 };
+
+		if (InputManager::GetInstance()->PressAction(InputAction::RIGHT)) {
+			digIndexSet_ = { 0,-1 };
+		}
+	} else {
+		if (InputManager::GetInstance()->PressAction(InputAction::RIGHT)) {
+			digIndexSet_ = { 1, 0 };
+		}
+	}
+
+	indexSet = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipIndexSetByPosition(transform_.translate);
+	if (MapChipManager::GetInstance()->GetMapChipField()->GetMapChipTypeByIndex(indexSet.xIndex + digIndexSet_.xIndex, MapChipManager::GetInstance()->GetMapChipField()->GetNumBlockVertical() - 1 - (indexSet.yIndex + digIndexSet_.yIndex))
+		!= MapChipType::kBlock ||
+		MapChipManager::GetInstance()->GetMapChipField()->GetMapChipSubIDByIndex(indexSet.xIndex + digIndexSet_.xIndex, MapChipManager::GetInstance()->GetMapChipField()->GetNumBlockVertical() - 1 - (indexSet.yIndex + digIndexSet_.yIndex))
+		== 2) {
+		digIndexSet_ = { 0,-1 };
+	}
+
+	if (MapChipManager::GetInstance()->GetMapChipField()->GetMapChipTypeByIndex(indexSet.xIndex + digIndexSet_.xIndex, MapChipManager::GetInstance()->GetMapChipField()->GetNumBlockVertical() - 1 - (indexSet.yIndex + digIndexSet_.yIndex))
+		!= MapChipType::kBlock ||
+		MapChipManager::GetInstance()->GetMapChipField()->GetMapChipSubIDByIndex(indexSet.xIndex + digIndexSet_.xIndex, MapChipManager::GetInstance()->GetMapChipField()->GetNumBlockVertical() - 1 - (indexSet.yIndex + digIndexSet_.yIndex))
+		== 2) {
+		float xTemp = transform_.translate.x;
+		uint32_t xRoundDown = static_cast<uint32_t>(transform_.translate.x);
+		xTemp = xTemp - static_cast<float>(xRoundDown);
+		if (xTemp <= 0.5f) {
+			digIndexSet_ = { 1,-1 };
+		} else {
+			digIndexSet_ = { -1,-1 };
+		}
+	}
+
 	if (InputManager::GetInstance()->TriggerAction(InputAction::ATTACK)) {
 		if (subIds_.size() < 5) {
-			uint32_t id = MapChipManager::GetInstance()->DeleteBlock(transform_.translate, 0, -1);
+			uint32_t id = MapChipManager::GetInstance()->DeleteBlock(transform_.translate, digIndexSet_.xIndex, digIndexSet_.yIndex);
 			if (id != -1) {
 				subIds_.push_back(id);
 			}
 		}
 	}
+}
+
+uint32_t Player::BlockDig() {
+	return 0;
 }
 
 void Player::BlockShotUpdate() {
@@ -433,7 +482,7 @@ void Player::GravityUpdate() {
 
 	if (!onGround_) {
 		// 落下速度.
- 		velocity_ += Vector3(0.0f, -kGravityAcceleration, 0.0f) * std::min(DeltaTime::GetInstance()->GetGameTime(),1.0f / 30.0f);
+		velocity_ += Vector3(0.0f, -kGravityAcceleration, 0.0f) * std::min(DeltaTime::GetInstance()->GetGameTime(), 1.0f / 30.0f);
 		// 速度制限.
 		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
 	}
@@ -653,19 +702,33 @@ void Player::Draw() {
 	//particles_->Draw();
 	hpGauge_->Draw();
 
-	Transform newTransform = transform_; 
+	Transform newTransform = transform_;
 	newTransform.scale = { 0.5f,0.5f,0.5f };
 	for (uint32_t i = 0; i < 5; i++) {
 		if (i >= subIds_.size()) {
 			continue;
 		}
-		newTransform.translate.x = Rotate({-1.5f,0.0f}, {transform_.translate.x,transform_.translate.y},static_cast<float>(i) * -45.0f).x;
-		newTransform.translate.y = Rotate({-1.5f,0.0f}, {transform_.translate.x,transform_.translate.y},static_cast<float>(i) * -45.0f).y;
-		newTransform.rotate.y = blockRotateY_ + Radian(15.0f * static_cast<float>(i)); 
+		newTransform.translate.x = Rotate({ -1.5f,0.0f }, { transform_.translate.x,transform_.translate.y }, static_cast<float>(i) * -45.0f).x;
+		newTransform.translate.y = Rotate({ -1.5f,0.0f }, { transform_.translate.x,transform_.translate.y }, static_cast<float>(i) * -45.0f).y;
+		newTransform.rotate.y = blockRotateY_ + Radian(15.0f * static_cast<float>(i));
 
-		Renderer::GetInstance()->DrawModel(newTransform,blockUIs_[i].get(), false);
+		Renderer::GetInstance()->DrawModel(newTransform, blockUIs_[i].get(), false);
 	}
 
+
+	MapChipField::IndexSet indexSet;
+	indexSet = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipIndexSetByPosition(transform_.translate);
+	newTransform.Initialize();
+	newTransform.scale = { 1.0f,1.0f,1.1f };
+	newTransform.translate = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(indexSet.xIndex + digIndexSet_.xIndex, MapChipManager::GetInstance()->GetMapChipField()->GetNumBlockVertical() - 1 - (indexSet.yIndex + digIndexSet_.yIndex));
+
+	if (MapChipManager::GetInstance()->GetMapChipField()->GetMapChipTypeByIndex(indexSet.xIndex + digIndexSet_.xIndex, MapChipManager::GetInstance()->GetMapChipField()->GetNumBlockVertical() - 1 - (indexSet.yIndex + digIndexSet_.yIndex))
+		== MapChipType::kBlock) {
+		if (MapChipManager::GetInstance()->GetMapChipField()->GetMapChipSubIDByIndex(indexSet.xIndex + digIndexSet_.xIndex, MapChipManager::GetInstance()->GetMapChipField()->GetNumBlockVertical() - 1 - (indexSet.yIndex + digIndexSet_.yIndex))
+			!= 2) {
+			Renderer::GetInstance()->DrawModel(newTransform, selectBlock_.get(), false);
+		}
+	}
 
 	DrawCollider();
 }
