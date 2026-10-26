@@ -9,6 +9,8 @@ void TitleScene::Initialize() {
 
 	ground_ = std::make_unique<Ground>();
 	ground_->Initialize();
+	skydome_ = std::make_unique<Skydome>();
+	skydome_->Initialize();
 
 	fade_ = std::make_unique<Fade>();
 	fade_->Initialize();
@@ -215,13 +217,15 @@ void TitleScene::SettingUpdate() {
 }
 
 void TitleScene::Draw() {
-	ground_->Draw();
+	//ground_->Draw();
 
-	Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "wall", { 1.0f,1.0f,1.0f,1.0f }, false);
-	Renderer::GetInstance()->DrawBox(Transform::GetInitialValue({ 10.0f,10.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,5.0f,-75.0f }), "door", { 1.0f,1.0f,1.0f,1.0f });
+	//Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "wall", { 1.0f,1.0f,1.0f,1.0f }, false);
+	//Renderer::GetInstance()->DrawBox(Transform::GetInitialValue({ 10.0f,10.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,5.0f,-75.0f }), "door", { 1.0f,1.0f,1.0f,1.0f });
 
-	Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,2.0f,0.0f }), "halberd", { 1.0f,1.0f,1.0f,1.0f }, false);
-	Renderer::GetInstance()->DrawShadow(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "halberd", { 0.0f,0.0f,0.0f,1.0f });
+	skydome_->Draw();
+
+	Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,2.0f,0.0f }), "tower", { 1.0f,1.0f,1.0f,1.0f }, false);
+	Renderer::GetInstance()->DrawShadow(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "tower", { 0.0f,0.0f,0.0f,1.0f });
 
 	ParticleManager::GetInstance()->Draw();
 	Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { Easing(0.0f,-800.0f,easeTimer_[static_cast<size_t>(TitlePhase::kTitle)],kUIAnimEaseTimerMax_,EaseType::kEaseIn),-200.0f,0.0f }), "title", { 1.0f,1.0f,1.0f,1.0f });

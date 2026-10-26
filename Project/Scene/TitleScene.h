@@ -2,6 +2,7 @@
 #include "../Satlib.h"
 #include "IScene.h"
 #include "../Ground.h"
+#include "../Skydome.h"
 #include "../Fade.h"
 
 enum class TitlePhase {
@@ -40,6 +41,7 @@ private:
 	void SettingUpdate();
 private:
 	std::unique_ptr<Ground> ground_;
+	std::unique_ptr<Skydome> skydome_;
 	std::unique_ptr<Fade> fade_;
 	Transform center_;
 	Transform cameraTransform_;

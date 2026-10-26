@@ -71,6 +71,7 @@ void LoadDatas() {
 	ModelManager::GetInstance()->RegisterObj("celling", "Resource/Ground", "celling.obj");
 	ModelManager::GetInstance()->RegisterObj("drill_ghost", "Resource/drill_ghost", "drill_ghost.obj", false);
 	ModelManager::GetInstance()->RegisterObj("halberd", "Resource/halberd", "halberd.obj", false);
+	ModelManager::GetInstance()->RegisterObj("tower", "Resource/tower", "tower.obj", false);
 	ModelManager::GetInstance()->RegisterObj("wall", "Resource/wall", "wall.obj");
 	ModelManager::GetInstance()->RegisterObj("bullet_crystal", "Resource/Bullet", "bullet_crystal.obj");
 	ModelManager::GetInstance()->RegisterObj("spike", "Resource/Spike", "spike.obj");
