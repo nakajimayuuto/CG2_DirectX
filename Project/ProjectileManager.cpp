@@ -876,6 +876,7 @@ void Meteor::Initialize(const Transform& transform, CollisionAttributeName colli
 	damageCoolTime_ = damageCoolTime;
 	model_.Initialize("block_template");
 	model_.SetLightingType(LightingType::kNone);
+	model_.SetUvTransform(Transform::GetInitialValue({ 3.0f,3.0f,3.0f }, {0.0f,0.0f,0.0f}, { 0.0f,0.0f,0.0f }));
 	warningBlock_.Initialize("block_template");
 	warningBlock_.ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("skeleton_block"));
 	warningBlock_.SetColor({ 1.0f,0.0f,0.0f,1.0f });

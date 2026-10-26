@@ -131,6 +131,11 @@ private:
 	MapChipField::IndexSet digIndexSet_;
 	
 	std::unique_ptr<Model> selectBlock_;
+	std::unique_ptr<Model> arrowUI_;
+	Transform arrowUITransform_;
+	Transform arrowCenterTransfrorm_;
+	float uiScaleTimer_;
+	static inline float kUIScaleTimerMax = 0.5f;
 
 	std::vector<uint32_t> subIds_;
 	std::vector<std::unique_ptr<Model>> blockUIs_;
@@ -163,7 +168,7 @@ private:
 	static inline const float kJumpAcceleration =25.0f;
 
 	float coyoteShotTimer_ = 0.0f;
-	static inline float kCoyoteShotTimerMax = 0.1f;
+	static inline float kCoyoteShotTimerMax = 0.25f;
 	Vector2 preDirection_;
 
 	bool onGround_ = true;

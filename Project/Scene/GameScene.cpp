@@ -20,6 +20,7 @@ void GameScene::Initialize() {
 	LightManager::GetInstance()->ClearLight();
 	Camera::GetInstance()->SetPosition({ 0.0f,2.0f,-30.0f });
 	GameCamera::GetInstance()->Initialize();
+	DifficultyManager::GetInstance()->SetCurrentDifficulty(kDifficultyNormal);
 	player_ = std::make_unique<Player>();
 	player_->Initialize();
 	//player_->SetStartPosition({ 0.0f,1.0f,-375.0f });
@@ -83,6 +84,47 @@ void GameScene::Initialize() {
 	isTutorial_ = true;
 	player_->PositionReset();
 	DeltaTime::GetInstance()->Reset();
+
+	CreateUI(20, 6, "block_broken");
+	CreateUI(41, 6, "shot_jump");
+	CreateUI(48, 11, "shot_jump2");
+
+	std::pair<std::unique_ptr<Model>, Transform> newWall;
+	newWall.first = std::make_unique<Model>();
+	newWall.first->Initialize("effect_plane");
+	TextureInfo textureInfo = TextureManager::GetInstance()->GetTextureInfo("wall_block");
+	newWall.first->ChangeTexture(textureInfo);
+	newWall.second.Initialize();
+	newWall.second.translate = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(53, 17);
+	newWall.second.translate.x += 0.5f;
+	newWall.second.translate.z = 0.5f;
+	newWall.first->SetUvTransform(Transform::GetInitialValue({ 108.0f, 32.0f, 1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }));
+	newWall.second.scale = { 54.0f,16.0f,1.0f };
+	uiDatas_.push_back(std::move(newWall));
+
+	newWall.first = std::make_unique<Model>();
+	newWall.first->Initialize("effect_plane");
+	textureInfo = TextureManager::GetInstance()->GetTextureInfo("wall_block");
+	newWall.first->ChangeTexture(textureInfo);
+	newWall.second.Initialize();
+	newWall.second.translate = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(128, 17);
+	newWall.second.translate.x += 0.5f;
+	newWall.second.translate.z = 0.5f;
+	newWall.first->SetUvTransform(Transform::GetInitialValue({ 4.0f, 32.0f, 1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }));
+	newWall.second.scale = { 2.0f,16.0f,1.0f };
+	uiDatas_.push_back(std::move(newWall));
+}
+
+void GameScene::CreateUI(uint32_t xIndex, uint32_t yIndex, std::string name) {
+	std::pair<std::unique_ptr<Model>, Transform> newUI;
+	newUI.first = std::make_unique<Model>();
+	newUI.first->Initialize("effect_plane");
+	TextureInfo textureInfo = TextureManager::GetInstance()->GetTextureInfo(name);
+	newUI.first->ChangeTexture(textureInfo);
+	newUI.second.Initialize();
+	newUI.second.translate = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(xIndex, yIndex);
+	newUI.second.scale = { textureInfo.width / 64.0f,textureInfo.height / 64.0f,1.0f };
+	uiDatas_.push_back(std::move(newUI));
 }
 
 void GameScene::Update() {
@@ -258,6 +300,7 @@ void GameScene::Update() {
 
 void GameScene::Draw() {
 	//ground_->Draw();
+	skydome_->Draw();
 	Renderer* renderer = Renderer::GetInstance();
 	//renderer->DrawSprite(Transform::GetInitialValue( { 1280.0f,720.0f,0.0f },  { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,100.0f }), "white_template", { 0.6f,0.6f,1.0f,1.0f });
 
@@ -284,7 +327,14 @@ void GameScene::Draw() {
 	renderer->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 500.0f,200.0f,0.0f }), "play_guid", { 1.0f,1.0f,1.0f,1.0f });
 
 
+	for (auto& ui : uiDatas_) {
+		ui.first->Draw(ui.second, false);
+	}
 
+
+	for (auto& wall : wallDatas_) {
+		wall.first->Draw(wall.second, false);
+	}
 
 	renderer->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 265.0f,300.0f,0.0f }), "pause_to_hamburger", { 1.0f,1.0f,1.0f,1.0f });
 
@@ -335,6 +385,7 @@ void GameScene::AnimSkipUpdate() {
 
 void GameScene::AnimSkipFadeUpdate() {
 }
+
 
 void GameScene::TutorialInitialize() {
 	for (uint32_t i = 0; i < 7; i++) {

@@ -93,6 +93,15 @@ void Player::Initialize() {
 	selectBlock_->ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("skeleton_block"));
 	selectBlock_->SetColor({ 0.0f,0.0f,1.0f,1.0f });
 
+	arrowUI_ = std::make_unique<Model>();
+	arrowUI_->Initialize("effect_plane");
+	arrowUI_->ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("arrow"));
+
+	arrowCenterTransfrorm_.Initialize();
+	arrowUITransform_.Initialize();
+	arrowUITransform_.SetParent(&arrowCenterTransfrorm_);
+	arrowUITransform_.translate.x = 2.0f;
+	arrowUITransform_.translate.z = -0.5f;
 }
 
 void Player::InitializeFloatingGimmick() {
@@ -279,6 +288,7 @@ void Player::Update() {
 
 	//CircleWallClamp();
 
+	arrowCenterTransfrorm_.translate = transform_.translate;
 
 	GameCamera::GetInstance()->SetTargetIsMove(isMoving_);
 	GameCamera::GetInstance()->SetTargetIsDash(isDash_);
@@ -371,7 +381,7 @@ void Player::BlockShot(const Vector2& shotDir) {
 }
 
 void Player::MapChipDigUpdate() {
-	uint32_t id;
+	uint32_t id = 0;
 	MapChipField::IndexSet indexSet;
 	digIndexSet_.xIndex = 0;
 	digIndexSet_.yIndex = -1;
@@ -445,6 +455,14 @@ void Player::BlockShotUpdate() {
 		coyoteShotTimer_ = 0.0f;
 	}
 	coyoteShotTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
+	uiScaleTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
+	if (uiScaleTimer_ >= kUIScaleTimerMax) {
+		uiScaleTimer_ = kUIScaleTimerMax;
+	}
+	arrowCenterTransfrorm_.scale.x = Easing(0.0f,1.0f,uiScaleTimer_,kUIScaleTimerMax,EaseType::kEaseOut);
+	arrowCenterTransfrorm_.scale.y = Easing(0.0f,1.0f,uiScaleTimer_,kUIScaleTimerMax,EaseType::kEaseOut);
+	arrowCenterTransfrorm_.scale.z = Easing(0.0f,1.0f,uiScaleTimer_,kUIScaleTimerMax,EaseType::kEaseOut);
+	arrowCenterTransfrorm_.rotate.z = atan2(direction.x, -direction.y) + Radian(-90.0f);
 
 	if (InputManager::GetInstance()->ReleaseAction(InputAction::JUMP)) {
 		BlockShot(direction);
@@ -558,6 +576,8 @@ void Player::MovingUpdate() {
 			behaviorRequest_ = Behavior::kShot;
 			coyoteShotTimer_ = 0.0f;
 			preDirection_ = { 0.0f,-1.0f };
+			arrowCenterTransfrorm_.scale = { 0.0f,0.0f,0.0f };
+			uiScaleTimer_ = 0.0f;
 		}
 	}
 
@@ -690,6 +710,10 @@ void Player::UpdateFloatingGimmick() {
 }
 
 void Player::Draw() {
+	if (behavior_ == Behavior::kShot) {
+  		arrowUI_->Draw(arrowUITransform_,false);
+	}
+
 	Transform dashT;
 	dashT.Initialize();
 	dashT.SetParent(&transformModel);

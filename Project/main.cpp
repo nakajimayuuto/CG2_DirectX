@@ -64,6 +64,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 void LoadDatas() {
 	ModelManager::GetInstance()->RegisterObj("boss", "Resource/boss", "boss_lightning.obj", false);
 	ModelManager::GetInstance()->RegisterObj("boss_block", "Resource/boss", "boss_lightning_block.obj", false);
+	ModelManager::GetInstance()->RegisterObj("skydome", "Resource/skydome", "skydome.obj");
 	ModelManager::GetInstance()->RegisterObj("dummy", "Resource/Dummy", "dummy.obj", true);
 	ModelManager::GetInstance()->RegisterObj("lightning", "Resource/Lightning", "lightning.obj", true);
 	ModelManager::GetInstance()->RegisterObj("ground", "Resource/Ground", "ground.obj");
@@ -78,6 +79,12 @@ void LoadDatas() {
 	TextureManager::GetInstance()->RegisterTexture("bullet_bounce", "Resource/Bullet/bullet_bounce.png");
 	TextureManager::GetInstance()->RegisterTexture("wall_soul", "Resource/wall/wall_soul.png");
 	TextureManager::GetInstance()->RegisterTexture("door", "Resource/wall/door.png");
+	TextureManager::GetInstance()->RegisterTexture("arrow", "Resource/UI/arrow.png");
+	TextureManager::GetInstance()->RegisterTexture("wall_block", "Resource/block_textures/block.png");
+
+	TextureManager::GetInstance()->RegisterTexture("block_broken", "Resource/UI/block_broken.png");
+	TextureManager::GetInstance()->RegisterTexture("shot_jump", "Resource/UI/shot_jump.png");
+	TextureManager::GetInstance()->RegisterTexture("shot_jump2", "Resource/UI/shot_jump2.png");
 
 	TextureManager::GetInstance()->RegisterTexture("heavy_block", "Resource/block_textures/heavy_block.png");
 	TextureManager::GetInstance()->RegisterTexture("soul_block", "Resource/block_textures/soul_block.png");

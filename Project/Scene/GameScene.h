@@ -1,5 +1,6 @@
 #pragma once
 #include <list>
+#include <vector>
 #include "IScene.h"
 #include "../Satlib.h"
 #include "../Skydome.h"
@@ -24,6 +25,8 @@ private:
 
 	void AnimSkipUpdate();
 	void AnimSkipFadeUpdate();
+
+	void CreateUI(uint32_t xIndex,uint32_t yIndex,std::string name);
 private:
 	std::unique_ptr<Player> player_;
 	std::unique_ptr<Boss> boss_;
@@ -36,6 +39,8 @@ private:
 	std::unique_ptr<PauseMenu> pauseMenu_;
 	std::unique_ptr<GameOverMenu> gameOverMenu_;
 	std::unique_ptr<Fade> fade_;
+	std::vector<std::pair<std::unique_ptr<Model>, Transform>> uiDatas_;
+	std::vector<std::pair<std::unique_ptr<Model>, Transform>> wallDatas_;
 	float startFade_;
 	bool useSkipStart_;
 	bool useSkipEnd_;

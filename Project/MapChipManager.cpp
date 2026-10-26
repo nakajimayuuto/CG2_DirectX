@@ -621,11 +621,11 @@ void MapChipManager::MapCollisionCenter(const Vector3& position, CollisionMapInf
 		if (mapChipType == MapChipType::kBlock) {
 			newPosY += 1.0f;
 
-			if (indexSet.xIndex < 0 || kNumBlockHorizontal - 1 < indexSet.xIndex ) {
+			if (indexSet.xIndex < 0 || static_cast<int32_t>(kNumBlockHorizontal) - 1 < indexSet.xIndex ) {
 				break;
 			}
 
-			if (indexSet.yIndex < 0 || kNumBlockVertical - 1 < indexSet.yIndex) {
+			if (indexSet.yIndex < 0 || static_cast<int32_t>(kNumBlockVertical) - 1 < indexSet.yIndex) {
 				break;
 			}
 		} else {

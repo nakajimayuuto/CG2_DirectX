@@ -75,17 +75,17 @@ void Boss::Initialize() {
 
 	switch (DifficultyManager::GetInstance()->GetCurrentDifficulty()) {
 	case kDifficultyEasy:
-		maxHP_ = 400.0f;
+		maxHP_ = 600.0f;
 		bossName_ = "name_easy";
 		bossNameMirror_ = "name_easy_mirror";
 		break;
 	case kDifficultyNormal:
-		maxHP_ = 400.0f;
+		maxHP_ = 600.0f;
 		bossName_ = "name_normal";
 		bossNameMirror_ = "name_normal_mirror";
 		break;
 	case kDifficultyHard:
-		maxHP_ = 400.0f;
+		maxHP_ = 600.0f;
 		bossName_ = "name_hard";
 		bossNameMirror_ = "name_hard_mirror";
 		break;
