@@ -1,6 +1,7 @@
 #include "GameScene.h"
 #include "../Satlib.h"
 #include "../ProjectileManager.h"
+#include "../GamePhase.h"
 #include "../EnemyManager.h"
 
 GameScene::~GameScene() {
@@ -23,12 +24,29 @@ void GameScene::Initialize() {
 	DifficultyManager::GetInstance()->SetCurrentDifficulty(kDifficultyNormal);
 	player_ = std::make_unique<Player>();
 	player_->Initialize();
+
+#ifdef _DEBUG
+	GamePhase::GetInstance()->SetCurrentPhase(GamePhase::kBeforeEnter);
+#endif // _DEBUG
+
+
 	//player_->SetStartPosition({ 0.0f,1.0f,-375.0f });
 	//if (gGamePhase == GamePhase::kGameStartAnim || gGamePhase == GamePhase::kBossPhase1) {
 	//	SoundManager::GetInstance()->SoundPlay("mus_phase1_intro", 1.0f, 0.25f, kBGM, false, "mus_phase1_intro");
 	//} else if (gGamePhase == GamePhase::kBossPhaseChangeAnim || gGamePhase == GamePhase::kBossPhase2) {
 	//	SoundManager::GetInstance()->SoundPlay("mus_phase2_intro", 1.0f, 0.25f, kBGM, false, "mus_phase2_intro");
 	//}
+
+	switch (GamePhase::GetInstance()->GetCurrentPhase()) {
+	case GamePhase::kTutorial:
+
+		break;
+	case GamePhase::kBeforeEnter:
+	case GamePhase::kPhase1:
+	case GamePhase::kPhase2:
+		player_->SetPosition({ 98.0f,20.0f,0.0f });
+		break;
+	}
 
 	boss_ = std::make_unique<Boss>();
 	boss_->Initialize();
@@ -43,6 +61,10 @@ void GameScene::Initialize() {
 
 	ground_ = std::make_unique<Ground>();
 	ground_->Initialize();
+
+	tower_ = std::make_unique<Model>();
+	tower_->Initialize("tower");
+	tower_->ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("tower_dark"));
 
 	ProjectileManager::GetInstance()->Initialize();
 
@@ -82,7 +104,6 @@ void GameScene::Initialize() {
 	MapChipManager::GetInstance()->Initialize();
 
 	isTutorial_ = true;
-	player_->PositionReset();
 	DeltaTime::GetInstance()->Reset();
 
 	CreateUI(20, 6, "block_broken");
@@ -177,6 +198,7 @@ void GameScene::Update() {
 			fade_->Update();
 
 			Camera::GetInstance()->Update();
+			skydome_->Update();
 			return;
 		} else {
 			gameOverMenu_->Update();
@@ -235,6 +257,7 @@ void GameScene::Update() {
 			fade_->Update();
 
 			Camera::GetInstance()->Update();
+			skydome_->Update();
 			return;
 		} else {
 			gameOverMenu_->Update();
@@ -295,6 +318,7 @@ void GameScene::Update() {
 	Camera::GetInstance()->Update();
 	CheckAllCollisions();
 
+	skydome_->Update();
 	MapChipManager::GetInstance()->Update();
 }
 
@@ -304,6 +328,7 @@ void GameScene::Draw() {
 	Renderer* renderer = Renderer::GetInstance();
 	//renderer->DrawSprite(Transform::GetInitialValue( { 1280.0f,720.0f,0.0f },  { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,100.0f }), "white_template", { 0.6f,0.6f,1.0f,1.0f });
 
+	tower_->Draw(Transform::GetInitialValue({ 8.0f,8.0f,8.0f }, { 0.0f,0.0f,0.0f }, { 117.0f,5.0f,30.0f }), false);
 
 	//renderer->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "wall", { 1.0f,1.0f,1.0f,1.0f }, false);
 	//renderer->DrawBox(Transform::GetInitialValue({ 10.0f,10.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,5.0f,-75.0f }), "door", { 1.0f,1.0f,1.0f,1.0f });

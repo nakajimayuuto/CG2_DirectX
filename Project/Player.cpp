@@ -6,7 +6,7 @@
 void Player::Initialize() {
 	transform_.Initialize();
 	targetRotateY = 0.0f;
-	model_.Initialize("drill_ghost");
+	model_.Initialize("player");
 	model_.SetBlendMode(BlendMode::kNormalCullNone);
 	//transform_.translate = { 0.0f, kTranslateBlankY,-30.0f };
 	transform_.translate = { 5.0f, kTranslateBlankY + kStartPosY,0.0f };
@@ -29,6 +29,7 @@ void Player::Initialize() {
 
 	transformModel.Initialize();
 	transformModel.SetParent(&transformColliderOffset);
+	transformModel.translate.y = 0.3f;
 	//transform_.rotate.y = std::atan2(velocity.x, velocity.z);
 	//Vector3 velocityXZ = { velocity.x,0.0f,velocity.z };
 	//transform_.rotate.x = std::atan2(-velocity.y, velocityXZ.Length());
@@ -90,8 +91,8 @@ void Player::Initialize() {
 
 	selectBlock_ = std::make_unique<Model>();
 	selectBlock_->Initialize("block_template");
-	selectBlock_->ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("skeleton_block"));
-	selectBlock_->SetColor({ 0.0f,0.0f,1.0f,1.0f });
+	selectBlock_->ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("skeleton_block_selected"));
+	selectBlock_->SetColor({ 0.5f,0.5f,1.0f,1.0f });
 
 	arrowUI_ = std::make_unique<Model>();
 	arrowUI_->Initialize("effect_plane");
@@ -219,6 +220,10 @@ void Player::FloatingAccelerationChange() {
 }
 
 void Player::Update() {
+	if (isDeath_) {
+		return;
+	}
+
 #ifdef _DEBUG
 	ImGui::Begin("player");
 	ImGui::DragFloat("HP", &currentHP_, 1.0f, 0.0f, maxHP_);
@@ -663,6 +668,8 @@ void Player::TurningControl() {
 void Player::CheckFallVoid() {
 	if (transform_.translate.y <= -2.0f) {
 		isDeath_ = true;
+		InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.5f);
+		DeltaTime::GetInstance()->SetHitStop(0.5f);
 	}
 }
 
@@ -804,6 +811,7 @@ void Player::OnCollision([[maybe_unused]] Collider* other) {
 		InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.5f);
 
 		if (currentHP_ <= 0.0f) {
+			DeltaTime::GetInstance()->SetHitStop(0.5f);
 			currentHP_ = 0.0f;
 			isDeath_ = true;
 			for (uint32_t i = 0; i < 30; i++) {

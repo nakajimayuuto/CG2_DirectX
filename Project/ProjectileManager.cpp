@@ -783,6 +783,9 @@ void Lightning::Initialize(const Transform& transform, CollisionAttributeName co
 			break;
 		}
 		yIndex++;
+		if (yIndex >= 40) {
+			break;
+		}
 	}
 	transform_.translate = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(indexSet.xIndex, yIndex - 1);
 	collider_ = std::make_unique<Collider>();
@@ -1033,14 +1036,10 @@ void Meteor::Update() {
 }
 
 void Meteor::Draw() {
-	warningBlock_.Draw(warningBlockTransform_);
-	model_.Draw(transform_);
-	switch (phase_) {
-	case 0:
-		break;
-	case 1:
-		break;
+	if (transform_.translate.y <= 12.0f) {
+		warningBlock_.Draw(warningBlockTransform_);
 	}
+	model_.Draw(transform_);
 }
 
 void EnemyBlock::Initialize(const Transform& transform, const Transform& targetTransform, CollisionAttributeName colliderName, float damage, float damageCoolTime) {

@@ -19,7 +19,7 @@ void MapChipManager::Initialize() {
 
 	isWireFlame_ = false;
 #ifdef _DEBUG
-	isWireFlame_ = true;
+	//isWireFlame_ = true;
 #endif // _DEBUG
 
 }
@@ -96,6 +96,37 @@ uint32_t MapChipManager::DeleteBlock(const Vector3& position, int offsetX, int o
 	return returnId;
 }
 
+uint32_t MapChipManager::SuperDeleteBlock(const Vector3& position){
+	MapChipType mapChipType;
+	MapChipField::IndexSet indexSet;
+	indexSet = mapChipField_->GetMapChipIndexSetByPosition(position);
+	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - 1 -indexSet.yIndex);
+	uint32_t subID = mapChipField_->GetMapChipSubIDByIndex(indexSet.xIndex, mapChipField_->GetNumBlockVertical() - 1 -  indexSet.yIndex);
+
+	if (mapChipType != MapChipType::kBlock) {
+		return -1;
+	}
+
+	uint32_t returnId = mapChipField_->GetMapChipSubIDByIndex(indexSet.xIndex , mapChipField_->GetNumBlockVertical() - 1  - indexSet.yIndex);
+	mapChipField_->SetMapChipTypeByIndexType(indexSet.xIndex , mapChipField_->GetNumBlockVertical() - 1 - indexSet.yIndex, MapChipType::kBlank);
+
+	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
+		if (i != mapChipField_->GetNumBlockVertical() - 1  - indexSet.yIndex) {
+			continue;
+		}
+		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+			if (j != indexSet.xIndex) {
+				continue;
+			}
+			modelBlocks_[i][j].first.release();
+
+			break;
+		}
+	}
+
+	return returnId;
+}
+
 void MapChipManager::CreateBlock(const Vector3& position) {
 	CreateBlock(position, 1);
 }
@@ -153,29 +184,50 @@ void MapChipManager::ChangeSolidMode() {
 	}
 }
 
-void MapChipManager::ResetBlock(uint32_t leftTopIndexX, uint32_t leftTopIndexY, uint32_t rightBottomIndexX, uint32_t rightBottomIndexY) {
+void MapChipManager::ResetBlock(uint32_t leftTopIndexX, uint32_t leftTopIndexY, uint32_t rightBottomIndexX, uint32_t rightBottomIndexY, bool isPhase1) {
 	uint8_t subID = 0;
 	std::string modelName;
 	for (uint32_t i = leftTopIndexY; i < rightBottomIndexY; ++i) {
 		for (uint32_t j = leftTopIndexX; j < rightBottomIndexX; ++j) {
 			//modelBlocks_[i][j].first = nullptr;
-			if (i >= 13 && i <= 16) {
-				subID = 1;
-				if (modelBlocks_[i][j].first) {
-					if (subID == mapChipField_->GetMapChipSubIDByIndex(j, i)) {
-						continue;
+			if (isPhase1) {
+				if (i >= 13 && i <= 16) {
+					subID = 1;
+					if (modelBlocks_[i][j].first) {
+						if (subID == mapChipField_->GetMapChipSubIDByIndex(j, i)) {
+							continue;
+						}
 					}
-				}
-			} else if (i == 17) {
-				subID = 2;
-				if (modelBlocks_[i][j].first) {
-					if (subID == mapChipField_->GetMapChipSubIDByIndex(j, i)) {
+				} else if (i == 17) {
+					subID = 2;
+					if (modelBlocks_[i][j].first) {
+						if (subID == mapChipField_->GetMapChipSubIDByIndex(j, i)) {
+							continue;
+						}
+					}
+				} else {
+					if (!modelBlocks_[i][j].first) {
 						continue;
 					}
 				}
 			} else {
-				if (!modelBlocks_[i][j].first) {
-					continue;
+				if (i >= 13 && i <= 15) {
+					if (j >= 108 && j <= 127) {
+						subID = 1;
+						if (modelBlocks_[i][j].first) {
+							if (subID == mapChipField_->GetMapChipSubIDByIndex(j, i)) {
+								continue;
+							}
+						}
+					} else {
+						if (!modelBlocks_[i][j].first) {
+							continue;
+						}
+					}
+				} else {
+					if (!modelBlocks_[i][j].first) {
+						continue;
+					}
 				}
 			}
 

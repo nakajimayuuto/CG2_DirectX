@@ -41,6 +41,8 @@ private:
 	std::unique_ptr<Fade> fade_;
 	std::vector<std::pair<std::unique_ptr<Model>, Transform>> uiDatas_;
 	std::vector<std::pair<std::unique_ptr<Model>, Transform>> wallDatas_;
+
+	std::unique_ptr<Model> tower_;
 	float startFade_;
 	bool useSkipStart_;
 	bool useSkipEnd_;

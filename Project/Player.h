@@ -123,7 +123,7 @@ private:
 
 	void MapCollisionUpdate();
 private:
-	static inline const float kStartPosY = 25.0f;
+	static inline const float kStartPosY = 22.0f;
 
 	// ブロック.
 	static inline const float kWidth = 0.8f;

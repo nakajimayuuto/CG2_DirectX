@@ -52,13 +52,14 @@ public:
 	MapChipField* GetMapChipField() { return mapChipField_.get(); };
 
 	uint32_t DeleteBlock(const Vector3& position,int offsetX,int offsetY);
+	uint32_t SuperDeleteBlock(const Vector3& position);
 
 	void CreateBlock(const Vector3& position);
 	void CreateBlock(const Vector3& position,uint32_t subID);
 
 	void ChangeSolidMode();
 
-	void ResetBlock(uint32_t leftTopIndexX, uint32_t leftTopIndexY,uint32_t rightBottomIndexX, uint32_t rightBottomIndexY);
+	void ResetBlock(uint32_t leftTopIndexX, uint32_t leftTopIndexY,uint32_t rightBottomIndexX, uint32_t rightBottomIndexY,bool isPhase1);
 private:
 	void CreateStage();
 

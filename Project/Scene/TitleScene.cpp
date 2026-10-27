@@ -1,9 +1,10 @@
 #include "TitleScene.h"
+#include "../GamePhase.h"
 
 void TitleScene::Initialize() {
 	SoundManager::GetInstance()->ResetBGM();
 	SoundManager::GetInstance()->SoundPlay("mus_title", 1.0f, 0.25f, kBGM, true, "mus_title");
-	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.05f;
+	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.5f;
 	LightManager::GetInstance()->GetDirectionalLightData()->color = { 0.5f,0.5f,1.0f,1.0f };
 	LightManager::GetInstance()->ClearLight();
 
@@ -45,11 +46,14 @@ void TitleScene::Initialize() {
 		}
 	}
 
-	LightManager::GetInstance()->CreatePointLight("halberd_title_light");
+	LightManager::GetInstance()->CreateSpotLight("halberd_title_light");
 	LightManager::GetInstance()->GetLightData("halberd_title_light")->color = { 1.0f,1.0f,1.0f,1.0f };
 	LightManager::GetInstance()->GetLightData("halberd_title_light")->radius = 10.0f;
-	LightManager::GetInstance()->GetLightData("halberd_title_light")->intensity = 1.0f;
-	LightManager::GetInstance()->GetLightData("halberd_title_light")->position = { 0.0f,5.0f,0.0f };
+	LightManager::GetInstance()->GetLightData("halberd_title_light")->distance = 3.0f;
+	LightManager::GetInstance()->GetLightData("halberd_title_light")->intensity = 30.0f;
+	LightManager::GetInstance()->GetLightData("halberd_title_light")->position = { 0.0f,2.0f,0.0f };
+	LightManager::GetInstance()->GetLightData("halberd_title_light")->cosAngle =std::cos(Radian(85.0f));
+	LightManager::GetInstance()->GetLightData("halberd_title_light")->cosFalloffStart =std::cos(Radian(75.0f));
 
 	currentMenuSelectNum_ = 0;
 	currentDifficultySelectNum_ = 0;
@@ -61,12 +65,7 @@ void TitleScene::Initialize() {
 }
 
 void TitleScene::Update() {
-	if (InputManager::GetInstance()->TriggerKey(DIK_F3)) {
-		Camera::GetInstance()->ChangeCameraMode();
-	}
-	if (InputManager::GetInstance()->TriggerKey(DIK_R)) {
-		SceneManager::GetInstance()->ReloadScene();
-	}
+	skydome_->Update();
 	center_.rotate.y += DeltaTime::GetInstance()->GetDeltaTime() * kRotateAngleSpeed;
 	if (center_.rotate.y >= Radian(360.0f)) {
 		center_.rotate.y -= Radian(360.0f);
@@ -121,6 +120,7 @@ void TitleScene::TitleUpdate() {
 		//currentPhase_ = TitlePhase::kDifficultySelect;
 
 		currentPhase_ = TitlePhase::kTitle;
+		GamePhase::GetInstance()->SetCurrentPhase(GamePhase::kTutorial);
 		isSubmit_ = true;
 		fade_->Start(Fade::Status::FadeOut, 1.0f);
 	}
@@ -224,8 +224,7 @@ void TitleScene::Draw() {
 
 	skydome_->Draw();
 
-	Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,2.0f,0.0f }), "tower", { 1.0f,1.0f,1.0f,1.0f }, false);
-	Renderer::GetInstance()->DrawShadow(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "tower", { 0.0f,0.0f,0.0f,1.0f });
+	Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 3.0f,3.0f,3.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "tower", { 1.0f,1.0f,1.0f,1.0f }, false);
 
 	ParticleManager::GetInstance()->Draw();
 	Renderer::GetInstance()->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { Easing(0.0f,-800.0f,easeTimer_[static_cast<size_t>(TitlePhase::kTitle)],kUIAnimEaseTimerMax_,EaseType::kEaseIn),-200.0f,0.0f }), "title", { 1.0f,1.0f,1.0f,1.0f });

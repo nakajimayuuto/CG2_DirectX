@@ -13,6 +13,7 @@ void (Boss::* Boss::pInitializeFunc[])() = {
 		&Boss::LightningInitialize,
 		&Boss::MeteorInitialize,
 		&Boss::GroundShakeInitialize,
+		&Boss::PhaseChangeAttackInitialize,
 };
 
 void (Boss::* Boss::pUpdateFunc[])() = {
@@ -25,6 +26,7 @@ void (Boss::* Boss::pUpdateFunc[])() = {
 		&Boss::LightningUpdate,
 		&Boss::MeteorUpdate,
 		&Boss::GroundShakeUpdate,
+		&Boss::PhaseChangeAttackUpdate,
 };
 
 Boss::~Boss() {
@@ -73,33 +75,38 @@ void Boss::Initialize() {
 	attackTempCollider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemyAttack));
 	attackTempCollider_->SetDebugColor({ 1.0f,0.0f,0.0f,1.0f });
 
-	switch (DifficultyManager::GetInstance()->GetCurrentDifficulty()) {
-	case kDifficultyEasy:
-		maxHP_ = 600.0f;
-		bossName_ = "name_easy";
-		bossNameMirror_ = "name_easy_mirror";
-		break;
-	case kDifficultyNormal:
-		maxHP_ = 600.0f;
-		bossName_ = "name_normal";
-		bossNameMirror_ = "name_normal_mirror";
-		break;
-	case kDifficultyHard:
-		maxHP_ = 600.0f;
-		bossName_ = "name_hard";
-		bossNameMirror_ = "name_hard_mirror";
-		break;
-	case kDifficultyHell:
-		maxHP_ = 400.0f;
-		bossName_ = "name_hard";
-		bossNameMirror_ = "name_hard_mirror";
-		break;
-	default:
-		maxHP_ = 400.0f;
-		bossName_ = "name_normal";
-		bossNameMirror_ = "name_normal_mirror";
-		break;
-	}
+	//switch (DifficultyManager::GetInstance()->GetCurrentDifficulty()) {
+	//case kDifficultyEasy:
+	//	maxHP_ = 600.0f;
+	//	bossName_ = "name_easy";
+	//	bossNameMirror_ = "name_easy_mirror";
+	//	break;
+	//case kDifficultyNormal:
+	//	maxHP_ = 600.0f;
+	//	bossName_ = "name_normal";
+	//	bossNameMirror_ = "name_normal_mirror";
+	//	break;
+	//case kDifficultyHard:
+	//	maxHP_ = 600.0f;
+	//	bossName_ = "name_hard";
+	//	bossNameMirror_ = "name_hard_mirror";
+	//	break;
+	//case kDifficultyHell:
+	//	maxHP_ = 400.0f;
+	//	bossName_ = "name_hard";
+	//	bossNameMirror_ = "name_hard_mirror";
+	//	break;
+	//default:
+	//	maxHP_ = 400.0f;
+	//	bossName_ = "name_normal";
+	//	bossNameMirror_ = "name_normal_mirror";
+	//	break;
+	//}
+
+	maxHP_ = 600.0f;
+	bossName_ = "boss_name";
+	bossNameMirror_ = "boss_name";
+
 	currentHP_ = maxHP_;
 
 	hpGauge = std::make_unique<HPGauge>();
@@ -167,6 +174,8 @@ void Boss::Initialize() {
 	startTimer_ = 0.0f;
 
 	isVisibleGroundShakeWarningBlock_ = false;
+	isVisiblePhaseChangeWarningBlock_ = false;
+	usablePhaseChangeAttack_ = true;
 }
 
 void Boss::SetAttackData(Attacks attackName, float weight) {
@@ -185,6 +194,8 @@ void Boss::Phase1Initialize() {
 	SetAttackData(Attacks::kMeteor, 1.0f);
 	SetAttackData(Attacks::kLightning, 1.0f);
 	SetAttackData(Attacks::kGroundShake, 1.0f);
+
+	usablePhaseChangeAttack_ = true;
 
 }
 
@@ -455,6 +466,16 @@ void Boss::AttackSelect(std::vector<AttackData> attackDatas) {
 	float weightMax = 0.0f;
 	float selectNum;
 
+	if (usablePhaseChangeAttack_) {
+		if (GamePhase::GetInstance()->GetCurrentPhase() == GamePhase::kPhase2) {
+			attackRequest_ = Attacks::kPhaseChangeAttack;
+			superAttackCount_ = 0;
+			attackCount_ = 0;
+			moveAttackCount_ = 0;
+			return;
+		}
+	}
+
 	if (attackCount_ < kAttackCountMax_) {
 		attackCount_++;
 		attackRequest_ = Attacks::kBulletShot;
@@ -538,22 +559,45 @@ void Boss::Draw() {
 
 #endif // _DEBUG
 
-	if(isVisibleGroundShakeWarningBlock_){
-	for (uint32_t i = 0; i < 23; i++) {
-		uint32_t xIndex = i + 106;
-		Transform newTransform;
-		newTransform.Initialize();
-		for (uint32_t j = 0; j < 32; j++) {
-			MapChipType type = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipTypeByIndex(xIndex, j);
-			if (type != MapChipType::kBlock) {
-				continue;
+	if (isVisibleGroundShakeWarningBlock_) {
+		for (uint32_t i = 0; i < 23; i++) {
+			uint32_t xIndex = i + 106;
+			Transform newTransform;
+			newTransform.Initialize();
+			for (uint32_t j = 0; j < 32; j++) {
+				MapChipType type = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipTypeByIndex(xIndex, j);
+				if (type != MapChipType::kBlock) {
+					continue;
+				}
+				uint32_t subId = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipSubIDByIndex(xIndex, j);
+				newTransform.translate = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(xIndex, j);
+				renderer->DrawBox(newTransform, "skeleton_block_warning", { 1.0f,0.0f,0.0f,1.0f });
+				break;
 			}
-			uint32_t subId = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipSubIDByIndex(xIndex, j);
-			newTransform.translate = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(xIndex, j);
-			renderer->DrawBox(newTransform, "skeleton_block_warning", { 1.0f,0.0f,0.0f,1.0f });
-			break;
 		}
 	}
+
+	if (isVisiblePhaseChangeWarningBlock_) {
+		for (uint32_t i = 0; i < 23; i++) {
+			uint32_t xIndex = i + 106;
+			Transform newTransform;
+			newTransform.Initialize();
+			for (uint32_t j = 0; j < 32; j++) {
+				uint32_t subId = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipSubIDByIndex(xIndex, j);
+				if (xIndex >= 108 && xIndex <= 127 ) {
+					if (j < 16 || j > 18) {
+						continue;
+					}
+				}
+				MapChipType type = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipTypeByIndex(xIndex, j);
+				if (type != MapChipType::kBlock) {
+					continue;
+				}
+
+				newTransform.translate = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(xIndex, j);
+				renderer->DrawBox(newTransform, "skeleton_block_warning", { 1.0f,0.0f,0.0f,1.0f });
+			}
+		}
 	}
 
 	DrawCollider();
@@ -604,8 +648,16 @@ void Boss::OnCollision(Collider* other) {
 			ParticleManager::GetInstance()->SpawnNumbers(other->GetDamage() * downDamageMangification_, damageTransform, { 0.5f,0.5f,1.0f });
 		}
 	}
+	if (GamePhase::GetInstance()->GetCurrentPhase() == GamePhase::kPhase1) {
+		if (currentHP_ <= (maxHP_ / 2.0f)) {
+			SoundManager::GetInstance()->SoundPlay("snd_parry", 1.0f, 1.0f, kSoundEffect);
+			DeltaTime::GetInstance()->SetHitStop(0.5f);
+			GamePhase::GetInstance()->SetCurrentPhase(GamePhase::kPhase2);
+		}
+	}
 	if (!isDeath_) {
 		if (currentHP_ <= 0.0f) {
+			SoundManager::GetInstance()->SoundPlay("snd_parry", 1.0f, 1.0f, kSoundEffect);
 			DeltaTime::GetInstance()->SetHitStop(0.5f);
 			isDeath_ = true;
 		}
@@ -820,7 +872,7 @@ void Boss::ResetBlockUpdate() {
 			currentAttackTimer_ = 0;
 			kMaxAttackTimer = kBlockResetFinishedGapTimerMax;
 			currentAttackPhase = 1;
-			MapChipManager::GetInstance()->ResetBlock(106, 0, 129, 31);
+			MapChipManager::GetInstance()->ResetBlock(106, 0, 129, 31,usablePhaseChangeAttack_);
 			SoundManager::GetInstance()->SoundPlay("snd_parry", 1.0f, 1.0f, kSoundEffect);
 		}
 
@@ -828,6 +880,7 @@ void Boss::ResetBlockUpdate() {
 	case 1: // ワープの終わり.
 		destinationHalberdTransform_.rotate.x = Easing(basicHalberdRotate.x - Radian(180.0f), basicHalberdRotate.x - Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			moveAttackCount_ = 0;
 			AttackFinished();
 		}
 		break;
@@ -1017,7 +1070,7 @@ void Boss::GroundShakeUpdate() {
 	case 1: // ワープの終わり.
 		destinationHalberdTransform_.rotate.x = Easing(basicHalberdRotate.x, basicHalberdRotate.x - Radian(180.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
-			SoundManager::GetInstance()->SoundPlay("snd_parry", 1.0f, 1.0f, kSoundEffect);
+			SoundManager::GetInstance()->SoundPlay("snd_drill", 1.0f, 1.0f, kSoundEffect);
 			for (uint32_t i = 0; i < 23; i++) {
 				uint32_t xIndex = i + 106;
 				Transform newTransform;
@@ -1050,6 +1103,67 @@ void Boss::GroundShakeUpdate() {
 	case 3: // ワープの終わり.
 		if (currentAttackTimer_ >= kMaxAttackTimer) {
 			AttackFinished();
+		}
+		break;
+	}
+}
+
+void Boss::PhaseChangeAttackInitialize() {
+	kMaxAttackTimer = kPhaseChangeStartGapTimerMax;
+	isVisiblePhaseChangeWarningBlock_ = true;
+}
+
+void Boss::PhaseChangeAttackUpdate() {
+	switch (currentAttackPhase) {
+	case 0: // ワープの始まり.
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kPhaseChangeStayTimerMax);
+		}
+
+		break;
+	case 1: // ワープの終わり.
+		destinationHalberdTransform_.rotate.x = Easing(basicHalberdRotate.x, basicHalberdRotate.x - Radian(180.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseIn);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			SoundManager::GetInstance()->SoundPlay("snd_drill", 1.0f, 1.0f, kSoundEffect);
+			for (uint32_t i = 0; i < 23; i++) {
+				uint32_t xIndex = i + 106;
+				Transform newTransform;
+				newTransform.Initialize();
+				for (uint32_t j = 0; j < 32; j++) {
+					uint32_t subId = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipSubIDByIndex(xIndex, j);
+					if (xIndex >= 108 && xIndex <= 127) {
+						if (j < 16 || j > 18) {
+							continue;
+						}
+					}
+					MapChipType type = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipTypeByIndex(xIndex, j);
+					if (type != MapChipType::kBlock) {
+						continue;
+					}
+
+					newTransform.translate = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(xIndex, j);
+					newTransform.translate = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(xIndex, j);
+					MapChipManager::GetInstance()->SuperDeleteBlock(newTransform.translate);
+					ProjectileManager::GetInstance()->CreateBullet(newTransform, { 0.0f,0.0f,0.0f }, BulletType::kBlock, CollisionAttributeName::kCollisionEnemyAttack, 10.0f, static_cast<float>(subId));
+				}
+			}
+			NextAttackPhase(kPhaseChangeStayTimerMax);
+			isVisiblePhaseChangeWarningBlock_ = false;
+			usablePhaseChangeAttack_ = false;
+		}
+		break;
+	case 2: // ワープの終わり.
+		destinationHalberdTransform_.rotate.x = Easing(basicHalberdRotate.x - Radian(180.0f), basicHalberdRotate.x - Radian(360.0f), currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseOut);
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+			NextAttackPhase(kPhaseChangeFinishedGapTimerMax);
+		}
+		break;
+	case 3: // ワープの終わり.
+		if (currentAttackTimer_ >= kMaxAttackTimer) {
+
+			AttackFinished();
+			attackRequest_ = Attacks::kResetBlock;
+			AttackInitialize();
 		}
 		break;
 	}

@@ -411,6 +411,9 @@
     <ClCompile Include="EnemyManager.cpp">
       <Filter>ソース ファイル\Enemy</Filter>
     </ClCompile>
+    <ClCompile Include="GamePhase.cpp">
+      <Filter>Scene\GameScene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -628,6 +631,9 @@
     </ClInclude>
     <ClInclude Include="EnemyManager.h">
       <Filter>ソース ファイル\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="GamePhase.h">
+      <Filter>Scene\GameScene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

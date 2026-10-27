@@ -1,4 +1,5 @@
 #include "Satlib.h"
+#include "GamePhase.h"
 void LoadDatas();
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -62,6 +63,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 }
 
 void LoadDatas() {
+
 	ModelManager::GetInstance()->RegisterObj("boss", "Resource/boss", "boss_lightning.obj", false);
 	ModelManager::GetInstance()->RegisterObj("boss_block", "Resource/boss", "boss_lightning_block.obj", false);
 	ModelManager::GetInstance()->RegisterObj("skydome", "Resource/skydome", "skydome.obj");
@@ -70,6 +72,7 @@ void LoadDatas() {
 	ModelManager::GetInstance()->RegisterObj("ground", "Resource/Ground", "ground.obj");
 	ModelManager::GetInstance()->RegisterObj("celling", "Resource/Ground", "celling.obj");
 	ModelManager::GetInstance()->RegisterObj("drill_ghost", "Resource/drill_ghost", "drill_ghost.obj", false);
+	ModelManager::GetInstance()->RegisterObj("player", "Resource/drill_ghost", "player.obj", false);
 	ModelManager::GetInstance()->RegisterObj("halberd", "Resource/halberd", "halberd.obj", false);
 	ModelManager::GetInstance()->RegisterObj("tower", "Resource/tower", "tower.obj", false);
 	ModelManager::GetInstance()->RegisterObj("wall", "Resource/wall", "wall.obj");
@@ -82,6 +85,7 @@ void LoadDatas() {
 	TextureManager::GetInstance()->RegisterTexture("door", "Resource/wall/door.png");
 	TextureManager::GetInstance()->RegisterTexture("arrow", "Resource/UI/arrow.png");
 	TextureManager::GetInstance()->RegisterTexture("wall_block", "Resource/block_textures/block.png");
+	TextureManager::GetInstance()->RegisterTexture("tower_dark", "Resource/tower/tower_dark.png");
 
 	TextureManager::GetInstance()->RegisterTexture("block_broken", "Resource/UI/block_broken.png");
 	TextureManager::GetInstance()->RegisterTexture("shot_jump", "Resource/UI/shot_jump.png");
@@ -92,6 +96,7 @@ void LoadDatas() {
 	TextureManager::GetInstance()->RegisterTexture("explode_block", "Resource/block_textures/explode_block_kari.png");
 	TextureManager::GetInstance()->RegisterTexture("skeleton_block", "Resource/block_textures/skeleton_block.png");
 	TextureManager::GetInstance()->RegisterTexture("skeleton_block_warning", "Resource/block_textures/skeleton_block_warning.png");
+	TextureManager::GetInstance()->RegisterTexture("skeleton_block_selected", "Resource/block_textures/skeleton_block_selected.png");
 
 	TextureManager::GetInstance()->RegisterTexture("effect_plane", "Resource/effects/effect_plane.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_fire", "Resource/effects/effect_fire.png");
@@ -159,6 +164,7 @@ void LoadDatas() {
 	TextureManager::GetInstance()->RegisterTexture("skip_to_lr", "Resource/UI/skip_to_lr.png");
 	TextureManager::GetInstance()->RegisterTexture("pause_to_hamburger", "Resource/UI/pause_to_hamburger.png");
 
+	TextureManager::GetInstance()->RegisterTexture("boss_name", "Resource/UI/boss_name.png");
 	TextureManager::GetInstance()->RegisterTexture("name_easy", "Resource/UI/boss_name_easy.png");
 	TextureManager::GetInstance()->RegisterTexture("name_easy_mirror", "Resource/UI/boss_name_easy_mirror.png");
 	TextureManager::GetInstance()->RegisterTexture("name_normal", "Resource/UI/boss_name_normal.png");

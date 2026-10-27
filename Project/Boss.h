@@ -1,6 +1,7 @@
 #pragma once
 #include "Satlib.h"
 #include "HPGauge.h"
+#include "GamePhase.h"
 class Boss : public Collider {
 public:
 	enum class Phase {
@@ -42,7 +43,7 @@ public:
 
 	bool GetIsDeath() { return isDeath_; };
 
-	void FightStart() { isFight_ = true; };
+	void FightStart() { isFight_ = true; GamePhase::GetInstance()->SetCurrentPhase(GamePhase::kPhase1); };
 
 	void EffectUpdate();
 
@@ -77,6 +78,7 @@ private:
 		kLightning,
 		kMeteor,
 		kGroundShake,
+		kPhaseChangeAttack,
 
 		kCountMax,
 		kFireBulletShot,
@@ -204,6 +206,9 @@ private:
 	void GroundShakeInitialize();
 	void GroundShakeUpdate();
 
+	void PhaseChangeAttackInitialize();
+	void PhaseChangeAttackUpdate();
+
 private:
 	static void (Boss::* pInitializeFunc[])();
 	static void (Boss::* pUpdateFunc[])();
@@ -214,6 +219,8 @@ private:
 
 	//Debug.
 	bool useDebugUpdateStop = false;
+
+	bool usablePhaseChangeAttack_;
 
 	uint32_t attackCount_;
 	static inline uint32_t kAttackCountMax_ = 2;
@@ -351,6 +358,13 @@ private:
 	static inline float kGroundShakeFinishedGapTimerMax = 0.3f;
 
 	bool isVisibleGroundShakeWarningBlock_;
+
+	// PhaseChange.
+	static inline float kPhaseChangeStartGapTimerMax = 2.0f;
+	static inline float kPhaseChangeStayTimerMax = 0.2f;
+	static inline float kPhaseChangeFinishedGapTimerMax = 0.3f;
+
+	bool isVisiblePhaseChangeWarningBlock_;
 
 	//static inline Vector3 kDashHalberdPos = { -2.0f,0.0f,-3.0f };
 	//static inline float kDashAnimRotateY = -45.0f;

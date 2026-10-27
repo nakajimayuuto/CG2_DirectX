@@ -846,8 +846,6 @@ void GameSystem::DrawCommand(
 		commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 		commandList->SetGraphicsRootConstantBufferView(3, LightManager::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
 		commandList->SetGraphicsRootConstantBufferView(4, Camera::GetInstance()->GetCameraForGPUResource()->GetGPUVirtualAddress());
-		//commandList->SetGraphicsRootConstantBufferView(5, PointLight::GetInstance()->GetPointLightResource()->GetGPUVirtualAddress());
-		//commandList->SetGraphicsRootConstantBufferView(6, SpotLight::GetInstance()->GetSpotLightResource()->GetGPUVirtualAddress());
 		commandList->SetGraphicsRootDescriptorTable(5, LightManager::GetInstance()->GetPointLightSrvHandleGPU());
 		commandList->SetGraphicsRootDescriptorTable(6, LightManager::GetInstance()->GetSpotLightSrvHandleGPU());
 		commandList->SetGraphicsRootConstantBufferView(7, LightManager::GetInstance()->GetLightNumResource()->GetGPUVirtualAddress());
