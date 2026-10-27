@@ -298,6 +298,13 @@ void ProjectileManager::CreateEnemyBlock(const Transform& transform, const Trans
 	enemyBlocks.push_back(std::move(enemyBlock));
 }
 
+void ProjectileManager::CreateEnemyBlock(const Transform& transform, uint32_t xIndex, CollisionAttributeName colliderName, float damage, uint32_t type) {
+	std::unique_ptr<EnemyBlock> enemyBlock;
+	enemyBlock = std::make_unique<EnemyBlock>();
+	enemyBlock->Initialize(transform, xIndex, colliderName, damage, static_cast<float>(type));
+	enemyBlocks.push_back(std::move(enemyBlock));
+}
+
 void ProjectileManager::CreateTutorialObstacle(const Vector3& position, TutorialObstaclesType type) {
 	std::unique_ptr<TutorialObstacles> tutorial;
 	tutorial = std::make_unique<TutorialObstacles>();
@@ -880,7 +887,7 @@ void Meteor::Initialize(const Transform& transform, CollisionAttributeName colli
 	damageCoolTime_ = damageCoolTime;
 	model_.Initialize("block_template");
 	model_.SetLightingType(LightingType::kNone);
-	model_.SetUvTransform(Transform::GetInitialValue({ 3.0f,3.0f,3.0f }, {0.0f,0.0f,0.0f}, { 0.0f,0.0f,0.0f }));
+	model_.SetUvTransform(Transform::GetInitialValue({ 3.0f,3.0f,3.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }));
 	warningBlock_.Initialize("block_template");
 	warningBlock_.ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("skeleton_block"));
 	warningBlock_.SetColor({ 1.0f,0.0f,0.0f,1.0f });
@@ -923,8 +930,9 @@ void Meteor::Update() {
 	newPos.y = 35.0f;
 	indexSet = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipIndexSetByPosition(newPos);
 	uint32_t yIndex = 0;
+	uint32_t preYIndex = 0;
 	uint32_t count = 0;
-	bool isExplode = false;
+	bool isExplode = true;
 	while (true) {
 		MapChipType type;
 		uint32_t subId;
@@ -933,17 +941,27 @@ void Meteor::Update() {
 			subId = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipSubIDByIndex(indexSet.xIndex - 1 + i, yIndex);
 			if (type == MapChipType::kBlock) {
 				count++;
+				preYIndex = yIndex;
+				break;
+			}
+		}
+		if (type == MapChipType::kBlock) {
+			if (subId == 2) {
+				isExplode = true;
+				yIndex--;
 				break;
 			}
 		}
 
-		if (subId == 2) {
-			isExplode = true;
+		if (count > kHitCountMax_ - hitCount_) {
+			isExplode = false;
 			yIndex--;
 			break;
 		}
 
-		if (count >= kHitCountMax_ - hitCount_) {
+		if (yIndex >= 40) {
+			isExplode = true;
+			yIndex = preYIndex;
 			break;
 		}
 		yIndex++;
@@ -1009,6 +1027,7 @@ void Meteor::Update() {
 					isActive_ = false;
 					break;
 				}
+				SoundManager::GetInstance()->SoundPlay("snd_drill", 1.0f, 1.0f, kSoundEffect);
 				MapChipManager::GetInstance()->DeleteBlock(transform_.GetWorldPosition(), -1, -2);
 				MapChipManager::GetInstance()->DeleteBlock(transform_.GetWorldPosition(), 0, -2);
 				MapChipManager::GetInstance()->DeleteBlock(transform_.GetWorldPosition(), 1, -2);
@@ -1056,6 +1075,10 @@ void EnemyBlock::Initialize(const Transform& transform, const Transform& targetT
 	anchorPoint_.push_back(targetTransform.GetWorldPosition() + (Vector3(0.0f, -1.0f, 0.0f) * length));
 	type = kBlockToPlayer;
 	moveTimer_ = 0.0f;
+	MapChipField::IndexSet indexSet;
+	indexSet = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipIndexSetByPosition(targetTransform.GetWorldPosition());
+	warningBlockTransform_.translate = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(indexSet.xIndex, MapChipManager::GetInstance()->GetMapChipField()->GetNumBlockVertical() - 1 - indexSet.yIndex);
+	warningBlockTransform_.translate.z = -0.5f;
 }
 
 void EnemyBlock::Initialize(const Transform& transform, uint32_t mapIndexX, CollisionAttributeName colliderName, float damage, float damageCoolTime)
@@ -1081,6 +1104,9 @@ void EnemyBlock::Initialize(const Transform& transform, uint32_t mapIndexX, Coll
 	anchorPoint_.push_back(finalPos);
 	float length = (transform.GetWorldPosition() - centerPosition).Length() + (centerPosition - finalPos).Length();
 	anchorPoint_.push_back(finalPos + (Vector3(0.0f, -1.0f, 0.0f) * length));
+	warningBlockTransform_.translate = finalPos;
+	warningBlockTransform_.translate.y += 1.0f;
+	warningBlockTransform_.translate.z = -0.5f;
 	type = kBlockToField;
 	moveTimer_ = 0.0f;
 }
@@ -1127,7 +1153,8 @@ void EnemyBlock::Update() {
 
 void EnemyBlock::Draw() {
 	model_.Draw(transform_);
-	if (phase_ == 2) {
+	if (transform_.translate.y >= 20.0f) {
+		warningBlock_.Draw(warningBlockTransform_);
 	}
 }
 
@@ -1138,11 +1165,14 @@ void EnemyBlock::InitializeTemplate(const Transform& transform, CollisionAttribu
 	transform_.scale = { 1.0f,1.0f,1.0f };
 	model_.Initialize("block_template");
 	model_.SetLightingType(LightingType::kNone);
-
+	warningBlock_.Initialize("block_template");
+	warningBlock_.ChangeTexture(TextureManager::GetInstance()->GetTextureInfo("skeleton_block_warning"));
+	warningBlock_.SetColor({ 1.0f,0.0f,0.0f,1.0f });
+	warningBlockTransform_.Initialize();
 
 	damage_ = damage;
 	damageCoolTime_ = damageCoolTime;
-	colliderSize_ = {0.4f,0.4f,0.4f};
+	colliderSize_ = { 0.4f,0.4f,0.4f };
 	colliderColor_ = { 1.0f,0.0f,0.0f,1.0f };
 	colliderType_ = ColliderType::kBox;
 	isColliderActive_ = true;

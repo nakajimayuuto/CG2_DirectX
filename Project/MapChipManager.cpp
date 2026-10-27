@@ -19,7 +19,7 @@ void MapChipManager::Initialize() {
 
 	isWireFlame_ = false;
 #ifdef _DEBUG
-	//isWireFlame_ = true;
+	isWireFlame_ = true;
 #endif // _DEBUG
 
 }
@@ -212,7 +212,7 @@ void MapChipManager::ResetBlock(uint32_t leftTopIndexX, uint32_t leftTopIndexY, 
 				}
 			} else {
 				if (i >= 13 && i <= 15) {
-					if (j >= 108 && j <= 127) {
+					if (j >= 107 && j <= 127) {
 						subID = 1;
 						if (modelBlocks_[i][j].first) {
 							if (subID == mapChipField_->GetMapChipSubIDByIndex(j, i)) {

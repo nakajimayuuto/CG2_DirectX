@@ -403,11 +403,23 @@ void Player::MapChipDigUpdate() {
 	}
 
 	indexSet = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipIndexSetByPosition(transform_.translate);
-	if (MapChipManager::GetInstance()->GetMapChipField()->GetMapChipTypeByIndex(indexSet.xIndex + digIndexSet_.xIndex, MapChipManager::GetInstance()->GetMapChipField()->GetNumBlockVertical() - 1 - (indexSet.yIndex + digIndexSet_.yIndex))
-		!= MapChipType::kBlock ||
-		MapChipManager::GetInstance()->GetMapChipField()->GetMapChipSubIDByIndex(indexSet.xIndex + digIndexSet_.xIndex, MapChipManager::GetInstance()->GetMapChipField()->GetNumBlockVertical() - 1 - (indexSet.yIndex + digIndexSet_.yIndex))
-		== 2) {
-		digIndexSet_ = { 0,-1 };
+	if (digIndexSet_.yIndex == 0) {
+		if (MapChipManager::GetInstance()->GetMapChipField()->GetMapChipTypeByIndex(indexSet.xIndex + digIndexSet_.xIndex, MapChipManager::GetInstance()->GetMapChipField()->GetNumBlockVertical() - 1 - (indexSet.yIndex + digIndexSet_.yIndex))
+			!= MapChipType::kBlock ||
+			MapChipManager::GetInstance()->GetMapChipField()->GetMapChipSubIDByIndex(indexSet.xIndex + digIndexSet_.xIndex, MapChipManager::GetInstance()->GetMapChipField()->GetNumBlockVertical() - 1 - (indexSet.yIndex + digIndexSet_.yIndex))
+			== 2) {
+
+			digIndexSet_.yIndex = 1;
+
+			indexSet = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipIndexSetByPosition(transform_.translate);
+			if (MapChipManager::GetInstance()->GetMapChipField()->GetMapChipTypeByIndex(indexSet.xIndex + digIndexSet_.xIndex, MapChipManager::GetInstance()->GetMapChipField()->GetNumBlockVertical() - 1 - (indexSet.yIndex + digIndexSet_.yIndex))
+				!= MapChipType::kBlock ||
+				MapChipManager::GetInstance()->GetMapChipField()->GetMapChipSubIDByIndex(indexSet.xIndex + digIndexSet_.xIndex, MapChipManager::GetInstance()->GetMapChipField()->GetNumBlockVertical() - 1 - (indexSet.yIndex + digIndexSet_.yIndex))
+				== 2) {
+
+				digIndexSet_ = { 0,-1 };
+			}
+		}
 	}
 
 	if (MapChipManager::GetInstance()->GetMapChipField()->GetMapChipTypeByIndex(indexSet.xIndex + digIndexSet_.xIndex, MapChipManager::GetInstance()->GetMapChipField()->GetNumBlockVertical() - 1 - (indexSet.yIndex + digIndexSet_.yIndex))
@@ -428,6 +440,7 @@ void Player::MapChipDigUpdate() {
 		if (subIds_.size() < 5) {
 			uint32_t id = MapChipManager::GetInstance()->DeleteBlock(transform_.translate, digIndexSet_.xIndex, digIndexSet_.yIndex);
 			if (id != -1) {
+				SoundManager::GetInstance()->SoundPlay("snd_drill", 1.0f, 1.0f, kSoundEffect);
 				subIds_.push_back(id);
 			}
 		}
@@ -464,12 +477,13 @@ void Player::BlockShotUpdate() {
 	if (uiScaleTimer_ >= kUIScaleTimerMax) {
 		uiScaleTimer_ = kUIScaleTimerMax;
 	}
-	arrowCenterTransfrorm_.scale.x = Easing(0.0f,1.0f,uiScaleTimer_,kUIScaleTimerMax,EaseType::kEaseOut);
-	arrowCenterTransfrorm_.scale.y = Easing(0.0f,1.0f,uiScaleTimer_,kUIScaleTimerMax,EaseType::kEaseOut);
-	arrowCenterTransfrorm_.scale.z = Easing(0.0f,1.0f,uiScaleTimer_,kUIScaleTimerMax,EaseType::kEaseOut);
+	arrowCenterTransfrorm_.scale.x = Easing(0.0f, 1.0f, uiScaleTimer_, kUIScaleTimerMax, EaseType::kEaseOut);
+	arrowCenterTransfrorm_.scale.y = Easing(0.0f, 1.0f, uiScaleTimer_, kUIScaleTimerMax, EaseType::kEaseOut);
+	arrowCenterTransfrorm_.scale.z = Easing(0.0f, 1.0f, uiScaleTimer_, kUIScaleTimerMax, EaseType::kEaseOut);
 	arrowCenterTransfrorm_.rotate.z = atan2(direction.x, -direction.y) + Radian(-90.0f);
 
 	if (InputManager::GetInstance()->ReleaseAction(InputAction::JUMP)) {
+		SoundManager::GetInstance()->SoundPlay("snd_bullet_shot", 1.0f, 1.0f, kSoundEffect);
 		BlockShot(direction);
 		behaviorRequest_ = Behavior::kRoot;
 		if (direction.x >= 0.5f || direction.x <= -0.5f) {
@@ -666,6 +680,10 @@ void Player::TurningControl() {
 }
 
 void Player::CheckFallVoid() {
+	if (isImmune_) {
+		return;
+	}
+
 	if (transform_.translate.y <= -2.0f) {
 		isDeath_ = true;
 		InputManager::GetInstance()->SetVibration(0.1f, 0.1f, 0.5f);
@@ -718,7 +736,7 @@ void Player::UpdateFloatingGimmick() {
 
 void Player::Draw() {
 	if (behavior_ == Behavior::kShot) {
-  		arrowUI_->Draw(arrowUITransform_,false);
+		arrowUI_->Draw(arrowUITransform_, false);
 	}
 
 	Transform dashT;

@@ -79,6 +79,8 @@ private:
 		kMeteor,
 		kGroundShake,
 		kPhaseChangeAttack,
+		kSuperLightning,
+		kHipDrop,
 
 		kCountMax,
 		kFireBulletShot,
@@ -200,6 +202,9 @@ private:
 	void LightningInitialize();
 	void LightningUpdate();
 
+	void SuperLightningInitialize();
+	void SuperLightningUpdate();
+
 	void MeteorInitialize();
 	void MeteorUpdate();
 
@@ -208,6 +213,10 @@ private:
 
 	void PhaseChangeAttackInitialize();
 	void PhaseChangeAttackUpdate();
+
+	void HipDropInitialize();
+	void HipDropUpdate();
+	void HipDropWarningBlockUpdate();
 
 private:
 	static void (Boss::* pInitializeFunc[])();
@@ -229,6 +238,7 @@ private:
 	static inline uint32_t kSuperAttackCountMax_ = 2;
 
 	uint32_t moveAttackCount_;
+	uint32_t moveAttackCountMax_ = 2;
 	static inline uint32_t kMoveAttackCountMax_ = 2;
 
 	// Anim
@@ -300,6 +310,11 @@ private:
 	static inline float kNearDamage = 10.0f;
 	static inline float kNearThirdDamage = 30.0f;
 
+	bool isWarningGlowColorRed_;
+	float warningGlowTimer_ = 0.0f;
+	static inline float kWarningGlowTimeMax_ = 0.2f;
+	Vector4 warningBlockColor_;
+
 #pragma region Phase1攻撃
 
 	// Warp
@@ -346,13 +361,19 @@ private:
 
 	// Meteor.
 	static inline float kMeteorStartGapTimerMax = 0.2f;
-	static inline float kMeteorStayTimerMax = 1.0f;
+	static inline float kMeteorStayTimerMax = 2.0f;
 	static inline float kMeteorFinishedGapTimerMax = 0.3f;
 
 	// NearLightning.
 	static inline float kLightningStartGapTimerMax = 0.2f;
 	static inline float kLightningStayTimerMax = 1.0f;
 	static inline float kLightningFinishedGapTimerMax = 0.3f;
+
+	uint32_t nearLightningLength_;
+	static inline uint32_t kPhase1NearLightningLength = 5;
+	static inline uint32_t kPhase2NearLightningLength = 5;
+
+	uint32_t preBlank_;
 
 	// GroundShake.
 	static inline float kGroundShakeStartGapTimerMax = 2.0f;
@@ -366,10 +387,27 @@ private:
 	static inline float kPhaseChangeStayTimerMax = 0.2f;
 	static inline float kPhaseChangeFinishedGapTimerMax = 0.3f;
 
+
 	bool isVisiblePhaseChangeWarningBlock_;
 
-	//static inline Vector3 kDashHalberdPos = { -2.0f,0.0f,-3.0f };
-	//static inline float kDashAnimRotateY = -45.0f;
+	// HipDrop.
+	static inline float kHipDropStartGapTimerMax = 1.0f;
+	static inline float kHipDropStayTimerMax = 2.0f;
+	static inline float kHipDropDownTimerMax = 5.0f;
+	static inline float kHipDropFinishedGapTimerMax = 1.0f;
+
+	Vector3 hipDropBeforePos_;
+	Vector3 hipDropAfterPos_;
+
+	bool isVisibleHipDropWarningBlock_;
+	static inline float kHipDropFallingSpeed = 16.0f;
+
+	uint32_t hipDropHitCount_;
+	static inline uint32_t kHipDropHitCountMax_ = 3;
+	Vector3 hipDropWarningBlockPos_;
+	Vector4 hipDropWarningBlockColor_;
+	float hipDropHitStopTimer_ = 0.0f;
+	static inline float kHipDropHitStopTimeMax_ = 0.2f;
 
 	
 
