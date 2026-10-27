@@ -777,6 +777,7 @@ void Lightning::Initialize(const Transform& transform, CollisionAttributeName co
 	MapChipField::IndexSet indexSet;
 	indexSet = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipIndexSetByPosition(transform.translate);
 	uint32_t yIndex = 0;
+	isActive_ = true;
 	while (true) {
 		MapChipType type = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipTypeByIndex(indexSet.xIndex, yIndex);
 		if (type == MapChipType::kBlock) {
@@ -784,6 +785,7 @@ void Lightning::Initialize(const Transform& transform, CollisionAttributeName co
 		}
 		yIndex++;
 		if (yIndex >= 40) {
+			isActive_ = false;
 			break;
 		}
 	}
@@ -802,7 +804,6 @@ void Lightning::Initialize(const Transform& transform, CollisionAttributeName co
 	collider_->SetActive(false);
 	collider_->SetRadius(20.0f);
 	collider_->SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(colliderName));
-	isActive_ = true;
 	isColliderActive_ = false;
 
 	lifeTimer_ = 0.0f;
