@@ -52,8 +52,8 @@ private:
 
 	void SetWindowed();
 private:
-	// 定数.
-	const LPCWSTR kWindowTitle_ = L"LE2A_18_ナカジマ_ユウト_掘削幽霊の決戦";
+	// 定数	
+	const LPCWSTR kWindowTitle_ = L"LE2A_20_ナカジマ_ユウト_BLOCK_de_BREAK";
 
 	const WindowSize kWindowSize_ = { 1280,720 };//{1280,720};
 
