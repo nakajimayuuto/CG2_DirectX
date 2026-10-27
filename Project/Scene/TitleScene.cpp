@@ -4,7 +4,7 @@
 void TitleScene::Initialize() {
 	SoundManager::GetInstance()->ResetBGM();
 	SoundManager::GetInstance()->SoundPlay("mus_title", 1.0f, 0.25f, kBGM, true, "mus_title");
-	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.5f;
+	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.75f;
 	LightManager::GetInstance()->GetDirectionalLightData()->color = { 0.5f,0.5f,1.0f,1.0f };
 	LightManager::GetInstance()->ClearLight();
 

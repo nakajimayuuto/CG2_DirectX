@@ -233,7 +233,7 @@ private:
 	static inline float kWarningGlowTimeMax_ = 0.2f;
 	static inline uint32_t kBasicWarningCountMax_ = 10;
 
-	static inline float kFallingSpeed = 5.0f;
+	static inline float kFallingSpeed = 4.0f;
 
 	float alpha_;
 

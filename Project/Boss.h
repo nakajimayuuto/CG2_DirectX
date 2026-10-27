@@ -328,8 +328,10 @@ private:
 
 	// Dash.
 	static inline float kDashStartGapTimerMax = 1.0f;
-	static inline float kDashMoveTimerMax = 1.0f;
+	static inline float kDashMoveTimerMax = 1.5f;
 	static inline float kDashFinishedGapTimerMax = 0.3f;
+
+	Vector3 tempp_;
 
 	static inline Vector3 kDashHalberdPos = { -2.0f,0.0f,-3.0f };
 	static inline float kDashAnimRotateY = -45.0f;

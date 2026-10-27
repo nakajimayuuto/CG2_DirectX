@@ -1037,7 +1037,7 @@ void Meteor::Update() {
 }
 
 void Meteor::Draw() {
-	if (transform_.translate.y <= 12.0f) {
+	if (transform_.translate.y > 12.0f) {
 		warningBlock_.Draw(warningBlockTransform_);
 	}
 	model_.Draw(transform_);

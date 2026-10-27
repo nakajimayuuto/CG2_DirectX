@@ -915,11 +915,13 @@ void Boss::DashUpdate() {
 			dashBeforePosition_ = transform_.translate;
 			dashAfterPosition_ = GetAnchorPointPos(AnchorPointType::kFar);
 			NextAttackPhase(kDashMoveTimerMax);
+			tempp_ = transform_.translate;
 		}
 		break;
 	case 1: // 攻撃の前隙.
 		transform_.translate = Easing(dashBeforePosition_, dashAfterPosition_, currentAttackTimer_, kMaxAttackTimer, EaseType::kEaseInOut);
 
+		tempp_ = transform_.translate;
 		info.width = 0.9f;
 		info.height = 2.0f;
 		info.movementAmount = { ((dashAfterPosition_.x - dashBeforePosition_.x) / kMaxAttackTimer) * DeltaTime::GetInstance()->GetGameTime(),0.0f,0.0f };

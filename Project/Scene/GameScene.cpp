@@ -13,7 +13,7 @@ void GameScene::Initialize() {
 	SoundManager::GetInstance()->ResetBGM();
 
 	DeltaTime::GetInstance()->SetGameTimeSpeed(1.0f);
-	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.5f;
+	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.75f;
 	LightManager::GetInstance()->GetDirectionalLightData()->direction = { 0.0f,-1.0f,0.0f };
 	LightManager::GetInstance()->GetDirectionalLightData()->color = { 1.0f,1.0f,1.0f,1.0f };
 	ParticleManager::GetInstance()->ClearParticles();
