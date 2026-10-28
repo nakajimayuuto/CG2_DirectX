@@ -1073,6 +1073,11 @@ void EnemyBlock::Initialize(const Transform& transform, uint32_t mapIndexX, Coll
 			break;
 		}
 		yIndex++;
+
+		if (yIndex <= 40) {
+			isActive_ = false;
+			break;
+		}
 	}
 	Vector3 finalPos = MapChipManager::GetInstance()->GetMapChipField()->GetMapChipPositionByIndex(mapIndexX, yIndex);
 	Vector3 centerPosition = ((transform.GetWorldPosition() - finalPos) / 2.0f) + finalPos;
