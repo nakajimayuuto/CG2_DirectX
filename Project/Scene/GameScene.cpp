@@ -193,8 +193,6 @@ void GameScene::Update() {
 	if (gameOverMenu_->GetIsActive()) {
 		if (gameOverMenu_->GetCanGameUpdate()) {
 			gameOverMenu_->Update();
-			worldFrameEmitter_->Update();
-			worldBigFrameEmitter_->Update();
 			fade_->Update();
 
 			Camera::GetInstance()->Update();
@@ -207,11 +205,18 @@ void GameScene::Update() {
 
 	if (pauseMenu_->GetIsActive()) {
 		pauseMenu_->Update();
-		worldFrameEmitter_->Update();
-		worldBigFrameEmitter_->Update();
 		fade_->Update();
 
 		Camera::GetInstance()->Update();
+		if (!isTutorial_) {
+			if (!gameOverMenu_->GetIsActive()) {
+				if (!boss_->GetIsDeath()) {
+					if (SoundManager::GetInstance()->IsFinishedSound("mus_phase1_intro")) {
+						SoundManager::GetInstance()->SoundPlay("mus_phase1", 1.0f, 0.25f, kBGM, true, "mus_phase1");
+					}
+				}
+			}
+		}
 		return;
 	} else {
 		if (!useSkipStart_) {
@@ -277,6 +282,7 @@ void GameScene::Update() {
 				SoundManager::GetInstance()->SoundStop("mus_phase1");
 				gameclearTimer_ += DeltaTime::GetInstance()->GetDeltaTime();
 			}
+			player_->SetIsImmune(true);
 		}
 	}
 
@@ -297,8 +303,6 @@ void GameScene::Update() {
 	GameCamera::GetInstance()->Update();
 
 
-	worldFrameEmitter_->Update();
-	worldBigFrameEmitter_->Update();
 
 	AnimSkipUpdate();
 	fade_->Update();

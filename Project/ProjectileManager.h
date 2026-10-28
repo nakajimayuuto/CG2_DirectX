@@ -283,6 +283,9 @@ private:
 	bool isActive_;
 
 	MoveType type;
+
+	Model warningBlock_;
+	Transform warningBlockTransform_;
 };
 
 enum class TutorialObstaclesType {
@@ -341,6 +344,7 @@ public:
 	void CreateMeteor(const Transform& transform, CollisionAttributeName colliderName, float damage, float damageCoolTime);
 
 	void CreateEnemyBlock(const Transform& transform, const Transform& targetTransform, CollisionAttributeName colliderName, float damage, uint32_t type);
+	void CreateEnemyBlock(const Transform& transform, uint32_t xIndex, CollisionAttributeName colliderName, float damage, uint32_t type);
 
 	void CreateTutorialObstacle(const Vector3& position, TutorialObstaclesType type);
 private:
