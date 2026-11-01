@@ -1,9 +1,6 @@
 #include "ModelManager.h"
 #include "../Engine/SystemFile/GameSystem.h"
 #include "TextureManager.h"
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
 
 
 #pragma comment(lib,"d3d12.lib")
@@ -28,7 +25,7 @@ void ModelManager::RegisterObj(const std::string& name, const std::string& direc
 		return;
 	}
 	
-	models_[name].modelData = LoadObjFile(directoryPath, fileName);
+	models_[name].modelData = LoadModelFile(directoryPath, fileName);
 	Vector3 min = { 0.0f,0.0f,0.0f };
 	Vector3 max = { 0.0f,0.0f,0.0f };
 	for (ModelData& data : models_[name].modelData) {
@@ -201,8 +198,8 @@ std::vector<ModelData>ModelManager::LoadObjFile(const std::string& directoryPath
 			material->Get(AI_MATKEY_UVTRANSFORM(aiTextureType_DIFFUSE, materialIndex), uvTransform);
 			material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor);
 			modelData.materialData.textureFilePath = directoryPath + "/" + textureFilePath.C_Str();
-			modelData.materialData.matarial.uvTransform = Matrix4x4::MakeScaleMatrix({uvTransform.mScaling.x,uvTransform.mScaling.y,1.0f});
-			modelData.materialData.matarial.color = { diffuseColor.r,diffuseColor.g,diffuseColor.b,1.0f};
+			modelData.materialData.matarial.uvTransform = Matrix4x4::MakeScaleMatrix({ uvTransform.mScaling.x,uvTransform.mScaling.y,1.0f });
+			modelData.materialData.matarial.color = { diffuseColor.r,diffuseColor.g,diffuseColor.b,1.0f };
 			modelData.materialData.textureName = materialName.C_Str();
 			//modelData.materialData = LoadMaterialTemplateFile(directoryPath,textureFilePath.C_Str(),materialName.C_Str());
 			returnData.push_back(modelData);
@@ -210,151 +207,81 @@ std::vector<ModelData>ModelManager::LoadObjFile(const std::string& directoryPath
 	}
 
 	return returnData;
+}
 
-	// 1. 中で必要となる変数の宣言.
-	std::vector<Vector4> positions; // 位置.
-	std::vector<Vector3> normals; // 法線.
-	std::vector<Vector2> texcoords; // テクスチャ座標.
-	std::string line; // ファイルから読んだ1行を格納するもの.
+std::vector<ModelData> ModelManager::LoadModelFile(const std::string& directoryPath, const std::string& fileName) {
+	ModelData modelData; // 構築するModelData.
+	std::vector<ModelData> returnData; // 構築するModelData.
 
-	// MaterialTemplateLiblaryファイルの名前を取得する.
-	std::string materialFilename;
+	Assimp::Importer importer;
+	std::string filePath = directoryPath + "/" + fileName;
+	const aiScene* scene = importer.ReadFile(filePath.c_str(), aiProcess_FlipWindingOrder | aiProcess_FlipUVs | aiProcess_Triangulate);
+	assert(scene->HasMeshes());
 
-	// 2. ファイルを開く.
-	std::ifstream file(directoryPath + "/" + fileName); // ファイルを開く.
-	assert(file.is_open()); // とりあえず開けなかったら止める.
-	bool isUsemtl = false;
+	for (uint32_t meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex) {
+		aiMesh* mesh = scene->mMeshes[meshIndex];
+		assert(mesh->HasNormals());
+		assert(mesh->HasTextureCoords(0));
+		for (uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; ++faceIndex) {
+			aiFace& face = mesh->mFaces[faceIndex];
+			//assert(face.mNumIndices == 3); // 三角形のみサポート、後々四角形対応します.
+			for (uint32_t element = 0; element < face.mNumIndices; ++element) {
+				uint32_t vertexIndex = face.mIndices[element];
+				aiVector3D& position = mesh->mVertices[vertexIndex];
+				aiVector3D& normal = mesh->mNormals[vertexIndex];
+				aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
+				VertexData vertex;
+				vertex.position = { position.x,position.y,position.z,1.0f };
+				vertex.normal = { normal.x,normal.y,normal.z };
+				vertex.texcoord = { texcoord.x,texcoord.y };
 
-	// 3. 実際にファイルを読み、ModelDataを構築していく.
-	while (std::getline(file, line)) {
-		std::string identifier;
-		std::istringstream s(line);
-		s >> identifier; // 先頭の識別子を読む.
+				vertex.position.x *= -1.0f;
+				vertex.normal.x *= -1.0f;
 
-		// identifierに応じた処理.
-
-		if (identifier == "v") {
-			Vector4 position;
-			s >> position.x >> position.y >> position.z;
-			position.x *= -1.0f;
-			position.w = 1.0f;
-			positions.push_back(position);
-		} else if (identifier == "vt") {
-			Vector2 texcoord;
-			s >> texcoord.x >> texcoord.y;
-			texcoord.y = 1.0f - texcoord.y;
-			texcoords.push_back(texcoord);
-		} else if (identifier == "vn") {
-			Vector3 normal;
-			s >> normal.x >> normal.y >> normal.z;
-			normal.x *= -1.0f;
-			normals.push_back(normal);
-		} else if (identifier == "f") {
-			VertexData triangle[4];
-			bool useQuad = false;
-			// 面は三角形と四角形限定。その他は未対応.
-			for (uint32_t faceVertex = 0; faceVertex < 4; ++faceVertex) {
-				std::string vertexDefinition;
-				s >> vertexDefinition;
-				if (vertexDefinition == "") {
-					break;
-				}
-
-				// 頂点の要素へのIndexは「位置/UV/法線」で格納されているので、分解してIndexを取得する.
-				std::istringstream v(vertexDefinition);
-				uint32_t elementIndices[3];
-				for (uint32_t element = 0; element < 3; ++element) {
-					std::string index;
-					std::getline(v, index, '/');// 区切りでインデックスを読んでいく.
-					if (index == "") {
-						elementIndices[element] = -1024;
-						continue;
-					}
-
-					elementIndices[element] = std::stoi(index);
-				}
-
-				if (positions.size() < 0 || faceVertex > positions.size()) {
-					assert(false);
-				}
-
-				if (texcoords.size() < 0 || faceVertex > texcoords.size()) {
-					//assert(false);
-				}
-
-				if (normals.size() < 0 || faceVertex > normals.size()) {
-					//	assert(false);
-				}
-
-
-				// 要素へのIndexから、実際の要素の値を取得して、頂点を構築する.
-				Vector4 position = { 0.0f,0.0f,0.0f,0.0f };
-				Vector2 texcoord = { 0.0f,0.0f };
-				Vector3 normal = { 0.0f,0.0f,0.0f };
-
-				if (elementIndices[0] != -1024) {
-					position = positions[elementIndices[0] - 1];
-				}
-
-				if (elementIndices[1] != -1024) {
-					texcoord = texcoords[elementIndices[1] - 1];
-				}
-
-				if (elementIndices[2] != -1024) {
-					normal = normals[elementIndices[2] - 1];
-				}
-
-				triangle[faceVertex] = { position,texcoord,normal };
-
-				if (faceVertex == 3) {
-					useQuad = true;
-				}
+				modelData.vertices.push_back(vertex);
 			}
-
-			if (useQuad) {
-				modelData.vertices.push_back(triangle[3]);
-				modelData.vertices.push_back(triangle[2]);
-				modelData.vertices.push_back(triangle[0]);
-				modelData.vertices.push_back(triangle[2]);
-				modelData.vertices.push_back(triangle[1]);
-				modelData.vertices.push_back(triangle[0]);
-			} else {
-				modelData.vertices.push_back(triangle[2]);
-				modelData.vertices.push_back(triangle[1]);
-				modelData.vertices.push_back(triangle[0]);
-			}
-
-		} else if (identifier == "mtllib") {
-			s >> materialFilename;
-			//// 基本的にObjファイルと同一階層にmtlは存在させるので、ディレクトリ名とファイル名を渡す.
-			//modelData.materialData = LoadMaterialTemplateFile(directoryPath, materialFilename,);
-		} else if (identifier == "usemtl") {
-			isUsemtl = true;
-			s >> modelData.materialData.textureName;
-			// 基本的にObjファイルと同一階層にmtlは存在させるので、ディレクトリ名とファイル名を渡す.
-			modelData.materialData = LoadMaterialTemplateFile(directoryPath, materialFilename, modelData.materialData.textureName);
-		} else if (identifier == "o") {
-			if (positions.size() != 0) {
-				returnData.push_back(modelData);
-
-				modelData.vertices.clear();
-				modelData.materialData.textureFilePath = "";
-				modelData.materialData.textureName = "";
-			}
-
-			s >> modelData.meshName;
 		}
 	}
 
-	if (!isUsemtl) {
-		modelData.materialData.matarial.color = { 1.0f,1.0f,1.0f,1.0f };
+	for (uint32_t materialIndex = 0; materialIndex < scene->mNumMaterials; ++materialIndex) {
+		aiMaterial* material = scene->mMaterials[materialIndex];
+		if (material->GetTextureCount(aiTextureType_DIFFUSE) != 0) {
+			aiString textureFilePath;
+			material->GetTexture(aiTextureType_DIFFUSE, 0, &textureFilePath);
+			aiString materialName;
+			aiUVTransform uvTransform;
+			aiColor3D diffuseColor(1.f, 1.f, 1.f);
+			material->Get(AI_MATKEY_NAME, materialName);
+			material->Get(AI_MATKEY_UVTRANSFORM(aiTextureType_DIFFUSE, materialIndex), uvTransform);
+			material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor);
+			modelData.materialData.textureFilePath = directoryPath + "/" + textureFilePath.C_Str();
+			modelData.materialData.matarial.uvTransform = Matrix4x4::MakeScaleMatrix({ uvTransform.mScaling.x,uvTransform.mScaling.y,1.0f });
+			modelData.materialData.matarial.color = { diffuseColor.r,diffuseColor.g,diffuseColor.b,1.0f };
+			modelData.materialData.textureName = materialName.C_Str();
+			//modelData.materialData = LoadMaterialTemplateFile(directoryPath,textureFilePath.C_Str(),materialName.C_Str());
+			modelData.rootNode = ReadNode(scene->mRootNode);
+			returnData.push_back(modelData);
+		}
 	}
 
-	// 4. ModelDataを返す.
-	returnData.push_back(modelData);
-
-
 	return returnData;
+}
+
+Node ModelManager::ReadNode(aiNode* aiNode) {
+	Node result;
+	aiMatrix4x4 aiLoaclMatrix4x4 = aiNode->mTransformation;
+	for (uint32_t i = 0; i < 4; i++) {
+		for (uint32_t j = 0; j < 4; j++) {
+			result.localMatrix.matrix[j][i] = aiLoaclMatrix4x4[j][i];
+		}
+	}
+
+	result.name = aiNode->mName.C_Str();
+	result.children.resize(aiNode->mNumChildren);
+	for (uint32_t i = 0; i < aiNode->mNumChildren; i++) {
+		result.children[0] = ReadNode(aiNode->mChildren[i]);
+	}
+	return result;
 }
 
 DirectX::ScratchImage ModelManager::LoadTexture(const std::string& filePath) {

@@ -5,9 +5,17 @@
 
 #include "../../externals/DirectXTex/DirectXTex.h"
 #include "../../externals/DirectXTex/d3dx12.h"
+struct Node {
+	Matrix4x4 localMatrix;
+	std::string name;
+	std::vector<Node> children;
+};
+
 struct ModelData {
 	std::vector<VertexData> vertices;
 	MaterialData materialData;
+
+	Node rootNode;
 	std::string meshName;
 	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandlesCPU;
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandlesGPU;

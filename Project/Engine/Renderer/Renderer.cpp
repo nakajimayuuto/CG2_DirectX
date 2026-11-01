@@ -125,9 +125,9 @@ void Model::Draw(const Transform& transform, bool useTransparent){
 		}
 		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
 
-		wvpData_[i]->World = worldMatrix;
-		wvpData_[i]->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
-		wvpData_[i]->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+		wvpData_[i]->World = modelData_[i].rootNode.localMatrix * worldMatrix;
+		wvpData_[i]->WVP = modelData_[i].rootNode.localMatrix * Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+		wvpData_[i]->WorldInverseTranspose = modelData_[i].rootNode.localMatrix * worldMatrix.Transpose().Inverse();
 
 		materialResource_[i]->Map(0, nullptr, reinterpret_cast<void**>(&materialData_[i]));
 		materialData_[i]->uvTransform = Matrix4x4::MakeAffineMatrix(uvTransform_[i]);
@@ -1101,9 +1101,9 @@ void Renderer::DrawModel(const Transform& transform, const ModelInfo& modelInfo,
 	for (uint32_t i = 0; i < modelMax_; i++) {
 		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
 
-		(*newElements)[i].wvpData_->World = worldMatrix;
-		(*newElements)[i].wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
-		(*newElements)[i].wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+		(*newElements)[i].wvpData_->World = (*newElements)[i].modelData_.rootNode.localMatrix * worldMatrix;
+		(*newElements)[i].wvpData_->WVP = (*newElements)[i].modelData_.rootNode.localMatrix * Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+		(*newElements)[i].wvpData_->WorldInverseTranspose = (*newElements)[i].modelData_.rootNode.localMatrix * worldMatrix.Transpose().Inverse();
 
 		(*newElements)[i].materialData_->uvTransform = Matrix4x4::MakeAffineMatrix((*newElements)[i].uvTransform_);
 
@@ -1146,9 +1146,9 @@ void Renderer::DrawModel(const Transform& transform, const Model* model, bool us
 	for (uint32_t i = 0; i < modelMax_; i++) {
 		Matrix4x4 worldMatrix = transform.GetAffineMatrix();
 
-		(*newElements)[i].wvpData_->World = worldMatrix;
-		(*newElements)[i].wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
-		(*newElements)[i].wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+		(*newElements)[i].wvpData_->World = (*newElements)[i].modelData_.rootNode.localMatrix * worldMatrix;
+		(*newElements)[i].wvpData_->WVP = (*newElements)[i].modelData_.rootNode.localMatrix * Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+		(*newElements)[i].wvpData_->WorldInverseTranspose = (*newElements)[i].modelData_.rootNode.localMatrix * worldMatrix.Transpose().Inverse();
 
 		(*newElements)[i].materialData_->uvTransform = Matrix4x4::MakeAffineMatrix((*newElements)[i].uvTransform_);
 
@@ -1322,9 +1322,9 @@ void Renderer::DrawShadow(const Transform& transform, const Model* model) {
 		Matrix4x4 projectionMatrix = Matrix4x4::Identity();
 		projectionMatrix.matrix[1][1] = 0.01f;
 		worldMatrix = worldMatrix * projectionMatrix;
-		(*newElements)[i].wvpData_->World = worldMatrix * projectionMatrix;
-		(*newElements)[i].wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
-		(*newElements)[i].wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+		(*newElements)[i].wvpData_->World = (*newElements)[i].modelData_.rootNode.localMatrix * worldMatrix * projectionMatrix;
+		(*newElements)[i].wvpData_->WVP = (*newElements)[i].modelData_.rootNode.localMatrix * Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+		(*newElements)[i].wvpData_->WorldInverseTranspose = (*newElements)[i].modelData_.rootNode.localMatrix * worldMatrix.Transpose().Inverse();
 
 		(*newElements)[i].materialData_->uvTransform = Matrix4x4::MakeAffineMatrix((*newElements)[i].uvTransform_);
 
@@ -1358,9 +1358,9 @@ void Renderer::DrawShadow(const Transform& transform, const Model* model, const 
 		Matrix4x4 projectionMatrix = Matrix4x4::Identity();
 		projectionMatrix.matrix[1][1] = 0.01f;
 		worldMatrix = worldMatrix * projectionMatrix;
-		newElements.get()[i].data()->wvpData_->World = worldMatrix * projectionMatrix;
-		newElements.get()[i].data()->wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
-		newElements.get()[i].data()->wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+		newElements.get()[i].data()->wvpData_->World = (*newElements)[i].modelData_.rootNode.localMatrix * worldMatrix * projectionMatrix;
+		newElements.get()[i].data()->wvpData_->WVP = (*newElements)[i].modelData_.rootNode.localMatrix * Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+		newElements.get()[i].data()->wvpData_->WorldInverseTranspose = (*newElements)[i].modelData_.rootNode.localMatrix * worldMatrix.Transpose().Inverse();
 
 		newElements.get()[i].data()->materialData_->uvTransform = Matrix4x4::MakeAffineMatrix(newElements.get()[i].data()->uvTransform_);
 		newElements.get()[i].data()->materialData_->color = color;
@@ -1407,9 +1407,9 @@ void Renderer::DrawShadow(const Transform& transform, const ModelInfo& modelInfo
 		projectionMatrix.matrix[1][1] = 0.0f;
 		worldMatrix = worldMatrix * projectionMatrix;
 		worldMatrix.matrix[3][1] = 0.01f;
-		(*newElements)[i].wvpData_->World = worldMatrix;
-		(*newElements)[i].wvpData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
-		(*newElements)[i].wvpData_->WorldInverseTranspose = worldMatrix.Transpose().Inverse();
+		(*newElements)[i].wvpData_->World = (*newElements)[i].modelData_.rootNode.localMatrix * worldMatrix;
+		(*newElements)[i].wvpData_->WVP = (*newElements)[i].modelData_.rootNode.localMatrix * Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
+		(*newElements)[i].wvpData_->WorldInverseTranspose = (*newElements)[i].modelData_.rootNode.localMatrix * worldMatrix.Transpose().Inverse();
 
 		(*newElements)[i].materialData_->uvTransform = Matrix4x4::MakeAffineMatrix((*newElements)[i].uvTransform_);
 		(*newElements)[i].materialData_->color = color;

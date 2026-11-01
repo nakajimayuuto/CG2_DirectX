@@ -22,6 +22,9 @@
 
 #include "../externals/DirectXTex/DirectXTex.h"
 #include "../externals/DirectXTex/d3dx12.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 struct ModelInfo {
 	std::vector<ModelData> modelData;
@@ -47,6 +50,10 @@ private:
 
 	// ModelManager的な奴に入れる.
 	std::vector<ModelData> LoadObjFile(const std::string& directoryPath, const std::string& fileName);
+	std::vector<ModelData> LoadModelFile(const std::string& directoryPath, const std::string& fileName);
+
+	
+	Node ReadNode(aiNode* aiNode);
 
 	// Textureデータを読む(TextureManager的な奴に入れる).
 	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
