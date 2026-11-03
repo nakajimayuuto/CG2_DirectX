@@ -358,8 +358,8 @@ void GameSystem::ImGuiInitialize() {
 }
 
 void GameSystem::LoadSampleDatas(){
-	ModelManager::GetInstance()->RegisterObj("block_template", "Resources/block", "block.obj");
-	ModelManager::GetInstance()->RegisterObj("effect_plane", "Resources/effects", "effect_plane.obj");
+	ModelManager::GetInstance()->RegisterModel("block_template", "Resources/block", "block.obj");
+	ModelManager::GetInstance()->RegisterModel("effect_plane", "Resources/effects", "effect_plane.obj");
 	TextureManager::GetInstance()->RegisterTexture("white_template", "Resources/white_template.png");
 }
 

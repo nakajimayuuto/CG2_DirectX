@@ -41,16 +41,16 @@ void Application::Finalize(){
 }
 
 void Application::LoadDatas(){
-	//ModelManager::GetInstance()->RegisterObj("boss", "Resource/boss", "boss_ghost.obj", false);
-	ModelManager::GetInstance()->RegisterObj("ground", "Resources/Ground", "ground.obj");
-	ModelManager::GetInstance()->RegisterObj("celling", "Resources/Ground", "celling.obj");
-	ModelManager::GetInstance()->RegisterObj("drill_ghost", "Resources/drill_ghost", "drill_ghost.obj", false);
-	ModelManager::GetInstance()->RegisterObj("halberd", "Resources/halberd", "halberd.obj", false);
-	ModelManager::GetInstance()->RegisterObj("wall", "Resources/wall", "wall.obj");
-	ModelManager::GetInstance()->RegisterObj("bullet_crystal", "Resources/Bullet", "bullet_crystal.obj");
-	ModelManager::GetInstance()->RegisterObj("spike", "Resources/Spike", "spike.obj");
-	ModelManager::GetInstance()->RegisterObj("tutorial_wall", "Resources/wall", "tutorial_wall.obj");
-	ModelManager::GetInstance()->RegisterObj("tutorial_celling", "Resources/wall", "tutorial_celling.obj");
+	//ModelManager::GetInstance()->RegisterModel("boss", "Resource/boss", "boss_ghost.obj", false);
+	ModelManager::GetInstance()->RegisterModel("ground", "Resources/Ground", "ground.obj");
+	ModelManager::GetInstance()->RegisterModel("celling", "Resources/Ground", "celling.obj");
+	ModelManager::GetInstance()->RegisterModel("drill_ghost", "Resources/drill_ghost", "drill_ghost.obj", false);
+	ModelManager::GetInstance()->RegisterModel("halberd", "Resources/halberd", "halberd.obj", false);
+	ModelManager::GetInstance()->RegisterModel("wall", "Resources/wall", "wall.obj");
+	ModelManager::GetInstance()->RegisterModel("bullet_crystal", "Resources/Bullet", "bullet_crystal.obj");
+	ModelManager::GetInstance()->RegisterModel("spike", "Resources/Spike", "spike.obj");
+	ModelManager::GetInstance()->RegisterModel("tutorial_wall", "Resources/wall", "tutorial_wall.obj");
+	ModelManager::GetInstance()->RegisterModel("tutorial_celling", "Resources/wall", "tutorial_celling.obj");
 	TextureManager::GetInstance()->RegisterTexture("bullet_bounce", "Resources/Bullet/bullet_bounce.png");
 	TextureManager::GetInstance()->RegisterTexture("wall_soul", "Resources/wall/wall_soul.png");
 	TextureManager::GetInstance()->RegisterTexture("door", "Resources/wall/door.png");

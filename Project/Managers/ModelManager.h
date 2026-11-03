@@ -38,8 +38,8 @@ class ModelManager{
 public:
 	static ModelManager* GetInstance();
 
-	void RegisterObj(const std::string& name, const std::string& directoryPath, const std::string& fileName);
-	void RegisterObj(const std::string& name, const std::string& directoryPath, const std::string& fileName,bool useMipMap);
+	void RegisterModel(const std::string& name, const std::string& directoryPath, const std::string& fileName);
+	void RegisterModel(const std::string& name, const std::string& directoryPath, const std::string& fileName,bool useMipMap);
 	
 	ModelData GetModelData(const std::string& name);
 

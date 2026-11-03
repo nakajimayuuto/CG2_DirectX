@@ -16,11 +16,11 @@ ModelManager* ModelManager::GetInstance() {
 	return &instance;
 }
 
-void ModelManager::RegisterObj(const std::string& name, const std::string& directoryPath, const std::string& fileName) {
-	RegisterObj(name,directoryPath,fileName,true);
+void ModelManager::RegisterModel(const std::string& name, const std::string& directoryPath, const std::string& fileName) {
+	RegisterModel(name,directoryPath,fileName,true);
 }
 
-void ModelManager::RegisterObj(const std::string& name, const std::string& directoryPath, const std::string& fileName, bool useMipMap){
+void ModelManager::RegisterModel(const std::string& name, const std::string& directoryPath, const std::string& fileName, bool useMipMap){
 	if (models_.find(name) != models_.end()) {
 		return;
 	}
