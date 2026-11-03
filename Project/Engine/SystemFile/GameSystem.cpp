@@ -344,15 +344,21 @@ void GameSystem::ImGuiInitialize() {
 #ifdef USE_IMGUI
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
+
+	ImGuiIO& io = ImGui::GetIO();
+
+	// Docking機能を有効化
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
 	ImGui::StyleColorsDark();
 	ImGui_ImplWin32_Init(winApp_->GetHWND());
+	ImGui_ImplDX12_InitInfo info;
 	ImGui_ImplDX12_Init(device.Get(),
 		swapChainDesc_.BufferCount,
 		rtvDesc_.Format,
 		SrvManager::GetInstance()->GetDescriptorHeap().Get(),
 		SrvManager::GetInstance()->GetDescriptorHeap()->GetCPUDescriptorHandleForHeapStart(),
 		SrvManager::GetInstance()->GetDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
-	ImGuiIO& io = ImGui::GetIO();
 	io.Fonts->Build();
 #endif // USE_IMGUI
 }
@@ -451,6 +457,7 @@ bool GameSystem::BeginFrame() {
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
+	ImGui::DockSpaceOverViewport();
 #endif // USE_IMGUI
 
 	// 指定した深度で画面全体をクリアする.
@@ -502,6 +509,8 @@ bool GameSystem::BeginFrame() {
 	// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
 	commandList->SetGraphicsRootSignature(pipeline_->GetObject3dPSO(BlendMode::kNormal).rootSignature.Get());
 	commandList->SetPipelineState(pipeline_->GetObject3dPSO(BlendMode::kNormal).graphicsPipelineState.Get()); // PS0を設定.
+
+
 
 	return true;
 }

@@ -220,6 +220,9 @@
     <Filter Include="Engine\SystemFile\Framework">
       <UniqueIdentifier>{89f56dd9-582c-49f0-b773-342d7242a6fc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\SystemFile\externals\imgui\backends">
+      <UniqueIdentifier>{cf64263b-454d-4e7a-8ffd-ec30f58a459f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -235,12 +238,6 @@
       <Filter>Engine\SystemFile\externals\imgui</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_draw.cpp">
-      <Filter>Engine\SystemFile\externals\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="externals\imgui\imgui_impl_dx12.cpp">
-      <Filter>Engine\SystemFile\externals\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="externals\imgui\imgui_impl_win32.cpp">
       <Filter>Engine\SystemFile\externals\imgui</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_tables.cpp">
@@ -429,18 +426,18 @@
     <ClCompile Include="Engine\SystemFile\Framework.cpp">
       <Filter>Engine\SystemFile\Framework</Filter>
     </ClCompile>
+    <ClCompile Include="externals\imgui\backends\imgui_impl_dx12.cpp">
+      <Filter>Engine\SystemFile\externals\imgui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\imgui\backends\imgui_impl_win32.cpp">
+      <Filter>Engine\SystemFile\externals\imgui\backends</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
       <Filter>Engine\SystemFile\externals\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imgui.h">
-      <Filter>Engine\SystemFile\externals\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="externals\imgui\imgui_impl_dx12.h">
-      <Filter>Engine\SystemFile\externals\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="externals\imgui\imgui_impl_win32.h">
       <Filter>Engine\SystemFile\externals\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imgui_internal.h">
@@ -655,6 +652,12 @@
     </ClInclude>
     <ClInclude Include="Engine\SystemFile\Framework.h">
       <Filter>Engine\SystemFile\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui\backends\imgui_impl_dx12.h">
+      <Filter>Engine\SystemFile\externals\imgui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui\backends\imgui_impl_win32.h">
+      <Filter>Engine\SystemFile\externals\imgui\backends</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

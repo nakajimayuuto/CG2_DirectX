@@ -27,6 +27,8 @@
     <ClCompile Include="Application\Fade.cpp" />
     <ClCompile Include="Application\HPGauge.cpp" />
     <ClCompile Include="Engine\SystemFile\Framework.cpp" />
+    <ClCompile Include="externals\imgui\backends\imgui_impl_dx12.cpp" />
+    <ClCompile Include="externals\imgui\backends\imgui_impl_win32.cpp" />
     <ClCompile Include="Managers\DifficultyManager.cpp" />
     <ClCompile Include="Managers\StageManager.cpp" />
     <ClCompile Include="Application\MapChipField.cpp" />
@@ -82,18 +84,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="externals\imgui\imgui_impl_dx12.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="externals\imgui\imgui_impl_win32.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="externals\imgui\imgui_tables.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ExcludedFromBuild>
@@ -132,6 +122,8 @@
     <ClInclude Include="Application\Enemy.h" />
     <ClInclude Include="Engine\Renderer\TextRenderer.h" />
     <ClInclude Include="Engine\SystemFile\WinApp.h" />
+    <ClInclude Include="externals\imgui\backends\imgui_impl_dx12.h" />
+    <ClInclude Include="externals\imgui\backends\imgui_impl_win32.h" />
     <ClInclude Include="externals\magic_enum\magic_enum.hpp" />
     <ClInclude Include="Application\Fade.h" />
     <ClInclude Include="Application\HPGauge.h" />
@@ -178,8 +170,6 @@
     <ClInclude Include="Engine\Environment\Environment.h" />
     <ClInclude Include="externals\imgui\imconfig.h" />
     <ClInclude Include="externals\imgui\imgui.h" />
-    <ClInclude Include="externals\imgui\imgui_impl_dx12.h" />
-    <ClInclude Include="externals\imgui\imgui_impl_win32.h" />
     <ClInclude Include="externals\imgui\imgui_internal.h" />
     <ClInclude Include="externals\imgui\imstb_rectpack.h" />
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
