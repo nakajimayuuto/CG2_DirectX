@@ -356,6 +356,7 @@ void GameSystem::ImGuiInitialize() {
 	info.Device = device.Get();
 	info.NumFramesInFlight = swapChainDesc_.BufferCount;
 	info.RTVFormat = rtvDesc_.Format;
+	info.CommandQueue = commandQueue.Get();
 	info.SrvDescriptorHeap = SrvManager::GetInstance()->GetDescriptorHeap().Get();
 	info.LegacySingleSrvCpuDescriptor = SrvManager::GetInstance()->GetDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
 	info.LegacySingleSrvGpuDescriptor = SrvManager::GetInstance()->GetDescriptorHeap()->GetGPUDescriptorHandleForHeapStart();
