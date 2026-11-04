@@ -27,7 +27,14 @@
 #include <assimp/postprocess.h>
 
 struct ModelInfo {
+	// マテリアルごとにまとめた描画単位(1要素 = 1ドローコール).
 	std::vector<ModelData> modelData;
+
+	// モデル全体で1つにまとめた頂点バッファ.
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource;
+
+	// ルートノードのローカル行列(全メッシュ共通).
+	Matrix4x4 rootMatrix = Matrix4x4::Identity();
 
 	float radius;
 
@@ -41,16 +48,15 @@ public:
 	void RegisterModel(const std::string& name, const std::string& directoryPath, const std::string& fileName);
 	void RegisterModel(const std::string& name, const std::string& directoryPath, const std::string& fileName,bool useMipMap);
 	
-	ModelData GetModelData(const std::string& name);
-
-	ModelInfo GetModelInfo(const std::string& name);
+	// コピーを作らないように参照で返す.
+	const ModelInfo& GetModelInfo(const std::string& name);
 private:
 	// ModelManager的n(以下	略.
 	MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& fileName,const std::string& usemtl);
 
 	// ModelManager的な奴に入れる.
 	std::vector<ModelData> LoadObjFile(const std::string& directoryPath, const std::string& fileName);
-	std::vector<ModelData> LoadModelFile(const std::string& directoryPath, const std::string& fileName);
+	std::vector<ModelData> LoadModelFile(const std::string& directoryPath, const std::string& fileName, Matrix4x4* rootMatrix);
 
 	
 	Node ReadNode(aiNode* aiNode);

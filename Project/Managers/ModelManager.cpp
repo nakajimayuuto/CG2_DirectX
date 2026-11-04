@@ -1,6 +1,7 @@
 #include "ModelManager.h"
 #include "../Engine/SystemFile/GameSystem.h"
 #include "TextureManager.h"
+#include <algorithm>
 
 
 #pragma comment(lib,"d3d12.lib")
@@ -24,59 +25,62 @@ void ModelManager::RegisterModel(const std::string& name, const std::string& dir
 	if (models_.find(name) != models_.end()) {
 		return;
 	}
-	
-	models_[name].modelData = LoadModelFile(directoryPath, fileName);
+
+	ModelInfo& info = models_[name];
+	info.modelData = LoadModelFile(directoryPath, fileName, &info.rootMatrix);
+
+	// 全メッシュの頂点数を数える.
+	size_t totalVertexCount = 0;
+	for (const ModelData& data : info.modelData) {
+		totalVertexCount += data.vertices.size();
+	}
+
+	// 【VertexResourceを作成する】
+	// メッシュ(マテリアル)ごとにバッファを作らず、モデル全体で1つのバッファにまとめる.
+	VertexData* mappedVertexData = nullptr;
+	if (totalVertexCount > 0) {
+		info.vertexResource = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * totalVertexCount);
+		info.vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedVertexData));
+	}
+
 	Vector3 min = { 0.0f,0.0f,0.0f };
 	Vector3 max = { 0.0f,0.0f,0.0f };
-	for (ModelData& data : models_[name].modelData) {
-		if (data.materialData.textureFilePath == "") {
+	size_t vertexOffset = 0;
+	for (ModelData& data : info.modelData) {
+		data.vertexCount = static_cast<uint32_t>(data.vertices.size());
+
+		// テクスチャの登録(同じテクスチャは1回だけ読み込む).
+		if (data.materialData.textureFilePath != "") {
+			const std::string textureName = name + "_" + data.materialData.textureFilePath;
+			TextureManager::GetInstance()->RegisterTexture(textureName, data.materialData.textureFilePath, useMipMap);
+
+			data.textureSrvHandlesCPU = TextureManager::GetInstance()->GetTextureInfo(textureName).textureSrvHandlesCPU;
+			data.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo(textureName).textureSrvHandlesGPU;
+		}
+
+		if (data.vertexCount == 0) {
 			continue;
 		}
 
-		TextureManager::GetInstance()->RegisterTexture(name + "_" + data.meshName, data.materialData.textureFilePath,useMipMap);
-
-		data.textureSrvHandlesCPU = TextureManager::GetInstance()->GetTextureInfo(name + "_" + data.meshName).textureSrvHandlesCPU;
-		data.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo(name + "_" + data.meshName).textureSrvHandlesGPU;
-
 		// 【VertexBufferViewを作成する】
-		data.vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * data.vertices.size());
-		// 頂点バッファビューを作成する.
-		//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-		// リソースの先頭のアドレスから使う.
-		data.vertexBufferView_.BufferLocation = data.vertexResource_->GetGPUVirtualAddress();
-		// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
-		//vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 4;
-		data.vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * data.vertices.size());
-		// 1頂点あたりのサイズ.
+		// 共有バッファの中の、このModelDataの範囲だけを参照する.
+		data.vertexResource_ = info.vertexResource;
+		data.vertexData = mappedVertexData + vertexOffset;
+		data.vertexBufferView_.BufferLocation = info.vertexResource->GetGPUVirtualAddress() + sizeof(VertexData) * vertexOffset;
+		data.vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * data.vertexCount);
 		data.vertexBufferView_.StrideInBytes = sizeof(VertexData);
 
-
 		// 【Resourceにデータを書き込む】
+		memcpy(data.vertexData, data.vertices.data(), sizeof(VertexData) * data.vertexCount);
+		vertexOffset += data.vertexCount;
 
-		// 頂点リソースにデータを書き込む.
-		//VertexData* vertexData = nullptr;
-		// 書き込むためのアドレスを取得.
-		data.vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&data.vertexData));
-		memcpy(data.vertexData, data.vertices.data(), sizeof(VertexData) * data.vertices.size());
-
-		for (VertexData& vertexData : data.vertices) {
-			if (vertexData.position.x > max.x) {
-				max.x = vertexData.position.x;
-			} else if (vertexData.position.x < min.x) {
-				min.x = vertexData.position.x;
-			}
-
-			if (vertexData.position.y > max.y) {
-				max.y = vertexData.position.y;
-			} else if (vertexData.position.y < min.y) {
-				min.y = vertexData.position.y;
-			}
-
-			if (vertexData.position.z > max.z) {
-				max.z = vertexData.position.z;
-			} else if (vertexData.position.z < min.z) {
-				min.z = vertexData.position.z;
-			}
+		for (const VertexData& vertexData : data.vertices) {
+			max.x = (std::max)(max.x, vertexData.position.x);
+			min.x = (std::min)(min.x, vertexData.position.x);
+			max.y = (std::max)(max.y, vertexData.position.y);
+			min.y = (std::min)(min.y, vertexData.position.y);
+			max.z = (std::max)(max.z, vertexData.position.z);
+			min.z = (std::min)(min.z, vertexData.position.z);
 		}
 	}
 
@@ -88,10 +92,10 @@ void ModelManager::RegisterModel(const std::string& name, const std::string& dir
 		maxSize = max.z - min.z;
 	}
 
-	models_[name].radius = maxSize * 1.7f;
+	info.radius = maxSize * 1.7f;
 }
 
-ModelInfo ModelManager::GetModelInfo(const std::string& name) {
+const ModelInfo& ModelManager::GetModelInfo(const std::string& name) {
 	auto it = models_.find(name);
 
 	assert(it != models_.end());
@@ -209,22 +213,57 @@ std::vector<ModelData>ModelManager::LoadObjFile(const std::string& directoryPath
 	return returnData;
 }
 
-std::vector<ModelData> ModelManager::LoadModelFile(const std::string& directoryPath, const std::string& fileName) {
-	ModelData modelData; // 構築するModelData.
-	std::vector<ModelData> returnData; // 構築するModelData.
-
+std::vector<ModelData> ModelManager::LoadModelFile(const std::string& directoryPath, const std::string& fileName, Matrix4x4* rootMatrix) {
 	Assimp::Importer importer;
 	std::string filePath = directoryPath + "/" + fileName;
 	const aiScene* scene = importer.ReadFile(filePath.c_str(), aiProcess_FlipWindingOrder | aiProcess_FlipUVs | aiProcess_Triangulate);
-	assert(scene->HasMeshes());
+	assert(scene && scene->HasMeshes());
 
+	// 全メッシュ共通のルートノード行列.
+	if (rootMatrix) {
+		*rootMatrix = ReadNode(scene->mRootNode).localMatrix;
+	}
+
+	// 【マテリアルごとにModelDataを用意する】
+	// 同じマテリアルを使うメッシュは1つのModelDataにまとめ、1回のドローコールで描画する.
+	std::vector<ModelData> materialData(scene->mNumMaterials);
+	for (uint32_t materialIndex = 0; materialIndex < scene->mNumMaterials; ++materialIndex) {
+		aiMaterial* material = scene->mMaterials[materialIndex];
+		ModelData& modelData = materialData[materialIndex];
+
+		aiString materialName;
+		aiColor3D diffuseColor(1.f, 1.f, 1.f);
+		material->Get(AI_MATKEY_NAME, materialName);
+		material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor);
+
+		modelData.meshName = materialName.C_Str();
+		modelData.materialData.textureName = materialName.C_Str();
+		modelData.materialData.matarial.color = { diffuseColor.r,diffuseColor.g,diffuseColor.b,1.0f };
+		modelData.materialData.matarial.uvTransform = Matrix4x4::Identity();
+
+		if (material->GetTextureCount(aiTextureType_DIFFUSE) != 0) {
+			aiString textureFilePath;
+			aiUVTransform uvTransform;
+			material->GetTexture(aiTextureType_DIFFUSE, 0, &textureFilePath);
+			// 第2引数はテクスチャのインデックス(0番目のディフューズテクスチャ).
+			material->Get(AI_MATKEY_UVTRANSFORM(aiTextureType_DIFFUSE, 0), uvTransform);
+			modelData.materialData.textureFilePath = directoryPath + "/" + textureFilePath.C_Str();
+			modelData.materialData.matarial.uvTransform = Matrix4x4::MakeScaleMatrix({ uvTransform.mScaling.x,uvTransform.mScaling.y,1.0f });
+		}
+	}
+
+	// 【メッシュの頂点を、使っているマテリアルのModelDataに追加する】
 	for (uint32_t meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex) {
 		aiMesh* mesh = scene->mMeshes[meshIndex];
 		assert(mesh->HasNormals());
 		assert(mesh->HasTextureCoords(0));
+		assert(mesh->mMaterialIndex < materialData.size());
+
+		std::vector<VertexData>& vertices = materialData[mesh->mMaterialIndex].vertices;
+		vertices.reserve(vertices.size() + static_cast<size_t>(mesh->mNumFaces) * 3);
+
 		for (uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; ++faceIndex) {
 			aiFace& face = mesh->mFaces[faceIndex];
-			//assert(face.mNumIndices == 3); // 三角形のみサポート、後々四角形対応します.
 			for (uint32_t element = 0; element < face.mNumIndices; ++element) {
 				uint32_t vertexIndex = face.mIndices[element];
 				aiVector3D& position = mesh->mVertices[vertexIndex];
@@ -238,30 +277,18 @@ std::vector<ModelData> ModelManager::LoadModelFile(const std::string& directoryP
 				vertex.position.x *= -1.0f;
 				vertex.normal.x *= -1.0f;
 
-				modelData.vertices.push_back(vertex);
+				vertices.push_back(vertex);
 			}
 		}
 	}
 
-	for (uint32_t materialIndex = 0; materialIndex < scene->mNumMaterials; ++materialIndex) {
-		aiMaterial* material = scene->mMaterials[materialIndex];
-		if (material->GetTextureCount(aiTextureType_DIFFUSE) != 0) {
-			aiString textureFilePath;
-			material->GetTexture(aiTextureType_DIFFUSE, 0, &textureFilePath);
-			aiString materialName;
-			aiUVTransform uvTransform;
-			aiColor3D diffuseColor(1.f, 1.f, 1.f);
-			material->Get(AI_MATKEY_NAME, materialName);
-			material->Get(AI_MATKEY_UVTRANSFORM(aiTextureType_DIFFUSE, materialIndex), uvTransform);
-			material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor);
-			modelData.materialData.textureFilePath = directoryPath + "/" + textureFilePath.C_Str();
-			modelData.materialData.matarial.uvTransform = Matrix4x4::MakeScaleMatrix({ uvTransform.mScaling.x,uvTransform.mScaling.y,1.0f });
-			modelData.materialData.matarial.color = { diffuseColor.r,diffuseColor.g,diffuseColor.b,1.0f };
-			modelData.materialData.textureName = materialName.C_Str();
-			//modelData.materialData = LoadMaterialTemplateFile(directoryPath,textureFilePath.C_Str(),materialName.C_Str());
-			modelData.rootNode = ReadNode(scene->mRootNode);
-			returnData.push_back(modelData);
+	// 頂点を持たない(どのメッシュにも使われていない)マテリアルは除外する.
+	std::vector<ModelData> returnData;
+	for (ModelData& modelData : materialData) {
+		if (modelData.vertices.empty()) {
+			continue;
 		}
+		returnData.push_back(std::move(modelData));
 	}
 
 	return returnData;
@@ -279,7 +306,7 @@ Node ModelManager::ReadNode(aiNode* aiNode) {
 	result.name = aiNode->mName.C_Str();
 	result.children.resize(aiNode->mNumChildren);
 	for (uint32_t i = 0; i < aiNode->mNumChildren; i++) {
-		result.children[0] = ReadNode(aiNode->mChildren[i]);
+		result.children[i] = ReadNode(aiNode->mChildren[i]);
 	}
 	return result;
 }

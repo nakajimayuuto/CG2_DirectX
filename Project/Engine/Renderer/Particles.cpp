@@ -99,7 +99,7 @@ void Particles::Initialize(const ModelInfo& info) {
 
 void Particles::Initialize(const TextureInfo& info) {
 	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
-	ModelInfo modelInfo = ModelManager::GetInstance()->GetModelInfo("effect_plane");
+	const ModelInfo& modelInfo = ModelManager::GetInstance()->GetModelInfo("effect_plane");
 	modelMax_ = static_cast<uint32_t>(modelInfo.modelData.size());
 
 	if (modelMax_ > 1) {

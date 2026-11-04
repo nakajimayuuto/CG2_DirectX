@@ -58,6 +58,9 @@ struct ModelElement {
 struct ModelInstance{
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_ = nullptr; // 消すかも.
 	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_ = nullptr; // 消すかも.
+	// 初期化時にMapしておいたアドレス(毎回Mapしないため).
+	Material* materialData_ = nullptr;
+	TransformationMatrix* wvpData_ = nullptr;
 };
 
 struct SpriteInstance{
@@ -125,32 +128,34 @@ public:
 
 	uint32_t GetModelCountMax()const { return modelMax_; };
 
-	ModelElements  GetModelElement()const;
-
 	void SetTransform(const Transform& transform) { transform_ = transform; };
 	Transform GetTransform() { return transform_; };
 private:
-	uint32_t modelMax_;
+	// メッシュ名からインデックスを探す(見つからなければ-1).
+	int32_t FindMeshIndex(const std::string& meshName) const;
+
+	// Rendererから描画用の情報を直接参照できるようにする(毎フレームのコピーを避けるため).
+	friend class Renderer;
+private:
+	uint32_t modelMax_ = 0;
+
+	// メッシュ(マテリアル)ごとの描画情報。頂点バッファはModelManagerのものを共有する.
+	std::vector<ModelMesh> meshes_;
 
 	std::vector<Material*> materialData_;
 
-	std::vector<TransformationMatrix*> wvpData_;
-
 	std::vector<bool> isVisible_;
 
-	std::vector<ModelData> modelData_;
+	float radius_ = 0.0f;
 
-	float radius_;
-
-	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> vertexResource_;
+	// 全メッシュ共通のルートノード行列.
+	Matrix4x4 rootMatrix_;
 
 	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> materialResource_;
 
-	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> wvpResource_;
-
-	VertexData* vertexData = nullptr;
-
-	std::vector<D3D12_VERTEX_BUFFER_VIEW> vertexBufferView_{};
+	// 全メッシュで同じ行列を使うので1つだけ持つ.
+	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_;
+	TransformationMatrix* wvpData_ = nullptr;
 
 	std::vector<Transform> uvTransform_;
 
@@ -431,9 +436,24 @@ private:
 
 	void CreateBox(ModelElement* newElement);
 
-	void CreateNewModel(ModelElements* newElements, const uint32_t modelMax);
+	/// <summary>
+	/// モデル描画用のCBuffer(Material,TransformationMatrix)を1組取得する.
+	/// </summary>
+	ModelInstance* AcquireModelInstance(Material** materialData, TransformationMatrix** wvpData);
 
-	void CreateModel(ModelElements* newElements, const ModelElements& targetElements, const uint32_t modelMax);
+	/// <summary>
+	/// ModelInfo(ModelManagerのデータ)をそのまま描画する(DrawModel/DrawShadow共通).
+	/// 全メッシュで行列は共通なので、TransformationMatrixは1つだけ書き込んで使い回す.
+	/// </summary>
+	void DrawModelInfo(const TransformationMatrix& matrix, const Matrix4x4& worldMatrix, const ModelInfo& modelInfo, const Vector4* overrideColor, bool useTransparent);
+
+	/// <summary>
+	/// Modelクラスを描画する(DrawModel/DrawShadow共通).
+	/// </summary>
+	void DrawModelInstance(const TransformationMatrix& matrix, const Matrix4x4& worldMatrix, const Model* model, const Vector4* overrideColor, bool useTransparent);
+
+	// white_templateテクスチャのハンドル(テクスチャが無いメッシュ用).
+	D3D12_GPU_DESCRIPTOR_HANDLE GetWhiteTextureHandle();
 
 	void CreateNewSprite(ModelElement* newElement,float width,float height);
 

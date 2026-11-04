@@ -26,6 +26,8 @@ void Application::Update(){
 void Application::Draw(){
 	SceneManager::GetInstance()->Draw();
 
+	Renderer::GetInstance()->DrawModel(Transform::GetInitialValue(), "teest", {1.0f,1.0f,1.0f,1.0f},false);
+
 	//=============================================
 	//以上ゲームの描画処理.
 	//=============================================
@@ -51,6 +53,7 @@ void Application::LoadDatas(){
 	ModelManager::GetInstance()->RegisterModel("spike", "Resources/Spike", "spike.obj");
 	ModelManager::GetInstance()->RegisterModel("tutorial_wall", "Resources/wall", "tutorial_wall.obj");
 	ModelManager::GetInstance()->RegisterModel("tutorial_celling", "Resources/wall", "tutorial_celling.obj");
+	ModelManager::GetInstance()->RegisterModel("teest", "Resources/test", "testestest.obj");
 	TextureManager::GetInstance()->RegisterTexture("bullet_bounce", "Resources/Bullet/bullet_bounce.png");
 	TextureManager::GetInstance()->RegisterTexture("wall_soul", "Resources/wall/wall_soul.png");
 	TextureManager::GetInstance()->RegisterTexture("door", "Resources/wall/door.png");
