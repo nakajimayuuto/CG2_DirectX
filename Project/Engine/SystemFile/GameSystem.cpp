@@ -88,6 +88,8 @@ void GameSystem::Initialize() {
 
 	ImGuiInitialize();
 
+	RenderTextureInitialize();
+
 	/*=============================================================
 	DirectionalLightの初期化.
 	=============================================================*/
@@ -248,8 +250,8 @@ void GameSystem::DescriptorInitialize() {
 	/*=============================================================
 	ディスクリプタ系
 	=============================================================*/
-	// RTV用のヒープでディスクリプタの数は2。RTVはShader内で触るものではないので、ShaderVisibleはfalse.
-	rtvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
+	// RTV用のヒープでディスクリプタの数は3(スワップチェーン2 + RenderTexture1)。RTVはShader内で触るものではないので、ShaderVisibleはfalse.
+	rtvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 3, false);
 	descriptorSizeRTV_ = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
 	SrvManager::GetInstance()->Initialize();
@@ -365,6 +367,99 @@ void GameSystem::ImGuiInitialize() {
 #endif // USE_IMGUI
 }
 
+void GameSystem::RenderTextureInitialize() {
+	/*=============================================================
+	RenderTexture(ゲーム画面のオフスクリーン描画先)の生成.
+	ImGuiが有効な時はゲームをここに描画し、ImGuiの"Game"ウィンドウに表示する.
+	=============================================================*/
+	const UINT width = static_cast<UINT>(Environment::GetInstance()->GetWindowSize().width);
+	const UINT height = static_cast<UINT>(Environment::GetInstance()->GetWindowSize().height);
+	// バックバッファと同じくSRGBで書き込み、SRGBで読み出す(ImGuiで表示した時に色が変わらないように).
+	const DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+
+	D3D12_RESOURCE_DESC resourceDesc{};
+	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	resourceDesc.Width = width;
+	resourceDesc.Height = height;
+	resourceDesc.DepthOrArraySize = 1;
+	resourceDesc.MipLevels = 1;
+	resourceDesc.Format = format;
+	resourceDesc.SampleDesc.Count = 1;
+	resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET; // RenderTargetとして使う.
+
+	D3D12_HEAP_PROPERTIES heapProperties{};
+	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT; // VRAM上に作る.
+
+	// 最適化クリア値(ClearRenderTargetViewの色と一致させないと警告が出る).
+	D3D12_CLEAR_VALUE clearValue{};
+	clearValue.Format = format;
+	for (int i = 0; i < 4; i++) {
+		clearValue.Color[i] = kRenderTextureClearColor_[i];
+	}
+
+	// 初期状態はシェーダーから読める状態にしておく(BeginFrameでRenderTargetへ遷移する).
+	HRESULT hr = device->CreateCommittedResource(
+		&heapProperties,
+		D3D12_HEAP_FLAG_NONE,
+		&resourceDesc,
+		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+		&clearValue,
+		IID_PPV_ARGS(&renderTextureResource_));
+	assert(SUCCEEDED(hr));
+
+	// RTVの生成(rtvDescriptorHeapの3番目).
+	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
+	rtvDesc.Format = format;
+	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+	renderTextureRtvHandle_ = GetCPUDescriptorHandle(rtvDescriptorHeap, descriptorSizeRTV_, 2);
+	device->CreateRenderTargetView(renderTextureResource_.Get(), &rtvDesc, renderTextureRtvHandle_);
+
+	// SRVの生成(SrvManagerのヒープ上に作る。ImGuiも同じヒープを使っている).
+	TextureInfo info = SrvManager::GetInstance()->CreateSRVforTexture2D(renderTextureResource_.Get(), format, 1, false);
+	renderTextureSrvHandleGPU_ = info.textureSrvHandlesGPU;
+}
+
+#ifdef USE_IMGUI
+void GameSystem::DrawGameViewWindow() {
+	// ゲーム画面がウィンドウいっぱいに表示されるよう余白をなくす.
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+	ImGui::Begin("Game", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+	ImGui::PopStyleVar();
+
+	isGameViewFocused_ = ImGui::IsWindowFocused();
+	isGameViewHovered_ = ImGui::IsWindowHovered();
+
+	// アスペクト比を保ったまま、ウィンドウに収まる最大サイズを求める.
+	const ImVec2 avail = ImGui::GetContentRegionAvail();
+	const float textureWidth = static_cast<float>(Environment::GetInstance()->GetWindowSize().width);
+	const float textureHeight = static_cast<float>(Environment::GetInstance()->GetWindowSize().height);
+	const float textureAspect = textureWidth / textureHeight;
+
+	ImVec2 imageSize = avail;
+	if (avail.x > 0.0f && avail.y > 0.0f) {
+		if (avail.x / avail.y > textureAspect) {
+			imageSize.x = avail.y * textureAspect;
+		} else {
+			imageSize.y = avail.x / textureAspect;
+		}
+
+		// 中央に寄せる.
+		ImVec2 cursor = ImGui::GetCursorPos();
+		cursor.x += (avail.x - imageSize.x) * 0.5f;
+		cursor.y += (avail.y - imageSize.y) * 0.5f;
+		ImGui::SetCursorPos(cursor);
+
+		const ImVec2 screenPos = ImGui::GetCursorScreenPos();
+		gameViewPos_ = { screenPos.x, screenPos.y };
+		gameViewSize_ = { imageSize.x, imageSize.y };
+
+		ImGui::Image(static_cast<ImTextureID>(renderTextureSrvHandleGPU_.ptr), imageSize);
+	}
+
+	ImGui::End();
+}
+#endif // USE_IMGUI
+
 void GameSystem::LoadSampleDatas(){
 	ModelManager::GetInstance()->RegisterModel("block_template", "Resources/block", "block.obj");
 	ModelManager::GetInstance()->RegisterModel("effect_plane", "Resources/effects", "effect_plane.obj");
@@ -473,6 +568,32 @@ bool GameSystem::BeginFrame() {
 	/*=============================================================
 	コマンドを積む
 	=============================================================*/
+#ifdef USE_IMGUI
+	// ImGui有効時はゲーム画面をRenderTextureに描画する(バックバッファはEndFrameでImGui用に使う).
+	D3D12_RESOURCE_BARRIER renderTextureBarrier{};
+	renderTextureBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	renderTextureBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	renderTextureBarrier.Transition.pResource = renderTextureResource_.Get();
+	renderTextureBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	renderTextureBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+	renderTextureBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	commandList->ResourceBarrier(1, &renderTextureBarrier);
+
+	// 描画先のRTVとDSVを設定する.
+	commandList->OMSetRenderTargets(1, &renderTextureRtvHandle_, false, &dsvHandle);
+	// 指定した色でRenderTextureをクリアする.
+	commandList->ClearRenderTargetView(renderTextureRtvHandle_, kRenderTextureClearColor_, 0, nullptr);
+
+	// RenderTextureはテクスチャ全体に描画する(表示時のアスペクト調整はImGui側で行う).
+	viewport = {};
+	viewport.Width = static_cast<FLOAT>(Environment::GetInstance()->GetWindowSize().width);
+	viewport.Height = static_cast<FLOAT>(Environment::GetInstance()->GetWindowSize().height);
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	scissorRect = {};
+	scissorRect.right = static_cast<LONG>(viewport.Width);
+	scissorRect.bottom = static_cast<LONG>(viewport.Height);
+#else
 	// これから書き込むバックバッファのインデックスを取得.
 	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 
@@ -498,7 +619,7 @@ bool GameSystem::BeginFrame() {
 	//float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };// 青っぽい色。RGBAの順.
 	float clearColor[] = { 0.0f,0.0f,0.0f,1.0f };// 青っぽい色。RGBAの順.
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
-
+#endif // USE_IMGUI
 
 	SrvManager::GetInstance()->PreDraw();
 	// 描画用のDescriptorHeapの設定.
@@ -522,7 +643,10 @@ void GameSystem::DrawSetup() {
 }
 
 void GameSystem::EndFrame() {
+#ifndef USE_IMGUI
+	// ImGui有効時はゲーム画面をImGuiウィンドウに表示するので、ウィンドウに合わせたViewport調整は行わない.
 	WindowSizeUpdate();
+#endif // !USE_IMGUI
 
 	LightManager::GetInstance()->Update();
 
@@ -531,14 +655,43 @@ void GameSystem::EndFrame() {
 	Renderer::GetInstance()->DrawLineAll();
 
 #ifdef USE_IMGUI
+	/*=============================================================
+	ゲーム画面(RenderTexture)の描画終了 → バックバッファにImGuiを描画.
+	=============================================================*/
+	// RenderTextureをシェーダーから読める状態にする.
+	D3D12_RESOURCE_BARRIER renderTextureBarrier{};
+	renderTextureBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	renderTextureBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	renderTextureBarrier.Transition.pResource = renderTextureResource_.Get();
+	renderTextureBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	renderTextureBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	renderTextureBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+	commandList->ResourceBarrier(1, &renderTextureBarrier);
+
+	// これから書き込むバックバッファのインデックスを取得.
+	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier.Transition.pResource = swapChainResource[backBufferIndex].Get();
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	commandList->ResourceBarrier(1, &barrier);
+
+	// ImGuiはバックバッファに直接描画する(深度は使わない).
+	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
+	float clearColor[] = { 0.1f,0.1f,0.1f,1.0f };
+	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
+
+	// ゲーム画面ウィンドウ.
+	DrawGameViewWindow();
+
 	ImGui::Begin("drawCount");
 	ImGui::Text("%d", drawCount_);
 	ImGui::End();
 
 	// ImGuiの内部コマンドを生成する.
 	ImGui::Render();
-#endif // USE_IMGUI
-#ifdef USE_IMGUI
+
 	// ImGuiの描画.
 	// 実際のcommandListのImGuiの描画コマンドを積む.
 	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());

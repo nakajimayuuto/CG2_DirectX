@@ -16,6 +16,7 @@
 #include "Pipeline.h"
 
 
+#include "../Math/Vector2.h"
 #include "../Math/Vector4.h"
 #include "../Math/Vertex.h"
 #include "../Math/Matrix4x4.h"
@@ -95,7 +96,15 @@ private:
 	
 	void ImGuiInitialize();
 
+	// ゲーム画面をImGui上に表示するためのオフスクリーン描画先を作る.
+	void RenderTextureInitialize();
+
 	void LoadSampleDatas();
+
+#ifdef USE_IMGUI
+	// ゲーム画面(RenderTexture)をImGuiの"Game"ウィンドウに表示する.
+	void DrawGameViewWindow();
+#endif // USE_IMGUI
 private:
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory_ = nullptr;
 
@@ -126,6 +135,14 @@ public:
 	D3D12_VIEWPORT GetViewport() { return viewport; };
 
 	void SetViewport(D3D12_VIEWPORT setViewport) { viewport = setViewport; };
+
+	// ゲーム画面(RenderTexture)のSRV。ImGui::Imageなどで使える.
+	D3D12_GPU_DESCRIPTOR_HANDLE GetRenderTextureSrvHandleGPU() const { return renderTextureSrvHandleGPU_; };
+	// "Game"ウィンドウ内のゲーム画面の表示位置/サイズ(スクリーン座標).
+	const Vector2& GetGameViewPos() const { return gameViewPos_; };
+	const Vector2& GetGameViewSize() const { return gameViewSize_; };
+	bool IsGameViewFocused() const { return isGameViewFocused_; };
+	bool IsGameViewHovered() const { return isGameViewHovered_; };
 
 	void SetPipeline(BlendMode blendMode,ShaderType shaderType);
 
@@ -250,6 +267,24 @@ private:
 	D3D12_RECT scissorRect{};
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource = nullptr;
+
+	/*=============================================================
+	RenderTexture(ゲーム画面のオフスクリーン描画先)
+	=============================================================*/
+	// ゲーム画面を書き込むテクスチャ.
+	Microsoft::WRL::ComPtr<ID3D12Resource> renderTextureResource_ = nullptr;
+	// RenderTexture用のRTV(rtvDescriptorHeapの3番目).
+	D3D12_CPU_DESCRIPTOR_HANDLE renderTextureRtvHandle_{};
+	// RenderTexture用のSRV(ImGui::Imageに渡す).
+	D3D12_GPU_DESCRIPTOR_HANDLE renderTextureSrvHandleGPU_{};
+	// RenderTextureのクリアカラー(最適化クリア値と一致させる).
+	static inline const float kRenderTextureClearColor_[4] = { 0.0f,0.0f,0.0f,1.0f };
+	// "Game"ウィンドウ内でゲーム画面が表示されている矩形(スクリーン座標).
+	Vector2 gameViewPos_{};
+	Vector2 gameViewSize_{};
+	// "Game"ウィンドウがフォーカス/ホバーされているか.
+	bool isGameViewFocused_ = false;
+	bool isGameViewHovered_ = false;
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
 	//Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
