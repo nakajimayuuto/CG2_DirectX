@@ -68,13 +68,18 @@ struct SpriteInstance{
 	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource_ = nullptr; // 消すかも.
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_ = nullptr; // 消すかも.
 	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_ = nullptr; // 消すかも.
+	// 初期化時に作っておくView と Mapしておいたアドレス.
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
+	D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
+	VertexData* vertexData_ = nullptr;
+	Material* materialData_ = nullptr;
+	TransformationMatrix* wvpData_ = nullptr;
 };
 
 struct TorusInstance{
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_ = nullptr; // 消すかも.
 	VertexData* vertexData = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_ = nullptr; // 消すかも.
-	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_ = nullptr; // 消すかも.
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
 };
 
 using ModelElements = std::vector<ModelElement>;
@@ -203,8 +208,6 @@ public:
 	void SetIsFlipY(bool isFlipY) { isFlipY_ = isFlipY; };
 	bool GetIsFlipY()const { return isFlipY_; };
 
-	ModelElement GetModelElement()const;
-
 	TextureInfo GetTextureInfo() { return textureInfo_; };
 
 	void SetBlendMode(BlendMode blendMode) { blendMode_ = blendMode; };
@@ -220,6 +223,9 @@ public:
 	Vector2 GetCutSize() { return cutSize_; };
 private:
 	void AdaptationSize();
+
+	// Renderer::DrawSpriteから頂点・マテリアルを直接参照できるようにする.
+	friend class Renderer;
 private:
 	Vector2 leftTop_ = { 0.0f,0.0f };
 	Vector2 cutSize_ = { 10.0f,10.0f };
@@ -430,16 +436,49 @@ private:
 
 	void CreateLine(ModelElement* newElement);
 
-	void CreateSphere(ModelElement* newElement);
-
-	void CreateTorus(ModelElement* newElement,float majorRadius,float minorRadius);
-
-	void CreateBox(ModelElement* newElement);
+	/// <summary>
+	/// トーラスの頂点を書き込む.
+	/// </summary>
+	void WriteTorusVertices(VertexData* vertexData, float majorRadius, float minorRadius) const;
 
 	/// <summary>
-	/// モデル描画用のCBuffer(Material,TransformationMatrix)を1組取得する.
+	/// 3D描画用のCBuffer(Material,TransformationMatrix)を1組取得する.
 	/// </summary>
-	ModelInstance* AcquireModelInstance(Material** materialData, TransformationMatrix** wvpData);
+	ModelInstance* AcquireModelInstance();
+
+	/// <summary>
+	/// Rendererの設定(lightingType_,reflectionType_)を使ったマテリアルを作る.
+	/// </summary>
+	Material MakeMaterial(const Vector4& color, const Matrix4x4& uvTransform) const;
+
+	/// <summary>
+	/// 3Dの描画コマンドを積む(マテリアルをinstanceに書き込んでから描画する).
+	/// </summary>
+	void DrawMesh(ModelInstance* instance, const Material& material, const Microsoft::WRL::ComPtr<ID3D12Resource>& wvpResource,
+		const D3D12_VERTEX_BUFFER_VIEW& vertexBufferView, const D3D12_INDEX_BUFFER_VIEW* indexBufferView,
+		D3D12_GPU_DESCRIPTOR_HANDLE textureHandle, uint32_t drawCount);
+
+	/// <summary>
+	/// 球・箱・トーラスなど単体の形状を描画する(CBufferの取得〜描画まで).
+	/// </summary>
+	void DrawPrimitive(const Matrix4x4& worldMatrix, const Material& material,
+		const D3D12_VERTEX_BUFFER_VIEW& vertexBufferView, const D3D12_INDEX_BUFFER_VIEW* indexBufferView,
+		D3D12_GPU_DESCRIPTOR_HANDLE textureHandle, uint32_t drawCount);
+
+	/// <summary>
+	/// スプライトを描画する(DrawSprite共通).
+	/// </summary>
+	void DrawSpriteCommon(const Matrix4x4& worldMatrix, const VertexData* vertices, const Material& material, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle);
+
+	/// <summary>
+	/// 箱の8頂点から12本の辺を描画する(DrawBoxWireFrame共通).
+	/// </summary>
+	void DrawBoxEdges(const Vector3 (&vertices)[8], const Vector4& color);
+
+	/// <summary>
+	/// 影の描画(DrawShadow(Model)共通).
+	/// </summary>
+	void DrawShadowModel(const Transform& transform, const Model* model, const Vector4* overrideColor);
 
 	/// <summary>
 	/// ModelInfo(ModelManagerのデータ)をそのまま描画する(DrawModel/DrawShadow共通).
@@ -454,10 +493,6 @@ private:
 
 	// white_templateテクスチャのハンドル(テクスチャが無いメッシュ用).
 	D3D12_GPU_DESCRIPTOR_HANDLE GetWhiteTextureHandle();
-
-	void CreateNewSprite(ModelElement* newElement,float width,float height);
-
-	void CreateSprite(ModelElement* newElement, ModelElement* targetElement, float width, float height);
 private:
 	// SphereResource.
 	const uint32_t kSphereSubdivision_ = 16;
@@ -474,6 +509,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> torusIndexResource_ = nullptr;
 	uint32_t currentDrawTorusIndex_;
 	uint32_t* torusIndexData = nullptr;
+	D3D12_INDEX_BUFFER_VIEW torusIndexBufferView_{};
 	const uint32_t maxTorusNum = 100;
 
 	std::vector<std::unique_ptr<ModelInstance>> modelInstances;

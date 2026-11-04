@@ -77,9 +77,11 @@ PipelineData Pipeline::PipelineCreate(BlendMode blendMode, ShaderType shaderType
 
 	// 【BlendState設定】
 	D3D12_BLEND_DESC blendDesc{};
-	// 全ての色要素を書き込む.
-	// AL3_05_10にて透明度が反映さえる変更を加えた.
-	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	// RGBだけを書き込み、描画先のアルファ値は書き換えない(クリア時の1.0のまま).
+	// アルファを書き込むと、ImGui有効時にゲーム画面(RenderTexture)をImGui::Imageで表示した時に
+	// 画面そのものが半透明として合成され、半透明の画像が「透ける」のではなく「色が薄く」見えてしまうため.
+	// (オブジェクトの透明度はBlendState(SRC_ALPHA等)でRGBの合成に反映される).
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_RED | D3D12_COLOR_WRITE_ENABLE_GREEN | D3D12_COLOR_WRITE_ENABLE_BLUE;
 	blendDesc.AlphaToCoverageEnable = FALSE;
 	blendDesc.IndependentBlendEnable = FALSE;
 	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
