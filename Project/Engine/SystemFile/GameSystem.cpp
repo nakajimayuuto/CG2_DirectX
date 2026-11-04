@@ -353,12 +353,13 @@ void GameSystem::ImGuiInitialize() {
 	ImGui::StyleColorsDark();
 	ImGui_ImplWin32_Init(winApp_->GetHWND());
 	ImGui_ImplDX12_InitInfo info;
-	ImGui_ImplDX12_Init(device.Get(),
-		swapChainDesc_.BufferCount,
-		rtvDesc_.Format,
-		SrvManager::GetInstance()->GetDescriptorHeap().Get(),
-		SrvManager::GetInstance()->GetDescriptorHeap()->GetCPUDescriptorHandleForHeapStart(),
-		SrvManager::GetInstance()->GetDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
+	info.Device = device.Get();
+	info.NumFramesInFlight = swapChainDesc_.BufferCount;
+	info.RTVFormat = rtvDesc_.Format;
+	info.SrvDescriptorHeap = SrvManager::GetInstance()->GetDescriptorHeap().Get();
+	info.LegacySingleSrvCpuDescriptor = SrvManager::GetInstance()->GetDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
+	info.LegacySingleSrvGpuDescriptor = SrvManager::GetInstance()->GetDescriptorHeap()->GetGPUDescriptorHandleForHeapStart();
+	ImGui_ImplDX12_Init(&info);
 	io.Fonts->Build();
 #endif // USE_IMGUI
 }

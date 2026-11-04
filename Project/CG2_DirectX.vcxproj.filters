@@ -223,6 +223,9 @@
     <Filter Include="Engine\SystemFile\externals\imgui\backends">
       <UniqueIdentifier>{cf64263b-454d-4e7a-8ffd-ec30f58a459f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Managers\ImGuiManager">
+      <UniqueIdentifier>{2b2e967b-bf65-4f3f-b6f8-2021150f81af}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -431,6 +434,9 @@
     </ClCompile>
     <ClCompile Include="externals\imgui\backends\imgui_impl_win32.cpp">
       <Filter>Engine\SystemFile\externals\imgui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\ImGuiManager.cpp">
+      <Filter>Managers\ImGuiManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -658,6 +664,9 @@
     </ClInclude>
     <ClInclude Include="externals\imgui\backends\imgui_impl_win32.h">
       <Filter>Engine\SystemFile\externals\imgui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\ImGuiManager.h">
+      <Filter>Managers\ImGuiManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

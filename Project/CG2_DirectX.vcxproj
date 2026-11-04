@@ -27,8 +27,13 @@
     <ClCompile Include="Application\Fade.cpp" />
     <ClCompile Include="Application\HPGauge.cpp" />
     <ClCompile Include="Engine\SystemFile\Framework.cpp" />
-    <ClCompile Include="externals\imgui\backends\imgui_impl_dx12.cpp" />
-    <ClCompile Include="externals\imgui\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="externals\imgui\backends\imgui_impl_dx12.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="externals\imgui\backends\imgui_impl_win32.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Managers\ImGuiManager.cpp" />
     <ClCompile Include="Managers\DifficultyManager.cpp" />
     <ClCompile Include="Managers\StageManager.cpp" />
     <ClCompile Include="Application\MapChipField.cpp" />
@@ -128,6 +133,7 @@
     <ClInclude Include="Application\Fade.h" />
     <ClInclude Include="Application\HPGauge.h" />
     <ClInclude Include="Engine\SystemFile\Framework.h" />
+    <ClInclude Include="Managers\ImGuiManager.h" />
     <ClInclude Include="Managers\DifficultyManager.h" />
     <ClInclude Include="Managers\StageManager.h" />
     <ClInclude Include="Managers\TextureInfo.h" />
