@@ -60,6 +60,8 @@
     <ClCompile Include="Engine\Renderer\Camera.cpp" />
     <ClCompile Include="Engine\Renderer\DirectionalLight.cpp" />
     <ClCompile Include="Engine\Renderer\Particles.cpp" />
+    <ClCompile Include="Engine\Renderer\PrimitiveGeometry.cpp" />
+    <ClCompile Include="Engine\Renderer\PrimitiveMesh.cpp" />
     <ClCompile Include="Engine\Renderer\PointLight.cpp" />
     <ClCompile Include="Engine\Renderer\Renderer.cpp" />
     <ClCompile Include="Engine\Renderer\SpotLight.cpp" />
@@ -164,6 +166,8 @@
     <ClInclude Include="Engine\Renderer\Material.h" />
     <ClInclude Include="Engine\Renderer\ModelData.h" />
     <ClInclude Include="Engine\Renderer\Particles.h" />
+    <ClInclude Include="Engine\Renderer\PrimitiveGeometry.h" />
+    <ClInclude Include="Engine\Renderer\PrimitiveMesh.h" />
     <ClInclude Include="Engine\Renderer\PointLight.h" />
     <ClInclude Include="Engine\Renderer\Renderer.h" />
     <ClInclude Include="Engine\Renderer\SpotLight.h" />

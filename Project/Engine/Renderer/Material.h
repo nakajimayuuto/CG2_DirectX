@@ -2,6 +2,7 @@
 #include "../Math/Vector4.h"
 #include "../Math/Matrix4x4.h"
 #include <cstdint>
+#include <string>
 #include <stdfloat>
 struct Material {
 	Vector4 color;

@@ -61,6 +61,9 @@
     <Filter Include="Engine\Renderer\ModelData">
       <UniqueIdentifier>{bcdd4363-c5a0-4f8a-ba8a-2a889a7cc3d1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Renderer\Primitive">
+      <UniqueIdentifier>{6f1b2c3d-4e5f-4a6b-9c7d-8e9f0a1b2c3d}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Engine\Renderer\Material">
       <UniqueIdentifier>{11d1524a-bd52-4efb-b175-13c2c83cd246}</UniqueIdentifier>
     </Filter>
@@ -348,6 +351,12 @@
     <ClCompile Include="Engine\Renderer\Particles.cpp">
       <Filter>Engine\Renderer\Particle</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Renderer\PrimitiveGeometry.cpp">
+      <Filter>Engine\Renderer\Primitive</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Renderer\PrimitiveMesh.cpp">
+      <Filter>Engine\Renderer\Primitive</Filter>
+    </ClCompile>
     <ClCompile Include="Engine\Math\Field.cpp">
       <Filter>Engine\Math\Field</Filter>
     </ClCompile>
@@ -571,6 +580,12 @@
     </ClInclude>
     <ClInclude Include="Engine\Renderer\Particles.h">
       <Filter>Engine\Renderer\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Renderer\PrimitiveGeometry.h">
+      <Filter>Engine\Renderer\Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Renderer\PrimitiveMesh.h">
+      <Filter>Engine\Renderer\Primitive</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Math\Field.h">
       <Filter>Engine\Math\Field</Filter>

@@ -9,6 +9,7 @@
 #include "../SystemFile/GameSystem.h"
 #include "../Math/Matrix4x4.h"
 #include "../Math/Field.h"
+#include "PrimitiveMesh.h"
 #include <list>
 
 struct ParticleData {
@@ -52,6 +53,14 @@ public:
 
 	void Initialize(const TextureInfo& info);
 
+	/// <summary>
+	/// Primitive図形(Rendererで描画できる図形と同じもの)をパーティクルにする.
+	/// </summary>
+	/// <param name="type">図形の種類</param>
+	/// <param name="info">貼るテクスチャ</param>
+	/// <param name="param">半径などのパラメータ(Torus / Ring / Cylinder のみ使用)</param>
+	void Initialize(PrimitiveType type, const TextureInfo& info, const PrimitiveParam& param = {});
+
 	void MakeNewParticle(const Vector3& position);
 	void MakeNewParticle(const Vector3& position, const Vector3& blank);
 
@@ -76,6 +85,11 @@ public:
 
 	void SetColor(const Vector3& color) { colorNoAlpha_ = color; };
 private:
+	/// <summary>
+	/// 各Initializeで共通の処理(マテリアル・インスタンシング用バッファの生成など).
+	/// </summary>
+	void InitializeCommon(D3D12_GPU_DESCRIPTOR_HANDLE textureHandle, const Vector4& color, const Matrix4x4& uvTransform);
+
 	void MoveNormal();
 
 	void MoveFire();
@@ -90,7 +104,6 @@ private:
 
 	Move moveType_;
 
-	uint32_t modelMax_;
 	static inline const uint32_t kNumMaxInstance = 1000;
 
 	Material* materialData_;
@@ -100,15 +113,13 @@ private:
 	Matrix4x4 billboardMatrix_;
 
 
-	ModelData modelData_;
+	// 描画する形(モデル / 板ポリ / Primitive図形).
+	PrimitiveMesh mesh_;
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_;
+	// 貼るテクスチャ.
+	D3D12_GPU_DESCRIPTOR_HANDLE textureHandle_{};
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_;
-
-	VertexData* vertexData = nullptr;
-
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
 
 	Transform uvTransform_;
 

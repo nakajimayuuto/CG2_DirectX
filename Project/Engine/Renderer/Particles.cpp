@@ -10,10 +10,7 @@ Particles::~Particles() {
 }
 
 void Particles::Initialize(const ModelInfo& info) {
-	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
-	modelMax_ = static_cast<uint32_t>(info.modelData.size());
-
-	if (modelMax_ > 1) {
+	if (info.modelData.size() > 1) {
 #ifdef _DEBUG
 
 		assert(false, "テスト用のやつなんでメッシュ1以上のやつはやらんといてください");
@@ -21,160 +18,67 @@ void Particles::Initialize(const ModelInfo& info) {
 #endif // _DEBUG
 	}
 
-	isVisible_ = true;
+	const ModelData& modelData = info.modelData[0];
 
-	modelData_ = info.modelData[0];
+	// 頂点バッファはモデルのものをそのまま使う(コピーしない).
+	mesh_.InitializeFromModelData(modelData);
 
-	if (modelData_.materialData.textureFilePath == "") {
-		modelData_.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesGPU;
-		modelData_.textureSrvHandlesCPU = TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesCPU;
+	D3D12_GPU_DESCRIPTOR_HANDLE textureHandle = modelData.textureSrvHandlesGPU;
+	if (modelData.materialData.textureFilePath == "") {
+		textureHandle = TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesGPU;
 	}
 
-	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * modelData_.vertices.size());
-
-	// 【MaterialResourceを生成する】
-	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> materialResource 
-	materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
-	// マテリアルにデータを書き込む.
-	//Material* materialData = nullptr;
-	// 書き込むためのアドレスを取得.
-	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
-	// 今回は赤を書き込んでみる
-	materialData_->color = modelData_.materialData.matarial.color;
-	materialData_->lightingType = 0;
-	materialData_->uvTransform = modelData_.materialData.matarial.uvTransform;
-
-	// 【TransformationMatrix】
-	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource 
-	//wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
-	// データを書き込む.
-	//TransformationMatrix* wvpData = nullptr;
-	// 書き込むためのアドレスを取得.
-	//wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&wvpData_));
-	// 単位行列を書き込んでおく.
-	//wvpData_->WVP = Matrix4x4::Identity();
-	//wvpData_->World = Matrix4x4::Identity();
-	uvTransform_.Initialize();
-	uvTransform_.scale = materialData_->uvTransform.GetMatrixToTransform().scale;
-	uvTransform_.rotate = materialData_->uvTransform.GetMatrixToTransform().rotate;
-	uvTransform_.translate = materialData_->uvTransform.GetMatrixToTransform().translate;
-
-	// 【VertexBufferViewを作成する】
-
-	// 頂点バッファビューを作成する.
-	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-	// リソースの先頭のアドレスから使う.
-	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
-	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
-	//vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 4;
-	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * modelData_.vertices.size());
-	// 1頂点あたりのサイズ.
-	vertexBufferView_.StrideInBytes = sizeof(VertexData);
-
-
-	// 【Resourceにデータを書き込む】
-
-	// 頂点リソースにデータを書き込む.
-	VertexData* vertexData = nullptr;
-	// 書き込むためのアドレスを取得.
-	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	memcpy(vertexData, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
-
-
-	instancingResource_ = GameSystem::GetInstance()->CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(ParticleForGPU) * kNumMaxInstance);
-
-	instancingResource_->Map(0, nullptr, reinterpret_cast<void**>(&instancingData_));
-
-	for (uint32_t index = 0; index < kNumMaxInstance; index++) {
-		instancingData_[index].WVP = Matrix4x4::Identity();
-		instancingData_[index].World = Matrix4x4::Identity();
-	}
-
-	SrvManager::GetInstance()->CreateSRVforStructureBuffer(instancingResource_.Get(), kNumMaxInstance, sizeof(ParticleForGPU));
-
-	blendMode_ = BlendMode::kAdd;
+	InitializeCommon(textureHandle, modelData.materialData.matarial.color, modelData.materialData.matarial.uvTransform);
 }
 
 void Particles::Initialize(const TextureInfo& info) {
-	// 実際に頂点リソースを作る.(ここの量は多い分にはバグらない、その代わり不可がかかるんちゃうかな)
-	const ModelInfo& modelInfo = ModelManager::GetInstance()->GetModelInfo("effect_plane");
-	modelMax_ = static_cast<uint32_t>(modelInfo.modelData.size());
+	// 板ポリ(effect_plane モデル)に指定したテクスチャを貼る.
+	const ModelData& modelData = ModelManager::GetInstance()->GetModelInfo("effect_plane").modelData[0];
 
-	if (modelMax_ > 1) {
-#ifdef _DEBUG
+	mesh_.InitializeFromModelData(modelData);
 
-		assert(false, "テスト用のやつなんでメッシュ1以上のやつはやらんといてください");
-
-#endif // _DEBUG
+	D3D12_GPU_DESCRIPTOR_HANDLE textureHandle = info.textureSrvHandlesGPU;
+	if (modelData.materialData.textureFilePath == "") {
+		textureHandle = TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesGPU;
 	}
 
+	InitializeCommon(textureHandle, modelData.materialData.matarial.color, modelData.materialData.matarial.uvTransform);
+}
+
+void Particles::Initialize(PrimitiveType type, const TextureInfo& info, const PrimitiveParam& param) {
+	// Primitive図形(Rendererと同じ形状)をパーティクルとして使う.
+	if (type == PrimitiveType::kBox) {
+		// 箱は Renderer::DrawBox と同じく block_template モデルの頂点を使う.
+		mesh_.InitializeFromModelData(ModelManager::GetInstance()->GetModelInfo("block_template").modelData[0]);
+	} else {
+		mesh_.Initialize(type, param);
+	}
+
+	InitializeCommon(info.textureSrvHandlesGPU, { 1.0f,1.0f,1.0f,1.0f }, Matrix4x4::Identity());
+
+	// 大きさを設定しなくても見えるように、等倍にしておく.
+	size_ = { 1.0f,1.0f,1.0f };
+}
+
+void Particles::InitializeCommon(D3D12_GPU_DESCRIPTOR_HANDLE textureHandle, const Vector4& color, const Matrix4x4& uvTransform) {
 	isVisible_ = true;
-
-	modelData_ = modelInfo.modelData[0];
-	modelData_.textureSrvHandlesGPU = info.textureSrvHandlesGPU;
-
-	if (modelData_.materialData.textureFilePath == "") {
-		modelData_.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesGPU;
-		modelData_.textureSrvHandlesCPU = TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesCPU;
-	}
-
-	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * modelData_.vertices.size());
+	textureHandle_ = textureHandle;
 
 	// 【MaterialResourceを生成する】
-	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> materialResource 
 	materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
-	// マテリアルにデータを書き込む.
-	//Material* materialData = nullptr;
-	// 書き込むためのアドレスを取得.
 	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
-	// 今回は赤を書き込んでみる
-	materialData_->color = modelData_.materialData.matarial.color;
+	materialData_->color = color;
 	materialData_->lightingType = 0;
-	materialData_->uvTransform = modelData_.materialData.matarial.uvTransform;
+	materialData_->uvTransform = uvTransform;
 
-	// 【TransformationMatrix】
-	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する.
-	//Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource 
-	//wvpResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix));
-	// データを書き込む.
-	//TransformationMatrix* wvpData = nullptr;
-	// 書き込むためのアドレスを取得.
-	//wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&wvpData_));
-	// 単位行列を書き込んでおく.
-	//wvpData_->WVP = Matrix4x4::Identity();
-	//wvpData_->World = Matrix4x4::Identity();
+	Transform uvTransformValue = materialData_->uvTransform.GetMatrixToTransform();
 	uvTransform_.Initialize();
-	uvTransform_.scale = materialData_->uvTransform.GetMatrixToTransform().scale;
-	uvTransform_.rotate = materialData_->uvTransform.GetMatrixToTransform().rotate;
-	uvTransform_.translate = materialData_->uvTransform.GetMatrixToTransform().translate;
+	uvTransform_.scale = uvTransformValue.scale;
+	uvTransform_.rotate = uvTransformValue.rotate;
+	uvTransform_.translate = uvTransformValue.translate;
 
-	// 【VertexBufferViewを作成する】
-
-	// 頂点バッファビューを作成する.
-	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-	// リソースの先頭のアドレスから使う.
-	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
-	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
-	//vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 4;
-	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * modelData_.vertices.size());
-	// 1頂点あたりのサイズ.
-	vertexBufferView_.StrideInBytes = sizeof(VertexData);
-
-
-	// 【Resourceにデータを書き込む】
-
-	// 頂点リソースにデータを書き込む.
-	VertexData* vertexData = nullptr;
-	// 書き込むためのアドレスを取得.
-	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	memcpy(vertexData, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
-
-
+	// 【インスタンシング用のResourceとSRVを生成する】
 	instancingResource_ = GameSystem::GetInstance()->CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(ParticleForGPU) * kNumMaxInstance);
-
 	instancingResource_->Map(0, nullptr, reinterpret_cast<void**>(&instancingData_));
 
 	for (uint32_t index = 0; index < kNumMaxInstance; index++) {
@@ -184,13 +88,10 @@ void Particles::Initialize(const TextureInfo& info) {
 
 	instancingSrvHandleGPU = SrvManager::GetInstance()->CreateSRVforStructureBuffer(instancingResource_.Get(), kNumMaxInstance, sizeof(ParticleForGPU));
 
-	//for (uint32_t index = 0; index < 10; index++) {
-	//	MakeNewParticle();
-	//}
-
-	billboardMatrix_.Identity();
+	billboardMatrix_ = Matrix4x4::Identity();
 	blendMode_ = BlendMode::kAdd;
 	billboardType_ = BillboardType::kNone;
+	moveType_ = Move::kNormal;
 
 	colorNoAlpha_ = { 1.0f,1.0f,1.0f };
 }
@@ -398,7 +299,11 @@ void Particles::Draw() {
 	=============================================================*/
 	GameSystem::GetInstance()->SetParticlePipeline(blendMode_);
 
-	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_); // VBVを設定.
+	commandList->IASetVertexBuffers(0, 1, &mesh_.GetVertexBufferView()); // VBVを設定.
+	// Primitive図形などインデックスを使うメッシュはIBVも設定する.
+	if (mesh_.UseIndex()) {
+		commandList->IASetIndexBuffer(mesh_.GetIndexBufferView());
+	}
 	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// CBufferの場所を設定.
@@ -408,11 +313,13 @@ void Particles::Draw() {
 	//commandList->SetGraphicsRootConstantBufferView(1, wvpResource_->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootDescriptorTable(1, instancingSrvHandleGPU);
 	// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
-	commandList->SetGraphicsRootDescriptorTable(2, modelData_.textureSrvHandlesGPU);
-	// DirectionalLight用のCBufferの場所.
-	//commandList->SetGraphicsRootConstantBufferView(3, DirectionalLight::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
-	commandList->DrawInstanced(UINT(modelData_.vertices.size()), numInstance_, 0, 0);
+	commandList->SetGraphicsRootDescriptorTable(2, textureHandle_);
+	// 描画！(DrawCall/ドローコール)。numInstance_個のインスタンスをまとめて描画する.
+	if (mesh_.UseIndex()) {
+		commandList->DrawIndexedInstanced(mesh_.GetDrawCount(), numInstance_, 0, 0, 0);
+	} else {
+		commandList->DrawInstanced(mesh_.GetDrawCount(), numInstance_, 0, 0);
+	}
 }
 
 void Particles::SetBillboardType(BillboardType billboardType) {

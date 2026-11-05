@@ -8,7 +8,9 @@
 #include "../../externals/DirectXTex/DirectXTex.h"
 #include "../../externals/DirectXTex/d3dx12.h"
 #include "../SystemFile/GameSystem.h"
+#include "PrimitiveMesh.h"
 #include <array>
+#include <map>
 enum class LightingType {
 	kNone = 0,
 	kHalfLambert = 1,
@@ -74,12 +76,6 @@ struct SpriteInstance{
 	VertexData* vertexData_ = nullptr;
 	Material* materialData_ = nullptr;
 	TransformationMatrix* wvpData_ = nullptr;
-};
-
-struct PrimitiveVertexInstance{
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_ = nullptr; // 消すかも.
-	VertexData* vertexData = nullptr;
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
 };
 
 using ModelElements = std::vector<ModelElement>;
@@ -290,6 +286,17 @@ public:
 	void DrawLine(const Vector3& startVector3, const Vector3& endVector3, const Vector4& color);
 
 	/// <summary>
+	/// Primitive図形の描画(DrawSphere / DrawBox / DrawTorus などはすべてこれを使う).
+	/// </summary>
+	/// <param name="type">図形の種類</param>
+	/// <param name="transform">トランスフォーム</param>
+	/// <param name="param">半径などのパラメータ(Torus / Ring / Cylinder のみ使用)</param>
+	/// <param name="textureInfo">テクスチャインフォ</param>
+	/// <param name="color">色</param>
+	/// <param name="uvTransform">UVトランスフォーム</param>
+	void DrawPrimitiveShape(PrimitiveType type, const Transform& transform, const PrimitiveParam& param, const TextureInfo& textureInfo, const Vector4& color, const Transform& uvTransform);
+
+	/// <summary>
 	/// 球の描画.
 	/// </summary>
 	/// <param name="transform">トランスフォーム</param>
@@ -445,28 +452,18 @@ public:
 
 	void ChangeUseDebugLine();
 private:
-	void CreateSphereResource();
-	void CreatePlaneResource();
-	void CreateTorusResource();
-	void CreateRingResource();
-	void CreateCylinderResource();
+	/// <summary>
+	/// 半径などで形が変わるPrimitive図形用に、メッシュを最大数分用意しておく.
+	/// </summary>
+	void CreateDynamicPrimitivePools();
+
+	/// <summary>
+	/// 描画に使うPrimitive図形のメッシュを取得する.
+	/// 形が変わらない図形は1つを使い回し、形が変わる図形はプールから1つ取り出して頂点を書き直す.
+	/// </summary>
+	const PrimitiveMesh& AcquirePrimitiveMesh(PrimitiveType type, const PrimitiveParam& param);
 
 	void CreateLine(ModelElement* newElement);
-
-	/// <summary>
-	/// トーラスの頂点を書き込む.
-	/// </summary>
-	void WriteTorusVertices(VertexData* vertexData, float majorRadius, float minorRadius) const;
-
-	/// <summary>
-	/// リングの頂点を書き込む.
-	/// </summary>
-	void WriteRingVertices(VertexData* vertexData, float majorRadius, float minorRadius) const;
-
-	/// <summary>
-	/// リングの頂点を書き込む.
-	/// </summary>
-	void WriteCylinderVertices(VertexData* vertexData, float topRadius, float bottomRadius) const;
 
 	/// <summary>
 	/// 3D描画用のCBuffer(Material,TransformationMatrix)を1組取得する.
@@ -521,49 +518,18 @@ private:
 	// white_templateテクスチャのハンドル(テクスチャが無いメッシュ用).
 	D3D12_GPU_DESCRIPTOR_HANDLE GetWhiteTextureHandle();
 private:
-	// SphereResource.
-	const uint32_t kSphereSubdivision_ = 16;
-	Microsoft::WRL::ComPtr<ID3D12Resource> sphereVertexResource_ = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12Resource> sphereIndexResource_ = nullptr;
-	VertexData* sphereVertexData = nullptr;
-	uint32_t* sphereIndexData = nullptr;
-	D3D12_VERTEX_BUFFER_VIEW sphereVertexBufferView_{};
-	D3D12_INDEX_BUFFER_VIEW sphereIndexBufferView_{};
+	// Primitive図形.
+	// 形が変わらない図形(Plane / Box / Sphere)は1つのメッシュを使い回す(初回使用時に作る).
+	std::map<PrimitiveType, PrimitiveMesh> staticPrimitiveMeshes_;
 
-	// PlaneResource
-	Microsoft::WRL::ComPtr<ID3D12Resource> planeVertexResource_ = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12Resource> planeIndexResource_ = nullptr;
-	VertexData* planeVertexData = nullptr;
-	uint32_t* planeIndexData = nullptr;
-	D3D12_VERTEX_BUFFER_VIEW planeVertexBufferView_{};
-	D3D12_INDEX_BUFFER_VIEW planeIndexBufferView_{};
-
-	// TorusResource.
-	const uint32_t kTorusSubdivision_ = 32;
-	std::vector<std::unique_ptr<PrimitiveVertexInstance>> torusInstances;
-	Microsoft::WRL::ComPtr<ID3D12Resource> torusIndexResource_ = nullptr;
-	uint32_t currentDrawTorusIndex_;
-	uint32_t* torusIndexData = nullptr;
-	D3D12_INDEX_BUFFER_VIEW torusIndexBufferView_{};
-	const uint32_t maxTorusNum = 100;
-
-	// RingResource.
-	const uint32_t kRingDivision_ = 32;
-	std::vector<std::unique_ptr<PrimitiveVertexInstance>> ringInstances;
-	Microsoft::WRL::ComPtr<ID3D12Resource> ringIndexResource_ = nullptr;
-	uint32_t currentDrawRingIndex_;
-	uint32_t* ringIndexData = nullptr;
-	D3D12_INDEX_BUFFER_VIEW ringIndexBufferView_{};
-	const uint32_t maxRingNum = 100;
-
-	// CylinderResource.
-	const uint32_t kCylinderDivision_ = 32;
-	std::vector<std::unique_ptr<PrimitiveVertexInstance>> cylinderInstances;
-	Microsoft::WRL::ComPtr<ID3D12Resource> cylinderIndexResource_ = nullptr;
-	uint32_t currentDrawCylinderIndex_;
-	uint32_t* cylinderIndexData = nullptr;
-	D3D12_INDEX_BUFFER_VIEW cylinderIndexBufferView_{};
-	const uint32_t maxCylinderNum = 100;
+	// 半径などで形が変わる図形(Torus / Ring / Cylinder)は、描画ごとに1つ取り出して頂点を書き直す.
+	struct DynamicPrimitivePool {
+		std::vector<std::unique_ptr<PrimitiveMesh>> meshes;
+		uint32_t currentIndex = 0;
+	};
+	std::map<PrimitiveType, DynamicPrimitivePool> dynamicPrimitivePools_;
+	// 1フレームに描画できる、形が変わる図形の数(種類ごと).
+	const uint32_t maxDynamicPrimitiveNum = 100;
 
 	// Model.
 	std::vector<std::unique_ptr<ModelInstance>> modelInstances;

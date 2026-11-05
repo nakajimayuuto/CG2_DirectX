@@ -6,14 +6,9 @@
 
 class ParticleManager{
 public:
-	enum class Primitive {
-		kPlane,
-		kBox,
-		kSphere,
-		kTours,
-		kRing,
-		kCylinder
-	};
+	// Primitive図形の種類(Rendererと共通の PrimitiveType をそのまま使う).
+	// ParticleManager::Primitive::kSphere のように今まで通り書ける.
+	using Primitive = PrimitiveType;
 	static ParticleManager* GetInstance();
 
 	void Initialize();
@@ -31,6 +26,18 @@ public:
 	void CreateNewParticles(const std::string& name ,const TextureInfo& info);
 	void CreateNewParticles(const std::string& name ,const TextureInfo& info,BillboardType billType,Particles::Move moveType);
 	void CreateNewParticles(const std::string& name, const ModelInfo& info);
+
+	/// <summary>
+	/// Primitive図形のパーティクルを作る.
+	/// </summary>
+	/// <param name="name">パーティクルの名前</param>
+	/// <param name="primitive">図形の種類</param>
+	/// <param name="info">貼るテクスチャ</param>
+	/// <param name="param">半径などのパラメータ(Torus / Ring / Cylinder のみ使用)</param>
+	void CreateNewParticles(const std::string& name, Primitive primitive, const TextureInfo& info, const PrimitiveParam& param = {});
+	void CreateNewParticles(const std::string& name, Primitive primitive, const TextureInfo& info, BillboardType billType, Particles::Move moveType, const PrimitiveParam& param = {});
+	void CreateNewParticles(const std::string& name, Primitive primitive, const std::string& textureName, const PrimitiveParam& param = {}) { CreateNewParticles(name, primitive, TextureManager::GetInstance()->GetTextureInfo(textureName), param); };
+	void CreateNewParticles(const std::string& name, Primitive primitive, const std::string& textureName, BillboardType billType, Particles::Move moveType, const PrimitiveParam& param = {}) { CreateNewParticles(name, primitive, TextureManager::GetInstance()->GetTextureInfo(textureName), billType, moveType, param); };
 
 	void CreateNewEmitter(const std::string& name, const std::string& setParticleName, const Transform& transform, uint32_t count, float frequency);
 	void CreateNewEmitter(const std::string& name, const std::string& setParticleName);

@@ -138,6 +138,26 @@ void ParticleManager::CreateNewParticles(const std::string& name, const ModelInf
 	particles_[name]->Initialize(info);
 }
 
+void ParticleManager::CreateNewParticles(const std::string& name, Primitive primitive, const TextureInfo& info, const PrimitiveParam& param) {
+	if (particles_.find(name) != particles_.end()) {
+		return;
+	}
+
+	particles_[name] = std::make_unique<Particles>();
+	particles_[name]->Initialize(primitive, info, param);
+}
+
+void ParticleManager::CreateNewParticles(const std::string& name, Primitive primitive, const TextureInfo& info, BillboardType billType, Particles::Move moveType, const PrimitiveParam& param) {
+	if (particles_.find(name) != particles_.end()) {
+		return;
+	}
+
+	particles_[name] = std::make_unique<Particles>();
+	particles_[name]->Initialize(primitive, info, param);
+	particles_[name]->SetBillboardType(billType);
+	particles_[name]->SetMoveType(moveType);
+}
+
 void ParticleManager::CreateNewEmitter(const std::string& name, const std::string& setParticleName, const Transform& transform, uint32_t count, float frequency) {
 	if (emitters_.find(name) != emitters_.end()) {
 		return;
