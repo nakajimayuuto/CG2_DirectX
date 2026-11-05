@@ -6,6 +6,14 @@
 
 class ParticleManager{
 public:
+	enum class Primitive {
+		kPlane,
+		kBox,
+		kSphere,
+		kTours,
+		kRing,
+		kCylinder
+	};
 	static ParticleManager* GetInstance();
 
 	void Initialize();

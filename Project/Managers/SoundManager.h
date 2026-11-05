@@ -149,6 +149,11 @@ public:
 	void SoundPlayWave(const SoundData& soundData);
 private:
 	void DeleteDatas();
+
+	/// <summary>
+	/// 再生用のSourceVoiceを停止して破棄する.
+	/// </summary>
+	void DestroyPlaySoundVoice(PlaySoundData* data);
 private:
 	Microsoft::WRL::ComPtr<IXAudio2> xAudio2_;
 	IXAudio2MasteringVoice* masterVoice_;

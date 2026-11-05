@@ -76,7 +76,7 @@ struct SpriteInstance{
 	TransformationMatrix* wvpData_ = nullptr;
 };
 
-struct TorusInstance{
+struct PrimitiveVertexInstance{
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_ = nullptr; // 消すかも.
 	VertexData* vertexData = nullptr;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
@@ -302,6 +302,20 @@ public:
 	void DrawTorus(const Transform& transform, float majorRadius, float minorRadius, const std::string& name, const Vector4& color) { DrawTorus(transform,majorRadius,minorRadius, TextureManager::GetInstance()->GetTextureInfo(name), color); };
 	void DrawTorus(const Transform& transform, float majorRadius, float minorRadius,const TextureInfo& textureInfo, const Vector4& color);
 
+	void DrawPlane(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color, const Transform& uvTransform);
+
+	void DrawPlane(const Transform& transform, const std::string& name, const Vector4& color, const Transform& uvTransform) { DrawPlane(transform, TextureManager::GetInstance()->GetTextureInfo(name), color,uvTransform); };
+	
+	void DrawPlane(const Transform& transform, const std::string& name, const Vector4& color) { DrawPlane(transform, TextureManager::GetInstance()->GetTextureInfo(name), color, Transform::GetInitialValue()); };
+
+	void DrawRing(const Transform& transform, float majorRadius, float minorRadius, const TextureInfo& textureInfo, const Vector4& color, const Transform& uvTransform);
+	void DrawRing(const Transform& transform, float majorRadius, float minorRadius, const std::string& name, const Vector4& color, const Transform& uvTransform) { DrawRing(transform,majorRadius,minorRadius, TextureManager::GetInstance()->GetTextureInfo(name), color, uvTransform); };
+	void DrawRing(const Transform& transform, float majorRadius, float minorRadius, const std::string& name, const Vector4& color) { DrawRing(transform,majorRadius,minorRadius, TextureManager::GetInstance()->GetTextureInfo(name), color, Transform::GetInitialValue()); };
+	
+	void DrawCylinder(const Transform& transform, float topRadius, float bottomRadius, const TextureInfo& textureInfo, const Vector4& color, const Transform& uvTransform);
+	void DrawCylinder(const Transform& transform, float topRadius, float bottomRadius, const std::string& name, const Vector4& color, const Transform& uvTransform) { DrawCylinder(transform, topRadius, bottomRadius, TextureManager::GetInstance()->GetTextureInfo(name), color, uvTransform); };
+	void DrawCylinder(const Transform& transform, float topRadius, float bottomRadius, const std::string& name, const Vector4& color) { DrawCylinder(transform, topRadius, bottomRadius,name, color, Transform::GetInitialValue()); };
+
 	/// <summary>
 	/// 球の描画.
 	/// </summary>
@@ -432,7 +446,10 @@ public:
 	void ChangeUseDebugLine();
 private:
 	void CreateSphereResource();
+	void CreatePlaneResource();
 	void CreateTorusResource();
+	void CreateRingResource();
+	void CreateCylinderResource();
 
 	void CreateLine(ModelElement* newElement);
 
@@ -440,6 +457,16 @@ private:
 	/// トーラスの頂点を書き込む.
 	/// </summary>
 	void WriteTorusVertices(VertexData* vertexData, float majorRadius, float minorRadius) const;
+
+	/// <summary>
+	/// リングの頂点を書き込む.
+	/// </summary>
+	void WriteRingVertices(VertexData* vertexData, float majorRadius, float minorRadius) const;
+
+	/// <summary>
+	/// リングの頂点を書き込む.
+	/// </summary>
+	void WriteCylinderVertices(VertexData* vertexData, float topRadius, float bottomRadius) const;
 
 	/// <summary>
 	/// 3D描画用のCBuffer(Material,TransformationMatrix)を1組取得する.
@@ -503,19 +530,47 @@ private:
 	D3D12_VERTEX_BUFFER_VIEW sphereVertexBufferView_{};
 	D3D12_INDEX_BUFFER_VIEW sphereIndexBufferView_{};
 
+	// PlaneResource
+	Microsoft::WRL::ComPtr<ID3D12Resource> planeVertexResource_ = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> planeIndexResource_ = nullptr;
+	VertexData* planeVertexData = nullptr;
+	uint32_t* planeIndexData = nullptr;
+	D3D12_VERTEX_BUFFER_VIEW planeVertexBufferView_{};
+	D3D12_INDEX_BUFFER_VIEW planeIndexBufferView_{};
+
 	// TorusResource.
 	const uint32_t kTorusSubdivision_ = 32;
-	std::vector<std::unique_ptr<TorusInstance>> torusInstances;
+	std::vector<std::unique_ptr<PrimitiveVertexInstance>> torusInstances;
 	Microsoft::WRL::ComPtr<ID3D12Resource> torusIndexResource_ = nullptr;
 	uint32_t currentDrawTorusIndex_;
 	uint32_t* torusIndexData = nullptr;
 	D3D12_INDEX_BUFFER_VIEW torusIndexBufferView_{};
 	const uint32_t maxTorusNum = 100;
 
+	// RingResource.
+	const uint32_t kRingDivision_ = 32;
+	std::vector<std::unique_ptr<PrimitiveVertexInstance>> ringInstances;
+	Microsoft::WRL::ComPtr<ID3D12Resource> ringIndexResource_ = nullptr;
+	uint32_t currentDrawRingIndex_;
+	uint32_t* ringIndexData = nullptr;
+	D3D12_INDEX_BUFFER_VIEW ringIndexBufferView_{};
+	const uint32_t maxRingNum = 100;
+
+	// CylinderResource.
+	const uint32_t kCylinderDivision_ = 32;
+	std::vector<std::unique_ptr<PrimitiveVertexInstance>> cylinderInstances;
+	Microsoft::WRL::ComPtr<ID3D12Resource> cylinderIndexResource_ = nullptr;
+	uint32_t currentDrawCylinderIndex_;
+	uint32_t* cylinderIndexData = nullptr;
+	D3D12_INDEX_BUFFER_VIEW cylinderIndexBufferView_{};
+	const uint32_t maxCylinderNum = 100;
+
+	// Model.
 	std::vector<std::unique_ptr<ModelInstance>> modelInstances;
 	uint32_t currentDrawModelIndex_;
 	const uint32_t maxModelNum = 300;
 
+	// Sprite.
 	std::vector<std::unique_ptr<SpriteInstance>> spriteInstances;
 	uint32_t currentDrawSpriteIndex_;
 	const uint32_t maxSpriteNum = 300;

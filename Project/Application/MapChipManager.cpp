@@ -6,6 +6,9 @@ MapChipManager* MapChipManager::GetInstance() {
 }
 
 void MapChipManager::Initialize() {
+	// 前回のシーンで作ったブロックを破棄してから作り直す.
+	Finalize();
+
 	StageManager::GetInstance()->LoadStageDataFile();
 
 	CreateStage();
@@ -30,12 +33,8 @@ void MapChipManager::Draw() {
 }
 
 void MapChipManager::Finalize() {
-	for (std::vector<std::pair<std::unique_ptr<Model>, std::unique_ptr<Transform>>>& modelBlockLine : modelBlocks_) {
-		for (std::pair<std::unique_ptr<Model>, std::unique_ptr<Transform>>& modelBlock : modelBlockLine) {
-			modelBlock.first.release();
-			modelBlock.second.release();
-		}
-	}
+	// unique_ptrなのでclearするだけでModel/Transformも解放される.
+	// (release()は所有権を手放すだけで delete しないため、メモリリークになっていた).
 	modelBlocks_.clear();
 }
 

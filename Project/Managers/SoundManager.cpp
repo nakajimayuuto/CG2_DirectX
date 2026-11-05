@@ -76,13 +76,22 @@ void SoundManager::DeleteDatas() {
 	//}
 
 	for (uint32_t& deleteNum : deleteNums) {
-		soundOneTimeDatas_[deleteNum]->voice->Stop();
-		soundOneTimeDatas_[deleteNum]->voice->FlushSourceBuffers();
+		DestroyPlaySoundVoice(soundOneTimeDatas_[deleteNum].get());
 		soundOneTimeDatas_.erase(deleteNum);
 	}
 }
 
 void SoundManager::Finalize() {
+	// XAudio2本体より先に、再生中のSourceVoiceをすべて破棄する.
+	for (auto& data : playSoundDatas_) {
+		DestroyPlaySoundVoice(data.second.get());
+	}
+	playSoundDatas_.clear();
+	for (auto& data : soundOneTimeDatas_) {
+		DestroyPlaySoundVoice(data.second.get());
+	}
+	soundOneTimeDatas_.clear();
+
 	xAudio2_.Reset();
 
 	for (auto i : sounds_) {
@@ -377,9 +386,21 @@ void SoundManager::SoundStop(std::string handle) {
 		return;
 	}
 
-	GetPlaySoundData(handle)->voice->Stop();
-	GetPlaySoundData(handle)->voice->FlushSourceBuffers();
-	playSoundDatas_.erase(handle);
+	DestroyPlaySoundVoice(it->second.get());
+	playSoundDatas_.erase(it);
+}
+
+void SoundManager::DestroyPlaySoundVoice(PlaySoundData* data) {
+	if (!data || !data->voice) {
+		return;
+	}
+
+	// 停止してバッファを捨ててから、SourceVoice自体を破棄する.
+	// (DestroyVoiceしないとXAudio2内部のメモリが解放されずに残り続ける).
+	data->voice->Stop();
+	data->voice->FlushSourceBuffers();
+	data->voice->DestroyVoice();
+	data->voice = nullptr;
 }
 
 bool SoundManager::IsFinishedSound(std::string handle) {
@@ -407,10 +428,9 @@ void SoundManager::ResetBGM() {
 			continue;
 		}
 
-		it->second->voice->Stop();
-		it->second->voice->FlushSourceBuffers();
-
-		it->second.release();
+		// release()は所有権を手放すだけで削除しないのでメモリリークになっていた.
+		// SourceVoiceを破棄してからeraseする(unique_ptrがPlaySoundDataを解放する).
+		DestroyPlaySoundVoice(it->second.get());
 		it = playSoundDatas_.erase(it);
 	}
 

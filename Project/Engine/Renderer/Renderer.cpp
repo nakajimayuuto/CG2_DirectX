@@ -47,7 +47,23 @@ namespace {
 	/// <summary>
 	/// 中心が原点のスプライトの頂点4つを作る.
 	/// </summary>
-	void MakeSpriteVertices(VertexData (&vertices)[4], float width, float height) {
+	/// <summary>
+	/// 「1分割 = 頂点4つ(0~3)の四角形」が並んだ形状のインデックスを書き込む(Ring/Cylinder共通).
+	/// </summary>
+	void WriteQuadIndices(uint32_t* indexData, uint32_t divisionCount) {
+		for (uint32_t i = 0; i < divisionCount; i++) {
+			const uint32_t index = i * 6;  // 書き込み先(この分割のインデックスの先頭).
+			const uint32_t vertex = i * 4; // 参照する頂点(この分割の頂点の先頭).
+			indexData[index] = vertex;
+			indexData[index + 1] = vertex + 1;
+			indexData[index + 2] = vertex + 2;
+			indexData[index + 3] = vertex + 1;
+			indexData[index + 4] = vertex + 3;
+			indexData[index + 5] = vertex + 2;
+		}
+	}
+
+	void MakeSpriteVertices(VertexData(&vertices)[4], float width, float height) {
 		float halfWidth = width * 0.5f;
 		float halfHeight = height * 0.5f;
 		vertices[0] = { { -halfWidth, halfHeight,0.0f,1.0f },{ 0.0f,1.0f },{ 0.0f,0.0f,-1.0f } }; // 左下.
@@ -136,7 +152,7 @@ void Model::Draw(const Transform& transform) {
 	Draw(transform, true);
 }
 
-void Model::Draw(const Transform& transform, bool useTransparent){
+void Model::Draw(const Transform& transform, bool useTransparent) {
 	(void)useTransparent;
 	if (modelMax_ == 0) {
 		return;
@@ -276,7 +292,7 @@ void Model::SetUvTransform(const Transform& uvTransform, const std::string& mesh
 	uvTransform_[index] = uvTransform;
 }
 
-void Model::SetUvTransform(const Transform& uvTransform, uint32_t index){
+void Model::SetUvTransform(const Transform& uvTransform, uint32_t index) {
 	uvTransform_[index] = uvTransform;
 }
 
@@ -290,7 +306,7 @@ Transform Model::GetUvTransform(const std::string& meshName) {
 	}
 	return uvTransform_[index];
 }
-Transform Model::GetUvTransform(uint32_t index){
+Transform Model::GetUvTransform(uint32_t index) {
 	return uvTransform_[index];
 }
 
@@ -331,7 +347,7 @@ void Sprite::Initialize(TextureInfo info) {
 	blendMode_ = BlendMode::kNormal;
 	uvTransform_.Initialize();
 
-	anchorPoint_ = {0.5f,0.5f};
+	anchorPoint_ = { 0.5f,0.5f };
 
 	textureInfo_ = info;
 	/*=============================================================
@@ -444,7 +460,7 @@ void Sprite::Draw(const Transform2D& transform) {
 	transform3D.rotate.z = 0.0f;
 	transform3D.translate.x = transform.translate.x;
 	transform3D.translate.y = transform.translate.y;
-	transform3D.translate.z =depth_;
+	transform3D.translate.z = depth_;
 	;
 	Draw(transform3D);
 }
@@ -462,11 +478,11 @@ void Sprite::SetSize(WindowSize windowSize) {
 void Sprite::AdaptationSize() {
 	float texLeft = leftTop_.x / size_.x;
 	float texRight = (leftTop_.x + cutSize_.x) / size_.x;
-	float texTop = leftTop_.y/ size_.y;
+	float texTop = leftTop_.y / size_.y;
 	float texBottom = (leftTop_.y + cutSize_.y) / size_.y;
 
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	vertexData[0].position = { -cutSize_.x * anchorPoint_.x,cutSize_.y * (1.0f -anchorPoint_.y),0.0f,1.0f }; // 左下.
+	vertexData[0].position = { -cutSize_.x * anchorPoint_.x,cutSize_.y * (1.0f - anchorPoint_.y),0.0f,1.0f }; // 左下.
 	vertexData[0].texcoord = { texLeft, texBottom };
 	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
 	vertexData[1].position = { -cutSize_.x * anchorPoint_.x,-cutSize_.y * anchorPoint_.y,0.0f,1.0f }; // 左上.
@@ -494,6 +510,8 @@ void Renderer::Initialize() {
 	currentDrawModelIndex_ = 0;
 	currentDrawSpriteIndex_ = 0;
 	currentDrawTorusIndex_ = 0;
+	currentDrawRingIndex_ = 0;
+	currentDrawCylinderIndex_ = 0;
 
 	blendMode_ = BlendMode::kNormal;
 
@@ -544,16 +562,25 @@ void Renderer::Initialize() {
 	}
 
 	CreateSphereResource();
+	CreatePlaneResource();
 	torusInstances.clear();
 	torusInstances.resize(maxTorusNum);
 	CreateTorusResource();
+	ringInstances.clear();
+	ringInstances.resize(maxRingNum);
+	CreateRingResource();
+	cylinderInstances.clear();
+	cylinderInstances.resize(maxCylinderNum);
+	CreateCylinderResource();
 }
 
 void Renderer::ClearDrawIndex() {
 	currentDrawModelIndex_ = 0;
 	currentDrawLineIndex_ = 0;
 	currentDrawSpriteIndex_ = 0;
+	currentDrawRingIndex_ = 0;
 	currentDrawTorusIndex_ = 0;
+	currentDrawCylinderIndex_ = 0;
 }
 
 void Renderer::SetBlendMode(BlendMode blendMode) {
@@ -625,7 +652,7 @@ void Renderer::DrawLineAll() {
 	);
 }
 
-void Renderer::ChangeUseDebugLine(){
+void Renderer::ChangeUseDebugLine() {
 	if (useDebugLine_) {
 		useDebugLine_ = false;
 	} else {
@@ -688,9 +715,6 @@ void Renderer::CreateSphereResource() {
 		}
 	}
 
-
-
-
 	sphereVertexBufferView_.BufferLocation = sphereVertexResource_->GetGPUVirtualAddress();
 	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
 	sphereVertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * kSphereSubdivision_ * kSphereSubdivision_ * 4);
@@ -709,10 +733,65 @@ void Renderer::CreateSphereResource() {
 	sphereIndexBufferView_.Format = DXGI_FORMAT_R32_UINT;
 }
 
+void Renderer::CreatePlaneResource() {
+	// 【Resourceにデータを書き込む】
+	planeVertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * 4);
+	planeIndexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * 6);
+
+	// 頂点リソースにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	planeVertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&planeVertexData));
+
+	// インデックスリソースにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	planeIndexResource_->Map(0, nullptr, reinterpret_cast<void**>(&planeIndexData));
+
+	planeVertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
+	planeVertexData[0].normal = { 0.0f,0.0f,-1.0f };
+	planeVertexData[0].texcoord = { 0.0f,0.0f };
+
+	planeVertexData[1].position = { -0.5f,0.5f,0.0f,1.0f };
+	planeVertexData[1].normal = { 0.0f,0.0f,-1.0f };
+	planeVertexData[1].texcoord = { 0.0f,1.0f };
+
+	planeVertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
+	planeVertexData[2].normal = { 0.0f,0.0f,-1.0f };
+	planeVertexData[2].texcoord = { 1.0f,0.0f };
+
+	planeVertexData[3].position = { 0.5f,0.5f,0.0f,1.0f };
+	planeVertexData[3].normal = { 0.0f,0.0f,-1.0f };
+	planeVertexData[3].texcoord = { 1.0f,1.0f };
+
+	planeIndexData[0] = 0;
+	planeIndexData[1] = 1;
+	planeIndexData[2] = 2;
+	planeIndexData[3] = 1;
+	planeIndexData[4] = 3;
+	planeIndexData[5] = 2;
+
+
+	planeVertexBufferView_.BufferLocation = planeVertexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ.(多分ここは他の場所でも変えられる。Rendererから頂点数取ってきて代入とかできそう)
+	planeVertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * 4);
+	// 1頂点あたりのサイズ.
+	planeVertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+	// 【IndexResourceを生成する】
+	// 実際に頂点リソースを作る.
+
+	// 頂点バッファビューを作成する.
+	// リソースの先頭のアドレスから使う.
+	planeIndexBufferView_.BufferLocation = planeIndexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズはインデックス6つ分のサイズ.
+	planeIndexBufferView_.SizeInBytes = sizeof(uint32_t) * 6;
+	// インデックスはuint32_tとする.
+	planeIndexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+}
+
 void Renderer::CreateTorusResource() {
 	// 【Resourceにデータを書き込む】
 	for (auto& instance : torusInstances) {
-		instance = std::make_unique<TorusInstance>();
+		instance = std::make_unique<PrimitiveVertexInstance>();
 		instance->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * (kTorusSubdivision_ + 1) * (kTorusSubdivision_ + 1));
 		instance->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&instance->vertexData));
 		// 頂点バッファビューは初期化時に作っておく(マテリアルと行列は描画時にmodelInstancesから取る).
@@ -758,11 +837,72 @@ void Renderer::CreateTorusResource() {
 	torusIndexBufferView_.Format = DXGI_FORMAT_R32_UINT;
 }
 
-void Renderer::DrawSphere(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color) {
-	DrawSphere(transform,textureInfo,color,Transform::GetInitialValue());
+void Renderer::CreateRingResource(){
+	// 【Resourceにデータを書き込む】
+	for (auto& instance : ringInstances) {
+		instance = std::make_unique<PrimitiveVertexInstance>();
+		instance->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * kRingDivision_ * 4);
+		instance->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&instance->vertexData));
+		// 頂点バッファビューは初期化時に作っておく(マテリアルと行列は描画時にmodelInstancesから取る).
+		instance->vertexBufferView_.BufferLocation = instance->vertexResource_->GetGPUVirtualAddress();
+		instance->vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * kRingDivision_ * 4);
+		instance->vertexBufferView_.StrideInBytes = sizeof(VertexData);
+	}
+
+	ringIndexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * kRingDivision_ * 6);
+
+	// 頂点リソースにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+
+	// インデックスリソースにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	ringIndexResource_->Map(0, nullptr, reinterpret_cast<void**>(&ringIndexData));
+
+	// 1分割ごとに頂点4つ(0~3)で四角形を作る.
+	// 書き込み先は y 番目の分割の位置(y * 6)、参照する頂点も y 番目の分割の頂点(y * 4)にする.
+	WriteQuadIndices(ringIndexData, kRingDivision_);
+
+	// インデックスバッファビューは全リングで共通.
+	ringIndexBufferView_.BufferLocation = ringIndexResource_->GetGPUVirtualAddress();
+	ringIndexBufferView_.SizeInBytes = sizeof(uint32_t) * kRingDivision_ * 6;
+	ringIndexBufferView_.Format = DXGI_FORMAT_R32_UINT;
 }
 
-void Renderer::DrawSphere(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color, const Transform& uvTransform){
+void Renderer::CreateCylinderResource(){
+	// 【Resourceにデータを書き込む】
+	for (auto& instance : cylinderInstances) {
+		instance = std::make_unique<PrimitiveVertexInstance>();
+		instance->vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * kCylinderDivision_ * 4);
+		instance->vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&instance->vertexData));
+		// 頂点バッファビューは初期化時に作っておく(マテリアルと行列は描画時にmodelInstancesから取る).
+		instance->vertexBufferView_.BufferLocation = instance->vertexResource_->GetGPUVirtualAddress();
+		instance->vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * kCylinderDivision_ * 4);
+		instance->vertexBufferView_.StrideInBytes = sizeof(VertexData);
+	}
+
+	cylinderIndexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(uint32_t) * kCylinderDivision_ * 6);
+
+	// 頂点リソースにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+
+	// インデックスリソースにデータを書き込む.
+	// 書き込むためのアドレスを取得.
+	cylinderIndexResource_->Map(0, nullptr, reinterpret_cast<void**>(&cylinderIndexData));
+
+	// 1分割ごとに頂点4つ(0~3)で四角形を作る.
+	WriteQuadIndices(cylinderIndexData, kCylinderDivision_);
+
+	// インデックスバッファビューは全シリンダーで共通.
+	cylinderIndexBufferView_.BufferLocation = cylinderIndexResource_->GetGPUVirtualAddress();
+	cylinderIndexBufferView_.SizeInBytes = sizeof(uint32_t) * kCylinderDivision_ * 6;
+	cylinderIndexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+}
+
+void Renderer::DrawSphere(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color) {
+	DrawSphere(transform, textureInfo, color, Transform::GetInitialValue());
+}
+
+void Renderer::DrawSphere(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color, const Transform& uvTransform) {
 	DrawPrimitive(
 		transform.GetAffineMatrix(),
 		MakeMaterial(color, Matrix4x4::MakeAffineMatrix(uvTransform)),
@@ -776,7 +916,7 @@ void Renderer::DrawSphere(const Transform& transform, const TextureInfo& texture
 void Renderer::DrawTorus(const Transform& transform, float majorRadius, float minorRadius, const TextureInfo& textureInfo, const Vector4& color) {
 	// 半径ごとに頂点が変わるので、トーラス用の頂点バッファを1つ取得して書き込む.
 	assert(currentDrawTorusIndex_ < maxTorusNum);
-	TorusInstance* torus = torusInstances[currentDrawTorusIndex_].get();
+	PrimitiveVertexInstance* torus = torusInstances[currentDrawTorusIndex_].get();
 	currentDrawTorusIndex_++;
 	WriteTorusVertices(torus->vertexData, majorRadius, minorRadius);
 
@@ -787,6 +927,51 @@ void Renderer::DrawTorus(const Transform& transform, float majorRadius, float mi
 		&torusIndexBufferView_,
 		textureInfo.textureSrvHandlesGPU,
 		kTorusSubdivision_ * kTorusSubdivision_ * 6
+	);
+}
+
+void Renderer::DrawPlane(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color, const Transform& uvTransform) {
+	DrawPrimitive(
+		transform.GetAffineMatrix(),
+		MakeMaterial(color, Matrix4x4::MakeAffineMatrix(uvTransform)),
+		planeVertexBufferView_,
+		&planeIndexBufferView_,
+		textureInfo.textureSrvHandlesGPU,
+		6
+	);
+}
+
+void Renderer::DrawRing(const Transform& transform, float majorRadius, float minorRadius, const TextureInfo& textureInfo, const Vector4& color, const Transform& uvTransform){
+	// 半径ごとに頂点が変わるので、リング用の頂点バッファを1つ取得して書き込む.
+	assert(currentDrawRingIndex_ < maxRingNum);
+	PrimitiveVertexInstance* ring = ringInstances[currentDrawRingIndex_].get();
+	currentDrawRingIndex_++;
+	WriteRingVertices(ring->vertexData, majorRadius, minorRadius);
+
+	DrawPrimitive(
+		transform.GetAffineMatrix(),
+		MakeMaterial(color, Matrix4x4::MakeAffineMatrix(uvTransform)),
+		ring->vertexBufferView_,
+		&ringIndexBufferView_,
+		textureInfo.textureSrvHandlesGPU,
+		kRingDivision_ * 6 // インデックスを使って描画するので、頂点数ではなくインデックス数.
+	);
+}
+
+void Renderer::DrawCylinder(const Transform& transform, float topRadius, float bottomRadius, const TextureInfo& textureInfo, const Vector4& color, const Transform& uvTransform){
+	// 半径ごとに頂点が変わるので、シリンダー用の頂点バッファを1つ取得して書き込む.
+	assert(currentDrawCylinderIndex_ < maxCylinderNum);
+	PrimitiveVertexInstance* cylinder = cylinderInstances[currentDrawCylinderIndex_].get();
+	currentDrawCylinderIndex_++;
+	WriteCylinderVertices(cylinder->vertexData, topRadius, bottomRadius);
+
+	DrawPrimitive(
+		transform.GetAffineMatrix(),
+		MakeMaterial(color, Matrix4x4::MakeAffineMatrix(uvTransform)),
+		cylinder->vertexBufferView_,
+		&cylinderIndexBufferView_,
+		textureInfo.textureSrvHandlesGPU,
+		kCylinderDivision_ * 6 // インデックスを使って描画するので、頂点数ではなくインデックス数.
 	);
 }
 
@@ -826,10 +1011,10 @@ void Renderer::DrawSphereWireFrame(const Transform& transform, const Vector4& co
 }
 
 void Renderer::DrawBox(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color) {
-	DrawBox(transform,Transform::GetInitialValue(),textureInfo,color);
+	DrawBox(transform, Transform::GetInitialValue(), textureInfo, color);
 }
 
-void Renderer::DrawBox(const Transform& transform, const Transform& uvTransform, const TextureInfo& textureInfo, const Vector4& color){
+void Renderer::DrawBox(const Transform& transform, const Transform& uvTransform, const TextureInfo& textureInfo, const Vector4& color) {
 	// コピーせず参照で受け取る.
 	const ModelData& data = ModelManager::GetInstance()->GetModelInfo("block_template").modelData[0];
 
@@ -843,7 +1028,7 @@ void Renderer::DrawBox(const Transform& transform, const Transform& uvTransform,
 	);
 }
 
-void Renderer::DrawBoxEdges(const Vector3 (&vertices)[8], const Vector4& color) {
+void Renderer::DrawBoxEdges(const Vector3(&vertices)[8], const Vector4& color) {
 	// 頂点の並び: 0~3が手前の面(-z)、4~7が奥の面(+z).
 	static constexpr uint32_t kEdges[12][2] = {
 		{0,1},{0,2},{1,3},{2,3}, // 手前の面.
@@ -1249,6 +1434,77 @@ void Renderer::WriteTorusVertices(VertexData* vertexData, float majorRadius, flo
 			vertexData[index].normal = normal;
 			vertexData[index].texcoord = { u,v };
 		}
+	}
+}
+
+void Renderer::WriteRingVertices(VertexData* vertexData, float majorRadius, float minorRadius) const{
+	// 1分割あたりの角度.
+	const float radianPerDivide = 2.0f * std::numbers::pi_v<float> / static_cast<float>(kRingDivision_);
+	// リングは-Z方向(カメラ側)を向ける.
+	const Vector3 normal = { 0.0f,0.0f,-1.0f };
+
+	for (uint32_t index = 0; index < kRingDivision_; ++index) {
+		// 角度(ラジアン)からsin/cosを求める.
+		float sin = std::sin(radianPerDivide * static_cast<float>(index));
+		float cos = std::cos(radianPerDivide * static_cast<float>(index));
+		float sinNext = std::sin(radianPerDivide * static_cast<float>(index + 1));
+		float cosNext = std::cos(radianPerDivide * static_cast<float>(index + 1));
+		float u = static_cast<float>(index) / static_cast<float>(kRingDivision_);
+		float uNext = static_cast<float>(index + 1) / static_cast<float>(kRingDivision_);
+
+		// 頂点の並び(インデックス 0,1,2 / 1,3,2 で時計回りになる順番).
+		// 0:外側 1:内側 2:次の外側 3:次の内側.
+		vertexData[(index * 4)].position = { -sin * majorRadius,cos * majorRadius,0.0f,1.0f };
+		vertexData[(index * 4)].texcoord = { u,0.0f };
+		vertexData[(index * 4)].normal = normal;
+
+		vertexData[(index * 4) + 1].position = { -sin * minorRadius,cos * minorRadius,0.0f,1.0f };
+		vertexData[(index * 4) + 1].texcoord = { u,1.0f };
+		vertexData[(index * 4) + 1].normal = normal;
+
+		vertexData[(index * 4) + 2].position = { -sinNext * majorRadius,cosNext * majorRadius,0.0f,1.0f };
+		vertexData[(index * 4) + 2].texcoord = { uNext,0.0f };
+		vertexData[(index * 4) + 2].normal = normal;
+
+		vertexData[(index * 4) + 3].position = { -sinNext * minorRadius,cosNext * minorRadius,0.0f,1.0f };
+		vertexData[(index * 4) + 3].texcoord = { uNext,1.0f };
+		vertexData[(index * 4) + 3].normal = normal;
+	}
+}
+
+void Renderer::WriteCylinderVertices(VertexData* vertexData, float topRadius, float bottomRadius) const{
+	// 1分割あたりの角度.
+	const float radianPerDivide = 2.0f * std::numbers::pi_v<float> / static_cast<float>(kCylinderDivision_);
+	const float kHeight = 1.0f;
+	const float top = kHeight / 2.0f;
+	const float bottom = -kHeight / 2.0f;
+
+	for (uint32_t index = 0; index < kCylinderDivision_; ++index) {
+		// 角度(ラジアン)からsin/cosを求める.
+		float sin = std::sin(radianPerDivide * static_cast<float>(index));
+		float cos = std::cos(radianPerDivide * static_cast<float>(index));
+		float sinNext = std::sin(radianPerDivide * static_cast<float>(index + 1));
+		float cosNext = std::cos(radianPerDivide * static_cast<float>(index + 1));
+		float u = static_cast<float>(index) / static_cast<float>(kCylinderDivision_);
+		float uNext = static_cast<float>(index + 1) / static_cast<float>(kCylinderDivision_);
+
+		// 頂点の並び(インデックス 0,1,2 / 1,3,2 で外側から見て時計回りになる順番).
+		// 0:上 1:次の上 2:下 3:次の下.
+		vertexData[(index * 4)].position = { -sin * topRadius,top,cos * topRadius,1.0f };
+		vertexData[(index * 4)].texcoord = { u,0.0f };
+		vertexData[(index * 4)].normal = { -sin,0.0f,cos };
+
+		vertexData[(index * 4) + 1].position = { -sinNext * topRadius,top,cosNext * topRadius,1.0f };
+		vertexData[(index * 4) + 1].texcoord = { uNext,0.0f };
+		vertexData[(index * 4) + 1].normal = { -sinNext,0.0f,cosNext };
+
+		vertexData[(index * 4) + 2].position = { -sin * bottomRadius,bottom,cos * bottomRadius,1.0f };
+		vertexData[(index * 4) + 2].texcoord = { u,1.0f };
+		vertexData[(index * 4) + 2].normal = { -sin,0.0f,cos };
+
+		vertexData[(index * 4) + 3].position = { -sinNext * bottomRadius,bottom,cosNext * bottomRadius,1.0f };
+		vertexData[(index * 4) + 3].texcoord = { uNext,1.0f };
+		vertexData[(index * 4) + 3].normal = { -sinNext,0.0f,cosNext };
 	}
 }
 

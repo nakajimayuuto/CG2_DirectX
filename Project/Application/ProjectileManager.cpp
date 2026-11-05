@@ -10,6 +10,8 @@ void ProjectileManager::Initialize() {
 	spikes.clear();
 	explodes.clear();
 
+	// シーンを読み込みなおすたびに名前が追加され続けないように、前回分を消してから作る.
+	lightNames_.clear();
 	for (uint32_t i = 0; i < kBulletLightMax_; i++) {
 		lightNames_.push_back(std::format("bullet_{}", i));
 		LightManager::GetInstance()->CreatePointLight(lightNames_[i]);
