@@ -5,12 +5,7 @@
 
 #include "../../externals/DirectXTex/DirectXTex.h"
 #include "../../externals/DirectXTex/d3dx12.h"
-struct Node {
-	Matrix4x4 localMatrix;
-	std::string name;
-	std::vector<Node> children;
-};
-
+#include "Node.h"
 /// <summary>
 /// 1回のドローコールで描画する単位(同じマテリアルを使うメッシュをまとめたもの).
 /// </summary>
@@ -28,6 +23,8 @@ struct ModelData {
 	// モデル全体で共有している頂点バッファ(このModelDataはその一部をvertexBufferView_で参照する).
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_ = nullptr;
 	VertexData* vertexData = nullptr;
+
+	Node rootNode;
 
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
 };

@@ -22,6 +22,7 @@
     <ClCompile Include="Application\Application.cpp" />
     <ClCompile Include="Application\BaseEnemy.cpp" />
     <ClCompile Include="Application\Enemy.cpp" />
+    <ClCompile Include="Engine\Math\Quaternion.cpp" />
     <ClCompile Include="Engine\Renderer\TextRenderer.cpp" />
     <ClCompile Include="Engine\SystemFile\WinApp.cpp" />
     <ClCompile Include="Application\Fade.cpp" />
@@ -33,6 +34,7 @@
     <ClCompile Include="externals\imgui\backends\imgui_impl_win32.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Engine\Math\Keyframe.cpp" />
     <ClCompile Include="Managers\ImGuiManager.cpp" />
     <ClCompile Include="Managers\DifficultyManager.cpp" />
     <ClCompile Include="Managers\StageManager.cpp" />
@@ -127,6 +129,8 @@
     <ClInclude Include="Application\Application.h" />
     <ClInclude Include="Application\BaseEnemy.h" />
     <ClInclude Include="Application\Enemy.h" />
+    <ClInclude Include="Engine\Math\Node.h" />
+    <ClInclude Include="Engine\Math\Quaternion.h" />
     <ClInclude Include="Engine\Renderer\TextRenderer.h" />
     <ClInclude Include="Engine\SystemFile\WinApp.h" />
     <ClInclude Include="externals\imgui\backends\imgui_impl_dx12.h" />
@@ -135,6 +139,7 @@
     <ClInclude Include="Application\Fade.h" />
     <ClInclude Include="Application\HPGauge.h" />
     <ClInclude Include="Engine\SystemFile\Framework.h" />
+    <ClInclude Include="Engine\Math\Keyframe.h" />
     <ClInclude Include="Managers\ImGuiManager.h" />
     <ClInclude Include="Managers\DifficultyManager.h" />
     <ClInclude Include="Managers\StageManager.h" />

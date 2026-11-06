@@ -11,9 +11,7 @@
 
 #include <Windows.h>
 #include <cstdint>
-#include <string>
 #include <format>
-#include <d3d12.h>
 #include <dxgi1_6.h>
 #include <cassert>
 #include <dxgidebug.h>
@@ -57,7 +55,7 @@ private:
 	// ModelManager的な奴に入れる.
 	std::vector<ModelData> LoadObjFile(const std::string& directoryPath, const std::string& fileName);
 	std::vector<ModelData> LoadModelFile(const std::string& directoryPath, const std::string& fileName, Matrix4x4* rootMatrix);
-
+	Animation LoadAnimationFile(const std::string& directoryPath, const std::string& fileName);
 	
 	Node ReadNode(aiNode* aiNode);
 

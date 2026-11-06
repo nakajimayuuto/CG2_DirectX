@@ -229,6 +229,15 @@
     <Filter Include="Managers\ImGuiManager">
       <UniqueIdentifier>{2b2e967b-bf65-4f3f-b6f8-2021150f81af}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Math\KeyFrame">
+      <UniqueIdentifier>{b25f0fbd-74f6-4527-8de6-dc67de4224c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Math\Quaternion">
+      <UniqueIdentifier>{d8c4d5d0-a421-4712-b665-8dfe77a77b57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Math\Node">
+      <UniqueIdentifier>{6d12a07d-c489-46bd-a91b-834d0cb8a335}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -446,6 +455,12 @@
     </ClCompile>
     <ClCompile Include="Managers\ImGuiManager.cpp">
       <Filter>Managers\ImGuiManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Math\Keyframe.cpp">
+      <Filter>Engine\Math\KeyFrame</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Math\Quaternion.cpp">
+      <Filter>Engine\Math\Quaternion</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -682,6 +697,15 @@
     </ClInclude>
     <ClInclude Include="Managers\ImGuiManager.h">
       <Filter>Managers\ImGuiManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Math\Keyframe.h">
+      <Filter>Engine\Math\KeyFrame</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Math\Quaternion.h">
+      <Filter>Engine\Math\Quaternion</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Math\Node.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
