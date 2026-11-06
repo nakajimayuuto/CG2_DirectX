@@ -91,7 +91,15 @@ private:
 
 	void DrawPlayControlWindow();
 
+	/// <summary>
+	/// 日本語を表示できるフォント(Windowsのメイリオなど)を読み込む.
+	/// </summary>
+	void LoadJapaneseFont();
+
 private:
+	// ImGuiの文字の大きさ(px).
+	static inline const float kFontSize_ = 16.0f;
+
 	// GameGUI.
 	D3D12_GPU_DESCRIPTOR_HANDLE gameViewTexture_{};
 	Vector2 gameViewPos_{};

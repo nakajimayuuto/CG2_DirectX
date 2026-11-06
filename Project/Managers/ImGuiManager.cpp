@@ -1,5 +1,6 @@
 #include "ImGuiManager.h"
 #include <algorithm>
+#include <filesystem>
 #include "SrvManager.h"
 #include "../Engine/Environment/Environment.h"
 
@@ -52,9 +53,38 @@ void ImGuiManager::Initialize(WinApp* winApp, ID3D12Device* device, uint32_t buf
 	info.LegacySingleSrvCpuDescriptor = SrvManager::GetInstance()->GetDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
 	info.LegacySingleSrvGpuDescriptor = SrvManager::GetInstance()->GetDescriptorHeap()->GetGPUDescriptorHandleForHeapStart();
 	ImGui_ImplDX12_Init(&info);
+
+	// 日本語を表示できるフォントを読み込む.
+	LoadJapaneseFont();
 	io.Fonts->Build();
 #else
 	(void)winApp; (void)device; (void)bufferCount; (void)rtvFormat; (void)commandQueue;
+#endif // USE_IMGUI
+}
+
+void ImGuiManager::LoadJapaneseFont() {
+#ifdef USE_IMGUI
+	ImGuiIO& io = ImGui::GetIO();
+
+	// Windowsに標準で入っている日本語フォント(上から順に、見つかったものを使う).
+	// ImGui 1.92以降は使った文字だけをその都度読み込むので、文字の範囲(GlyphRanges)の指定は不要.
+	static const char* const kFontPaths[] = {
+		"C:/Windows/Fonts/meiryo.ttc",   // メイリオ.
+		"C:/Windows/Fonts/YuGothM.ttc",  // 游ゴシック.
+		"C:/Windows/Fonts/msgothic.ttc", // MS ゴシック.
+	};
+
+	for (const char* path : kFontPaths) {
+		if (!std::filesystem::exists(path)) {
+			continue;
+		}
+		if (io.Fonts->AddFontFromFileTTF(path, kFontSize_)) {
+			return;
+		}
+	}
+
+	// 日本語フォントが見つからなかった場合はImGuiの標準フォントを使う(日本語は表示されない).
+	io.Fonts->AddFontDefault();
 #endif // USE_IMGUI
 }
 

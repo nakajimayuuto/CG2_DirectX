@@ -55,6 +55,8 @@ void SceneManager::Update() {
 
 	PlayControlUpdate();
 
+
+
 	// 停止中 / 一時停止中はゲームの更新処理を行わない(描画は行う).
 	if (!ImGuiManager::GetInstance()->IsPlaying()) {
 		if (ImGuiManager::GetInstance()->GetPlayState() == ImGuiManager::PlayState::kStop) {
