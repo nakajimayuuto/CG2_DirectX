@@ -2,6 +2,7 @@
 #include "Matrix4x4.h"
 #include <string>
 #include <vector>
+#include <map>
 #include "Keyframe.h"
 struct Node {
 	Matrix4x4 localMatrix;
@@ -21,7 +22,7 @@ struct NodeAnimation {
 	AnimationCurve<Vector3> scale;
 };
 
-struct Animation{
+struct Animation {
 	float duration;
-	std::map<std::string, NodeAnimation<Quaternion>> nodeAnimations;
-}
+	std::map<std::string,NodeAnimation<Quaternion>> nodeAnimations;
+};

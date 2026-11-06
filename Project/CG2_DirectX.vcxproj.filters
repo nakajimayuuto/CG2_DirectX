@@ -705,7 +705,7 @@
       <Filter>Engine\Math\Quaternion</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Math\Node.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Engine\Math\Node</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
