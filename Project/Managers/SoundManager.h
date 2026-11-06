@@ -145,6 +145,18 @@ public:
 
 	void ResetBGM();
 
+	/// <summary>
+	/// 再生中の全ての音(BGM・効果音)を止めて破棄する.
+	/// </summary>
+	void StopAllSounds();
+
+	/// <summary>
+	/// 全ての音を一時停止 / 再開する(XAudio2のエンジンごと止めるので再生位置は保持される).
+	/// </summary>
+	void SetPaused(bool isPaused);
+
+	bool IsPaused() const { return isPaused_; };
+
 	//void SoundPlayWave(IXAudio2* xAudio2, const SoundData& soundData);
 	void SoundPlayWave(const SoundData& soundData);
 private:
@@ -162,6 +174,9 @@ private:
 	std::map<uint32_t, std::unique_ptr<PlaySoundData>> soundOneTimeDatas_;
 
 	uint32_t soundNum_ = 0;
+
+	// SetPausedで一時停止しているか.
+	bool isPaused_ = false;
 
 	static inline float kBGMVolume_ = 1.0f;// 1.0f;
 };

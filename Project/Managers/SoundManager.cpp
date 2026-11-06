@@ -21,6 +21,9 @@ void SoundManager::Initialize() {
 
 	//SoundData soundData = SoundLoadWave("Resource/Alarm01.wav");
 	soundNum_ = 0;
+
+	// 生成直後のエンジンは動いている.
+	isPaused_ = false;
 }
 
 void SoundManager::Update() {
@@ -81,8 +84,7 @@ void SoundManager::DeleteDatas() {
 	}
 }
 
-void SoundManager::Finalize() {
-	// XAudio2本体より先に、再生中のSourceVoiceをすべて破棄する.
+void SoundManager::StopAllSounds() {
 	for (auto& data : playSoundDatas_) {
 		DestroyPlaySoundVoice(data.second.get());
 	}
@@ -91,6 +93,26 @@ void SoundManager::Finalize() {
 		DestroyPlaySoundVoice(data.second.get());
 	}
 	soundOneTimeDatas_.clear();
+}
+
+void SoundManager::SetPaused(bool isPaused) {
+	if (isPaused_ == isPaused || !xAudio2_) {
+		return;
+	}
+
+	isPaused_ = isPaused;
+	if (isPaused_) {
+		// エンジンごと止めるので、全ての音が今の再生位置で止まる.
+		xAudio2_->StopEngine();
+	} else {
+		HRESULT result = xAudio2_->StartEngine();
+		assert(SUCCEEDED(result));
+	}
+}
+
+void SoundManager::Finalize() {
+	// XAudio2本体より先に、再生中のSourceVoiceをすべて破棄する.
+	StopAllSounds();
 
 	xAudio2_.Reset();
 

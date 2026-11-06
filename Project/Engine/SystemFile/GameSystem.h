@@ -100,11 +100,6 @@ private:
 	void RenderTextureInitialize();
 
 	void LoadSampleDatas();
-
-#ifdef USE_IMGUI
-	// ゲーム画面(RenderTexture)をImGuiの"Game"ウィンドウに表示する.
-	void DrawGameViewWindow();
-#endif // USE_IMGUI
 private:
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory_ = nullptr;
 
@@ -138,11 +133,7 @@ public:
 
 	// ゲーム画面(RenderTexture)のSRV。ImGui::Imageなどで使える.
 	D3D12_GPU_DESCRIPTOR_HANDLE GetRenderTextureSrvHandleGPU() const { return renderTextureSrvHandleGPU_; };
-	// "Game"ウィンドウ内のゲーム画面の表示位置/サイズ(スクリーン座標).
-	const Vector2& GetGameViewPos() const { return gameViewPos_; };
-	const Vector2& GetGameViewSize() const { return gameViewSize_; };
-	bool IsGameViewFocused() const { return isGameViewFocused_; };
-	bool IsGameViewHovered() const { return isGameViewHovered_; };
+	// "Game"ウィンドウの表示位置/サイズなどは ImGuiManager から取得する.
 
 	void SetPipeline(BlendMode blendMode,ShaderType shaderType);
 
@@ -279,12 +270,6 @@ private:
 	D3D12_GPU_DESCRIPTOR_HANDLE renderTextureSrvHandleGPU_{};
 	// RenderTextureのクリアカラー(最適化クリア値と一致させる).
 	static inline const float kRenderTextureClearColor_[4] = { 0.0f,0.0f,0.0f,1.0f };
-	// "Game"ウィンドウ内でゲーム画面が表示されている矩形(スクリーン座標).
-	Vector2 gameViewPos_{};
-	Vector2 gameViewSize_{};
-	// "Game"ウィンドウがフォーカス/ホバーされているか.
-	bool isGameViewFocused_ = false;
-	bool isGameViewHovered_ = false;
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
 	//Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;

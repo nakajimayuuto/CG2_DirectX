@@ -13,6 +13,7 @@
 #include "../../Managers/ParticleManager.h"
 #include "../../Managers/CollisionManager.h"
 #include "../../Managers/SrvManager.h"
+#include "../../Managers/ImGuiManager.h"
 #include "../Environment/Environment.h"
 #include "../Math/Random.h"
 #include "GlobalVariables.h"
@@ -103,6 +104,9 @@ void GameSystem::Initialize() {
 	Random::GetInstance()->Initialize();
 
 	LoadSampleDatas();
+
+	// エンジンのGUI用の画像(Release版では読み込まない).
+	ImGuiManager::GetInstance()->LoadTextures();
 
 	Renderer::GetInstance()->Initialize();
 
@@ -341,30 +345,9 @@ void GameSystem::PipelineInitialize(){
 
 void GameSystem::ImGuiInitialize() {
 	/*=============================================================
-	ImGuiの初期化.
+	ImGuiの初期化(処理はImGuiManagerにまとめている).
 	=============================================================*/
-#ifdef USE_IMGUI
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-
-	ImGuiIO& io = ImGui::GetIO();
-
-	// Docking機能を有効化
-	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
-	ImGui::StyleColorsDark();
-	ImGui_ImplWin32_Init(winApp_->GetHWND());
-	ImGui_ImplDX12_InitInfo info;
-	info.Device = device.Get();
-	info.NumFramesInFlight = swapChainDesc_.BufferCount;
-	info.RTVFormat = rtvDesc_.Format;
-	info.CommandQueue = commandQueue.Get();
-	info.SrvDescriptorHeap = SrvManager::GetInstance()->GetDescriptorHeap().Get();
-	info.LegacySingleSrvCpuDescriptor = SrvManager::GetInstance()->GetDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
-	info.LegacySingleSrvGpuDescriptor = SrvManager::GetInstance()->GetDescriptorHeap()->GetGPUDescriptorHandleForHeapStart();
-	ImGui_ImplDX12_Init(&info);
-	io.Fonts->Build();
-#endif // USE_IMGUI
+	ImGuiManager::GetInstance()->Initialize(winApp_.get(), device.Get(), swapChainDesc_.BufferCount, rtvDesc_.Format, commandQueue.Get());
 }
 
 void GameSystem::RenderTextureInitialize() {
@@ -417,48 +400,10 @@ void GameSystem::RenderTextureInitialize() {
 	// SRVの生成(SrvManagerのヒープ上に作る。ImGuiも同じヒープを使っている).
 	TextureInfo info = SrvManager::GetInstance()->CreateSRVforTexture2D(renderTextureResource_.Get(), format, 1, false);
 	renderTextureSrvHandleGPU_ = info.textureSrvHandlesGPU;
+
+	// ImGuiの"Game"ウィンドウに表示する.
+	ImGuiManager::GetInstance()->SetGameViewTexture(renderTextureSrvHandleGPU_);
 }
-
-#ifdef USE_IMGUI
-void GameSystem::DrawGameViewWindow() {
-	// ゲーム画面がウィンドウいっぱいに表示されるよう余白をなくす.
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-	ImGui::Begin("Game", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-	ImGui::PopStyleVar();
-
-	isGameViewFocused_ = ImGui::IsWindowFocused();
-	isGameViewHovered_ = ImGui::IsWindowHovered();
-
-	// アスペクト比を保ったまま、ウィンドウに収まる最大サイズを求める.
-	const ImVec2 avail = ImGui::GetContentRegionAvail();
-	const float textureWidth = static_cast<float>(Environment::GetInstance()->GetWindowSize().width);
-	const float textureHeight = static_cast<float>(Environment::GetInstance()->GetWindowSize().height);
-	const float textureAspect = textureWidth / textureHeight;
-
-	ImVec2 imageSize = avail;
-	if (avail.x > 0.0f && avail.y > 0.0f) {
-		if (avail.x / avail.y > textureAspect) {
-			imageSize.x = avail.y * textureAspect;
-		} else {
-			imageSize.y = avail.x / textureAspect;
-		}
-
-		// 中央に寄せる.
-		ImVec2 cursor = ImGui::GetCursorPos();
-		cursor.x += (avail.x - imageSize.x) * 0.5f;
-		cursor.y += (avail.y - imageSize.y) * 0.5f;
-		ImGui::SetCursorPos(cursor);
-
-		const ImVec2 screenPos = ImGui::GetCursorScreenPos();
-		gameViewPos_ = { screenPos.x, screenPos.y };
-		gameViewSize_ = { imageSize.x, imageSize.y };
-
-		ImGui::Image(static_cast<ImTextureID>(renderTextureSrvHandleGPU_.ptr), imageSize);
-	}
-
-	ImGui::End();
-}
-#endif // USE_IMGUI
 
 void GameSystem::LoadSampleDatas(){
 	ModelManager::GetInstance()->RegisterModel("block_template", "Resources/block", "block.obj");
@@ -550,12 +495,8 @@ bool GameSystem::BeginFrame() {
 	//Renderer::Line::GetInstance()->ClearDrawIndex();
 	Renderer::GetInstance()->ClearDrawIndex();
 
-#ifdef USE_IMGUI
-	ImGui_ImplDX12_NewFrame();
-	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
-	ImGui::DockSpaceOverViewport();
-#endif // USE_IMGUI
+	// ImGuiのフレーム開始.
+	ImGuiManager::GetInstance()->Begin();
 
 	// 指定した深度で画面全体をクリアする.
 	dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
@@ -682,19 +623,12 @@ void GameSystem::EndFrame() {
 	float clearColor[] = { 0.1f,0.1f,0.1f,1.0f };
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 
-	// ゲーム画面ウィンドウ.
-	DrawGameViewWindow();
-
 	ImGui::Begin("drawCount");
 	ImGui::Text("%d", drawCount_);
 	ImGui::End();
 
-	// ImGuiの内部コマンドを生成する.
-	ImGui::Render();
-
-	// ImGuiの描画.
-	// 実際のcommandListのImGuiの描画コマンドを積む.
-	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
+	// エンジンのGUI(GameGUI / PlayControlGUI)を描画し、ImGuiの描画コマンドを積む.
+	ImGuiManager::GetInstance()->End(commandList.Get());
 #endif // USE_IMGUI
 
 
@@ -763,12 +697,8 @@ void GameSystem::Finalize() {
 	/*=============================================================
 	 ImGuiの終了処理.
 	=============================================================*/
-	// 初期化と逆順に行う.
-#ifdef USE_IMGUI
-	ImGui_ImplDX12_Shutdown();
-	ImGui_ImplWin32_Shutdown();
-	ImGui::DestroyContext();
-#endif // USE_IMGUI
+	ImGuiManager::GetInstance()->Finalize();
+
 	winApp_->Finalize();
 }
 
