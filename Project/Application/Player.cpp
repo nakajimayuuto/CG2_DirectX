@@ -183,12 +183,6 @@ void Player::FloatingAccelerationChange() {
 }
 
 void Player::Update() {
-#ifdef _DEBUG
-	ImGui::Begin("player");
-	ImGui::DragFloat("HP", &currentHP_, 1.0f, 0.0f, maxHP_);
-	ImGui::Text("pos %f,%f,%f", transform_.translate.x, transform_.translate.y, transform_.translate.z);
-	ImGui::End();
-#endif // _DEBUG
 	LightManager::GetInstance()->SetLightPos("player_light", transform_.GetWorldPosition());
 	LightManager::GetInstance()->SetLightIsActive("player_light", true);
 
@@ -930,6 +924,13 @@ void Player::UpdateFloatingGimmick() {
 }
 
 void Player::Draw() {
+#ifdef _DEBUG
+	ImGuiManager::GetInstance()->Begin("Player");
+	ImGui::DragFloat("HP", &currentHP_, 1.0f, 0.0f, maxHP_);
+	ImGui::Text("pos %f,%f,%f", transform_.translate.x, transform_.translate.y, transform_.translate.z);
+	ImGuiManager::GetInstance()->End();
+#endif // _DEBUG
+
 	Transform dashT;
 	dashT.Initialize();
 	dashT.SetParent(&transformModel);

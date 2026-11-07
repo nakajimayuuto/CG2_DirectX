@@ -9,8 +9,10 @@
 #include "../externals/imgui/backends/imgui_impl_dx12.h"
 #include "../externals/imgui/backends/imgui_impl_win32.h"
 #include "TextureManager.h"
+#include "../externals/imgui/imgui_internal.h"
 #include "../externals/magic_enum/magic_enum.hpp"
 #endif // USE_IMGUI
+#include <cassert>
 
 ImGuiManager* ImGuiManager::GetInstance() {
 	static ImGuiManager instance;
@@ -30,6 +32,110 @@ void ImGuiManager::LoadTextures() {
 	pauseInactiveIcon_ = textureManager->GetTextureInfo("engine_ui_pause_inactive").textureSrvHandlesGPU;
 	textureManager->RegisterTexture("engine_ui_stop", "Engine/UI/stop.png", false);
 	stopIcon_ = textureManager->GetTextureInfo("engine_ui_stop").textureSrvHandlesGPU;
+#endif // USE_IMGUI
+}
+
+#ifdef USE_IMGUI
+namespace {
+	// Inspectorのウィンドウ名とタブバーのID.
+	const char* const kInspectorWindowName = "Inspector";
+	const char* const kInspectorTabBarId = "##InspectorTabs";
+	// タブが選ばれていない時に中身を捨てるためのウィンドウ.
+	const char* const kInspectorHiddenWindowName = "##InspectorHidden";
+}
+#endif // USE_IMGUI
+
+bool ImGuiManager::Begin(const std::string& name) {
+#ifdef USE_IMGUI
+	// Begin〜Endの入れ子はできない(Endの呼び忘れ).
+	assert(inspectorTabState_ == InspectorTabState::kNone);
+
+	inspectorTabState_ = InspectorTabState::kHidden;
+	isInspectorTabBarOpen_ = false;
+
+	// 同じ名前のウィンドウ / タブバーは、同じフレームで何度Beginしても続きに追加される.
+	const bool isWindowVisible = ImGui::Begin(kInspectorWindowName);
+	if (isWindowVisible && ImGui::BeginTabBar(kInspectorTabBarId, ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_FittingPolicyScroll)) {
+		isInspectorTabBarOpen_ = true;
+
+		auto it = inspectorTabs_.find(name);
+		if (it == inspectorTabs_.end()) {
+			// このフレームで初めての名前 → タブを追加する.
+			const bool isTabVisible = ImGui::BeginTabItem(name.c_str());
+			inspectorTabs_[name] = isTabVisible;
+			if (isTabVisible) {
+				inspectorTabState_ = InspectorTabState::kTabItem;
+			}
+		} else if (it->second) {
+			// 同じ名前の2回目以降 → タブは増やさず、表示中なら1回目の続きに描画する.
+			// (同じタブをもう一度BeginTabItemするとIDが重複するので、IDだけ分けておく).
+			inspectorTabState_ = InspectorTabState::kAppend;
+			ImGui::PushID(name.c_str());
+		}
+
+		if (inspectorTabState_ != InspectorTabState::kHidden && hasInspectorContentCursor_) {
+			// タブバーを開き直すとカーソルがタブの直下に戻るので、前回描画した所の続きに移動する.
+			// (SetCursorScreenPosだと何も描画しなかった時にImGuiの警告が出るので直接動かす).
+			ImGui::GetCurrentWindow()->DC.CursorPos = ImVec2(inspectorContentCursor_.x, inspectorContentCursor_.y);
+		}
+	}
+
+	if (inspectorTabState_ == InspectorTabState::kHidden) {
+		// タブが選ばれていない / Inspectorが隠れている時は、画面外の折りたたんだウィンドウに描画させて捨てる.
+		// (折りたたまれたウィンドウの中ではImGuiの関数は何もしないので、呼ぶ側はifで囲まなくてよい).
+		ImGui::SetNextWindowPos(ImVec2(-10000.0f, -10000.0f), ImGuiCond_Always);
+		ImGui::SetNextWindowCollapsed(true, ImGuiCond_Always);
+		ImGui::Begin(kInspectorHiddenWindowName, nullptr,
+			ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoInputs |
+			ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus |
+			ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+		return false;
+	}
+
+	return true;
+#else
+	(void)name;
+	return false;
+#endif // USE_IMGUI
+}
+
+void ImGuiManager::End() {
+#ifdef USE_IMGUI
+	// Beginを呼ばずにEndを呼んでいる.
+	assert(inspectorTabState_ != InspectorTabState::kNone);
+
+	switch (inspectorTabState_) {
+	case InspectorTabState::kTabItem:
+	case InspectorTabState::kAppend:
+	{
+		// 次に同じ名前でBeginされた時の描画開始位置を覚えておく.
+		const ImVec2 cursor = ImGui::GetCurrentWindow()->DC.CursorPos;
+		inspectorContentCursor_ = { cursor.x, cursor.y };
+		hasInspectorContentCursor_ = true;
+
+		if (inspectorTabState_ == InspectorTabState::kTabItem) {
+			ImGui::EndTabItem();
+		} else {
+			ImGui::PopID();
+		}
+		break;
+	}
+	case InspectorTabState::kHidden:
+		// 中身を捨てるためのウィンドウを閉じる.
+		ImGui::End();
+		break;
+	default:
+		break;
+	}
+
+	if (isInspectorTabBarOpen_) {
+		ImGui::EndTabBar();
+	}
+	// "Inspector"ウィンドウはBeginの戻り値に関係なく必ずEndする.
+	ImGui::End();
+
+	inspectorTabState_ = InspectorTabState::kNone;
+	isInspectorTabBarOpen_ = false;
 #endif // USE_IMGUI
 }
 
@@ -89,20 +195,26 @@ void ImGuiManager::LoadJapaneseFont() {
 #endif // USE_IMGUI
 }
 
-void ImGuiManager::Begin() {
+void ImGuiManager::BeginFrame() {
 #ifdef USE_IMGUI
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 	ImGui::DockSpaceOverViewport();
+
+	// Inspectorのタブはフレームごとに追加し直す.
+	inspectorTabs_.clear();
+	hasInspectorContentCursor_ = false;
+	inspectorTabState_ = InspectorTabState::kNone;
 #endif // USE_IMGUI
 }
 
-void ImGuiManager::End(ID3D12GraphicsCommandList* commandList) {
+void ImGuiManager::EndFrame(ID3D12GraphicsCommandList* commandList) {
 #ifdef USE_IMGUI
 	// エンジンのGUI.
 	DrawGameViewWindow();
 	DrawSceneSelectWindow();
+	DrawInspectorWindow();
 
 	// ImGuiの内部コマンドを生成する.
 	ImGui::Render();
@@ -322,6 +434,21 @@ void ImGuiManager::DrawSceneSelectWindow() {
 		isLoadSceneRequested_ = true;
 	}
 
+	ImGui::End();
+}
+
+/*=============================================================
+Inspector
+=============================================================*/
+void ImGuiManager::DrawInspectorWindow() {
+	// Begin〜Endが閉じられていない(Endの呼び忘れ).
+	assert(inspectorTabState_ == InspectorTabState::kNone);
+
+	// このフレームでBeginされていてもいなくても、ウィンドウ自体は毎フレーム出しておく(同じ名前なので続きに追加される).
+	if (ImGui::Begin(kInspectorWindowName) && inspectorTabs_.empty()) {
+		ImGui::TextDisabled("ImGuiManager::Begin(\"名前\") 〜 End() で囲んだ");
+		ImGui::TextDisabled("ImGuiがここにタブで表示されます.");
+	}
 	ImGui::End();
 }
 #endif // USE_IMGUI

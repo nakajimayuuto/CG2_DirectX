@@ -2,15 +2,19 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <cstdint>
+#include <string>
+#include <map>
 #include "WinApp.h"
 #include "../Engine/Math/Vector2.h"
 #include "IScene.h"
+#include "nameof.hpp"
 
 /// <summary>
 /// ImGuiの初期化・フレーム開始/終了・終了処理と、エンジン用のGUIをまとめて管理する.
 /// ・GameGUI        : ゲーム画面(RenderTexture)を表示する"Game"ウィンドウ.
 /// ・PlayControlGUI : "Game"ウィンドウの上部に中央ぞろえで並ぶ 再生(終了) / 一時停止 ボタン.
 /// ・SceneSelectGUI : SceneNameを選んで読み込む"シーン切り替え"ウィンドウ.
+/// ・Inspector      : Begin(name)〜End() で囲んだImGuiを name のタブにまとめる"Inspector"ウィンドウ.
 /// </summary>
 class ImGuiManager {
 public:
@@ -36,15 +40,32 @@ public:
 	/// </summary>
 	void LoadTextures();
 
+	/*=============================================================
+	Inspector(Begin / End で囲んだImGuiをタブにまとめて表示する)
+	=============================================================*/
+	/// <summary>
+	/// "Inspector"ウィンドウに name のタブを追加し、End()までのImGuiをそのタブの中に描画する.
+	/// 同じ name で何度呼んでも同じタブに続けて描画される.
+	/// タブが選ばれていない時は中身を描画しない(ImGuiの関数は呼んでも何も起きない).
+	/// </summary>
+	/// <param name="name">タブの名前</param>
+	/// <returns>タブの中身が表示されているか</returns>
+	bool Begin(const std::string& name);
+
+	/// <summary>
+	/// Begin()で開いたタブを閉じる(Beginの戻り値に関係なく必ず呼ぶ).
+	/// </summary>
+	void End();
+
 	/// <summary>
 	/// ImGuiのフレーム開始(GameSystem::BeginFrameで呼ぶ).
 	/// </summary>
-	void Begin();
+	void BeginFrame();
 
 	/// <summary>
 	/// エンジンのGUIを描画し、ImGuiの描画コマンドを積む(GameSystem::EndFrameで呼ぶ).
 	/// </summary>
-	void End(ID3D12GraphicsCommandList* commandList);
+	void EndFrame(ID3D12GraphicsCommandList* commandList);
 
 	/// <summary>
 	/// ImGuiの終了処理.
@@ -104,6 +125,9 @@ private:
 
 	void DrawSceneSelectWindow();
 
+	// Begin / End が1回も呼ばれなかったフレームでも"Inspector"ウィンドウを出しておく.
+	void DrawInspectorWindow();
+
 	/// <summary>
 	/// 日本語を表示できるフォント(Windowsのメイリオなど)を読み込む.
 	/// </summary>
@@ -143,4 +167,21 @@ private:
 	// SceneSelectGUI.
 	SceneName selectedSceneName_ = SceneName::kTitleScene;
 	bool isLoadSceneRequested_ = false;
+
+	// Inspector.
+	// Begin〜Endの中身をどこに描画しているか.
+	enum class InspectorTabState {
+		kNone,     // Begin〜Endの外.
+		kTabItem,  // このフレームで初めてのタブ(BeginTabItemの中).
+		kAppend,   // 同じ名前の2回目以降(1回目の続きに描画).
+		kHidden,   // タブが選ばれていない(見えない場所に描画して捨てる).
+	};
+	InspectorTabState inspectorTabState_ = InspectorTabState::kNone;
+	// Begin()でタブバーを開けたか(Endで閉じる必要があるか).
+	bool isInspectorTabBarOpen_ = false;
+	// このフレームで追加されたタブと、その中身が表示されているか.
+	std::map<std::string, bool> inspectorTabs_;
+	// 表示中のタブの中身をどこまで描画したか(同じ名前のBeginの続きをここから描く).
+	Vector2 inspectorContentCursor_{};
+	bool hasInspectorContentCursor_ = false;
 };

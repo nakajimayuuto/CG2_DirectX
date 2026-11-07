@@ -28,7 +28,8 @@
 #include "./Managers/ModelManager.h"
 #include "./Managers/SceneManager.h"
 #include "./Managers/SoundManager.h"
-#include "./Managers/InputManager.h"	
+#include "./Managers/InputManager.h"
+#include "./Managers/ImGuiManager.h"
 
 #include "./Environment.h"
 

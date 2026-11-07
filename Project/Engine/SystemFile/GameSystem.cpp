@@ -496,7 +496,7 @@ bool GameSystem::BeginFrame() {
 	Renderer::GetInstance()->ClearDrawIndex();
 
 	// ImGuiのフレーム開始.
-	ImGuiManager::GetInstance()->Begin();
+	ImGuiManager::GetInstance()->BeginFrame();
 
 	// 指定した深度で画面全体をクリアする.
 	dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
@@ -628,7 +628,7 @@ void GameSystem::EndFrame() {
 	ImGui::End();
 
 	// エンジンのGUI(GameGUI / PlayControlGUI)を描画し、ImGuiの描画コマンドを積む.
-	ImGuiManager::GetInstance()->End(commandList.Get());
+	ImGuiManager::GetInstance()->EndFrame(commandList.Get());
 #endif // USE_IMGUI
 
 
