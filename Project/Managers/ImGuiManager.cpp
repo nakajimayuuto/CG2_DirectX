@@ -9,6 +9,7 @@
 #include "../externals/imgui/backends/imgui_impl_dx12.h"
 #include "../externals/imgui/backends/imgui_impl_win32.h"
 #include "TextureManager.h"
+#include "../externals/magic_enum/magic_enum.hpp"
 #endif // USE_IMGUI
 
 ImGuiManager* ImGuiManager::GetInstance() {
@@ -101,7 +102,7 @@ void ImGuiManager::End(ID3D12GraphicsCommandList* commandList) {
 #ifdef USE_IMGUI
 	// エンジンのGUI.
 	DrawGameViewWindow();
-	DrawPlayControlWindow();
+	DrawSceneSelectWindow();
 
 	// ImGuiの内部コマンドを生成する.
 	ImGui::Render();
@@ -164,6 +165,15 @@ bool ImGuiManager::ConsumePlayStarted() {
 	return result;
 }
 
+bool ImGuiManager::ConsumeLoadSceneRequest(SceneName& outName) {
+	if (!isLoadSceneRequested_) {
+		return false;
+	}
+	isLoadSceneRequested_ = false;
+	outName = selectedSceneName_;
+	return true;
+}
+
 bool ImGuiManager::ConsumeStopRequested() {
 	bool result = isStopRequested_;
 	isStopRequested_ = false;
@@ -183,7 +193,10 @@ void ImGuiManager::DrawGameViewWindow() {
 	isGameViewFocused_ = ImGui::IsWindowFocused();
 	isGameViewHovered_ = ImGui::IsWindowHovered();
 
-	// アスペクト比を保ったまま、ウィンドウに収まる最大サイズを求める.
+	// ゲーム画面の上に 再生 / 一時停止 ボタンを中央ぞろえで並べる.
+	DrawPlayControlBar();
+
+	// アスペクト比を保ったまま、残りの領域に収まる最大サイズを求める.
 	const ImVec2 avail = ImGui::GetContentRegionAvail();
 	const float textureWidth = static_cast<float>(Environment::GetInstance()->GetWindowSize().width);
 	const float textureHeight = static_cast<float>(Environment::GetInstance()->GetWindowSize().height);
@@ -214,21 +227,24 @@ void ImGuiManager::DrawGameViewWindow() {
 }
 
 /*=============================================================
-PlayControlGUI
+PlayControlGUI("Game"ウィンドウの上部に表示する)
 =============================================================*/
-void ImGuiManager::DrawPlayControlWindow() {
-	ImGui::SetNextWindowSize(ImVec2(180.0f, 70.0f), ImGuiCond_FirstUseEver);
-	ImGui::Begin("PlayControl", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-
+void ImGuiManager::DrawPlayControlBar() {
 	// 現在の状態のボタンを色付けする.
 	const ImVec4 activeColor = ImVec4(0.20f, 0.45f, 0.80f, 1.0f);
 	// ボタンの画像の表示サイズ(画像は32x32).
-	// ドッキングでウィンドウが低くなっている時は、ボタンが切れないよう高さに合わせて縮める.
-	const float kIconMaxSize = 32.0f;
-	const float kIconMinSize = 12.0f;
-	const float fitSize = ImGui::GetContentRegionAvail().y - ImGui::GetStyle().FramePadding.y * 2.0f;
-	const float iconLength = (std::max)(kIconMinSize, (std::min)(kIconMaxSize, fitSize));
-	const ImVec2 iconSize = ImVec2(iconLength, iconLength);
+	const ImVec2 iconSize = ImVec2(kPlayControlIconSize_, kPlayControlIconSize_);
+	// ボタンの上下の余白.
+	const float kBarPaddingY = 4.0f;
+
+	// ボタン2つ分の幅から、中央ぞろえになる開始位置を求める.
+	const ImGuiStyle& style = ImGui::GetStyle();
+	const float buttonWidth = iconSize.x + style.FramePadding.x * 2.0f;
+	const float barWidth = buttonWidth * 2.0f + style.ItemSpacing.x;
+	ImVec2 cursor = ImGui::GetCursorPos();
+	cursor.x += (std::max)(0.0f, (ImGui::GetContentRegionAvail().x - barWidth) * 0.5f);
+	cursor.y += kBarPaddingY;
+	ImGui::SetCursorPos(cursor);
 
 	// 再生 / 終了ボタン.
 	// 停止中は再生(play.png)、再生後(一時停止中も含む)は終了(stop.png)の画像に置き換わる.
@@ -270,16 +286,40 @@ void ImGuiManager::DrawPlayControlWindow() {
 		if (isPaused) { ImGui::PopStyleColor(); }
 	}
 
-	switch (playState_) {
-	case PlayState::kStop:
-		ImGui::Text("State : Stop");
-		break;
-	case PlayState::kPlay:
-		ImGui::Text("State : Play");
-		break;
-	case PlayState::kPause:
-		ImGui::Text("State : Pause");
-		break;
+	// ボタンの下に余白をあけてからゲーム画面を置く.
+	ImGui::Dummy(ImVec2(0.0f, kBarPaddingY));
+}
+
+/*=============================================================
+SceneSelectGUI
+=============================================================*/
+void ImGuiManager::DrawSceneSelectWindow() {
+	ImGui::SetNextWindowSize(ImVec2(300.0f, 60.0f), ImGuiCond_FirstUseEver);
+	ImGui::Begin("シーン切り替え", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+	// 選択欄と読み込みボタンを横に並べる(ボタンの幅を残して選択欄を広げる).
+	const float buttonWidth = ImGui::CalcTextSize("読み込み").x + ImGui::GetStyle().FramePadding.x * 2.0f;
+	ImGui::SetNextItemWidth((std::max)(80.0f, ImGui::GetContentRegionAvail().x - buttonWidth - ImGui::GetStyle().ItemSpacing.x));
+
+	// SceneNameの列挙型から選択する(列挙子を増やすと自動でここにも並ぶ).
+	if (ImGui::BeginCombo("##SceneSelect", magic_enum::enum_name(selectedSceneName_).data())) {
+		for (SceneName name : magic_enum::enum_values<SceneName>()) {
+			const bool isSelected = name == selectedSceneName_;
+			if (ImGui::Selectable(magic_enum::enum_name(name).data(), isSelected)) {
+				selectedSceneName_ = name;
+			}
+			if (isSelected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+
+	ImGui::SameLine();
+
+	// 読み込み(実際の読み込みは次フレームの更新の最初にSceneManagerが行う).
+	if (ImGui::Button("読み込み")) {
+		isLoadSceneRequested_ = true;
 	}
 
 	ImGui::End();

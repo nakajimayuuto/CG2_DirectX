@@ -107,6 +107,28 @@ void SceneManager::CreateScene(SceneName name) {
 	}
 
 	currentScene_->Initialize();
+
+	// シーン切り替えGUIに今のシーンを表示する.
+	ImGuiManager::GetInstance()->SetCurrentSceneName(name);
+}
+
+void SceneManager::LoadSceneFromEditor(SceneName name) {
+	// 前のシーンで鳴っていた音・出ていたパーティクルを片付ける.
+	SoundManager::GetInstance()->StopAllSounds();
+	ParticleManager::GetInstance()->ClearParticles();
+
+	DeltaTime::GetInstance()->Initialize();
+	Camera::GetInstance()->Initialize();
+
+	sceneName_ = name;
+	isSceneChange_ = false;
+	CreateScene(sceneName_);
+
+	// 停止中に読み込んだ場合は、このシーンが再生の開始シーンになる.
+	// (再生中 / 一時停止中に読み込んだ場合は、終了ボタンで再生前のシーンに戻る).
+	if (ImGuiManager::GetInstance()->GetPlayState() == ImGuiManager::PlayState::kStop) {
+		playStartSceneName_ = sceneName_;
+	}
 }
 
 void SceneManager::PlayControlUpdate() {
@@ -116,6 +138,12 @@ void SceneManager::PlayControlUpdate() {
 	// (ボタンは前フレームの描画中に押されるので、シーンの破棄はここ(次フレームの更新の最初)で行う).
 	if (imGuiManager->ConsumeStopRequested()) {
 		ResetToPlayStartState();
+	}
+
+	// シーン切り替えGUIの読み込みボタン → 選択したシーンを読み込む(停止中 / 一時停止中でも読み込む).
+	SceneName loadSceneName;
+	if (imGuiManager->ConsumeLoadSceneRequest(loadSceneName)) {
+		LoadSceneFromEditor(loadSceneName);
 	}
 
 	// 停止状態から再生 → 終了ボタンで戻ってこられるよう今の状態を記録する.

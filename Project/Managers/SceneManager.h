@@ -29,6 +29,11 @@ private:
 	void CreateScene(SceneName name);
 
 	/// <summary>
+	/// ImGuiのシーン切り替えGUIから指定されたシーンを読み込む.
+	/// </summary>
+	void LoadSceneFromEditor(SceneName name);
+
+	/// <summary>
 	/// ImGuiManagerの再生 / 一時停止 / 終了 ボタンの結果を反映する.
 	/// </summary>
 	void PlayControlUpdate();

@@ -4,11 +4,13 @@
 #include <cstdint>
 #include "WinApp.h"
 #include "../Engine/Math/Vector2.h"
+#include "IScene.h"
 
 /// <summary>
 /// ImGuiの初期化・フレーム開始/終了・終了処理と、エンジン用のGUIをまとめて管理する.
 /// ・GameGUI        : ゲーム画面(RenderTexture)を表示する"Game"ウィンドウ.
-/// ・PlayControlGUI : 再生 / 一時停止 / 終了 ボタンを持つ"PlayControl"ウィンドウ.
+/// ・PlayControlGUI : "Game"ウィンドウの上部に中央ぞろえで並ぶ 再生(終了) / 一時停止 ボタン.
+/// ・SceneSelectGUI : SceneNameを選んで読み込む"シーン切り替え"ウィンドウ.
 /// </summary>
 class ImGuiManager {
 public:
@@ -81,6 +83,14 @@ public:
 	// 終了ボタンが押されたか(呼ぶとフラグは下りる).
 	bool ConsumeStopRequested();
 
+	/*=============================================================
+	SceneSelectGUI(シーンの切り替え)
+	=============================================================*/
+	// 今読み込まれているシーン(選択欄の初期値にする。SceneManagerが設定する).
+	void SetCurrentSceneName(SceneName name) { selectedSceneName_ = name; };
+	// 読み込みボタンが押されたか. 押されていればoutNameに読み込むシーンが入る(呼ぶとフラグは下りる).
+	bool ConsumeLoadSceneRequest(SceneName& outName);
+
 private:
 	ImGuiManager() = default;
 	~ImGuiManager() = default;
@@ -89,7 +99,10 @@ private:
 
 	void DrawGameViewWindow();
 
-	void DrawPlayControlWindow();
+	// "Game"ウィンドウの上部に 再生 / 一時停止 ボタンを中央ぞろえで描画する.
+	void DrawPlayControlBar();
+
+	void DrawSceneSelectWindow();
 
 	/// <summary>
 	/// 日本語を表示できるフォント(Windowsのメイリオなど)を読み込む.
@@ -99,6 +112,8 @@ private:
 private:
 	// ImGuiの文字の大きさ(px).
 	static inline const float kFontSize_ = 16.0f;
+	// 再生 / 一時停止 ボタンの画像の表示サイズ(px).
+	static inline const float kPlayControlIconSize_ = 24.0f;
 
 	// GameGUI.
 	D3D12_GPU_DESCRIPTOR_HANDLE gameViewTexture_{};
@@ -124,4 +139,8 @@ private:
 #endif // USE_IMGUI
 	bool isPlayStarted_ = false;
 	bool isStopRequested_ = false;
+
+	// SceneSelectGUI.
+	SceneName selectedSceneName_ = SceneName::kTitleScene;
+	bool isLoadSceneRequested_ = false;
 };
