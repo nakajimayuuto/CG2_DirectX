@@ -59,9 +59,15 @@ void SceneManager::Update() {
 
 	// 停止中 / 一時停止中はゲームの更新処理を行わない(描画は行う).
 	if (!ImGuiManager::GetInstance()->IsPlaying()) {
-		if (ImGuiManager::GetInstance()->GetPlayState() == ImGuiManager::PlayState::kStop) {
-			// 再生前でもカメラの行列は作っておく(一時停止中は止めた時の行列をそのまま使う).
-			Camera::GetInstance()->Update();
+		Camera* camera = Camera::GetInstance();
+		// 再生していない間もF3でデバッグカメラを切り替えられる(再生中は各シーンで切り替える).
+		if (InputManager::GetInstance()->TriggerKey(DIK_F3)) {
+			camera->ChangeCameraMode();
+		}
+		// 再生前でもカメラの行列は作っておく(一時停止中は止めた時の行列をそのまま使う).
+		// デバッグカメラを使っている時は、停止中 / 一時停止中もカメラを動かせる.
+		if (ImGuiManager::GetInstance()->GetPlayState() == ImGuiManager::PlayState::kStop || camera->GetUseDebugCamera()) {
+			camera->Update();
 		}
 		return;
 	}

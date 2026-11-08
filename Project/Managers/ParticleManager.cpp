@@ -1,5 +1,12 @@
 #include "ParticleManager.h"
 #include "../Engine/Renderer/ParticleNodeMove.h"
+#include "ImGuiManager.h"
+#include <algorithm>
+#include <cfloat>
+#include <format>
+#ifdef USE_IMGUI
+#include "../externals/imgui/imgui.h"
+#endif // USE_IMGUI
 
 ParticleManager* ParticleManager::GetInstance() {
 	static ParticleManager instance;
@@ -341,4 +348,109 @@ void ParticleManager::ClearParticles() {
 	for (auto& particles : particles_) {
 		particles.second->ClearParticle();
 	}
+}
+
+void ParticleManager::DrawEmitterGui() {
+#ifdef USE_IMGUI
+	ImGuiManager* imguiManager = ImGuiManager::GetInstance();
+	// タブが選ばれていない時はギズモも出さない(Begin / End は必ず対にする).
+	const bool isVisible = imguiManager->Begin("Emitter");
+	if (!isVisible) {
+		imguiManager->End();
+		return;
+	}
+
+	if (emitters_.empty()) {
+		ImGui::TextDisabled("Emitterがありません(CreateNewEmitterで作られると表示されます)");
+		imguiManager->End();
+		return;
+	}
+
+	// 選んでいるEmitterが無くなっていたら先頭を選び直す.
+	if (emitters_.find(selectedEmitterName_) == emitters_.end()) {
+		selectedEmitterName_ = emitters_.begin()->first;
+	}
+	ImGui::SetNextItemWidth(-FLT_MIN);
+	if (ImGui::BeginCombo("##EmitterSelect", selectedEmitterName_.c_str())) {
+		for (const auto& [name, emitter] : emitters_) {
+			if (ImGui::Selectable(name.c_str(), name == selectedEmitterName_)) {
+				selectedEmitterName_ = name;
+			}
+		}
+		ImGui::EndCombo();
+	}
+
+	Emitter& emitter = *emitters_[selectedEmitterName_];
+	Transform& transform = emitter.GetTransform();
+
+	// 使っているパーティクルの名前.
+	const char* particleName = "(なし)";
+	for (const auto& [name, particles] : particles_) {
+		if (particles.get() == emitter.GetParticles()) {
+			particleName = name.c_str();
+			break;
+		}
+	}
+	ImGui::TextDisabled("パーティクル: %s", particleName);
+	ImGui::Separator();
+
+	ImGui::DragFloat3("位置", &transform.translate.x, 0.05f);
+	ImGui::DragFloat3("範囲", &transform.scale.x, 0.05f, 0.0f, 1000.0f);
+
+	int shape = static_cast<int>(emitter.GetShape());
+	if (ImGui::Combo("形", &shape, "箱\0球\0")) {
+		emitter.SetShape(static_cast<EmitterShape>(shape));
+	}
+
+	int count = static_cast<int>(emitter.GetCount());
+	if (ImGui::DragInt("1回の個数", &count, 0.2f, 0, 1000)) {
+		emitter.SetCount(static_cast<uint32_t>((std::max)(count, 0)));
+	}
+
+	bool isAuto = emitter.GetFrequency() >= 0.0f;
+	if (ImGui::Checkbox("自動で生成", &isAuto)) {
+		emitter.SetFrequency(isAuto ? 0.1f : -1.0f);
+	}
+	if (isAuto) {
+		float frequency = emitter.GetFrequency();
+		if (ImGui::DragFloat("間隔(秒)", &frequency, 0.005f, 0.01f, 60.0f, "%.3f")) {
+			emitter.SetFrequency((std::max)(frequency, 0.01f));
+		}
+	}
+
+	ImGui::BeginDisabled(!imguiManager->IsPlaying());
+	if (ImGui::Button("今すぐ生成")) {
+		emitter.CreateParticle();
+	}
+	ImGui::EndDisabled();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+		ImGui::SetTooltip("再生中に1回分生成します");
+	}
+	ImGui::SameLine();
+	// 調整した値は終了ボタンでシーンを作り直すと元に戻るので、コードに貼れる形でコピーできるようにする.
+	if (ImGui::Button("設定をコピー")) {
+		const std::string code = std::format(
+			"ParticleManager::GetInstance()->SetEmitterTransform(\"{0}\", Transform::GetInitialValue({{ {1:.3f}f,{2:.3f}f,{3:.3f}f }}, {{ 0.0f,0.0f,0.0f }}, {{ {4:.3f}f,{5:.3f}f,{6:.3f}f }}));\n"
+			"ParticleManager::GetInstance()->SetEmitterCount(\"{0}\", {7});\n"
+			"ParticleManager::GetInstance()->SetEmitterFrequency(\"{0}\", {8:.3f}f);\n"
+			"ParticleManager::GetInstance()->SetEmitterShape(\"{0}\", EmitterShape::{9});\n",
+			selectedEmitterName_,
+			transform.scale.x, transform.scale.y, transform.scale.z,
+			transform.translate.x, transform.translate.y, transform.translate.z,
+			emitter.GetCount(), emitter.GetFrequency(),
+			emitter.GetShape() == EmitterShape::kBox ? "kBox" : "kSphere");
+		ImGui::SetClipboardText(code.c_str());
+	}
+	if (ImGui::IsItemHovered()) {
+		ImGui::SetTooltip("今の値を設定するコードをクリップボードにコピーします\n(終了ボタンを押すとシーンが作り直されて値が元に戻ります)");
+	}
+
+	ImGui::Checkbox("ギズモを表示", &isEmitterGizmoVisible_);
+	if (isEmitterGizmoVisible_) {
+		// Emitterは回転を使わないので 移動 / 拡縮 だけ.
+		imguiManager->Gizmo("Emitter:" + selectedEmitterName_, transform, ImGuiManager::kGizmoTranslate | ImGuiManager::kGizmoScale);
+	}
+
+	imguiManager->End();
+#endif // USE_IMGUI
 }

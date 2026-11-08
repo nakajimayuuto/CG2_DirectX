@@ -4,8 +4,10 @@
 #include <cstdint>
 #include <string>
 #include <map>
+#include <vector>
 #include "WinApp.h"
 #include "../Engine/Math/Vector2.h"
+#include "../Engine/Math/Transform.h"
 #include "IScene.h"
 #include "nameof.hpp"
 
@@ -112,6 +114,38 @@ public:
 	// 読み込みボタンが押されたか. 押されていればoutNameに読み込むシーンが入る(呼ぶとフラグは下りる).
 	bool ConsumeLoadSceneRequest(SceneName& outName);
 
+	/*=============================================================
+	Gizmo(ImGuizmo. "Game"ウィンドウの上でTransformを操作する)
+	=============================================================*/
+	// ギズモで操作できる種類(組み合わせて指定する).
+	static constexpr uint32_t kGizmoTranslate = 1u << 0; // 移動.
+	static constexpr uint32_t kGizmoRotate = 1u << 1;    // 回転.
+	static constexpr uint32_t kGizmoScale = 1u << 2;     // 拡縮.
+	static constexpr uint32_t kGizmoAll = kGizmoTranslate | kGizmoRotate | kGizmoScale;
+
+	enum class GizmoOperation {
+		kTranslate,
+		kRotate,
+		kScale,
+	};
+
+	/// <summary>
+	/// このフレームの"Game"ウィンドウに transform を操作するギズモを出す.
+	/// 出している間は毎フレーム呼ぶ(呼ばなかったフレームは出ない).
+	/// 操作した結果はこのフレームの最後(EndFrame)で transform に書き込まれるので、transformはフレームの最後まで残しておくこと.
+	/// 親があるTransformはワールドで操作し、親から見た値に直して書き込む. Release版では何もしない.
+	/// </summary>
+	/// <param name="id">ギズモごとに別の名前</param>
+	/// <param name="transform">操作するTransform</param>
+	/// <param name="operations">操作できる種類(kGizmoTranslate | kGizmoScale など)</param>
+	void Gizmo(const std::string& id, Transform& transform, uint32_t operations = kGizmoAll);
+
+	// ギズモにマウスが乗っている / 操作中か(カメラ操作などと重ならないように使う).
+	bool IsUsingGizmo() const { return isGizmoUsing_; };
+
+	GizmoOperation GetGizmoOperation() const { return gizmoOperation_; };
+	void SetGizmoOperation(GizmoOperation operation) { gizmoOperation_ = operation; };
+
 private:
 	ImGuiManager() = default;
 	~ImGuiManager() = default;
@@ -127,6 +161,12 @@ private:
 
 	// Begin / End が1回も呼ばれなかったフレームでも"Inspector"ウィンドウを出しておく.
 	void DrawInspectorWindow();
+
+	// "Game"ウィンドウのゲーム画面の上にギズモと操作の切り替えボタンを描画する.
+	void DrawGizmos(const Vector2& imagePos, const Vector2& imageSize);
+
+	// "Game"ウィンドウの上部の右側に デバッグカメラ の切り替えボタンを描画する.
+	void DrawDebugCameraButton();
 
 	/// <summary>
 	/// 日本語を表示できるフォント(Windowsのメイリオなど)を読み込む.
@@ -184,4 +224,17 @@ private:
 	// 表示中のタブの中身をどこまで描画したか(同じ名前のBeginの続きをここから描く).
 	Vector2 inspectorContentCursor_{};
 	bool hasInspectorContentCursor_ = false;
+
+	// Gizmo.
+	struct GizmoTarget {
+		std::string id;
+		Transform* transform = nullptr;
+		uint32_t operations = kGizmoAll;
+	};
+	// このフレームでGizmo()が呼ばれたTransform.
+	std::vector<GizmoTarget> gizmoTargets_;
+	GizmoOperation gizmoOperation_ = GizmoOperation::kTranslate;
+	// ワールドの向きで操作するか(falseならTransformの向き).
+	bool isGizmoWorld_ = true;
+	bool isGizmoUsing_ = false;
 };

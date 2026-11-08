@@ -11,9 +11,12 @@
 #include "TextureManager.h"
 #include "../externals/imgui/imgui_internal.h"
 #include "../externals/magic_enum/magic_enum.hpp"
+#include "../externals/imguizmo/ImGuizmo.h"
 #endif // USE_IMGUI
 #include <cassert>
 #include "ParticleNodeEditor.h"
+#include "ParticleManager.h"
+#include "../Engine/Renderer/Camera.h"
 
 ImGuiManager* ImGuiManager::GetInstance() {
 	static ImGuiManager instance;
@@ -202,6 +205,10 @@ void ImGuiManager::BeginFrame() {
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 	ImGui::DockSpaceOverViewport();
+	ImGuizmo::BeginFrame();
+
+	// ギズモはフレームごとにGizmo()で追加し直す.
+	gizmoTargets_.clear();
 
 	// Inspectorのタブはフレームごとに追加し直す.
 	inspectorTabs_.clear();
@@ -212,6 +219,9 @@ void ImGuiManager::BeginFrame() {
 
 void ImGuiManager::EndFrame(ID3D12GraphicsCommandList* commandList) {
 #ifdef USE_IMGUI
+	// パーティクルのEmitterの調整(Inspectorのタブ. ギズモを使うのでGameウィンドウより先に呼ぶ).
+	ParticleManager::GetInstance()->DrawEmitterGui();
+
 	// エンジンのGUI.
 	DrawGameViewWindow();
 	DrawSceneSelectWindow();
@@ -304,7 +314,8 @@ GameGUI
 void ImGuiManager::DrawGameViewWindow() {
 	// ゲーム画面がウィンドウいっぱいに表示されるよう余白をなくす.
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-	ImGui::Begin("Game", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+	// ゲーム画面上のドラッグ(ギズモ / カメラ操作)でウィンドウが動かないようにする.
+	ImGui::Begin("Game", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoMove);
 	ImGui::PopStyleVar();
 
 	isGameViewFocused_ = ImGui::IsWindowFocused();
@@ -338,6 +349,9 @@ void ImGuiManager::DrawGameViewWindow() {
 		gameViewSize_ = { imageSize.x, imageSize.y };
 
 		ImGui::Image(static_cast<ImTextureID>(gameViewTexture_.ptr), imageSize);
+
+		// ゲーム画面の上にギズモを重ねる.
+		DrawGizmos(gameViewPos_, gameViewSize_);
 	}
 
 	ImGui::End();
@@ -403,6 +417,10 @@ void ImGuiManager::DrawPlayControlBar() {
 		if (isPaused) { ImGui::PopStyleColor(); }
 	}
 
+	// 同じ行の右端に デバッグカメラ の切り替えボタン.
+	ImGui::SameLine();
+	DrawDebugCameraButton();
+
 	// ボタンの下に余白をあけてからゲーム画面を置く.
 	ImGui::Dummy(ImVec2(0.0f, kBarPaddingY));
 }
@@ -456,4 +474,140 @@ void ImGuiManager::DrawInspectorWindow() {
 	}
 	ImGui::End();
 }
+
+/*=============================================================
+Gizmo
+=============================================================*/
+void ImGuiManager::DrawGizmos(const Vector2& imagePos, const Vector2& imageSize) {
+	isGizmoUsing_ = false;
+	if (gizmoTargets_.empty()) {
+		return;
+	}
+
+	// 操作の切り替え(停止中 / 一時停止中は W / E / R キーでも切り替えられる. 右ドラッグ中はカメラ操作なので切り替えない).
+	if (playState_ != PlayState::kPlay && isGameViewHovered_ && !ImGui::IsMouseDown(ImGuiMouseButton_Right) && !ImGui::GetIO().WantTextInput) {
+		if (ImGui::IsKeyPressed(ImGuiKey_W, false)) { gizmoOperation_ = GizmoOperation::kTranslate; }
+		if (ImGui::IsKeyPressed(ImGuiKey_E, false)) { gizmoOperation_ = GizmoOperation::kRotate; }
+		if (ImGui::IsKeyPressed(ImGuiKey_R, false)) { gizmoOperation_ = GizmoOperation::kScale; }
+	}
+
+	// ゲーム画面の左上に 操作の種類 / ワールド・ローカル の切り替えボタンを重ねる.
+	ImGui::SetCursorScreenPos(ImVec2(imagePos.x + 6.0f, imagePos.y + 6.0f));
+	const ImVec4 activeColor = ImVec4(0.20f, 0.45f, 0.80f, 1.0f);
+	auto operationButton = [this, &activeColor](const char* label, GizmoOperation operation, const char* tooltip) {
+		const bool isActive = gizmoOperation_ == operation;
+		if (isActive) { ImGui::PushStyleColor(ImGuiCol_Button, activeColor); }
+		if (ImGui::Button(label)) {
+			gizmoOperation_ = operation;
+		}
+		if (isActive) { ImGui::PopStyleColor(); }
+		if (ImGui::IsItemHovered()) {
+			ImGui::SetTooltip("%s", tooltip);
+		}
+		ImGui::SameLine();
+	};
+	operationButton("移動", GizmoOperation::kTranslate, "移動 (W)");
+	operationButton("回転", GizmoOperation::kRotate, "回転 (E)");
+	operationButton("拡縮", GizmoOperation::kScale, "拡大縮小 (R)");
+	if (ImGui::Button(isGizmoWorld_ ? "ワールド" : "ローカル")) {
+		isGizmoWorld_ = !isGizmoWorld_;
+	}
+	if (ImGui::IsItemHovered()) {
+		ImGui::SetTooltip("ギズモの向き(拡縮は常にローカル)");
+	}
+
+	// カメラの行列(ImGuizmoとエンジンは同じ並び(行ベクトル・DirectXの射影)なのでそのまま渡せる).
+	Camera* camera = Camera::GetInstance();
+	const Matrix4x4 view = camera->GetMatrix().Inverse();
+	const Matrix4x4 projection = camera->GetProjectionMatrix();
+
+	ImGuizmo::SetOrthographic(false);
+	ImGuizmo::SetDrawlist();
+	ImGuizmo::SetRect(imagePos.x, imagePos.y, imageSize.x, imageSize.y);
+
+	for (const GizmoTarget& target : gizmoTargets_) {
+		// 許可されていない操作が選ばれていれば、そのギズモは出さない.
+		uint32_t operationFlag = kGizmoTranslate;
+		ImGuizmo::OPERATION operation = ImGuizmo::TRANSLATE;
+		switch (gizmoOperation_) {
+		case GizmoOperation::kRotate: operationFlag = kGizmoRotate; operation = ImGuizmo::ROTATE; break;
+		case GizmoOperation::kScale:  operationFlag = kGizmoScale;  operation = ImGuizmo::SCALE;  break;
+		default: break;
+		}
+		if ((target.operations & operationFlag) == 0) {
+			continue;
+		}
+
+		Transform& transform = *target.transform;
+		Matrix4x4 world = transform.GetAffineMatrix();
+		ImGuizmo::PushID(target.id.c_str());
+		const bool isChanged = ImGuizmo::Manipulate(&view.matrix[0][0], &projection.matrix[0][0], operation,
+			isGizmoWorld_ ? ImGuizmo::WORLD : ImGuizmo::LOCAL, &world.matrix[0][0]);
+		if (ImGuizmo::IsOver() || ImGuizmo::IsUsing()) {
+			isGizmoUsing_ = true;
+		}
+		ImGuizmo::PopID();
+		if (!isChanged) {
+			continue;
+		}
+
+		// 親があれば親から見た行列に直す.
+		Matrix4x4 local = world;
+		if (const Transform* parent = transform.GetParent()) {
+			local = world * parent->GetAffineMatrix().Inverse();
+		}
+		float translation[3];
+		float rotation[3];
+		float scale[3];
+		ImGuizmo::DecomposeMatrixToComponents(&local.matrix[0][0], translation, rotation, scale);
+		// 操作した成分だけ書き込む(他の成分に分解の誤差が乗らないように).
+		switch (gizmoOperation_) {
+		case GizmoOperation::kTranslate:
+			transform.translate = { translation[0], translation[1], translation[2] };
+			break;
+		case GizmoOperation::kRotate: {
+			const float degreeToRadian = 3.14159265f / 180.0f;
+			transform.rotate = { rotation[0] * degreeToRadian, rotation[1] * degreeToRadian, rotation[2] * degreeToRadian };
+			break;
+		}
+		case GizmoOperation::kScale:
+			transform.scale = { scale[0], scale[1], scale[2] };
+			break;
+		}
+	}
+}
+
+/*=============================================================
+デバッグカメラ
+=============================================================*/
+void ImGuiManager::DrawDebugCameraButton() {
+	Camera* camera = Camera::GetInstance();
+	const bool isDebugCamera = camera->GetUseDebugCamera();
+	const char* label = "デバッグカメラ";
+	const float buttonWidth = ImGui::CalcTextSize(label).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+	// 再生ボタンと同じ高さにして、ウィンドウの右端に寄せる.
+	const float buttonHeight = kPlayControlIconSize_ + ImGui::GetStyle().FramePadding.y * 2.0f;
+	const float rightX = ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - buttonWidth - 8.0f;
+	if (ImGui::GetCursorPosX() < rightX) {
+		ImGui::SetCursorPosX(rightX);
+	}
+	if (isDebugCamera) { ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.20f, 0.45f, 0.80f, 1.0f)); }
+	if (ImGui::Button(label, ImVec2(buttonWidth, buttonHeight))) {
+		camera->SetUseDebugCamera(!isDebugCamera);
+	}
+	if (isDebugCamera) { ImGui::PopStyleColor(); }
+	if (ImGui::IsItemHovered()) {
+		ImGui::SetTooltip("Game画面上で右ドラッグ: 視点を回す\n右ドラッグ中に WASD / Space / Shift: 移動\nホイール: 前後に移動 (F3でも切り替え)");
+	}
+}
 #endif // USE_IMGUI
+
+void ImGuiManager::Gizmo(const std::string& id, Transform& transform, uint32_t operations) {
+#ifdef USE_IMGUI
+	gizmoTargets_.push_back({ id, &transform, operations });
+#else
+	(void)id;
+	(void)transform;
+	(void)operations;
+#endif // USE_IMGUI
+}

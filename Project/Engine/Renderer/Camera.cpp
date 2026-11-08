@@ -9,6 +9,7 @@
 #include "../Math/Collision.h"
 #include "../Math/Easing.h"
 #include "../SystemFile/DeltaTime.h"
+#include "../../Managers/ImGuiManager.h"
 
 Camera* Camera::GetInstance() {
 	static Camera instance;
@@ -35,12 +36,14 @@ void Camera::Initialize() {
 	maxDepth_ = 1.0f;
 
 	// 【デバッグカメラ用】
-	useDebugCamera_ = false;
-
-	debugTransformCenter_.Initialize();
+	// デバッグカメラを使っている間は、シーンの読み込みや終了ボタンで初期化されても位置・向きをそのまま残す.
+	if (!useDebugCamera_) {
+		debugTransformCenter_.Initialize();
+		debugTransformCenter_.translate = { 0.0f,10.0f,-13.0f };
+		debugTransformCenter_.rotate = { Radian(30.0f),0.0f,0.0f };
+	}
 	debugTransform_.Initialize();
-	debugTransformCenter_.translate = { 0.0f,10.0f,-13.0f };
-	debugTransformCenter_.rotate = { Radian(30.0f),0.0f,0.0f };
+	isDebugCameraDragging_ = false;
 	//debugTransform_.translate.z = -10.0f;
 	debugTransform_.SetParent(&debugTransformCenter_);
 	//debugScale_ = { 1.0f,1.0f,1.0f };
@@ -147,16 +150,33 @@ void Camera::Update() {
 }
 
 void Camera::DebugUpdate() {
-	Vector3 debugRotate = { 0.0f,0.0f,0.0f };
-	bool useMoving = false;
 	Vector3 move = { 0.0f,0.0f,0.0f };
 	InputManager* input = InputManager::GetInstance();
+
+#ifdef USE_IMGUI
+	// エディターでは "Game"画面の上で右ドラッグしている間だけ操作する(他のウィンドウの操作で動かないように).
+	ImGuiManager* imguiManager = ImGuiManager::GetInstance();
+	if (input->PressMouse(MOUSE_RIGHT)) {
+		if (!isDebugCameraDragging_ && imguiManager->IsGameViewHovered() && !imguiManager->IsUsingGizmo()) {
+			isDebugCameraDragging_ = true;
+		}
+	} else {
+		isDebugCameraDragging_ = false;
+	}
+	// ホイールで前後に移動.
+	const float wheel = imguiManager->IsGameViewHovered() ? input->GetMouseWheel() : 0.0f;
+	const bool canOperate = isDebugCameraDragging_;
+#else
+	const float wheel = 0.0f;
+	const bool canOperate = true;
+#endif // USE_IMGUI
+
 	if (input->IsGamePadConnect()) {
 		move = { input->GetLeftStickDirection().x, 0.0f, input->GetLeftStickDirection().y };
 
 		debugTransformCenter_.rotate.x += -input->GetRightStickDirection().y * Radian(1.0f);
 		debugTransformCenter_.rotate.y += input->GetRightStickDirection().x * Radian(1.0f);
-	} else {
+	} else if (canOperate) {
 		if (input->PressKey(DIK_D)) {
 			move.x += 1.0f;
 		}
@@ -183,9 +203,15 @@ void Camera::DebugUpdate() {
 	Matrix4x4 cameraRotateMatrix = Matrix4x4::MakeRotateMatrix(debugTransformCenter_.rotate);
 
 	move = move.Normalize();
+	// ホイール1目盛り(120)で前後に0.5移動する.
+	move.z += wheel / 120.0f * (0.5f / kDebugSpeed);
 	move = cameraRotateMatrix.TransformNomal(move);
 	debugTransformCenter_.translate += move * kDebugSpeed;
 	matrix_ = debugTransform_.GetAffineMatrix();
+	// ライティングなどに使うカメラの位置もデバッグカメラに合わせる.
+	if (cameraData_) {
+		cameraData_->worldPosition = debugTransformCenter_.translate;
+	}
 	//Matrix4x4 matRotDelta = Matrix4x4::Identity();
 	//matRotDelta *= Matrix4x4::MakeRotateYMatrix(debugRotate.x);
 	//matRotDelta *= Matrix4x4::MakeRotateXMatrix(debugRotate.y);
@@ -385,12 +411,21 @@ void Camera::ChangeCameraMode() {
 #ifdef _DEBUG
 
 
-	if (useDebugCamera_) {
-		useDebugCamera_ = false;
-	} else {
-		useDebugCamera_ = true;
-	}
+	SetUseDebugCamera(!useDebugCamera_);
 #endif // _DEBUG
+}
+
+void Camera::SetUseDebugCamera(bool isUse) {
+	if (isUse == useDebugCamera_) {
+		return;
+	}
+	useDebugCamera_ = isUse;
+	isDebugCameraDragging_ = false;
+	if (isUse) {
+		// 今のゲームのカメラの位置・向きからデバッグカメラを始める.
+		debugTransformCenter_.translate = translate_;
+		debugTransformCenter_.rotate = rotate_;
+	}
 }
 
 void Camera::RegisterGlobalVariables() {

@@ -82,6 +82,12 @@ public:
 	Particles* GetParticles(const std::string& name);
 
 	void ClearParticles();
+
+	/// <summary>
+	/// InspectorのEmitterタブ(位置・大きさ・個数・間隔などの調整とギズモ)を描画する.
+	/// ImGuiManager::EndFrameで呼ばれる. Release版では何もしない.
+	/// </summary>
+	void DrawEmitterGui();
 private:
 	void CheckCollision();
 
@@ -91,5 +97,9 @@ private:
 	std::map<std::string, std::unique_ptr<Particles>> particles_;
 	std::map<std::string, std::unique_ptr<Emitter>> emitters_;
 	std::map<std::string, std::unique_ptr<Field>> fields_;
+
+	// EmitterタブのGUI.
+	std::string selectedEmitterName_;
+	bool isEmitterGizmoVisible_ = true;
 };
 

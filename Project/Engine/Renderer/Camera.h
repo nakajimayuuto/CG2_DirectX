@@ -65,6 +65,12 @@ public:
 
 	void ChangeCameraMode();
 
+	/// <summary>
+	/// デバッグカメラを使うか. 使い始める時は今のカメラの位置・向きから始める.
+	/// ImGuiがある時は "Game"画面の上で右ドラッグしている間だけ 視点の回転 / WASD・Space・Shiftでの移動 を受け付ける.
+	/// </summary>
+	void SetUseDebugCamera(bool isUse);
+
 	bool GetUseDebugCamera() { return useDebugCamera_; };
 
 	void RegisterGlobalVariables();
@@ -118,7 +124,9 @@ private:
 
 	Matrix4x4 debugMatRot_;
 
-	bool useDebugCamera_;
+	bool useDebugCamera_ = false;
+	// "Game"画面の上で右ドラッグを始めてから離すまでの間か.
+	bool isDebugCameraDragging_ = false;
 
 	Vector3 aspectScale_;
 

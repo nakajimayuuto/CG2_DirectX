@@ -18,6 +18,7 @@
     <Text Include=".editorconfig" />
     <Text Include="externals\imgui\LICENSE.txt" />
     <Text Include="externals\imgui_node\LICENSE" />
+    <Text Include="externals\imguizmo\LICENSE" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application\Application.cpp" />
@@ -107,6 +108,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="externals\imguizmo\ImGuizmo.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="externals\imgui_node\crude_json.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
@@ -164,6 +169,7 @@
     <ClInclude Include="Managers\ImGuiManager.h" />
     <ClInclude Include="Engine\Renderer\ParticleNodeMove.h" />
     <ClInclude Include="Managers\ParticleNodeEditor.h" />
+    <ClInclude Include="externals\imguizmo\ImGuizmo.h" />
     <ClInclude Include="externals\imgui_node\crude_json.h" />
     <ClInclude Include="externals\imgui_node\imgui_bezier_math.h" />
     <ClInclude Include="externals\imgui_node\imgui_canvas.h" />

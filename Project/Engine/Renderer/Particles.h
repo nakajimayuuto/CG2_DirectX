@@ -180,7 +180,15 @@ public:
 
 	void SetCount(uint32_t count) { count_ = count; };
 
-	void SetFrequency(float frequency) { frequency_ = frequency; };
+	// 生成する間隔(秒). 0未満なら自動では生成しない(CreateParticleを呼んだ時だけ生成する).
+	void SetFrequency(float frequency) { frequency_ = frequency; useTimer_ = frequency >= 0.0f; };
+
+	// GUIで調整する用.
+	Transform& GetTransform() { return transform_; };
+	uint32_t GetCount() const { return count_; };
+	float GetFrequency() const { return frequency_; };
+	EmitterShape GetShape() const { return shape_; };
+	Particles* GetParticles() const { return particles_; };
 
 	void CreateParticle();
 

@@ -232,6 +232,9 @@
     <Filter Include="Engine\SystemFile\externals\imgui_node">
       <UniqueIdentifier>{6d0b3f52-8a4e-4c1f-9b7e-3e5a2c9d71f4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\SystemFile\externals\imguizmo">
+      <UniqueIdentifier>{a3c51e07-2f4b-4d8a-9c61-7b2e0f5d9a13}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Engine\Math\KeyFrame">
       <UniqueIdentifier>{b25f0fbd-74f6-4527-8de6-dc67de4224c7}</UniqueIdentifier>
     </Filter>
@@ -817,6 +820,21 @@
   <ItemGroup>
     <Text Include="externals\imgui_node\LICENSE">
       <Filter>Engine\SystemFile\externals\imgui_node</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="externals\imguizmo\ImGuizmo.cpp">
+      <Filter>Engine\SystemFile\externals\imguizmo</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="externals\imguizmo\ImGuizmo.h">
+      <Filter>Engine\SystemFile\externals\imguizmo</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="externals\imguizmo\LICENSE">
+      <Filter>Engine\SystemFile\externals\imguizmo</Filter>
     </Text>
   </ItemGroup>
 </Project>
