@@ -19,6 +19,9 @@ public:
 	//TextureInfo RegisterParticleTexture(const std::string& name, const std::string& filePath);
 
 	TextureInfo GetTextureInfo(const std::string& name);
+
+	// name のテクスチャが登録されているか.
+	bool HasTexture(const std::string& name) const { return textures_.find(name) != textures_.end(); };
 private:
 	// Textureデータを読む(TextureManager的な奴に入れる).
 	static DirectX::ScratchImage LoadTexture(const std::string& filePath);

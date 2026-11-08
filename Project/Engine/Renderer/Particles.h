@@ -11,6 +11,7 @@
 #include "../Math/Field.h"
 #include "PrimitiveMesh.h"
 #include <list>
+#include <memory>
 
 struct ParticleData {
 	Transform transform;
@@ -20,7 +21,17 @@ struct ParticleData {
 	Vector4 color;
 	float lifeTime;
 	float currentTime;
+
+	// ノードで作った動き(ParticleNodeMove)で使う値.
+	Vector3 startPosition{};          // 生成位置.
+	Vector3 startVelocity{};          // 初速.
+	Vector4 startColor{};             // 初期色.
+	Vector3 baseScale{};              // 基準の大きさ(SetParticleSizeの値).
+	Vector3 scaleRate{ 1.0f,1.0f,1.0f }; // 基準の大きさに掛ける倍率.
+	float random = 0.0f;              // パーティクルごとに固定の乱数(0〜1).
 };
+
+class ParticleNodeMove;
 
 struct ParticleForGPU {
 	Matrix4x4 WVP;
@@ -73,6 +84,12 @@ public:
 	void SetBillboardType(BillboardType billboardType);
 	void SetMoveType(Move moveType);
 
+	/// <summary>
+	/// ノードで作った動きを使う(nullptrなら Move の動きに戻る).
+	/// </summary>
+	void SetNodeMove(const std::shared_ptr<ParticleNodeMove>& nodeMove) { nodeMove_ = nodeMove; };
+	const std::shared_ptr<ParticleNodeMove>& GetNodeMove() const { return nodeMove_; };
+
 	BillboardType GetBillboardType() { return billboardType_; };
 	
 	void SetSize(const Vector3 size) { size_ = size; };
@@ -103,6 +120,9 @@ private:
 	Vector3 size_;
 
 	Move moveType_;
+
+	// ノードで作った動き(設定されていれば moveType_ より優先する).
+	std::shared_ptr<ParticleNodeMove> nodeMove_;
 
 	static inline const uint32_t kNumMaxInstance = 1000;
 

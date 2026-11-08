@@ -39,6 +39,20 @@ public:
 	void CreateNewParticles(const std::string& name, Primitive primitive, const std::string& textureName, const PrimitiveParam& param = {}) { CreateNewParticles(name, primitive, TextureManager::GetInstance()->GetTextureInfo(textureName), param); };
 	void CreateNewParticles(const std::string& name, Primitive primitive, const std::string& textureName, BillboardType billType, Particles::Move moveType, const PrimitiveParam& param = {}) { CreateNewParticles(name, primitive, TextureManager::GetInstance()->GetTextureInfo(textureName), billType, moveType, param); };
 
+	/*=============================================================
+	ノードで作った動きを使うパーティクル(Particles::Moveの代わりに動きの名前を指定する)
+	動きの名前は Resources/Node/Particle に保存されている .json を抜いたファイル名.
+	=============================================================*/
+	void CreateNewParticles(const std::string& name, const TextureInfo& info, BillboardType billType, const std::string& moveName);
+	void CreateNewParticles(const std::string& name, const std::string& textureName, BillboardType billType, const std::string& moveName) { CreateNewParticles(name, TextureManager::GetInstance()->GetTextureInfo(textureName), billType, moveName); };
+	void CreateNewParticles(const std::string& name, Primitive primitive, const TextureInfo& info, BillboardType billType, const std::string& moveName, const PrimitiveParam& param = {});
+	void CreateNewParticles(const std::string& name, Primitive primitive, const std::string& textureName, BillboardType billType, const std::string& moveName, const PrimitiveParam& param = {}) { CreateNewParticles(name, primitive, TextureManager::GetInstance()->GetTextureInfo(textureName), billType, moveName, param); };
+
+	// name のパーティクルが作られているか.
+	bool HasParticles(const std::string& name) const;
+	// name のパーティクルを消す(Emitterに設定している時は先にEmitterを消すこと).
+	void RemoveParticles(const std::string& name) { particles_.erase(name); };
+
 	void CreateNewEmitter(const std::string& name, const std::string& setParticleName, const Transform& transform, uint32_t count, float frequency);
 	void CreateNewEmitter(const std::string& name, const std::string& setParticleName);
 
@@ -70,6 +84,9 @@ public:
 	void ClearParticles();
 private:
 	void CheckCollision();
+
+	// moveName のノードの動きを読み込んで particles に設定する.
+	void SetNodeMove(Particles& particles, const std::string& moveName);
 private:
 	std::map<std::string, std::unique_ptr<Particles>> particles_;
 	std::map<std::string, std::unique_ptr<Emitter>> emitters_;

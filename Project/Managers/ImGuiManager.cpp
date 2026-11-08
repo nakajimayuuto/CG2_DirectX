@@ -13,6 +13,7 @@
 #include "../externals/magic_enum/magic_enum.hpp"
 #endif // USE_IMGUI
 #include <cassert>
+#include "ParticleNodeEditor.h"
 
 ImGuiManager* ImGuiManager::GetInstance() {
 	static ImGuiManager instance;
@@ -215,6 +216,8 @@ void ImGuiManager::EndFrame(ID3D12GraphicsCommandList* commandList) {
 	DrawGameViewWindow();
 	DrawSceneSelectWindow();
 	DrawInspectorWindow();
+	// パーティクルの動きを作るノードエディター.
+	ParticleNodeEditor::GetInstance()->Draw();
 
 	// ImGuiの内部コマンドを生成する.
 	ImGui::Render();
@@ -228,6 +231,8 @@ void ImGuiManager::EndFrame(ID3D12GraphicsCommandList* commandList) {
 
 void ImGuiManager::Finalize() {
 #ifdef USE_IMGUI
+	// ノードエディターはImGuiより先に終了する.
+	ParticleNodeEditor::GetInstance()->Finalize();
 	// 初期化と逆順に行う.
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();

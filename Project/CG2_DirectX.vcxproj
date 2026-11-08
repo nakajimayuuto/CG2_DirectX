@@ -17,6 +17,7 @@
   <ItemGroup>
     <Text Include=".editorconfig" />
     <Text Include="externals\imgui\LICENSE.txt" />
+    <Text Include="externals\imgui_node\LICENSE" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application\Application.cpp" />
@@ -35,6 +36,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Engine\Math\Keyframe.cpp" />
+    <ClCompile Include="Managers\GuiNode.cpp" />
     <ClCompile Include="Managers\ImGuiManager.cpp" />
     <ClCompile Include="Managers\DifficultyManager.cpp" />
     <ClCompile Include="Managers\StageManager.cpp" />
@@ -105,6 +107,24 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="externals\imgui_node\crude_json.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="externals\imgui_node\imgui_canvas.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="externals\imgui_node\imgui_node_editor.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="externals\imgui_node\imgui_node_editor_api.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Engine\Renderer\ParticleNodeMove.cpp" />
+    <ClCompile Include="Managers\ParticleNodeEditor.cpp" />
     <ClCompile Include="Application\GameCamera.cpp" />
     <ClCompile Include="Application\Ground.cpp" />
     <ClCompile Include="main.cpp">
@@ -140,7 +160,16 @@
     <ClInclude Include="Application\HPGauge.h" />
     <ClInclude Include="Engine\SystemFile\Framework.h" />
     <ClInclude Include="Engine\Math\Keyframe.h" />
+    <ClInclude Include="Managers\GuiNode.h" />
     <ClInclude Include="Managers\ImGuiManager.h" />
+    <ClInclude Include="Engine\Renderer\ParticleNodeMove.h" />
+    <ClInclude Include="Managers\ParticleNodeEditor.h" />
+    <ClInclude Include="externals\imgui_node\crude_json.h" />
+    <ClInclude Include="externals\imgui_node\imgui_bezier_math.h" />
+    <ClInclude Include="externals\imgui_node\imgui_canvas.h" />
+    <ClInclude Include="externals\imgui_node\imgui_extra_math.h" />
+    <ClInclude Include="externals\imgui_node\imgui_node_editor.h" />
+    <ClInclude Include="externals\imgui_node\imgui_node_editor_internal.h" />
     <ClInclude Include="Managers\DifficultyManager.h" />
     <ClInclude Include="Managers\StageManager.h" />
     <ClInclude Include="Managers\TextureInfo.h" />
@@ -209,6 +238,9 @@
     <ClInclude Include="Managers\SrvManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="externals\imgui_node\imgui_bezier_math.inl" />
+    <None Include="externals\imgui_node\imgui_extra_math.inl" />
+    <None Include="externals\imgui_node\imgui_node_editor_internal.inl" />
     <None Include="Resource\Shaders\Line.hlsli" />
     <None Include="Resource\Shaders\NoTexture.hlsli" />
     <None Include="Resource\Shaders\Object3d.hlsli" />

@@ -5,6 +5,7 @@
 #include "../Renderer/Camera.h"
 #include "../Math/Easing.h"
 #include "Renderer.h"
+#include "ParticleNodeMove.h"
 
 Particles::~Particles() {
 }
@@ -108,6 +109,14 @@ void Particles::MakeNewParticle(const Vector3& position, const Vector3& blank){
 	newParticleData.transform.scale = size_;
 	newParticleData.currentTime = 0;
 	newParticleData.posBlank = blank;
+
+	// ノードで作った動きを使う時は、初期値もノードで決める.
+	if (nodeMove_) {
+		nodeMove_->Spawn(newParticleData);
+		particleData_.push_back(newParticleData);
+		return;
+	}
+
 	switch (moveType_) {
 	case Particles::Move::kFire:
 		newParticleData.velocity = { 0.0f,Random::GetInstance()->RandomFloat(0.01f,0.5f),0.0f };
@@ -162,6 +171,14 @@ void Particles::MakeNewParticle(const Transform& transform) {
 }
 
 void Particles::Update() {
+	if (nodeMove_) {
+		const float deltaTime = DeltaTime::GetInstance()->GetDeltaTime();
+		for (ParticleData& particle : particleData_) {
+			nodeMove_->Update(particle, deltaTime);
+		}
+		return;
+	}
+
 	switch (moveType_){
 	case Particles::Move::kNormal:
 	case Particles::Move::kFire:
@@ -331,6 +348,8 @@ void Particles::SetBillboardType(BillboardType billboardType) {
 }
 
 void Particles::SetMoveType(Move moveType){
+	// Moveを指定したらノードの動きはやめる.
+	nodeMove_.reset();
 	if (moveType == moveType_) {
 		return;
 	}

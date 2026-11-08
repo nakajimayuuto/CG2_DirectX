@@ -1,4 +1,5 @@
 #include "ParticleManager.h"
+#include "../Engine/Renderer/ParticleNodeMove.h"
 
 ParticleManager* ParticleManager::GetInstance() {
 	static ParticleManager instance;
@@ -156,6 +157,46 @@ void ParticleManager::CreateNewParticles(const std::string& name, Primitive prim
 	particles_[name]->Initialize(primitive, info, param);
 	particles_[name]->SetBillboardType(billType);
 	particles_[name]->SetMoveType(moveType);
+}
+
+void ParticleManager::CreateNewParticles(const std::string& name, const TextureInfo& info, BillboardType billType, const std::string& moveName) {
+	if (particles_.find(name) != particles_.end()) {
+		return;
+	}
+
+	particles_[name] = std::make_unique<Particles>();
+	particles_[name]->Initialize(info);
+	particles_[name]->SetBillboardType(billType);
+	SetNodeMove(*particles_[name], moveName);
+}
+
+void ParticleManager::CreateNewParticles(const std::string& name, Primitive primitive, const TextureInfo& info, BillboardType billType, const std::string& moveName, const PrimitiveParam& param) {
+	if (particles_.find(name) != particles_.end()) {
+		return;
+	}
+
+	particles_[name] = std::make_unique<Particles>();
+	particles_[name]->Initialize(primitive, info, param);
+	particles_[name]->SetBillboardType(billType);
+	SetNodeMove(*particles_[name], moveName);
+}
+
+void ParticleManager::SetNodeMove(Particles& particles, const std::string& moveName) {
+	std::shared_ptr<ParticleNodeMove> nodeMove = ParticleNodeMove::Get(moveName);
+	if (!nodeMove) {
+		// 読み込めなかった時は今まで通りの動き(kNormal)にする.
+#ifdef _DEBUG
+		OutputDebugStringA(std::format("[ParticleManager] {} が読み込めませんでした\n", ParticleNodeMove::GetFilePath(moveName)).c_str());
+		assert(false && "ノードの動き(Resources/Node/Particle/名前.json)が見つかりませんでした");
+#endif // _DEBUG
+		particles.SetMoveType(Particles::Move::kNormal);
+		return;
+	}
+	particles.SetNodeMove(nodeMove);
+}
+
+bool ParticleManager::HasParticles(const std::string& name) const {
+	return particles_.find(name) != particles_.end();
 }
 
 void ParticleManager::CreateNewEmitter(const std::string& name, const std::string& setParticleName, const Transform& transform, uint32_t count, float frequency) {

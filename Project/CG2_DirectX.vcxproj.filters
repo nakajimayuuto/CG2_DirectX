@@ -229,6 +229,9 @@
     <Filter Include="Managers\ImGuiManager">
       <UniqueIdentifier>{2b2e967b-bf65-4f3f-b6f8-2021150f81af}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\SystemFile\externals\imgui_node">
+      <UniqueIdentifier>{6d0b3f52-8a4e-4c1f-9b7e-3e5a2c9d71f4}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Engine\Math\KeyFrame">
       <UniqueIdentifier>{b25f0fbd-74f6-4527-8de6-dc67de4224c7}</UniqueIdentifier>
     </Filter>
@@ -461,6 +464,9 @@
     </ClCompile>
     <ClCompile Include="Engine\Math\Quaternion.cpp">
       <Filter>Engine\Math\Quaternion</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\GuiNode.cpp">
+      <Filter>Managers\ImGuiManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -707,6 +713,9 @@
     <ClInclude Include="Engine\Math\Node.h">
       <Filter>Engine\Math\Node</Filter>
     </ClInclude>
+    <ClInclude Include="Managers\GuiNode.h">
+      <Filter>Managers\ImGuiManager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Line.hlsli">
@@ -747,5 +756,67 @@
     <FxCompile Include="Resource\Shaders\NoTexture.VS.hlsl">
       <Filter>hlsl\NoTexture</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Engine\Renderer\ParticleNodeMove.cpp">
+      <Filter>Engine\Renderer\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\ParticleNodeEditor.cpp">
+      <Filter>Managers\ParticleManager</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\imgui_node\crude_json.cpp">
+      <Filter>Engine\SystemFile\externals\imgui_node</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\imgui_node\imgui_canvas.cpp">
+      <Filter>Engine\SystemFile\externals\imgui_node</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\imgui_node\imgui_node_editor.cpp">
+      <Filter>Engine\SystemFile\externals\imgui_node</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\imgui_node\imgui_node_editor_api.cpp">
+      <Filter>Engine\SystemFile\externals\imgui_node</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Engine\Renderer\ParticleNodeMove.h">
+      <Filter>Engine\Renderer\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\ParticleNodeEditor.h">
+      <Filter>Managers\ParticleManager</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui_node\crude_json.h">
+      <Filter>Engine\SystemFile\externals\imgui_node</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui_node\imgui_bezier_math.h">
+      <Filter>Engine\SystemFile\externals\imgui_node</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui_node\imgui_canvas.h">
+      <Filter>Engine\SystemFile\externals\imgui_node</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui_node\imgui_extra_math.h">
+      <Filter>Engine\SystemFile\externals\imgui_node</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui_node\imgui_node_editor.h">
+      <Filter>Engine\SystemFile\externals\imgui_node</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui_node\imgui_node_editor_internal.h">
+      <Filter>Engine\SystemFile\externals\imgui_node</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="externals\imgui_node\imgui_bezier_math.inl">
+      <Filter>Engine\SystemFile\externals\imgui_node</Filter>
+    </None>
+    <None Include="externals\imgui_node\imgui_extra_math.inl">
+      <Filter>Engine\SystemFile\externals\imgui_node</Filter>
+    </None>
+    <None Include="externals\imgui_node\imgui_node_editor_internal.inl">
+      <Filter>Engine\SystemFile\externals\imgui_node</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="externals\imgui_node\LICENSE">
+      <Filter>Engine\SystemFile\externals\imgui_node</Filter>
+    </Text>
   </ItemGroup>
 </Project>
