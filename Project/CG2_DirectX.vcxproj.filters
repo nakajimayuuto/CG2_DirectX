@@ -244,6 +244,9 @@
     <Filter Include="Engine\Math\Node">
       <UniqueIdentifier>{6d12a07d-c489-46bd-a91b-834d0cb8a335}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Math\BaseEntity">
+      <UniqueIdentifier>{a92a85b8-066a-464d-b578-309aca6fda34}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -470,6 +473,9 @@
     </ClCompile>
     <ClCompile Include="Managers\GuiNode.cpp">
       <Filter>Managers\ImGuiManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Math\BaseEntity.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -718,6 +724,9 @@
     </ClInclude>
     <ClInclude Include="Managers\GuiNode.h">
       <Filter>Managers\ImGuiManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Math\BaseEntity.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -2,11 +2,12 @@
 #include "Satlib.h"
 #include "HPGauge.h"
 #include <string>
+#include "BaseEntity.h"
 
 /// <summary>
 /// 自キャラ
 /// </summary>
-class Player : public Collider {
+class Player : public BaseEntity {
 public:
 	enum class Behavior {
 		kRoot,
@@ -34,11 +35,11 @@ public:
 		float swingSpeed; // 攻撃移動速度.
 	};
 
-	void Initialize();
+	void Initialize() override;
 
-	void Update();
+	void Update() override;
 
-	void Draw();
+	void Draw() override;
 
 	bool GetIsMoving() { return isMoving_; };
 
@@ -116,9 +117,6 @@ private:
 	static inline float deathTimerMax = 1.0f;
 
 	std::unique_ptr<HPGauge> hpGauge_;
-
-	float currentHP_;
-	float maxHP_;
 
 	float damageCoolTimer_;
 	float damageCoolTimeMax_;

@@ -24,6 +24,7 @@
     <ClCompile Include="Application\Application.cpp" />
     <ClCompile Include="Application\BaseEnemy.cpp" />
     <ClCompile Include="Application\Enemy.cpp" />
+    <ClCompile Include="Engine\Math\BaseEntity.cpp" />
     <ClCompile Include="Engine\Math\Quaternion.cpp" />
     <ClCompile Include="Engine\Renderer\TextRenderer.cpp" />
     <ClCompile Include="Engine\SystemFile\WinApp.cpp" />
@@ -154,6 +155,7 @@
     <ClInclude Include="Application\Application.h" />
     <ClInclude Include="Application\BaseEnemy.h" />
     <ClInclude Include="Application\Enemy.h" />
+    <ClInclude Include="Engine\Math\BaseEntity.h" />
     <ClInclude Include="Engine\Math\Node.h" />
     <ClInclude Include="Engine\Math\Quaternion.h" />
     <ClInclude Include="Engine\Renderer\TextRenderer.h" />

@@ -26,6 +26,7 @@ public:
 	void CreateNewParticles(const std::string& name ,const TextureInfo& info);
 	void CreateNewParticles(const std::string& name ,const TextureInfo& info,BillboardType billType,Particles::Move moveType);
 	void CreateNewParticles(const std::string& name, const ModelInfo& info);
+	void CreateNewParticles(const std::string& name, const std::string& textureName, BillboardType billType, Particles::Move moveType) { CreateNewParticles(name, TextureManager::GetInstance()->GetTextureInfo(textureName), billType, moveType); };
 
 	/// <summary>
 	/// Primitive図形のパーティクルを作る.
