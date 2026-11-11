@@ -597,8 +597,8 @@ void ImGuiManager::DrawGizmos(const Vector2& imagePos, const Vector2& imageSize)
 void ImGuiManager::DrawDebugCameraButton() {
 	Camera* camera = Camera::GetInstance();
 	const bool isDebugCamera = camera->GetUseDebugCamera();
-	std::string label = "デバッグカメラ" + static_cast<std::string>(isDebugCamera ? "\n起動中" : "");
-	const float buttonWidth = ImGui::CalcTextSize(label).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+	std::string label = "デバッグカメラ" + static_cast<std::string>(isDebugCamera ? "\n起動中" : "\n停止中");
+	const float buttonWidth = ImGui::CalcTextSize(label.c_str()).x + ImGui::GetStyle().FramePadding.x * 2.0f;
 	// 再生ボタンと同じ高さにして、ウィンドウの右端に寄せる.
 	const float buttonHeight = kPlayControlIconSize_ + ImGui::GetStyle().FramePadding.y * 2.0f;
 	const float rightX = ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - buttonWidth - 8.0f;
@@ -606,7 +606,7 @@ void ImGuiManager::DrawDebugCameraButton() {
 		ImGui::SetCursorPosX(rightX);
 	}
 	if (isDebugCamera) { ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.20f, 0.45f, 0.80f, 1.0f)); }
-	if (ImGui::Button(label, ImVec2(buttonWidth, buttonHeight))) {
+	if (ImGui::Button(label.c_str(), ImVec2(buttonWidth, buttonHeight))) {
 		camera->SetUseDebugCamera(!isDebugCamera);
 	}
 	if (isDebugCamera) { ImGui::PopStyleColor(); }
