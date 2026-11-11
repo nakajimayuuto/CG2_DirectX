@@ -135,7 +135,7 @@ Vector4 Camera::GetTransparentColor(const Vector3& position, const Vector4& colo
 void Camera::Update() {
 
 	if (useDebugCamera_) {
-		DebugUpdate();
+		DebugDraw();
 		//matrix_ = Matrix4x4::MakeAffineMatrix(debugScale_, debugRotate_, debugTranslate_);
 		return;
 	}
@@ -149,7 +149,7 @@ void Camera::Update() {
 	FrustumUpdate();
 }
 
-void Camera::DebugUpdate() {
+void Camera::DebugDraw() {
 	Vector3 move = { 0.0f,0.0f,0.0f };
 	InputManager* input = InputManager::GetInstance();
 

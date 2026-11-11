@@ -10,6 +10,7 @@ GlobalVariables* GlobalVariables::GetInstance() {
 }	
 
 void GlobalVariables::Update() {
+	return;
 #ifdef _DEBUG
 
 	if (!ImGui::Begin("GlobalVariables", nullptr, ImGuiWindowFlags_MenuBar)) {

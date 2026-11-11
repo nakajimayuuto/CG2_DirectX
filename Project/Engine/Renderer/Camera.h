@@ -89,7 +89,7 @@ public:
 	void SetFovY(float fovY) { fovY_ = fovY; };
 	float GetFovY() { return fovY_; };
 private:
-	void DebugUpdate();
+	void DebugDraw();
 
 	void FrustumUpdate();
 
