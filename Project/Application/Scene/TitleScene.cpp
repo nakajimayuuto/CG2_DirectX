@@ -63,9 +63,6 @@ void TitleScene::Initialize() {
 void TitleScene::Update() {
 	float distance = LightManager::GetInstance()->GetLightData("halberd_title_light")->distance;
 	Vector3 direction = LightManager::GetInstance()->GetLightData("halberd_title_light")->direction;
-	if (InputManager::GetInstance()->TriggerKey(DIK_F3)) {
-		Camera::GetInstance()->ChangeCameraMode();
-	}
 	if (InputManager::GetInstance()->TriggerKey(DIK_R)) {
 		SceneManager::GetInstance()->ReloadScene();
 	}

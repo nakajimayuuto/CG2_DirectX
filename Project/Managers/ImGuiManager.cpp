@@ -597,7 +597,7 @@ void ImGuiManager::DrawGizmos(const Vector2& imagePos, const Vector2& imageSize)
 void ImGuiManager::DrawDebugCameraButton() {
 	Camera* camera = Camera::GetInstance();
 	const bool isDebugCamera = camera->GetUseDebugCamera();
-	const char* label = "デバッグカメラ";
+	const char* label = "デバッグカメラ\n" + ();
 	const float buttonWidth = ImGui::CalcTextSize(label).x + ImGui::GetStyle().FramePadding.x * 2.0f;
 	// 再生ボタンと同じ高さにして、ウィンドウの右端に寄せる.
 	const float buttonHeight = kPlayControlIconSize_ + ImGui::GetStyle().FramePadding.y * 2.0f;
@@ -611,7 +611,7 @@ void ImGuiManager::DrawDebugCameraButton() {
 	}
 	if (isDebugCamera) { ImGui::PopStyleColor(); }
 	if (ImGui::IsItemHovered()) {
-		ImGui::SetTooltip("Game画面上で右ドラッグ: 視点を回す\n右ドラッグ中に WASD / Space / Shift: 移動\nホイール: 前後に移動 (F3でも切り替え)");
+		ImGui::SetTooltip("Game画面上でホイールドラッグ: 視点を回す\nホイールドラッグ中に WASD / Space / Shift: 移動");
 	}
 }
 #endif // USE_IMGUI

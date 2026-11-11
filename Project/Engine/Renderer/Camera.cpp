@@ -47,7 +47,7 @@ void Camera::Initialize() {
 	//debugTransform_.translate.z = -10.0f;
 	debugTransform_.SetParent(&debugTransformCenter_);
 	//debugScale_ = { 1.0f,1.0f,1.0f };
-	//debugTranslate_ = { 0.0f,0.0f,-10.0f };
+	debugTransform_.translate = { 0.0f,0.0f,-30.0f };
 
 	transparentRadiusMax_ = 9.0f;
 	transparentRadiusMin_ = 2.0f;
@@ -156,7 +156,7 @@ void Camera::DebugUpdate() {
 #ifdef USE_IMGUI
 	// エディターでは "Game"画面の上で右ドラッグしている間だけ操作する(他のウィンドウの操作で動かないように).
 	ImGuiManager* imguiManager = ImGuiManager::GetInstance();
-	if (input->PressMouse(MOUSE_RIGHT)) {
+	if (input->PressMouse(MOUSE_MIDDLE)) {
 		if (!isDebugCameraDragging_ && imguiManager->IsGameViewHovered() && !imguiManager->IsUsingGizmo()) {
 			isDebugCameraDragging_ = true;
 		}
@@ -171,12 +171,7 @@ void Camera::DebugUpdate() {
 	const bool canOperate = true;
 #endif // USE_IMGUI
 
-	if (input->IsGamePadConnect()) {
-		move = { input->GetLeftStickDirection().x, 0.0f, input->GetLeftStickDirection().y };
-
-		debugTransformCenter_.rotate.x += -input->GetRightStickDirection().y * Radian(1.0f);
-		debugTransformCenter_.rotate.y += input->GetRightStickDirection().x * Radian(1.0f);
-	} else if (canOperate) {
+	if (canOperate) {
 		if (input->PressKey(DIK_D)) {
 			move.x += 1.0f;
 		}
@@ -195,32 +190,22 @@ void Camera::DebugUpdate() {
 		if (input->PressKey(DIK_LSHIFT)) {
 			move.y -= 1.0f;
 		}
-
 		debugTransformCenter_.rotate.x += input->GetMouse().GetMove().y * Radian(0.1f);
 		debugTransformCenter_.rotate.y += input->GetMouse().GetMove().x * Radian(0.1f);
 	}
 
 	Matrix4x4 cameraRotateMatrix = Matrix4x4::MakeRotateMatrix(debugTransformCenter_.rotate);
 
-	move = move.Normalize();
+	move = move.Normalize() * kDebugMoveSpeed;
 	// ホイール1目盛り(120)で前後に0.5移動する.
-	move.z += wheel / 120.0f * (0.5f / kDebugSpeed);
+	debugTransform_.translate.z += wheel / 120.0f * (kDebugWheelSpeed / kDebugSpeed);
 	move = cameraRotateMatrix.TransformNomal(move);
 	debugTransformCenter_.translate += move * kDebugSpeed;
-	matrix_ = debugTransform_.GetAffineMatrix();
+	matrix_ = debugTransformCenter_.GetAffineMatrix();
 	// ライティングなどに使うカメラの位置もデバッグカメラに合わせる.
 	if (cameraData_) {
 		cameraData_->worldPosition = debugTransformCenter_.translate;
 	}
-	//Matrix4x4 matRotDelta = Matrix4x4::Identity();
-	//matRotDelta *= Matrix4x4::MakeRotateYMatrix(debugRotate.x);
-	//matRotDelta *= Matrix4x4::MakeRotateXMatrix(debugRotate.y);
-	//
-	//debugMatRot_ = matRotDelta * debugMatRot_;
-	//
-	////matrix_ = Matrix4x4::MakeScaleMatrix(debugScale_);
-	//matrix_ = debugMatRot_;
-	//matrix_ *= Matrix4x4::MakeTranslateMatrix(debugTranslate_);
 }
 
 void Camera::ShakeUpdate() {
