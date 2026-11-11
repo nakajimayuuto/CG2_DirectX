@@ -16,7 +16,8 @@
 /// ・GameGUI        : ゲーム画面(RenderTexture)を表示する"Game"ウィンドウ.
 /// ・PlayControlGUI : "Game"ウィンドウの上部に中央ぞろえで並ぶ 再生(終了) / 一時停止 ボタン.
 /// ・SceneSelectGUI : SceneNameを選んで読み込む"シーン切り替え"ウィンドウ.
-/// ・Inspector      : Begin(name)〜End() で囲んだImGuiを name のタブにまとめる"Inspector"ウィンドウ.
+/// ・Hierarchy      : Begin(name)で作られたタブの一覧. 選んだタブの中身がInspectorに出る.
+/// ・Inspector      : Begin(name)〜End() で囲んだImGuiのうち、Hierarchyで選ばれたタブの中身を表示する.
 /// </summary>
 class ImGuiManager {
 public:
@@ -46,7 +47,8 @@ public:
 	Inspector(Begin / End で囲んだImGuiをタブにまとめて表示する)
 	=============================================================*/
 	/// <summary>
-	/// "Inspector"ウィンドウに name のタブを追加し、End()までのImGuiをそのタブの中に描画する.
+	/// "Hierarchy"ウィンドウに name のタブを追加し、End()までのImGuiをそのタブの中身にする.
+	/// Hierarchyで選ばれているタブの中身が"Inspector"ウィンドウに表示される.
 	/// 同じ name で何度呼んでも同じタブに続けて描画される.
 	/// タブが選ばれていない時は中身を描画しない(ImGuiの関数は呼んでも何も起きない).
 	/// </summary>
@@ -60,9 +62,9 @@ public:
 	void End();
 
 	/// <summary>
-	/// 次に name のタブが追加された時に、そのタブを選んだ状態にする.
+	/// name のタブを選んだ状態にする(Hierarchyでタブをクリックした時と同じ).
 	/// </summary>
-	void SelectInspectorTab(const std::string& name) { requestedInspectorTab_ = name; };
+	void SelectInspectorTab(const std::string& name) { selectedInspectorTab_ = name; };
 
 	/// <summary>
 	/// ImGuiのフレーム開始(GameSystem::BeginFrameで呼ぶ).
@@ -164,6 +166,9 @@ private:
 
 	void DrawSceneSelectWindow();
 
+	// Begin(name)で作られたタブの一覧("Hierarchy"ウィンドウ)を描画する.
+	void DrawHierarchyWindow();
+
 	// Begin / End が1回も呼ばれなかったフレームでも"Inspector"ウィンドウを出しておく.
 	void DrawInspectorWindow();
 
@@ -217,20 +222,16 @@ private:
 	// Begin〜Endの中身をどこに描画しているか.
 	enum class InspectorTabState {
 		kNone,     // Begin〜Endの外.
-		kTabItem,  // このフレームで初めてのタブ(BeginTabItemの中).
-		kAppend,   // 同じ名前の2回目以降(1回目の続きに描画).
+		kVisible,  // 選ばれているタブ(Inspectorに描画する).
 		kHidden,   // タブが選ばれていない(見えない場所に描画して捨てる).
 	};
 	InspectorTabState inspectorTabState_ = InspectorTabState::kNone;
-	// Begin()でタブバーを開けたか(Endで閉じる必要があるか).
-	bool isInspectorTabBarOpen_ = false;
-	// このフレームで追加されたタブと、その中身が表示されているか.
-	std::map<std::string, bool> inspectorTabs_;
-	// 表示中のタブの中身をどこまで描画したか(同じ名前のBeginの続きをここから描く).
-	Vector2 inspectorContentCursor_{};
-	bool hasInspectorContentCursor_ = false;
-	// SelectInspectorTabで選ぶよう指定されたタブ.
-	std::string requestedInspectorTab_;
+	// このフレームでBeginされたタブの名前(Beginされた順. Hierarchyに縦に並べる).
+	std::vector<std::string> inspectorTabOrder_;
+	// このフレームで各タブがBeginされた回数(同じタブの2回目以降はIDを分ける).
+	std::map<std::string, int> inspectorTabBeginCounts_;
+	// 選ばれているタブ.
+	std::string selectedInspectorTab_;
 
 	// Gizmo.
 	struct GizmoTarget {
