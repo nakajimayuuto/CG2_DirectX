@@ -149,6 +149,9 @@ void ParticleNodeEditor::DrawToolbar() {
 void ParticleNodeEditor::DrawPreviewSettings() {
 #ifdef USE_IMGUI
 	ImGui::Checkbox("プレビュー", &isPreviewEnabled_);
+	if (ImGui::IsItemHovered()) {
+		ImGui::SetTooltip("ONの間、再生中に 位置 からこの動きのパーティクルを出し続けます");
+	}
 	ImGui::BeginDisabled(!isPreviewEnabled_);
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(170.0f);

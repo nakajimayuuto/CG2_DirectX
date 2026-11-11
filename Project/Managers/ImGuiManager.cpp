@@ -16,6 +16,7 @@
 #include <cassert>
 #include "ParticleNodeEditor.h"
 #include "ParticleManager.h"
+#include "EmitterManager.h"
 #include "../Engine/Renderer/Camera.h"
 
 ImGuiManager* ImGuiManager::GetInstance() {
@@ -64,8 +65,13 @@ bool ImGuiManager::Begin(const std::string& name) {
 
 		auto it = inspectorTabs_.find(name);
 		if (it == inspectorTabs_.end()) {
-			// このフレームで初めての名前 → タブを追加する.
-			const bool isTabVisible = ImGui::BeginTabItem(name.c_str());
+			// このフレームで初めての名前 → タブを追加する(SelectInspectorTabで指定されていれば選ぶ).
+			ImGuiTabItemFlags tabFlags = ImGuiTabItemFlags_None;
+			if (name == requestedInspectorTab_) {
+				tabFlags |= ImGuiTabItemFlags_SetSelected;
+				requestedInspectorTab_.clear();
+			}
+			const bool isTabVisible = ImGui::BeginTabItem(name.c_str(), nullptr, tabFlags);
 			inspectorTabs_[name] = isTabVisible;
 			if (isTabVisible) {
 				inspectorTabState_ = InspectorTabState::kTabItem;
@@ -161,8 +167,14 @@ void ImGuiManager::Initialize(WinApp* winApp, ID3D12Device* device, uint32_t buf
 	info.RTVFormat = rtvFormat;
 	info.CommandQueue = commandQueue;
 	info.SrvDescriptorHeap = SrvManager::GetInstance()->GetDescriptorHeap().Get();
-	info.LegacySingleSrvCpuDescriptor = SrvManager::GetInstance()->GetDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
-	info.LegacySingleSrvGpuDescriptor = SrvManager::GetInstance()->GetDescriptorHeap()->GetGPUDescriptorHandleForHeapStart();
+	// ImGui(1.92以降)はフォントの文字が増えるとテクスチャを作り直し、その間は古いものと新しいものの2つ以上のSRVを使う.
+	// そのため1つしか使えない Legacy の指定ではなく、SrvManagerから割り当てる.
+	info.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE* outCpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE* outGpuHandle) {
+		SrvManager::GetInstance()->AllocateImGuiDescriptor(outCpuHandle, outGpuHandle);
+	};
+	info.SrvDescriptorFreeFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE) {
+		SrvManager::GetInstance()->FreeImGuiDescriptor(cpuHandle);
+	};
 	ImGui_ImplDX12_Init(&info);
 
 	// 日本語を表示できるフォントを読み込む.
@@ -221,6 +233,8 @@ void ImGuiManager::EndFrame(ID3D12GraphicsCommandList* commandList) {
 #ifdef USE_IMGUI
 	// パーティクルのEmitterの調整(Inspectorのタブ. ギズモを使うのでGameウィンドウより先に呼ぶ).
 	ParticleManager::GetInstance()->DrawEmitterGui();
+	// GUIで設置するエミッター("エミッター"ウィンドウとInspectorのタブ).
+	EmitterManager::GetInstance()->DrawGui();
 
 	// エンジンのGUI.
 	DrawGameViewWindow();

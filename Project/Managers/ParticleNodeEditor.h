@@ -61,7 +61,8 @@ private:
 
 	// プレビュー.
 	std::shared_ptr<ParticleNodeMove> previewMove_;
-	bool isPreviewEnabled_ = true;
+	// ONの間は再生中にゲーム画面へパーティクルを出し続けるので、最初はOFFにしておく.
+	bool isPreviewEnabled_ = false;
 	Vector3 previewPosition_{ 0.0f, 0.0f, 0.0f };
 	int previewCount_ = 3;
 	float previewInterval_ = 0.1f;

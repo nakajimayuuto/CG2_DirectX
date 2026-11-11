@@ -60,6 +60,11 @@ public:
 	void End();
 
 	/// <summary>
+	/// 次に name のタブが追加された時に、そのタブを選んだ状態にする.
+	/// </summary>
+	void SelectInspectorTab(const std::string& name) { requestedInspectorTab_ = name; };
+
+	/// <summary>
 	/// ImGuiのフレーム開始(GameSystem::BeginFrameで呼ぶ).
 	/// </summary>
 	void BeginFrame();
@@ -224,6 +229,8 @@ private:
 	// 表示中のタブの中身をどこまで描画したか(同じ名前のBeginの続きをここから描く).
 	Vector2 inspectorContentCursor_{};
 	bool hasInspectorContentCursor_ = false;
+	// SelectInspectorTabで選ぶよう指定されたタブ.
+	std::string requestedInspectorTab_;
 
 	// Gizmo.
 	struct GizmoTarget {

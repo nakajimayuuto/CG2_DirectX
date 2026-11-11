@@ -7,7 +7,7 @@
 /// <summary>
 /// 自キャラ
 /// </summary>
-class Player : public BaseEntity {
+class Player : public BaseEntityCharactor {
 public:
 	enum class Behavior {
 		kRoot,

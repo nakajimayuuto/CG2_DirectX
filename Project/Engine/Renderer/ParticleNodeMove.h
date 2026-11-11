@@ -95,6 +95,10 @@ private:
 		kLength,
 		kLerp,
 		kEasing,
+		kFixedRandomFloat,     // 生成時乱数 Float.
+		kFixedRandomVector3,   // 生成時乱数 Vector3.
+		kFixedRandomDirection, // 生成時乱数 方向.
+		kLifeRate,             // 寿命の割合.
 		kCount,
 	};
 
@@ -118,6 +122,8 @@ private:
 		int outputCount = 0;
 		// outputs_ の中のこのノードの出力の先頭.
 		int outputOffset = 0;
+		// "生成時乱数"でノードごとに別の値にするための値(GuiNodeのノードのID).
+		uint32_t salt = 0;
 	};
 
 	// 1つの出力ノード(生成時 / 毎フレーム)を計算するための手順.

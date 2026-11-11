@@ -33,6 +33,7 @@ enum ParticleOutput {
 	kRate,          // 割合(0〜1).
 	kRandom,        // 乱数(パーティクルごとに固定).
 	kDeltaTime,     // ΔT.
+	kTarget,        // 目標地点(生成位置 + MakeNewParticleで渡した目標地点).
 	kParticleOutputCount,
 };
 
@@ -64,6 +65,17 @@ PinDesc NoValue(PinType type, const char* name) { return { name, type, {}, false
 
 float Random01() {
 	return Random::GetInstance()->RandomFloat(0.0f, 1.0f);
+}
+
+// パーティクルの種 / ノード / 要素 から決まる0〜1の値(同じ組み合わせなら毎回同じ値).
+float FixedRandom01(uint32_t seed, uint32_t salt, uint32_t component) {
+	uint32_t h = seed ^ (salt * 0x9E3779B9u) ^ (component * 0x85EBCA6Bu);
+	h ^= h >> 16;
+	h *= 0x7FEB352Du;
+	h ^= h >> 15;
+	h *= 0x846CA68Bu;
+	h ^= h >> 16;
+	return static_cast<float>(h >> 8) * (1.0f / 16777216.0f);
 }
 
 int GetPinComponentCount(PinType type) {
@@ -121,7 +133,8 @@ static const std::vector<ParticleNodeTypeDef>& GetNodeTypeDefs() {
 		};
 		// opの番号は ParticleNodeMove::Op と同じ順番.
 		enum { kSpawn, kUpdate, kParticle, kConstant, kRandomFloat, kRandomVector3, kRandomDirection, kRandomColorOp,
-			kAdd, kSubtract, kMultiply, kDivide, kScale, kSin, kCos, kOneMinus, kClamp, kNormalize, kLength, kLerp, kEasing };
+			kAdd, kSubtract, kMultiply, kDivide, kScale, kSin, kCos, kOneMinus, kClamp, kNormalize, kLength, kLerp, kEasing,
+			kFixedRandomFloat, kFixedRandomVector3, kFixedRandomDirection, kLifeRate };
 
 		// 出力.
 		add(kSpawnNode, "出力", kOutputColor, kSpawn, 1,
@@ -132,7 +145,10 @@ static const std::vector<ParticleNodeTypeDef>& GetNodeTypeDefs() {
 		// 入力.
 		add(kParticleNode, "入力", kInputColor, kParticle, 1, {},
 			{ V3("生成位置"), V3("位置"), V3("速度"), V3("初速"), C("色"), C("初期色"), V3("大きさ"),
-			  F("経過時間"), F("寿命"), F("割合"), F("乱数"), F("ΔT") });
+			  F("経過時間"), F("寿命"), F("割合"), F("乱数"), F("ΔT"), V3("目標地点") });
+		// 経過時間 ÷ 寿命 (0〜1). 繋がっていない入力はそのパーティクルの値を使う.
+		add("寿命の割合", "入力", kInputColor, kLifeRate, 1,
+			{ NoValue(PinType::kFloat, "経過時間"), NoValue(PinType::kFloat, "寿命") }, { F("割合"), F("残り(1-割合)") });
 
 		// 定数.
 		add("Float", "定数", kConstantColor, kConstant, 1, { F("値") }, { F("出力") });
@@ -144,6 +160,10 @@ static const std::vector<ParticleNodeTypeDef>& GetNodeTypeDefs() {
 		add("乱数 Vector3", "乱数", kRandomColor, kRandomVector3, 3, { V3("最小", { -1.0f, -1.0f, -1.0f }), V3("最大", kOne3) }, { V3("値") });
 		add("乱数 方向", "乱数", kRandomColor, kRandomDirection, 3, { F("長さ", 1.0f) }, { V3("方向") });
 		add("乱数 色", "乱数", kRandomColor, kRandomColorOp, 4, { C("A"), C("B", { 0.0f, 0.0f, 0.0f, 1.0f }) }, { C("色") });
+		// 生成時に一度だけ決まる乱数(同じパーティクルなら毎フレーム同じ値. ノードごとに別の値).
+		add("生成時乱数 Float", "乱数/生成時", kRandomColor, kFixedRandomFloat, 1, { F("最小", 0.0f), F("最大", 1.0f) }, { F("値") });
+		add("生成時乱数 Vector3", "乱数/生成時", kRandomColor, kFixedRandomVector3, 3, { V3("最小", { -1.0f, -1.0f, -1.0f }), V3("最大", kOne3) }, { V3("値") });
+		add("生成時乱数 方向", "乱数/生成時", kRandomColor, kFixedRandomDirection, 3, { F("長さ", 1.0f) }, { V3("方向") });
 
 		// 演算(Float).
 		add("加算 (Float)", "演算/Float", kMathColor, kAdd, 1, { F("A"), F("B") }, { F("結果") });
@@ -183,9 +203,14 @@ void ParticleNodeMove::RegisterNodeTypes(GuiNode& graph) {
 }
 
 void ParticleNodeMove::CreateDefaultNodes(GuiNode& graph) {
-	graph.AddNode(kParticleNode, { -320.0f, 0.0f });
-	graph.AddNode(kSpawnNode, { 200.0f, -80.0f });
+	GuiNode::Node* particle = graph.AddNode(kParticleNode, { -320.0f, 0.0f });
+	GuiNode::Node* spawn = graph.AddNode(kSpawnNode, { 200.0f, -80.0f });
 	graph.AddNode(kUpdateNode, { 200.0f, 140.0f });
+	// 最初から MakeNewParticleで渡した 速度 / 寿命 をそのまま使うように繋いでおく.
+	if (particle && spawn) {
+		graph.AddLink(particle->outputs[kStartVelocity].id, spawn->inputs[kInVelocity].id);
+		graph.AddLink(particle->outputs[kLifeTime].id, spawn->inputs[kInLifeTime].id);
+	}
 }
 
 ParticleNodeMove::Op ParticleNodeMove::GetOp(const std::string& typeName, int& outComponentCount) {
@@ -348,6 +373,7 @@ ParticleNodeMove::Program ParticleNodeMove::BuildProgram(const GuiNode& graph, c
 		const GuiNode::Node* node = order[i];
 		CompiledNode compiled;
 		compiled.op = GetOp(node->typeName, compiled.componentCount);
+		compiled.salt = node->id;
 		for (const GuiNode::Pin& pin : node->inputs) {
 			Input input;
 			if (pin.isSplit) {
@@ -405,16 +431,49 @@ void ParticleNodeMove::Run(const Program& program, const Context& context, std::
 			auto set4 = [&out](int index, const Vector4& v) { out[index].v[0] = v.x; out[index].v[1] = v.y; out[index].v[2] = v.z; out[index].v[3] = v.w; };
 			set3(kStartPosition, particle.startPosition);
 			set3(kPosition, particle.transform.translate);
-			set3(kVelocity, context.isSpawn ? kZero3 : particle.velocity);
-			set3(kStartVelocity, context.isSpawn ? kZero3 : particle.startVelocity);
+			// 生成時は 速度 / 初速 / 寿命 にMakeNewParticleで渡された値が入っている.
+			set3(kVelocity, particle.velocity);
+			set3(kStartVelocity, particle.startVelocity);
 			set4(kColor, context.isSpawn ? kWhite : particle.color);
 			set4(kStartColor, context.isSpawn ? kWhite : particle.startColor);
 			set3(kScaleRate, context.isSpawn ? kOne3 : particle.scaleRate);
 			out[kTime].v[0] = context.isSpawn ? 0.0f : particle.currentTime;
-			out[kLifeTime].v[0] = context.isSpawn ? 0.0f : particle.lifeTime;
+			out[kLifeTime].v[0] = particle.lifeTime;
 			out[kRate].v[0] = (context.isSpawn || particle.lifeTime <= 0.0f) ? 0.0f : std::clamp(particle.currentTime / particle.lifeTime, 0.0f, 1.0f);
 			out[kRandom].v[0] = particle.random;
 			out[kDeltaTime].v[0] = context.deltaTime;
+			// 目標地点は生成位置から見たローカル座標で渡されるので、生成位置を足してワールド座標にする.
+			set3(kTarget, {
+				particle.startPosition.x + particle.targetTransform.translate.x,
+				particle.startPosition.y + particle.targetTransform.translate.y,
+				particle.startPosition.z + particle.targetTransform.translate.z });
+			break;
+		}
+		case Op::kLifeRate: {
+			// 繋がっていない入力はそのパーティクルの 経過時間 / 寿命.
+			const float time = node.inputs[0].components[0].order >= 0 ? in[0].v[0] : (context.isSpawn ? 0.0f : particle.currentTime);
+			const float lifeTime = node.inputs[1].components[0].order >= 0 ? in[1].v[0] : particle.lifeTime;
+			const float rate = (lifeTime > 0.0f) ? std::clamp(time / lifeTime, 0.0f, 1.0f) : 0.0f;
+			out[0].v[0] = rate;
+			out[1].v[0] = 1.0f - rate;
+			break;
+		}
+		case Op::kFixedRandomFloat:
+			out[0].v[0] = in[0].v[0] + (in[1].v[0] - in[0].v[0]) * FixedRandom01(particle.randomSeed, node.salt, 0);
+			break;
+		case Op::kFixedRandomVector3:
+			for (int c = 0; c < 3; ++c) {
+				out[0].v[c] = in[0].v[c] + (in[1].v[c] - in[0].v[c]) * FixedRandom01(particle.randomSeed, node.salt, static_cast<uint32_t>(c));
+			}
+			break;
+		case Op::kFixedRandomDirection: {
+			// 球面上に均等になるよう z と角度から作る.
+			const float z = FixedRandom01(particle.randomSeed, node.salt, 0) * 2.0f - 1.0f;
+			const float angle = FixedRandom01(particle.randomSeed, node.salt, 1) * 6.28318530f;
+			const float radius = std::sqrt((std::max)(0.0f, 1.0f - z * z));
+			out[0].v[0] = std::cos(angle) * radius * in[0].v[0];
+			out[0].v[1] = std::sin(angle) * radius * in[0].v[0];
+			out[0].v[2] = z * in[0].v[0];
 			break;
 		}
 		case Op::kConstant:
@@ -503,12 +562,15 @@ void ParticleNodeMove::Run(const Program& program, const Context& context, std::
 
 void ParticleNodeMove::Spawn(ParticleData& particle) const {
 	particle.random = Random01();
+	// "生成時乱数"ノードの種(パーティクルごとに一度だけ決める).
+	particle.randomSeed = static_cast<uint32_t>(Random01() * 4294967040.0f);
 	particle.startPosition = particle.transform.translate;
 	particle.baseScale = particle.transform.scale;
 	particle.scaleRate = kOne3;
-	particle.velocity = kZero3;
+	// MakeNewParticleで渡された 速度 / 寿命 を 初速 / 寿命 として残しておく(グラフの"パーティクル"ノードで使える).
+	particle.startVelocity = particle.velocity;
+	particle.startLifeTime = particle.lifeTime;
 	particle.color = kWhite;
-	particle.lifeTime = 1.0f;
 	particle.currentTime = 0.0f;
 
 	if (spawnProgram_.isValid) {
@@ -529,7 +591,6 @@ void ParticleNodeMove::Spawn(ParticleData& particle) const {
 		}
 	}
 
-	particle.startVelocity = particle.velocity;
 	particle.startColor = particle.color;
 	particle.transform.scale = { particle.baseScale.x * particle.scaleRate.x, particle.baseScale.y * particle.scaleRate.y, particle.baseScale.z * particle.scaleRate.z };
 }

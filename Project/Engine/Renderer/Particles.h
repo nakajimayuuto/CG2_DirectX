@@ -24,11 +24,13 @@ struct ParticleData {
 
 	// ノードで作った動き(ParticleNodeMove)で使う値.
 	Vector3 startPosition{};          // 生成位置.
-	Vector3 startVelocity{};          // 初速.
+	Vector3 startVelocity{};          // 初速(MakeNewParticleで渡したvelocity).
+	float startLifeTime = 0.0f;       // MakeNewParticleで渡したlifeTime.
 	Vector4 startColor{};             // 初期色.
 	Vector3 baseScale{};              // 基準の大きさ(SetParticleSizeの値).
 	Vector3 scaleRate{ 1.0f,1.0f,1.0f }; // 基準の大きさに掛ける倍率.
 	float random = 0.0f;              // パーティクルごとに固定の乱数(0〜1).
+	uint32_t randomSeed = 0;          // "生成時乱数"ノードの値を決める種(パーティクルごとに固定).
 };
 
 class ParticleNodeMove;
@@ -57,6 +59,9 @@ public:
 		kExplodeMonochrome,
 		kCharge,
 		kNumber,
+
+
+		kNodeMove, // ノードの時に使うやつです！それ以外の時には使わないで！
 	};
 
 	~Particles();
@@ -74,6 +79,7 @@ public:
 
 	void MakeNewParticle(const Vector3& position);
 	void MakeNewParticle(const Vector3& position, const Vector3& blank);
+	void MakeNewParticle(const Vector3& position,const Vector3& velocity,float lifeTime,const Vector3& targetPosition, const Vector3& blank);
 
 	void MakeNewParticle(const Transform& transform);
 
@@ -87,7 +93,7 @@ public:
 	/// <summary>
 	/// ノードで作った動きを使う(nullptrなら Move の動きに戻る).
 	/// </summary>
-	void SetNodeMove(const std::shared_ptr<ParticleNodeMove>& nodeMove) { nodeMove_ = nodeMove; };
+	void SetNodeMove(const std::shared_ptr<ParticleNodeMove>& nodeMove) { nodeMove_ = nodeMove; if (nodeMove_) { moveType_ = Move::kNodeMove; } };
 	const std::shared_ptr<ParticleNodeMove>& GetNodeMove() const { return nodeMove_; };
 
 	BillboardType GetBillboardType() { return billboardType_; };
@@ -97,6 +103,9 @@ public:
 	void CheckCollision(const Field& field);
 
 	void ClearParticle() { particleData_.clear(); };
+
+	// 今出ているパーティクルの数.
+	size_t GetParticleCount() const { return particleData_.size(); };
 
 	void SetUvTransform(Transform transform) { uvTransform_ = transform; };
 
@@ -117,7 +126,8 @@ private:
 
 	void MoveNumber();
 private:
-	Vector3 size_;
+	// SetParticleSizeを呼ばなくても見えるよう等倍にしておく.
+	Vector3 size_{ 1.0f,1.0f,1.0f };
 
 	Move moveType_;
 

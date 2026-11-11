@@ -32,8 +32,20 @@ public:
 		handleGPU.ptr += (descriptorSize_ * index);
 		return handleGPU;
 	}
+
+	/// <summary>
+	/// ImGui(imgui_impl_dx12)のテクスチャ用にSRVを1つ割り当てる(ImGuiManagerで使う).
+	/// ImGuiはフォントの文字が増えるとテクスチャを作り直すので、古いものと新しいものが同時に存在できるよう複数用意している.
+	/// </summary>
+	void AllocateImGuiDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE* outCpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE* outGpuHandle);
+	void FreeImGuiDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle);
 private:
-	static inline const uint32_t kDescriptorHeapNumMax = 128;
+	static inline const uint32_t kDescriptorHeapNumMax = 512;
+
+	// ヒープの先頭からImGui用に予約しておく数.
+	static inline const uint32_t kImGuiDescriptorNum = 8;
+	// ImGui用のSRVを使っているか.
+	bool isImGuiDescriptorUsed_[kImGuiDescriptorNum] = {};
 
 	uint32_t descriptorSize_;
 

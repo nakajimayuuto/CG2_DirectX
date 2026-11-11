@@ -120,6 +120,8 @@ void Application::LoadDatas(){
 	ParticleManager::GetInstance()->SetParticleSize("explode", { 0.2f,0.2f,0.2f });
 	ParticleManager::GetInstance()->CreateNewParticles("charge", TextureManager::GetInstance()->GetTextureInfo("effect_cross"), BillboardType::kAllAxis, Particles::Move::kCharge);
 	ParticleManager::GetInstance()->SetParticleSize("charge", { 0.2f,0.2f,0.2f });
+	ParticleManager::GetInstance()->CreateNewParticles("test_p", TextureManager::GetInstance()->GetTextureInfo("effect_cross"), BillboardType::kAllAxis,"test_p");
+	ParticleManager::GetInstance()->SetParticleSize("test_p", { 0.5f,0.5f,0.5f });
 
 
 	TextureManager::GetInstance()->RegisterTexture("press_a", "Resources/UI/press_a.png");

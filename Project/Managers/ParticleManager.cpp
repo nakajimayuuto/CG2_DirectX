@@ -78,6 +78,10 @@ void ParticleManager::SpawnParticles(const std::string& name, const Vector3 vect
 	particles_[name]->MakeNewParticle(vector3);
 }
 
+void ParticleManager::SpawnParticles(const std::string& name, const Vector3& position, const Vector3& velocity, float lifeTime, const Vector3& targetPosition) {
+	particles_[name]->MakeNewParticle(position, velocity, lifeTime, targetPosition, { 0.0f,0.0f,0.0f });
+}
+
 void ParticleManager::SpawnNumbers(float number, const Transform transform, const Vector3& color) {
 	if (number >= 10000.0f) {
 		return;
@@ -200,10 +204,21 @@ void ParticleManager::SetNodeMove(Particles& particles, const std::string& moveN
 		return;
 	}
 	particles.SetNodeMove(nodeMove);
+	particles.SetMoveType(Particles::Move::kNodeMove);
 }
 
 bool ParticleManager::HasParticles(const std::string& name) const {
 	return particles_.find(name) != particles_.end();
+}
+
+std::vector<std::string> ParticleManager::GetParticleNames() const {
+	std::vector<std::string> names;
+	for (const auto& [name, particles] : particles_) {
+		if (name.rfind("__", 0) != 0) {
+			names.push_back(name);
+		}
+	}
+	return names;
 }
 
 void ParticleManager::CreateNewEmitter(const std::string& name, const std::string& setParticleName, const Transform& transform, uint32_t count, float frequency) {

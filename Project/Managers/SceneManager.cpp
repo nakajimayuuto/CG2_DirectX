@@ -5,6 +5,8 @@
 #include "ImGuiManager.h"
 #include "SoundManager.h"
 #include "ParticleManager.h"
+#include "EmitterManager.h"
+#include "nameof.hpp"
 #include "../Engine/Environment/Environment.h"
 #include "../Engine/SystemFile/Debug.h"
 #include "../Engine/SystemFile/DeltaTime.h"
@@ -76,11 +78,17 @@ void SceneManager::Update() {
 
 	currentScene_->Update();
 
+	// GUIで設置したエミッターがパーティクルを出す.
+	EmitterManager::GetInstance()->Update();
+
 	ParticleManager::GetInstance()->Update();
 }
 
 void SceneManager::Draw() {
 	currentScene_->Draw();
+
+	// GUIで設置したエミッターの範囲(Debug版のみ).
+	EmitterManager::GetInstance()->Draw();
 }
 
 void SceneManager::ChangeSceneUpdate() {
@@ -113,6 +121,9 @@ void SceneManager::CreateScene(SceneName name) {
 	}
 
 	currentScene_->Initialize();
+
+	// このシーンにGUIで設置したエミッターを読み込む(Resources/Emitter/シーン名.json).
+	EmitterManager::GetInstance()->LoadScene(std::string(NAMEOF_ENUM(name)));
 
 	// シーン切り替えGUIに今のシーンを表示する.
 	ImGuiManager::GetInstance()->SetCurrentSceneName(name);
@@ -177,5 +188,6 @@ void SceneManager::ResetToPlayStartState() {
 	// 再生ボタンを押した時のシーンを作り直す.
 	sceneName_ = playStartSceneName_;
 	isSceneChange_ = false;
+	// (GUIで設置したエミッターは、再生中に置いた / 動かした内容もそのまま残る. EmitterManager::LoadScene).
 	CreateScene(sceneName_);
 }

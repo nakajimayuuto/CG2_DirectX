@@ -1,0 +1,27 @@
+{
+    "emitters": [
+        {
+            "active": true,
+            "count": 1,
+            "frequency": 0.10000000149011612,
+            "name": "Emitter_1",
+            "particle": "test_p",
+            "rotate": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                5.0,
+                5.0,
+                5.0
+            ],
+            "shape": "box",
+            "translate": [
+                7.23738431930542,
+                3.0647284984588623,
+                0.0
+            ]
+        }
+    ]
+}

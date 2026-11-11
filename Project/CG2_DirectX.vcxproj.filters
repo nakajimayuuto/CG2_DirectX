@@ -475,7 +475,7 @@
       <Filter>Managers\ImGuiManager</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Math\BaseEntity.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Engine\Math\BaseEntity</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -726,7 +726,7 @@
       <Filter>Managers\ImGuiManager</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Math\BaseEntity.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Engine\Math\BaseEntity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -773,6 +773,12 @@
     <ClCompile Include="Engine\Renderer\ParticleNodeMove.cpp">
       <Filter>Engine\Renderer\Particle</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Renderer\ParticleEmitterEntity.cpp">
+      <Filter>Engine\Renderer\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\EmitterManager.cpp">
+      <Filter>Managers\ParticleManager</Filter>
+    </ClCompile>
     <ClCompile Include="Managers\ParticleNodeEditor.cpp">
       <Filter>Managers\ParticleManager</Filter>
     </ClCompile>
@@ -792,6 +798,12 @@
   <ItemGroup>
     <ClInclude Include="Engine\Renderer\ParticleNodeMove.h">
       <Filter>Engine\Renderer\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Renderer\ParticleEmitterEntity.h">
+      <Filter>Engine\Renderer\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\EmitterManager.h">
+      <Filter>Managers\ParticleManager</Filter>
     </ClInclude>
     <ClInclude Include="Managers\ParticleNodeEditor.h">
       <Filter>Managers\ParticleManager</Filter>

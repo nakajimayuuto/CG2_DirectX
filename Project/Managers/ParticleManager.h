@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include <string>
+#include <vector>
 #include "../Engine/Renderer/Particles.h"
 #include "../Engine/Math/Field.h"
 
@@ -21,6 +22,11 @@ public:
 
 	void SpawnParticles(const std::string& name,const Transform transform);
 	void SpawnParticles(const std::string& name,const Vector3 vector3);
+	/// <summary>
+	/// 初速 / 寿命 / 目標地点(生成位置から見たローカル座標) を指定してパーティクルを出す.
+	/// ノードで作った動きのパーティクルでは、"パーティクル"ノードの 初速 / 寿命 / 目標地点 になる.
+	/// </summary>
+	void SpawnParticles(const std::string& name, const Vector3& position, const Vector3& velocity, float lifeTime, const Vector3& targetPosition);
 	void SpawnNumbers(float number, const Transform transform,const Vector3& color);
 
 	void CreateNewParticles(const std::string& name ,const TextureInfo& info);
@@ -51,6 +57,8 @@ public:
 
 	// name のパーティクルが作られているか.
 	bool HasParticles(const std::string& name) const;
+	// 作られているパーティクルの名前の一覧(エディター用の "__" から始まるものは除く).
+	std::vector<std::string> GetParticleNames() const;
 	// name のパーティクルを消す(Emitterに設定している時は先にEmitterを消すこと).
 	void RemoveParticles(const std::string& name) { particles_.erase(name); };
 

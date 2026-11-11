@@ -102,6 +102,10 @@ void Particles::MakeNewParticle(const Vector3& position) {
 }
 
 void Particles::MakeNewParticle(const Vector3& position, const Vector3& blank){
+	MakeNewParticle(position, Random::GetInstance()->RandomVector3({ -1.0f,-1.0f,-1.0f }, { 1.0f,1.0f,1.0f }), Random::GetInstance()->RandomFloat(1.0f, 3.0f),Random::GetInstance()->RandomVector3({ -1.0f,-1.0f,-1.0f }, { 1.0f,1.0f,1.0f }),blank);
+}
+
+void Particles::MakeNewParticle(const Vector3& position, const Vector3& velocity, float lifeTime, const Vector3& targetPosition, const Vector3& blank){
 	ParticleData newParticleData;
 	newParticleData.transform.Initialize();
 	newParticleData.targetTransform.Initialize();
@@ -111,7 +115,11 @@ void Particles::MakeNewParticle(const Vector3& position, const Vector3& blank){
 	newParticleData.posBlank = blank;
 
 	// ノードで作った動きを使う時は、初期値もノードで決める.
+	// 渡された 速度 / 寿命 / 目標地点(生成位置から見たローカル座標) はノードの"パーティクル"ノードの 初速 / 寿命 / 目標地点 になる.
 	if (nodeMove_) {
+		newParticleData.velocity = velocity;
+		newParticleData.lifeTime = lifeTime;
+		newParticleData.targetTransform.translate = targetPosition;
 		nodeMove_->Spawn(newParticleData);
 		particleData_.push_back(newParticleData);
 		return;
@@ -154,6 +162,13 @@ void Particles::MakeNewParticle(const Vector3& position, const Vector3& blank){
 		newParticleData.lifeTime = 2.0f;
 		newParticleData.targetTransform = newParticleData.transform;
 		newParticleData.targetTransform.translate.y = newParticleData.transform.translate.y + 1.0f;
+		break;
+	case Particles::Move::kNodeMove:
+		newParticleData.velocity = velocity;
+		newParticleData.lifeTime = lifeTime;
+		newParticleData.targetTransform.translate = targetPosition;
+		newParticleData.color.InitializeColor();
+		newParticleData.color.SetColorWithoutAlpha(colorNoAlpha_, 1.0f);
 		break;
 	case Particles::Move::kNormal:
 	default:
@@ -348,8 +363,10 @@ void Particles::SetBillboardType(BillboardType billboardType) {
 }
 
 void Particles::SetMoveType(Move moveType){
-	// Moveを指定したらノードの動きはやめる.
-	nodeMove_.reset();
+	// ノード以外のMoveを指定したらノードの動きはやめる(kNodeMoveならノードの動きはそのまま).
+	if (moveType != Move::kNodeMove) {
+		nodeMove_.reset();
+	}
 	if (moveType == moveType_) {
 		return;
 	}

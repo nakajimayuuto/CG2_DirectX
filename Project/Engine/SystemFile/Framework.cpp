@@ -20,7 +20,6 @@ void Framework::Draw() {
 
 void Framework::Finalize() {
 	GameSystem::GetInstance()->Finalize();
-
 }
 
 void Framework::Run(){

@@ -130,6 +130,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Engine\Renderer\ParticleNodeMove.cpp" />
+    <ClCompile Include="Engine\Renderer\ParticleEmitterEntity.cpp" />
+    <ClCompile Include="Managers\EmitterManager.cpp" />
     <ClCompile Include="Managers\ParticleNodeEditor.cpp" />
     <ClCompile Include="Application\GameCamera.cpp" />
     <ClCompile Include="Application\Ground.cpp" />
@@ -170,6 +172,8 @@
     <ClInclude Include="Managers\GuiNode.h" />
     <ClInclude Include="Managers\ImGuiManager.h" />
     <ClInclude Include="Engine\Renderer\ParticleNodeMove.h" />
+    <ClInclude Include="Engine\Renderer\ParticleEmitterEntity.h" />
+    <ClInclude Include="Managers\EmitterManager.h" />
     <ClInclude Include="Managers\ParticleNodeEditor.h" />
     <ClInclude Include="externals\imguizmo\ImGuizmo.h" />
     <ClInclude Include="externals\imgui_node\crude_json.h" />
