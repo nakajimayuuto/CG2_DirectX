@@ -17,6 +17,7 @@
 #include "ParticleNodeEditor.h"
 #include "ParticleManager.h"
 #include "EmitterManager.h"
+#include "ParticleSettingsManager.h"
 #include "../Engine/Renderer/Camera.h"
 
 ImGuiManager* ImGuiManager::GetInstance() {
@@ -207,6 +208,8 @@ void ImGuiManager::EndFrame(ID3D12GraphicsCommandList* commandList) {
 	ParticleManager::GetInstance()->DrawEmitterGui();
 	// GUIで設置するエミッター("エミッター"ウィンドウとInspectorのタブ).
 	EmitterManager::GetInstance()->DrawGui();
+	// GUIで作るパーティクル("パーティクル"ウィンドウとInspectorのタブ).
+	ParticleSettingsManager::GetInstance()->DrawGui();
 
 	// エンジンのGUI.
 	DrawGameViewWindow();

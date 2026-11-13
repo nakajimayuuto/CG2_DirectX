@@ -6,6 +6,7 @@
 #include "SoundManager.h"
 #include "ParticleManager.h"
 #include "EmitterManager.h"
+#include "ParticleSettingsManager.h"
 #include "nameof.hpp"
 #include "../Engine/Environment/Environment.h"
 #include "../Engine/SystemFile/Debug.h"
@@ -56,6 +57,9 @@ void SceneManager::Update() {
 	}
 
 	PlayControlUpdate();
+
+	// GUIで変えたパーティクルを反映する(描画コマンドを積む前に行う).
+	ParticleSettingsManager::GetInstance()->ApplyChanges();
 
 
 
@@ -121,6 +125,9 @@ void SceneManager::CreateScene(SceneName name) {
 	}
 
 	currentScene_->Initialize();
+
+	// GUIで作ったパーティクルを読み込む(最初の1回だけ. Resources/Particle/particles.json).
+	ParticleSettingsManager::GetInstance()->Load();
 
 	// このシーンにGUIで設置したエミッターを読み込む(Resources/Emitter/シーン名.json).
 	EmitterManager::GetInstance()->LoadScene(std::string(NAMEOF_ENUM(name)));

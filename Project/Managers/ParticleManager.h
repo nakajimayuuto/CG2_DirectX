@@ -5,6 +5,38 @@
 #include "../Engine/Renderer/Particles.h"
 #include "../Engine/Math/Field.h"
 
+/// <summary>
+/// CreateNewParticles(全てのオーバーロード) と SetParticleSize に渡す内容をまとめたもの.
+/// ParticleManager::ApplyParticleSettings に渡すとパーティクルが作られる(GUIのパーティクル管理で使う).
+/// </summary>
+struct ParticleSettings {
+	// 何を描画するか(CreateNewParticles のどのオーバーロードにあたるか).
+	enum class Shape {
+		kTexture,   // テクスチャを貼った板ポリ(TextureInfo / テクスチャ名 を渡すもの).
+		kModel,     // モデル(ModelInfo を渡すもの).
+		kPrimitive, // Primitive図形(PrimitiveType を渡すもの).
+	};
+
+	std::string name;
+	Shape shape = Shape::kTexture;
+	// kTexture / kPrimitive で貼るテクスチャ(TextureManagerに登録した名前).
+	std::string textureName = "white_template";
+	// kModel で使うモデル(ModelManagerに登録した名前. メッシュが1つのもの).
+	std::string modelName;
+	// kPrimitive の図形と半径などのパラメータ.
+	PrimitiveType primitiveType = PrimitiveType::kPlane;
+	PrimitiveParam primitiveParam{};
+
+	BillboardType billboardType = BillboardType::kAllAxis;
+	// true ならノードで作った動き(nodeMoveName)、false なら moveType の動き.
+	bool useNodeMove = false;
+	Particles::Move moveType = Particles::Move::kNormal;
+	std::string nodeMoveName;
+
+	// SetParticleSize の値.
+	Vector3 size{ 1.0f,1.0f,1.0f };
+};
+
 class ParticleManager{
 public:
 	// Primitive図形の種類(Rendererと共通の PrimitiveType をそのまま使う).
@@ -59,8 +91,17 @@ public:
 	bool HasParticles(const std::string& name) const;
 	// 作られているパーティクルの名前の一覧(エディター用の "__" から始まるものは除く).
 	std::vector<std::string> GetParticleNames() const;
-	// name のパーティクルを消す(Emitterに設定している時は先にEmitterを消すこと).
-	void RemoveParticles(const std::string& name) { particles_.erase(name); };
+	/// <summary>
+	/// settings の内容でパーティクルを作る. 同じ名前のパーティクルがあれば同じオブジェクトのまま作り直す
+	/// (GetParticlesで受け取ったポインタやEmitterに設定したものはそのまま使える).
+	/// 描画に使っている頂点バッファを作り直すことがあるので、描画コマンドを積んでいる途中では呼ばないこと.
+	/// </summary>
+	/// <param name="settings">作る内容</param>
+	/// <param name="isRebuildShape">falseなら形とテクスチャは作り直さず、ビルボード / 動き / 大きさだけ変える(作られていない時は作る)</param>
+	void ApplyParticleSettings(const ParticleSettings& settings, bool isRebuildShape = true);
+
+	// name のパーティクルを消す(CreateNewEmitterで作ったEmitterに設定されていれば、そのEmitterは何も出さなくなる).
+	void RemoveParticles(const std::string& name);
 
 	void CreateNewEmitter(const std::string& name, const std::string& setParticleName, const Transform& transform, uint32_t count, float frequency);
 	void CreateNewEmitter(const std::string& name, const std::string& setParticleName);

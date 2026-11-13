@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 
 
 #include <map>
@@ -22,6 +23,15 @@ public:
 
 	// name のテクスチャが登録されているか.
 	bool HasTexture(const std::string& name) const { return textures_.find(name) != textures_.end(); };
+
+	// 登録されているテクスチャの名前の一覧(名前順).
+	std::vector<std::string> GetTextureNames() const {
+		std::vector<std::string> names;
+		for (const auto& [name, info] : textures_) {
+			names.push_back(name);
+		}
+		return names;
+	};
 private:
 	// Textureデータを読む(TextureManager的な奴に入れる).
 	static DirectX::ScratchImage LoadTexture(const std::string& filePath);

@@ -132,6 +132,7 @@
     <ClCompile Include="Engine\Renderer\ParticleNodeMove.cpp" />
     <ClCompile Include="Engine\Renderer\ParticleEmitterEntity.cpp" />
     <ClCompile Include="Managers\EmitterManager.cpp" />
+    <ClCompile Include="Managers\ParticleSettingsManager.cpp" />
     <ClCompile Include="Managers\ParticleNodeEditor.cpp" />
     <ClCompile Include="Application\GameCamera.cpp" />
     <ClCompile Include="Application\Ground.cpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="Engine\Renderer\ParticleNodeMove.h" />
     <ClInclude Include="Engine\Renderer\ParticleEmitterEntity.h" />
     <ClInclude Include="Managers\EmitterManager.h" />
+    <ClInclude Include="Managers\ParticleSettingsManager.h" />
     <ClInclude Include="Managers\ParticleNodeEditor.h" />
     <ClInclude Include="externals\imguizmo\ImGuizmo.h" />
     <ClInclude Include="externals\imgui_node\crude_json.h" />

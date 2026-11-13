@@ -64,10 +64,14 @@ void Particles::Initialize(PrimitiveType type, const TextureInfo& info, const Pr
 void Particles::InitializeCommon(D3D12_GPU_DESCRIPTOR_HANDLE textureHandle, const Vector4& color, const Matrix4x4& uvTransform) {
 	isVisible_ = true;
 	textureHandle_ = textureHandle;
+	// 作り直した時は出ていたパーティクルを消す.
+	particleData_.clear();
 
-	// 【MaterialResourceを生成する】
-	materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
-	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
+	// 【MaterialResourceを生成する】(2回目以降のInitializeでは作ってあるものを使い回す)
+	if (!materialResource_) {
+		materialResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(Material));
+		materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
+	}
 	materialData_->color = color;
 	materialData_->lightingType = 0;
 	materialData_->uvTransform = uvTransform;
@@ -79,15 +83,17 @@ void Particles::InitializeCommon(D3D12_GPU_DESCRIPTOR_HANDLE textureHandle, cons
 	uvTransform_.translate = uvTransformValue.translate;
 
 	// 【インスタンシング用のResourceとSRVを生成する】
-	instancingResource_ = GameSystem::GetInstance()->CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(ParticleForGPU) * kNumMaxInstance);
-	instancingResource_->Map(0, nullptr, reinterpret_cast<void**>(&instancingData_));
+	// (2回目以降のInitializeでは作ってあるものを使い回す. SRVは解放できないので作り直すと減っていくため)
+	if (!instancingResource_) {
+		instancingResource_ = GameSystem::GetInstance()->CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(ParticleForGPU) * kNumMaxInstance);
+		instancingResource_->Map(0, nullptr, reinterpret_cast<void**>(&instancingData_));
+		instancingSrvHandleGPU = SrvManager::GetInstance()->CreateSRVforStructureBuffer(instancingResource_.Get(), kNumMaxInstance, sizeof(ParticleForGPU));
+	}
 
 	for (uint32_t index = 0; index < kNumMaxInstance; index++) {
 		instancingData_[index].WVP = Matrix4x4::Identity();
 		instancingData_[index].World = Matrix4x4::Identity();
 	}
-
-	instancingSrvHandleGPU = SrvManager::GetInstance()->CreateSRVforStructureBuffer(instancingResource_.Get(), kNumMaxInstance, sizeof(ParticleForGPU));
 
 	billboardMatrix_ = Matrix4x4::Identity();
 	blendMode_ = BlendMode::kAdd;
@@ -389,6 +395,10 @@ void Emitter::Initialize(const Transform& transform, uint32_t count, float frequ
 }
 
 void Emitter::CreateParticle() {
+	// 出すパーティクルが設定されていない / 消された.
+	if (!particles_) {
+		return;
+	}
 	for (uint32_t count = 0; count < count_; count++) {
 		switch (shape_) {
 		case EmitterShape::kBox:

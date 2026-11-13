@@ -210,7 +210,7 @@ public:
 private:
 	EmitterShape shape_;
 
-	Particles* particles_;
+	Particles* particles_ = nullptr;
 
 	Transform transform_;
 	uint32_t count_;

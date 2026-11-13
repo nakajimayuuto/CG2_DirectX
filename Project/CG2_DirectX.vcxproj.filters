@@ -779,6 +779,9 @@
     <ClCompile Include="Managers\EmitterManager.cpp">
       <Filter>Managers\ParticleManager</Filter>
     </ClCompile>
+    <ClCompile Include="Managers\ParticleSettingsManager.cpp">
+      <Filter>Managers\ParticleManager</Filter>
+    </ClCompile>
     <ClCompile Include="Managers\ParticleNodeEditor.cpp">
       <Filter>Managers\ParticleManager</Filter>
     </ClCompile>
@@ -803,6 +806,9 @@
       <Filter>Engine\Renderer\Particle</Filter>
     </ClInclude>
     <ClInclude Include="Managers\EmitterManager.h">
+      <Filter>Managers\ParticleManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\ParticleSettingsManager.h">
       <Filter>Managers\ParticleManager</Filter>
     </ClInclude>
     <ClInclude Include="Managers\ParticleNodeEditor.h">

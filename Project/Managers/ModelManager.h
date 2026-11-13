@@ -2,6 +2,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 #include "../Engine/Renderer/ModelData.h"
 #include <fstream>
 #include <sstream>
@@ -48,6 +49,18 @@ public:
 	
 	// コピーを作らないように参照で返す.
 	const ModelInfo& GetModelInfo(const std::string& name);
+
+	// name のモデルが登録されているか.
+	bool HasModel(const std::string& name) const { return models_.find(name) != models_.end(); };
+
+	// 登録されているモデルの名前の一覧(名前順).
+	std::vector<std::string> GetModelNames() const {
+		std::vector<std::string> names;
+		for (const auto& [name, info] : models_) {
+			names.push_back(name);
+		}
+		return names;
+	};
 private:
 	// ModelManager的n(以下	略.
 	MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& fileName,const std::string& usemtl);

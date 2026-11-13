@@ -207,6 +207,73 @@ void ParticleManager::SetNodeMove(Particles& particles, const std::string& moveN
 	particles.SetMoveType(Particles::Move::kNodeMove);
 }
 
+void ParticleManager::ApplyParticleSettings(const ParticleSettings& settings, bool isRebuildShape) {
+	if (settings.name.empty()) {
+		return;
+	}
+
+	auto it = particles_.find(settings.name);
+	const bool isNew = it == particles_.end();
+	if (isNew) {
+		it = particles_.emplace(settings.name, std::make_unique<Particles>()).first;
+	}
+	Particles& particles = *it->second;
+
+	// 形とテクスチャ(Initializeをやり直す. 2回目以降はバッファを使い回す).
+	if (isNew || isRebuildShape) {
+		TextureManager* textureManager = TextureManager::GetInstance();
+		ModelManager* modelManager = ModelManager::GetInstance();
+		// 登録されていないテクスチャは白にする.
+		const TextureInfo texture = textureManager->GetTextureInfo(
+			textureManager->HasTexture(settings.textureName) ? settings.textureName : std::string("white_template"));
+
+		switch (settings.shape) {
+		case ParticleSettings::Shape::kModel:
+			// 登録されていない / メッシュが1つではないモデルは板ポリにする.
+			if (modelManager->HasModel(settings.modelName) && modelManager->GetModelInfo(settings.modelName).modelData.size() == 1) {
+				particles.Initialize(modelManager->GetModelInfo(settings.modelName));
+			} else {
+				particles.Initialize(texture);
+			}
+			break;
+		case ParticleSettings::Shape::kPrimitive:
+			particles.Initialize(settings.primitiveType, texture, settings.primitiveParam);
+			break;
+		case ParticleSettings::Shape::kTexture:
+		default:
+			particles.Initialize(texture);
+			break;
+		}
+	}
+
+	particles.SetBillboardType(settings.billboardType);
+
+	// 動き(ノードの動きが読み込めない時は今まで通りの動きにする).
+	std::shared_ptr<ParticleNodeMove> nodeMove = settings.useNodeMove && !settings.nodeMoveName.empty()
+		? ParticleNodeMove::Get(settings.nodeMoveName) : nullptr;
+	if (nodeMove) {
+		particles.SetNodeMove(nodeMove);
+	} else {
+		particles.SetMoveType(settings.useNodeMove || settings.moveType == Particles::Move::kNodeMove ? Particles::Move::kNormal : settings.moveType);
+	}
+
+	particles.SetSize(settings.size);
+}
+
+void ParticleManager::RemoveParticles(const std::string& name) {
+	auto it = particles_.find(name);
+	if (it == particles_.end()) {
+		return;
+	}
+	// 消すパーティクルを出しているEmitterが、消えたパーティクルを使わないようにする.
+	for (auto& [emitterName, emitter] : emitters_) {
+		if (emitter->GetParticles() == it->second.get()) {
+			emitter->SetParticle(nullptr);
+		}
+	}
+	particles_.erase(it);
+}
+
 bool ParticleManager::HasParticles(const std::string& name) const {
 	return particles_.find(name) != particles_.end();
 }
