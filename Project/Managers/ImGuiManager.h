@@ -103,6 +103,13 @@ public:
 	void Play();
 	// 再生中 → 一時停止.
 	void Pause();
+	/// <summary>
+	/// UI(Renderer::DrawSpriteで描画するもの)を描画してよいか.
+	/// 再生中はいつもtrue. 停止中 / 一時停止中は"Game"ウィンドウのUIボタンで切り替える.
+	/// </summary>
+	bool IsGameUIVisible() const { return IsPlaying() || isUIVisibleWhenNotPlaying_; };
+	void SetUIVisibleWhenNotPlaying(bool isVisible) { isUIVisibleWhenNotPlaying_ = isVisible; };
+
 	// 再生中 ⇔ 一時停止中 を切り替える(停止中は何もしない).
 	void TogglePause();
 	// 再生中 / 一時停止中 → 停止(再生前の状態に戻すよう要求する).
@@ -175,8 +182,13 @@ private:
 	// "Game"ウィンドウのゲーム画面の上にギズモと操作の切り替えボタンを描画する.
 	void DrawGizmos(const Vector2& imagePos, const Vector2& imageSize);
 
-	// "Game"ウィンドウの上部の右側に デバッグカメラ の切り替えボタンを描画する.
-	void DrawDebugCameraButton();
+	// "Game"ウィンドウの上部の右側に UIの表示 / デバッグカメラ の切り替えボタンを描画する.
+	void DrawViewOptionButtons();
+
+	/// <summary>
+	/// エディターの設定(停止中 / 一時停止中のUIの表示など)を imgui.ini に保存 / 読み込みできるようにする.
+	/// </summary>
+	void RegisterEditorSettingsHandler();
 
 	/// <summary>
 	/// 日本語を表示できるフォント(Windowsのメイリオなど)を読み込む.
@@ -211,6 +223,8 @@ private:
 	D3D12_GPU_DESCRIPTOR_HANDLE pauseInactiveIcon_{};
 	D3D12_GPU_DESCRIPTOR_HANDLE stopIcon_{};
 #endif // USE_IMGUI
+	// 停止中 / 一時停止中にUIを表示するか(imgui.ini に保存して次回の起動でも同じにする).
+	bool isUIVisibleWhenNotPlaying_ = true;
 	bool isPlayStarted_ = false;
 	bool isStopRequested_ = false;
 

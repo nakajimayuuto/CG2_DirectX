@@ -3,6 +3,7 @@
 
 #include "../../Managers/SoundManager.h"
 #include "../../Managers/SrvManager.h"
+#include "../../Managers/ImGuiManager.h"
 #include <vector>
 
 namespace {
@@ -1013,6 +1014,11 @@ void Renderer::DrawModelInstance(const TransformationMatrix& matrix, const Matri
 }
 
 void Renderer::DrawSpriteCommon(const Matrix4x4& worldMatrix, const VertexData* vertices, const Material& material, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle) {
+	// 停止中 / 一時停止中にUIを非表示にしている時は描画しない("Game"ウィンドウのUIボタン).
+	if (!ImGuiManager::GetInstance()->IsGameUIVisible()) {
+		return;
+	}
+
 	assert(currentDrawSpriteIndex_ < maxSpriteNum);
 	SpriteInstance* instance = spriteInstances[currentDrawSpriteIndex_].get();
 	currentDrawSpriteIndex_++;

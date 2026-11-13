@@ -14,6 +14,8 @@
 #include "../externals/imguizmo/ImGuizmo.h"
 #endif // USE_IMGUI
 #include <cassert>
+#include <cstdio>
+#include <cstring>
 #include "ParticleNodeEditor.h"
 #include "ParticleManager.h"
 #include "EmitterManager.h"
@@ -49,6 +51,41 @@ namespace {
 	const char* const kInspectorHiddenWindowName = "##InspectorHidden";
 	// タブの一覧を出すウィンドウ名.
 	const char* const kHierarchyWindowName = "Hierarchy";
+}
+#endif // USE_IMGUI
+
+/*=============================================================
+エディターの設定の保存(imgui.ini)
+=============================================================*/
+#ifdef USE_IMGUI
+void ImGuiManager::RegisterEditorSettingsHandler() {
+	// imgui.ini に次の形で書き込まれ、起動した時(最初のフレーム)に読み込まれる.
+	// [EngineEditor][Settings]
+	// UIVisibleWhenNotPlaying=0
+	ImGuiSettingsHandler handler;
+	handler.TypeName = "EngineEditor";
+	handler.TypeHash = ImHashStr("EngineEditor");
+	handler.UserData = this;
+	// [EngineEditor][名前] の行が見つかった時. 返した値が ReadLineFn に渡される.
+	handler.ReadOpenFn = [](ImGuiContext*, ImGuiSettingsHandler* settingsHandler, const char* name) -> void* {
+		return std::strcmp(name, "Settings") == 0 ? settingsHandler->UserData : nullptr;
+	};
+	// [EngineEditor][Settings] の下の1行ずつ.
+	handler.ReadLineFn = [](ImGuiContext*, ImGuiSettingsHandler*, void* entry, const char* line) {
+		ImGuiManager* manager = static_cast<ImGuiManager*>(entry);
+		int value = 0;
+		if (sscanf_s(line, "UIVisibleWhenNotPlaying=%d", &value) == 1) {
+			manager->isUIVisibleWhenNotPlaying_ = value != 0;
+		}
+	};
+	// imgui.ini に書き出す時.
+	handler.WriteAllFn = [](ImGuiContext*, ImGuiSettingsHandler* settingsHandler, ImGuiTextBuffer* buffer) {
+		const ImGuiManager* manager = static_cast<const ImGuiManager*>(settingsHandler->UserData);
+		buffer->appendf("[%s][Settings]\n", settingsHandler->TypeName);
+		buffer->appendf("UIVisibleWhenNotPlaying=%d\n", manager->isUIVisibleWhenNotPlaying_ ? 1 : 0);
+		buffer->append("\n");
+	};
+	ImGui::AddSettingsHandler(&handler);
 }
 #endif // USE_IMGUI
 
@@ -153,6 +190,9 @@ void ImGuiManager::Initialize(WinApp* winApp, ID3D12Device* device, uint32_t buf
 	// 日本語を表示できるフォントを読み込む.
 	LoadJapaneseFont();
 	io.Fonts->Build();
+
+	// エディターの設定(UIボタンの状態など)をウィンドウの配置と一緒に imgui.ini に保存する.
+	RegisterEditorSettingsHandler();
 #else
 	(void)winApp; (void)device; (void)bufferCount; (void)rtvFormat; (void)commandQueue;
 #endif // USE_IMGUI
@@ -407,9 +447,9 @@ void ImGuiManager::DrawPlayControlBar() {
 		if (isPaused) { ImGui::PopStyleColor(); }
 	}
 
-	// 同じ行の右端に デバッグカメラ の切り替えボタン.
+	// 同じ行の右端に UIの表示 / デバッグカメラ の切り替えボタン.
 	ImGui::SameLine();
-	DrawDebugCameraButton();
+	DrawViewOptionButtons();
 
 	// ボタンの下に余白をあけてからゲーム画面を置く.
 	ImGui::Dummy(ImVec2(0.0f, kBarPaddingY));
@@ -598,19 +638,45 @@ void ImGuiManager::DrawGizmos(const Vector2& imagePos, const Vector2& imageSize)
 /*=============================================================
 デバッグカメラ
 =============================================================*/
-void ImGuiManager::DrawDebugCameraButton() {
+void ImGuiManager::DrawViewOptionButtons() {
+	const ImGuiStyle& style = ImGui::GetStyle();
+	const ImVec4 activeColor = ImVec4(0.20f, 0.45f, 0.80f, 1.0f);
+
+	// UIの表示の切り替え(停止中 / 一時停止中だけ使う. 再生中はいつも表示する).
+	const std::string uiLabel = "UI\n" + static_cast<std::string>(isUIVisibleWhenNotPlaying_ ? "表示" : "非表示");
+	// デバッグカメラの切り替え.
 	Camera* camera = Camera::GetInstance();
 	const bool isDebugCamera = camera->GetUseDebugCamera();
-	std::string label = "デバッグカメラ\n" + static_cast<std::string>(isDebugCamera ? "起動中" : "停止中");
-	const float buttonWidth = ImGui::CalcTextSize(label.c_str()).x + ImGui::GetStyle().FramePadding.x * 2.0f;
-	// 再生ボタンと同じ高さにして、ウィンドウの右端に寄せる.
-	const float buttonHeight = kPlayControlIconSize_ + ImGui::GetStyle().FramePadding.y * 4.0f;
-	const float rightX = ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - buttonWidth - 8.0f;
+	const std::string cameraLabel = "デバッグカメラ\n" + static_cast<std::string>(isDebugCamera ? "起動中" : "停止中");
+
+	// 再生ボタンと同じ高さにして、2つ並べてウィンドウの右端に寄せる.
+	const float uiButtonWidth = ImGui::CalcTextSize("UI\n非表示").x + style.FramePadding.x * 2.0f;
+	const float cameraButtonWidth = ImGui::CalcTextSize(cameraLabel.c_str()).x + style.FramePadding.x * 2.0f;
+	const float buttonHeight = kPlayControlIconSize_ + style.FramePadding.y * 4.0f;
+	const float totalWidth = uiButtonWidth + style.ItemSpacing.x + cameraButtonWidth;
+	const float rightX = ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - totalWidth - 8.0f;
 	if (ImGui::GetCursorPosX() < rightX) {
 		ImGui::SetCursorPosX(rightX);
 	}
-	if (isDebugCamera) { ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.20f, 0.45f, 0.80f, 1.0f)); }
-	if (ImGui::Button(label.c_str(), ImVec2(buttonWidth, buttonHeight))) {
+
+	// 非表示にしている時はボタンの色を変えて分かるようにする.
+	// (押した時に値が変わるので、Push / Popは押す前の値で決める).
+	const bool isUIHidden = !isUIVisibleWhenNotPlaying_;
+	if (isUIHidden) { ImGui::PushStyleColor(ImGuiCol_Button, activeColor); }
+	if (ImGui::Button(uiLabel.c_str(), ImVec2(uiButtonWidth, buttonHeight))) {
+		isUIVisibleWhenNotPlaying_ = !isUIVisibleWhenNotPlaying_;
+		// 次に imgui.ini を書き出す時に保存される(次回の起動でも同じ状態になる).
+		ImGui::MarkIniSettingsDirty();
+	}
+	if (isUIHidden) { ImGui::PopStyleColor(); }
+	if (ImGui::IsItemHovered()) {
+		ImGui::SetTooltip("停止中 / 一時停止中に UI(Renderer::DrawSprite で描画するもの) を表示するか\n再生中はいつも表示します");
+	}
+
+	ImGui::SameLine();
+
+	if (isDebugCamera) { ImGui::PushStyleColor(ImGuiCol_Button, activeColor); }
+	if (ImGui::Button(cameraLabel.c_str(), ImVec2(cameraButtonWidth, buttonHeight))) {
 		camera->SetUseDebugCamera(!isDebugCamera);
 	}
 	if (isDebugCamera) { ImGui::PopStyleColor(); }
