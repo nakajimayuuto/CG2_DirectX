@@ -33,8 +33,7 @@ void TitleScene::Update() {
 }
 
 void TitleScene::Draw() {
-
-	fade_->Draw();
+	//fade_->Draw();
 
 	instancing_.Draw(Transform::GetInitialValue());
 }
