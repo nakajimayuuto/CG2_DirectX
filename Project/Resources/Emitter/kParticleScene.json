@@ -1,0 +1,39 @@
+{
+    "emitters": [
+        {
+            "active": true,
+            "count": 3,
+            "frequency": 0.10000000149011612,
+            "lifeTime": 1.0,
+            "name": "Emitter_1",
+            "particle": "test_p",
+            "rotate": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "rotateWithEmitter": true,
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "shape": "box",
+            "startVelocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "targetPosition": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "translate": [
+                -1.2295665740966797,
+                2.0,
+                0.0
+            ]
+        }
+    ]
+}

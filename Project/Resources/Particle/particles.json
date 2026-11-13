@@ -1,0 +1,22 @@
+{
+    "particles": [
+        {
+            "billboard": "kAllAxis",
+            "model": "",
+            "move": "kNormal",
+            "name": "particle_test",
+            "nodeMove": "spiral",
+            "primitive": "kPlane",
+            "radiusA": 1.0,
+            "radiusB": 0.5,
+            "shape": "kTexture",
+            "size": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "texture": "effect_cross",
+            "useNodeMove": true
+        }
+    ]
+}

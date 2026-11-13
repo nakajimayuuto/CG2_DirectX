@@ -10,6 +10,106 @@
 #pragma comment(lib,"dxcompiler.lib")
 #pragma comment(lib,"Dbghelp.lib")
 
+#include <fstream>
+#include <sstream>
+#include <vector>
+
+namespace {
+	/// <summary>
+	/// OBJのmtlファイルから、指定マテリアルの map_Kd に書かれた -s(スケール) / -o(オフセット) を読んでuvTransformを作る.
+	/// AssimpのOBJ読み込みは -s / -o を読み飛ばすだけで AI_MATKEY_UVTRANSFORM に入れてくれないため、自前で読む.
+	/// </summary>
+	/// <returns>-s か -o が見つかればtrue</returns>
+	bool LoadObjMtlUvTransform(const std::string& directoryPath, const std::string& objFileName, const std::string& materialName, Matrix4x4& outUvTransform) {
+		// objに書かれている mtllib を集める.
+		std::vector<std::string> mtlFileNames;
+		{
+			std::ifstream objFile(directoryPath + "/" + objFileName);
+			if (!objFile.is_open()) {
+				return false;
+			}
+			std::string line;
+			while (std::getline(objFile, line)) {
+				std::istringstream s(line);
+				std::string identifier;
+				s >> identifier;
+				if (identifier == "mtllib") {
+					std::string mtlFileName;
+					std::getline(s >> std::ws, mtlFileName);
+					// 末尾の改行コード(\r)や空白を取り除く.
+					while (!mtlFileName.empty() && (mtlFileName.back() == '\r' || mtlFileName.back() == ' ')) {
+						mtlFileName.pop_back();
+					}
+					if (!mtlFileName.empty()) {
+						mtlFileNames.push_back(mtlFileName);
+					}
+				}
+			}
+		}
+
+		for (const std::string& mtlFileName : mtlFileNames) {
+			std::ifstream mtlFile(directoryPath + "/" + mtlFileName);
+			if (!mtlFile.is_open()) {
+				continue;
+			}
+
+			std::string line;
+			std::string currentMaterial;
+			while (std::getline(mtlFile, line)) {
+				std::istringstream s(line);
+				std::string identifier;
+				s >> identifier;
+
+				if (identifier == "newmtl") {
+					s >> currentMaterial;
+					continue;
+				}
+
+				if (currentMaterial != materialName || identifier != "map_Kd") {
+					continue;
+				}
+
+				Vector3 scale = { 1.0f,1.0f,1.0f };
+				Vector3 offset = { 0.0f,0.0f,0.0f };
+				bool isFound = false;
+
+				// map_Kd [-s u v w] [-o u v w] ファイル名.
+				std::string token;
+				while (s >> token) {
+					if (token == "-s") {
+						s >> scale.x >> scale.y >> scale.z;
+						isFound = true;
+					} else if (token == "-o") {
+						s >> offset.x >> offset.y >> offset.z;
+						isFound = true;
+					} else {
+						// オプション以外(ファイル名)が来たら終わり.
+						break;
+					}
+				}
+
+				if (isFound) {
+					outUvTransform = Matrix4x4::MakeAffineMatrix(scale, { 0.0f,0.0f,0.0f }, offset);
+				}
+				return isFound;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// ファイル名の拡張子が .obj か(大文字小文字は区別しない).
+	/// </summary>
+	bool IsObjFile(const std::string& fileName) {
+		if (fileName.size() < 4) {
+			return false;
+		}
+		std::string extension = fileName.substr(fileName.size() - 4);
+		std::transform(extension.begin(), extension.end(), extension.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+		return extension == ".obj";
+	}
+}
 
 
 ModelManager* ModelManager::GetInstance() {
@@ -246,9 +346,19 @@ std::vector<ModelData> ModelManager::LoadModelFile(const std::string& directoryP
 			aiUVTransform uvTransform;
 			material->GetTexture(aiTextureType_DIFFUSE, 0, &textureFilePath);
 			// 第2引数はテクスチャのインデックス(0番目のディフューズテクスチャ).
-			material->Get(AI_MATKEY_UVTRANSFORM(aiTextureType_DIFFUSE, 0), uvTransform);
 			modelData.materialData.textureFilePath = directoryPath + "/" + textureFilePath.C_Str();
-			modelData.materialData.matarial.uvTransform = Matrix4x4::MakeScaleMatrix({ uvTransform.mScaling.x,uvTransform.mScaling.y,1.0f });
+
+			// OBJはAssimpがmtlの -s / -o をuvTransformに入れてくれないので、mtlを直接読む.
+			Matrix4x4 objUvTransform = Matrix4x4::Identity();
+			if (IsObjFile(fileName) && LoadObjMtlUvTransform(directoryPath, fileName, materialName.C_Str(), objUvTransform)) {
+				modelData.materialData.matarial.uvTransform = objUvTransform;
+			} else if (material->Get(AI_MATKEY_UVTRANSFORM(aiTextureType_DIFFUSE, 0), uvTransform) == AI_SUCCESS) {
+				// glTFなど、Assimpがuvトランスフォームを持っている場合.
+				modelData.materialData.matarial.uvTransform = Matrix4x4::MakeAffineMatrix(
+					{ uvTransform.mScaling.x,uvTransform.mScaling.y,1.0f },
+					{ 0.0f,0.0f,uvTransform.mRotation },
+					{ uvTransform.mTranslation.x,uvTransform.mTranslation.y,0.0f });
+			}
 		}
 	}
 

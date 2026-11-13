@@ -91,6 +91,9 @@ void SceneManager::Update() {
 void SceneManager::Draw() {
 	currentScene_->Draw();
 
+	// パーティクルの描画(更新はUpdateで行っているので、描画もここでまとめて行う).
+	ParticleManager::GetInstance()->Draw();
+
 	// GUIで設置したエミッターの範囲(Debug版のみ).
 	EmitterManager::GetInstance()->Draw();
 }

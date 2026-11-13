@@ -38,11 +38,16 @@ void GameScene::Update() {
 #endif // _DEBUG
 
 	Camera::GetInstance()->Update();
+	ParticleManager::GetInstance()->Update();
 	fade_->Update();
 }
 
 void GameScene::Draw() {
 	ground_->Draw();
+
+	Renderer::GetInstance()->DrawModel(
+		Transform::GetInitialValue(),
+		"halberd", {1.0f,1.0f,1.0f,1.0f},false);
 
 	fade_->Draw();
 }
