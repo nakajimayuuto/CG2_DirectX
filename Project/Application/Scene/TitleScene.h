@@ -21,4 +21,6 @@ public:
 	void Draw() override;
 private:
 	std::unique_ptr<Fade> fade_;
+
+	TestParticle instancing_;
 };

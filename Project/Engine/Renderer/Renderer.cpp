@@ -1214,7 +1214,7 @@ void TestParticle::Initialize(const ModelInfo& info, uint32_t numInstanced) {
 		instancingData_[index].World = Matrix4x4::Identity();
 	}
 
-	SrvManager::GetInstance()->CreateSRVforStructureBuffer(instancingResource_.Get(), numInstance_, sizeof(TransformationMatrix));
+	instancingSrvHandleGPU = SrvManager::GetInstance()->CreateSRVforStructureBuffer(instancingResource_.Get(), numInstance_, sizeof(TransformationMatrix));
 }
 
 void TestParticle::Draw(const Transform& transform) const {

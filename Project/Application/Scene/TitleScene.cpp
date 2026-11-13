@@ -14,6 +14,8 @@ void TitleScene::Initialize() {
 	fade_->SetColor({ 0.0f,0.0f,0.0f });
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
 
+	instancing_.Initialize(ModelManager::GetInstance()->GetModelInfo("effect_plane"),10);
+
 	//LightManager::GetInstance()->CreateSpotLight("halberd_title_light");
 	//LightManager::GetInstance()->GetLightData("halberd_title_light")->color = { 1.0f,1.0f,1.0f,1.0f };
 	//LightManager::GetInstance()->GetLightData("halberd_title_light")->radius = 10.0f;
@@ -33,4 +35,6 @@ void TitleScene::Update() {
 void TitleScene::Draw() {
 
 	fade_->Draw();
+
+	instancing_.Draw(Transform::GetInitialValue());
 }
