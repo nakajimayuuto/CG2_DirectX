@@ -215,7 +215,7 @@ private:
 	bool isStopRequested_ = false;
 
 	// SceneSelectGUI.
-	SceneName selectedSceneName_ = SceneName::kTitleScene;
+	SceneName selectedSceneName_ = SceneName::kInstancingDrawScene;
 	bool isLoadSceneRequested_ = false;
 
 	// Inspector.

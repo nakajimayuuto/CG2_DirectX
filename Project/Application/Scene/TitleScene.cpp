@@ -73,7 +73,7 @@ void TitleScene::Update() {
 
 	if (isSubmit_) {
 		if (fade_->isFinished()) {
-			SceneManager::GetInstance()->ChengeScene(SceneName::kGameScene);
+			SceneManager::GetInstance()->ChengeScene(SceneName::kParticleScene);
 		}
 	} else {
 		PhaseSelect();

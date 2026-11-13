@@ -1,7 +1,7 @@
 #pragma once
 enum class SceneName {
-	kGameScene,
-	kTitleScene,
+	kParticleScene,
+	kInstancingDrawScene,
 };
 
 class IScene {

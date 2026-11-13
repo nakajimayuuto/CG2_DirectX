@@ -50,6 +50,6 @@ private:
 	bool isSceneChange_;
 
 	// 再生ボタンが押された時の状態(終了ボタンでここに戻す).
-	SceneName playStartSceneName_ = SceneName::kTitleScene;
+	SceneName playStartSceneName_ = SceneName::kInstancingDrawScene;
 	Difficulty playStartDifficulty_ = Difficulty::kDifficultyEasy;
 };

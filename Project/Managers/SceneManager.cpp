@@ -28,11 +28,11 @@ void SceneManager::Initialize() {
 	// 停止状態で始まる場合、シーンの初期化で鳴らすBGMが流れないよう先に音を止めておく.
 	SoundManager::GetInstance()->SetPaused(!ImGuiManager::GetInstance()->IsPlaying());
 
-	sceneName_ = SceneName::kTitleScene;
+	sceneName_ = SceneName::kInstancingDrawScene;
 	isSceneChange_ = false;
 	#ifdef _DEBUG
 	//Debug::GetInstance()->LoadDebugSettings();
-	//sceneName_ = SceneName::kGameScene;
+	//sceneName_ = SceneName::kParticleScene;
 	//gGamePhase = GamePhase::kBossPhase2;
 	//DifficultyManager::GetInstance()->SetCurrentDifficulty(Difficulty::kDifficultyHard);
 	#endif // _DEBUG
@@ -116,10 +116,10 @@ void SceneManager::ReloadScene() {
 
 void SceneManager::CreateScene(SceneName name) {
 	switch (name) {
-	case SceneName::kGameScene:
+	case SceneName::kParticleScene:
 		currentScene_ = std::make_unique<GameScene>();
 		break;
-	case SceneName::kTitleScene:
+	case SceneName::kInstancingDrawScene:
 		currentScene_ = std::make_unique<TitleScene>();
 		break;
 	}

@@ -62,7 +62,7 @@ void PauseMenu::Update() {
 				//} else {
 				//	gGamePhase = GamePhase::kTutorial;
 				DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
-				SceneManager::GetInstance()->ChengeScene(SceneName::kTitleScene);
+				SceneManager::GetInstance()->ChengeScene(SceneName::kInstancingDrawScene);
 				break;
 				//}
 				DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
@@ -74,7 +74,7 @@ void PauseMenu::Update() {
 				//} else {
 				//	gGamePhase = GamePhase::kTutorial;
 				DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
-				SceneManager::GetInstance()->ChengeScene(SceneName::kTitleScene);
+				SceneManager::GetInstance()->ChengeScene(SceneName::kInstancingDrawScene);
 				break;
 				//}
 
@@ -83,7 +83,7 @@ void PauseMenu::Update() {
 				break;
 			case 4:
 				DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
-				SceneManager::GetInstance()->ChengeScene(SceneName::kTitleScene);
+				SceneManager::GetInstance()->ChengeScene(SceneName::kInstancingDrawScene);
 				break;
 			}
 		}
@@ -318,7 +318,7 @@ void GameOverMenu::Update() {
 				break;
 			case 1:
 				DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
-				SceneManager::GetInstance()->ChengeScene(SceneName::kTitleScene);
+				SceneManager::GetInstance()->ChengeScene(SceneName::kInstancingDrawScene);
 				break;
 
 				DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
@@ -326,7 +326,7 @@ void GameOverMenu::Update() {
 				break;
 			case 2:
 				DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
-				SceneManager::GetInstance()->ChengeScene(SceneName::kTitleScene);
+				SceneManager::GetInstance()->ChengeScene(SceneName::kInstancingDrawScene);
 				break;
 
 
@@ -335,7 +335,7 @@ void GameOverMenu::Update() {
 				break;
 			case 3:
 				DeltaTime::GetInstance()->SetGameTimeSpeed(preGameTimeSpeed_);
-				SceneManager::GetInstance()->ChengeScene(SceneName::kTitleScene);
+				SceneManager::GetInstance()->ChengeScene(SceneName::kInstancingDrawScene);
 				break;
 			}
 		}
