@@ -61,11 +61,14 @@ public:
 	PipelineData GetObject3dPSO(BlendMode blendMode) { return pipelineObject3d_[static_cast<uint32_t>(blendMode)]; };
 	PipelineData GetSpritePSO(BlendMode blendMode) { return pipelineSprite_[static_cast<uint32_t>(blendMode)]; };
 	PipelineData GetParticlePSO(BlendMode blendMode) { return pipelineParticle_[static_cast<uint32_t>(blendMode)]; };
+	// 深度を書き込むパーティクル用(インスタンシングで不透明なものを描く時など).
+	PipelineData GetParticleDepthWritePSO(BlendMode blendMode) { return pipelineParticleDepthWrite_[static_cast<uint32_t>(blendMode)]; };
 	PipelineData GetLinePSO() { return pipelineLine_; };
 private:
 	std::array<PipelineData, static_cast<size_t>(BlendMode::kCount)> pipelineObject3d_;
 	std::array<PipelineData, static_cast<size_t>(BlendMode::kCount)> pipelineSprite_;
 	std::array<PipelineData, static_cast<size_t>(BlendMode::kCount)> pipelineParticle_;
+	std::array<PipelineData, static_cast<size_t>(BlendMode::kCount)> pipelineParticleDepthWrite_;
 	PipelineData pipelineLine_;
 private:
 	struct ShaderBlobs {

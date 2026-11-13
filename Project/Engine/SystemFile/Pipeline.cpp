@@ -18,7 +18,13 @@ void Pipeline::CreateAllPipeline() {
 	}
 
 	for (uint32_t i = 0; i < static_cast<uint32_t>(BlendMode::kCount); i++) {
-		pipelineParticle_[i] = PipelineCreate(static_cast<BlendMode>(i),ShaderType::kParticle,D3D12_DEPTH_WRITE_MASK_ALL,kUsingFilter_,D3D12_CULL_MODE_NONE);
+		// 通常のパーティクル(半透明・加算など)は深度を書き込まない.
+		pipelineParticle_[i] = PipelineCreate(static_cast<BlendMode>(i),ShaderType::kParticle,D3D12_DEPTH_WRITE_MASK_ZERO,kUsingFilter_,D3D12_CULL_MODE_NONE);
+	}
+
+	for (uint32_t i = 0; i < static_cast<uint32_t>(BlendMode::kCount); i++) {
+		// 深度を書き込むパーティクル用(TestParticleなど).
+		pipelineParticleDepthWrite_[i] = PipelineCreate(static_cast<BlendMode>(i),ShaderType::kParticle,D3D12_DEPTH_WRITE_MASK_ALL,kUsingFilter_,D3D12_CULL_MODE_NONE);
 	}
 
 	pipelineLine_ = PipelineCreate(BlendMode::kNormal, ShaderType::kLine, D3D12_DEPTH_WRITE_MASK_ALL, kUsingFilter_, D3D12_CULL_MODE_NONE);
@@ -229,12 +235,9 @@ D3D12_DEPTH_STENCIL_DESC Pipeline::CreateDepthStencilDesc(D3D12_DEPTH_WRITE_MASK
 
 	// Depthの機能を有効化する.
 	depthStencilDesc.DepthEnable = true;
-	// 書き込みします.
-	if (shaderType == ShaderType::kParticle) {
-		depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
-	} else {
-		depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-	}
+	// 書き込むかどうかは引数で決める(通常のパーティクルはZERO、それ以外はALLを渡している).
+	(void)shaderType;
+	depthStencilDesc.DepthWriteMask = mask;
 	// 比較関数はLessEqual。つまり、近ければ描画される.
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 

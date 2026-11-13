@@ -149,7 +149,7 @@
     <ClCompile Include="Managers\TextureManager.cpp" />
     <ClCompile Include="Application\Player.cpp" />
     <ClCompile Include="Application\Scene\GameScene.cpp" />
-    <ClCompile Include="Application\Scene\TitleScene.cpp" />
+    <ClCompile Include="Application\Scene\InstancingDrawScene.cpp" />
     <ClCompile Include="Application\ShieldEnemy.cpp" />
     <ClCompile Include="Application\Skydome.cpp" />
     <ClCompile Include="Managers\SrvManager.cpp" />
@@ -246,7 +246,7 @@
     <ClInclude Include="Engine\Environment\Satlib.h" />
     <ClInclude Include="Application\Scene\GameScene.h" />
     <ClInclude Include="Application\Scene\IScene.h" />
-    <ClInclude Include="Application\Scene\TitleScene.h" />
+    <ClInclude Include="Application\Scene\InstancingDrawScene.h" />
     <ClInclude Include="Application\ShieldEnemy.h" />
     <ClInclude Include="Application\Skydome.h" />
     <ClInclude Include="Managers\SrvManager.h" />

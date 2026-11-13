@@ -419,12 +419,13 @@ void GameSystem::SetPipeline(BlendMode blendMode, ShaderType shaderType) {
 	commandList->SetPipelineState(pipeline_->GetPSO(blendMode, shaderType).graphicsPipelineState.Get()); // PS0を設定.
 }
 
-void GameSystem::SetParticlePipeline(BlendMode blendMode) {
+void GameSystem::SetParticlePipeline(BlendMode blendMode, bool useDepthWrite) {
 	commandList->RSSetViewports(1, &viewport); // Viewportを設定.
 	commandList->RSSetScissorRects(1, &scissorRect); // Scissorを設定.
+	const PipelineData& pso = useDepthWrite ? pipeline_->GetParticleDepthWritePSO(blendMode) : pipeline_->GetParticlePSO(blendMode);
 	// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
-	commandList->SetGraphicsRootSignature(pipeline_->GetParticlePSO(blendMode).rootSignature.Get());
-	commandList->SetPipelineState(pipeline_->GetParticlePSO(blendMode).graphicsPipelineState.Get()); // PS0を設定.
+	commandList->SetGraphicsRootSignature(pso.rootSignature.Get());
+	commandList->SetPipelineState(pso.graphicsPipelineState.Get()); // PS0を設定.
 }
 
 void GameSystem::DrawCommand(

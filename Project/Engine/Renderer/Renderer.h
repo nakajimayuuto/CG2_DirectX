@@ -587,12 +587,19 @@ private:
 
 	Transform uvTransform_;
 
-	BlendMode blendMode_;
+	BlendMode blendMode_ = BlendMode::kNormal;
 
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> instancingResource_;
 
-	TransformationMatrix* instancingData_ = nullptr;
+	// Particle.VS.hlsl の ParticleForGPU と同じ並び・サイズにする(WVP / World / color).
+	struct InstanceData {
+		Matrix4x4 WVP;
+		Matrix4x4 World;
+		Vector4 color;
+	};
+
+	InstanceData* instancingData_ = nullptr;
 
 	//static inline const uint32_t kNumInstance = 10;
 

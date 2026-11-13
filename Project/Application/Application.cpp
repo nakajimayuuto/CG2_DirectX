@@ -41,6 +41,7 @@ void Application::Finalize(){
 }
 
 void Application::LoadDatas(){
+	TextureManager::GetInstance()->RegisterTexture("uvChecker", "Resources/uvChecker.png");
 	//ModelManager::GetInstance()->RegisterModel("boss", "Resource/boss", "boss_ghost.obj", false);
 	ModelManager::GetInstance()->RegisterModel("ground", "Resources/Ground", "ground.obj");
 	ModelManager::GetInstance()->RegisterModel("celling", "Resources/Ground", "celling.obj");

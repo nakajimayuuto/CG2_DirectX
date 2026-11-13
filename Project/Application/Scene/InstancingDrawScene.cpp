@@ -1,6 +1,6 @@
-#include "TitleScene.h"
+#include "InstancingDrawScene.h"
 
-void TitleScene::Initialize() {
+void InstancingDrawScene::Initialize() {
 	SoundManager::GetInstance()->ResetBGM();
 	//SoundManager::GetInstance()->SoundPlay("mus_title", 1.0f, 0.25f, kBGM, true, "mus_title");
 	//LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.05f;
@@ -14,6 +14,8 @@ void TitleScene::Initialize() {
 	fade_->SetColor({ 0.0f,0.0f,0.0f });
 	fade_->Start(Fade::Status::FadeIn, 1.0f);
 
+	Camera::GetInstance()->SetPosition({0.0f,0.0f,-10.0f});
+
 	instancing_.Initialize(ModelManager::GetInstance()->GetModelInfo("effect_plane"),10);
 
 	//LightManager::GetInstance()->CreateSpotLight("halberd_title_light");
@@ -26,13 +28,13 @@ void TitleScene::Initialize() {
 
 }
 
-void TitleScene::Update() {	
+void InstancingDrawScene::Update() {	
 	fade_->Update();
 
 	Camera::GetInstance()->Update();
 }
 
-void TitleScene::Draw() {
+void InstancingDrawScene::Draw() {
 	Renderer::GetInstance()->DrawBackGround();
 	//fade_->Draw();
 

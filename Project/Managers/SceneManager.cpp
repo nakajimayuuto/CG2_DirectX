@@ -1,6 +1,6 @@
 #include "SceneManager.h"
 #include "../Scene/GameScene.h"
-#include "../Scene/TitleScene.h"
+#include "../Scene/InstancingDrawScene.h"
 #include "InputManager.h"
 #include "ImGuiManager.h"
 #include "SoundManager.h"
@@ -120,7 +120,7 @@ void SceneManager::CreateScene(SceneName name) {
 		currentScene_ = std::make_unique<GameScene>();
 		break;
 	case SceneName::kInstancingDrawScene:
-		currentScene_ = std::make_unique<TitleScene>();
+		currentScene_ = std::make_unique<InstancingDrawScene>();
 		break;
 	}
 

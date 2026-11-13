@@ -351,7 +351,7 @@
     <ClCompile Include="Engine\SystemFile\Debug.cpp">
       <Filter>Engine\SystemFile\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="Application\Scene\TitleScene.cpp">
+    <ClCompile Include="Application\Scene\InstancingDrawScene.cpp">
       <Filter>Application\Scene\TitleScene</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Math\TimedCall.cpp">
@@ -593,7 +593,7 @@
     <ClInclude Include="Engine\SystemFile\Debug.h">
       <Filter>Engine\SystemFile\Debug</Filter>
     </ClInclude>
-    <ClInclude Include="Application\Scene\TitleScene.h">
+    <ClInclude Include="Application\Scene\InstancingDrawScene.h">
       <Filter>Application\Scene\TitleScene</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Math\TimedCall.h">

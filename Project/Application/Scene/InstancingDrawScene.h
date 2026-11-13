@@ -4,15 +4,7 @@
 #include "../Ground.h"
 #include "../Fade.h"
 
-enum class TitlePhase {
-	kTitle,
-	kMenuSelect,
-	kDifficultySelect,
-	kSetting,
-	kCount
-};
-
-class TitleScene : public IScene {
+class InstancingDrawScene : public IScene {
 public:
 	void Initialize() override;
 

@@ -414,6 +414,10 @@ void Sprite::Draw(const Transform& transform) {
 		return;
 	}
 
+	if (!ImGuiManager::GetInstance()->IsGameUIVisible()) {
+		return;
+	}
+
 	transformationMatrixData_->World = transform.GetAffineMatrix();
 	transformationMatrixData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(transform.GetAffineMatrix());
 
@@ -1015,11 +1019,11 @@ void Renderer::DrawModelInstance(const TransformationMatrix& matrix, const Matri
 
 void Renderer::DrawSpriteCommon(const Matrix4x4& worldMatrix, const VertexData* vertices, const Material& material, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle, bool useGuiButtom) {
 	// 停止中 / 一時停止中にUIを非表示にしている時は描画しない("Game"ウィンドウのUIボタン).
-	//if (useGuiButtom) {
-	if (!ImGuiManager::GetInstance()->IsGameUIVisible()) {
-		return;
+	if (useGuiButtom) {
+		if (!ImGuiManager::GetInstance()->IsGameUIVisible()) {
+			return;
+		}
 	}
-	//}
 
 	assert(currentDrawSpriteIndex_ < maxSpriteNum);
 	SpriteInstance* instance = spriteInstances[currentDrawSpriteIndex_].get();
@@ -1063,7 +1067,7 @@ void Renderer::DrawSprite(const Transform& transform, const Vector2& size, const
 	VertexData vertices[4];
 	MakeSpriteVertices(vertices, size.x, size.y);
 
-	DrawSpriteCommon(transform.GetAffineMatrix(), vertices, MakeSpriteMaterial(color), textureInfo.textureSrvHandlesGPU, false);
+	DrawSpriteCommon(transform.GetAffineMatrix(), vertices, MakeSpriteMaterial(color), textureInfo.textureSrvHandlesGPU, true);
 }
 
 void Renderer::DrawSprite(const Transform& transform, const Sprite& sprite) {
@@ -1077,7 +1081,7 @@ void Renderer::DrawSprite(const Transform& transform, const Sprite& sprite) {
 	Material material = *sprite.materialData_;
 	material.uvTransform = Matrix4x4::MakeAffineMatrix(sprite.uvTransform_);
 
-	DrawSpriteCommon(worldTransform.GetAffineMatrix(), sprite.vertexData, material, sprite.textureInfo_.textureSrvHandlesGPU, false);
+	DrawSpriteCommon(worldTransform.GetAffineMatrix(), sprite.vertexData, material, sprite.textureInfo_.textureSrvHandlesGPU,true);
 }
 
 void Renderer::DrawBackGround() {
@@ -1091,7 +1095,7 @@ void Renderer::DrawBackGround() {
 	Transform worldTransform;
 	worldTransform.Initialize();
 	worldTransform.translate.z = 100000.0f;
-	DrawSpriteCommon(worldTransform.GetAffineMatrix(), vertices, MakeSpriteMaterial({ 0.5f,0.15f,0.15f,1.0f }), TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesGPU, false);
+	DrawSpriteCommon(worldTransform.GetAffineMatrix(), vertices, MakeSpriteMaterial({ 0.1f,0.25f,0.5f,1.0f }), TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesGPU, false);
 }
 
 void Renderer::DrawShadowModel(const Transform& transform, const Model* model, const Vector4* overrideColor) {
@@ -1173,10 +1177,10 @@ void TestParticle::Initialize(const ModelInfo& info, uint32_t numInstanced) {
 
 	modelData_ = info.modelData[0];
 
-	if (modelData_.materialData.textureFilePath == "") {
-		modelData_.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesGPU;
-		modelData_.textureSrvHandlesCPU = TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesCPU;
-	}
+	//if (modelData_.materialData.textureFilePath == "") {
+	modelData_.textureSrvHandlesGPU = TextureManager::GetInstance()->GetTextureInfo("uvChecker").textureSrvHandlesGPU;
+	modelData_.textureSrvHandlesCPU = TextureManager::GetInstance()->GetTextureInfo("uvChecker").textureSrvHandlesCPU;
+	//}
 
 	vertexResource_ = GameSystem::CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(VertexData) * modelData_.vertices.size());
 
@@ -1231,16 +1235,21 @@ void TestParticle::Initialize(const ModelInfo& info, uint32_t numInstanced) {
 	memcpy(vertexData, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
 
 
-	instancingResource_ = GameSystem::GetInstance()->CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(TransformationMatrix) * numInstance_);
+	blendMode_ = BlendMode::kNormal;
+
+	// シェーダー(Particle.VS.hlsl)の ParticleForGPU と同じ構造体で確保する.
+	instancingResource_ = GameSystem::GetInstance()->CreateBufferResource(GameSystem::GetInstance()->GetDevice(), sizeof(InstanceData) * numInstance_);
 
 	instancingResource_->Map(0, nullptr, reinterpret_cast<void**>(&instancingData_));
 
 	for (uint32_t index = 0; index < numInstance_; index++) {
 		instancingData_[index].WVP = Matrix4x4::Identity();
 		instancingData_[index].World = Matrix4x4::Identity();
+		// colorが0(alpha0)だとPixelShaderでdiscardされるので白にしておく.
+		instancingData_[index].color = { 1.0f,1.0f,1.0f,1.0f };
 	}
 
-	instancingSrvHandleGPU = SrvManager::GetInstance()->CreateSRVforStructureBuffer(instancingResource_.Get(), numInstance_, sizeof(TransformationMatrix));
+	instancingSrvHandleGPU = SrvManager::GetInstance()->CreateSRVforStructureBuffer(instancingResource_.Get(), numInstance_, sizeof(InstanceData));
 }
 
 void TestParticle::Draw(const Transform& transform) const {
@@ -1250,7 +1259,7 @@ void TestParticle::Draw(const Transform& transform) const {
 
 	for (uint32_t index = 0; index < numInstance_; index++) {
 		Transform instancingTransform = transform;
-		instancingTransform.translate = { index * 0.1f,index * 0.1f, index * 0.1f };
+		instancingTransform.translate = { index * 0.1f,index * -0.1f, index * 0.1f };
 
 		Matrix4x4 worldMatrix = instancingTransform.GetAffineMatrix();
 
@@ -1265,7 +1274,8 @@ void TestParticle::Draw(const Transform& transform) const {
 	/*=============================================================
 	三角形の描画のコマンド.
 	=============================================================*/
-	GameSystem::GetInstance()->SetParticlePipeline(blendMode_);
+	// 深度を書き込むPSOを使って、インスタンス同士の前後関係を正しくする.
+	GameSystem::GetInstance()->SetParticlePipeline(blendMode_, true);
 
 	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_); // VBVを設定.
 	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.

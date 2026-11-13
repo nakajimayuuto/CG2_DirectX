@@ -137,7 +137,8 @@ public:
 
 	void SetPipeline(BlendMode blendMode,ShaderType shaderType);
 
-	void SetParticlePipeline(BlendMode blendMode);
+	/// <param name="useDepthWrite">trueなら深度を書き込むPSOを使う(前後関係が正しくなる)</param>
+	void SetParticlePipeline(BlendMode blendMode, bool useDepthWrite = false);
 
 	void DrawCommand(
 		BlendMode blendMode,
