@@ -89,7 +89,7 @@ public:
 	void SetFovY(float fovY) { fovY_ = fovY; };
 	float GetFovY() { return fovY_; };
 private:
-	void DebugUpdate();
+	void DebugDraw();
 
 	void FrustumUpdate();
 
@@ -129,6 +129,8 @@ private:
 	bool useDebugCamera_ = false;
 	// "Game"画面の上で右ドラッグを始めてから離すまでの間か.
 	bool isDebugCameraDragging_ = false;
+
+	float debugSpeedMagnification_ = 1.0f;
 
 	Vector3 aspectScale_;
 

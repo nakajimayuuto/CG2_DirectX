@@ -623,8 +623,9 @@ void GameSystem::EndFrame() {
 	float clearColor[] = { 0.1f,0.1f,0.1f,1.0f };
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 
-	ImGui::Begin("drawCount");
-	ImGui::Text("%d", drawCount_);
+	ImGui::Begin("DebugInfo");
+	DeltaTime::GetInstance()->DebugDraw();
+	ImGui::Text("DrawInstance %d", drawCount_);
 	ImGui::End();
 
 	// エンジンのGUI(GameGUI / PlayControlGUI)を描画し、ImGuiの描画コマンドを積む.
@@ -768,13 +769,9 @@ void GameSystem::WindowSizeUpdate() {
 }
 
 void GameSystem::RegisterGlobalVariables() {
-	Camera::GetInstance()->RegisterGlobalVariables();
-	CollisionManager::RegisterGlobalVariables();
 };
 
 void GameSystem::ApplyGlobalVariables() {
-	Camera::GetInstance()->ApplyGlobalVariables();
-	CollisionManager::ApplyGlobalVariables();
 };
 
 

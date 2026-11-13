@@ -27,7 +27,7 @@ public:
 	float GetSpeedMagnification() { return speedMagnification_; };
 	float GetDamageMagnification() { return damageMagnification_; };
 private:
-	void DebugUpdate();
+	void DebugDraw();
 private:
 	Difficulty currentDifficulty_;
 

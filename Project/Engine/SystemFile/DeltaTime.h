@@ -31,8 +31,8 @@ public:
 	void SetHitStop(float stopTime) { 
 		stopTimer_ = stopTime; isHitStop_ = true; 
 	};
-private:
-	void DebugUpdate();
+
+	void DebugDraw();
 private:
 	// FPS系
 	clock_t frameTime;

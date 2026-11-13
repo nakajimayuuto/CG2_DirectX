@@ -25,7 +25,7 @@ void DeltaTime::Update() {
 	applicationTime = deltaTime;
 	particleTime = deltaTime;
 
-	if(isHitStop_){
+	if (isHitStop_) {
 		stopTimer_ -= deltaTime;
 
 		if (stopTimer_ <= 0.0f) {
@@ -36,21 +36,13 @@ void DeltaTime::Update() {
 	} else {
 		gameTime = deltaTime * gameTimeSpeed_;
 	}
-
-
-
-	DebugUpdate();
 }
 
-void DeltaTime::DebugUpdate() {
+void DeltaTime::DebugDraw() {
 #ifdef _DEBUG
-	ImGui::Begin("DeltaTime");
 	ImGui::Text(std::format("FPS : {} / 60", static_cast<int>(60.0f / (deltaTime * 60.0f))).c_str());
 	ImGui::Text(std::format("inGame : {} / 60", static_cast<int>(60.0f / (gameTime * 60.0f))).c_str());
 	ImGui::Text(std::format("DebugFPS : {}", static_cast<int>(60.0f / (debugDeltaTime * 60.0f))).c_str());
-
-
-	ImGui::End();
 #endif // _DEBUG
 
 }
