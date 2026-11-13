@@ -26,40 +26,6 @@ void Application::Update(){
 void Application::Draw(){
 	SceneManager::GetInstance()->Draw();
 
-	Renderer::GetInstance()->DrawModel(Transform::GetInitialValue(), "teest", {1.0f,1.0f,1.0f,1.0f},false);
-	Renderer::GetInstance()->DrawSphere(
-		Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,5.0f,0.0f }),
-		"white_template",
-		{1.0f,1.0f,1.0f,1.0f}
-	);
-	Renderer::GetInstance()->DrawBox(
-		Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,10.0f,0.0f }),
-		"white_template",
-		{1.0f,1.0f,1.0f,1.0f}
-	);
-	Renderer::GetInstance()->DrawPlane(
-		Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 5.0f,10.0f,0.0f }),
-		"white_template",
-		{1.0f,1.0f,1.0f,1.0f}
-	);
-	Renderer::GetInstance()->DrawRing(
-		Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { -5.0f,10.0f,0.0f }),
-		1.0f, 0.5f,
-		"white_template",
-		{1.0f,1.0f,1.0f,1.0f}
-	);
-	Renderer::GetInstance()->DrawCylinder(
-		Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { -5.0f,0.0f,0.0f }),
-		1.0f, 0.5f,
-		"white_template",
-		{1.0f,1.0f,1.0f,1.0f}
-	);
-	Renderer::GetInstance()->DrawTorus(
-		Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,5.0f,0.0f }),
-		5.0f,1.0f,
-		"white_template",
-		{1.0f,1.0f,1.0f,1.0f}
-	);
 	//=============================================
 	//以上ゲームの描画処理.
 	//=============================================

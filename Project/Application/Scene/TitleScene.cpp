@@ -26,13 +26,14 @@ void TitleScene::Initialize() {
 
 }
 
-void TitleScene::Update() {
+void TitleScene::Update() {	
 	fade_->Update();
 
 	Camera::GetInstance()->Update();
 }
 
 void TitleScene::Draw() {
+	Renderer::GetInstance()->DrawBackGround();
 	//fade_->Draw();
 
 	instancing_.Draw(Transform::GetInitialValue());

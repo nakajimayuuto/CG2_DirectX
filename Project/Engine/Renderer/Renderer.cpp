@@ -708,11 +708,11 @@ void Renderer::DrawPlane(const Transform& transform, const TextureInfo& textureI
 	DrawPrimitiveShape(PrimitiveType::kPlane, transform, {}, textureInfo, color, uvTransform);
 }
 
-void Renderer::DrawRing(const Transform& transform, float majorRadius, float minorRadius, const TextureInfo& textureInfo, const Vector4& color, const Transform& uvTransform){
+void Renderer::DrawRing(const Transform& transform, float majorRadius, float minorRadius, const TextureInfo& textureInfo, const Vector4& color, const Transform& uvTransform) {
 	DrawPrimitiveShape(PrimitiveType::kRing, transform, { majorRadius,minorRadius }, textureInfo, color, uvTransform);
 }
 
-void Renderer::DrawCylinder(const Transform& transform, float topRadius, float bottomRadius, const TextureInfo& textureInfo, const Vector4& color, const Transform& uvTransform){
+void Renderer::DrawCylinder(const Transform& transform, float topRadius, float bottomRadius, const TextureInfo& textureInfo, const Vector4& color, const Transform& uvTransform) {
 	DrawPrimitiveShape(PrimitiveType::kCylinder, transform, { topRadius,bottomRadius }, textureInfo, color, uvTransform);
 }
 
@@ -1013,11 +1013,13 @@ void Renderer::DrawModelInstance(const TransformationMatrix& matrix, const Matri
 	}
 }
 
-void Renderer::DrawSpriteCommon(const Matrix4x4& worldMatrix, const VertexData* vertices, const Material& material, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle) {
+void Renderer::DrawSpriteCommon(const Matrix4x4& worldMatrix, const VertexData* vertices, const Material& material, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle, bool useGuiButtom) {
 	// 停止中 / 一時停止中にUIを非表示にしている時は描画しない("Game"ウィンドウのUIボタン).
+	//if (useGuiButtom) {
 	if (!ImGuiManager::GetInstance()->IsGameUIVisible()) {
 		return;
 	}
+	//}
 
 	assert(currentDrawSpriteIndex_ < maxSpriteNum);
 	SpriteInstance* instance = spriteInstances[currentDrawSpriteIndex_].get();
@@ -1026,7 +1028,11 @@ void Renderer::DrawSpriteCommon(const Matrix4x4& worldMatrix, const VertexData* 
 	// インデックスは初期化時に書き込み済みなので、頂点・マテリアル・行列だけ書き込む.
 	memcpy(instance->vertexData_, vertices, sizeof(VertexData) * 4);
 	*instance->materialData_ = material;
+	//if (useGuiButtom) {
+	//	*instance->wvpData_ = MakeSpriteTransformationMatrix(worldMatrix);
+	//} else {
 	*instance->wvpData_ = MakeSpriteTransformationMatrix(worldMatrix);
+	//}
 
 	/*=============================================================
 	三角形のSpriteの描画のコマンド.
@@ -1057,7 +1063,7 @@ void Renderer::DrawSprite(const Transform& transform, const Vector2& size, const
 	VertexData vertices[4];
 	MakeSpriteVertices(vertices, size.x, size.y);
 
-	DrawSpriteCommon(transform.GetAffineMatrix(), vertices, MakeSpriteMaterial(color), textureInfo.textureSrvHandlesGPU);
+	DrawSpriteCommon(transform.GetAffineMatrix(), vertices, MakeSpriteMaterial(color), textureInfo.textureSrvHandlesGPU, false);
 }
 
 void Renderer::DrawSprite(const Transform& transform, const Sprite& sprite) {
@@ -1071,7 +1077,21 @@ void Renderer::DrawSprite(const Transform& transform, const Sprite& sprite) {
 	Material material = *sprite.materialData_;
 	material.uvTransform = Matrix4x4::MakeAffineMatrix(sprite.uvTransform_);
 
-	DrawSpriteCommon(worldTransform.GetAffineMatrix(), sprite.vertexData, material, sprite.textureInfo_.textureSrvHandlesGPU);
+	DrawSpriteCommon(worldTransform.GetAffineMatrix(), sprite.vertexData, material, sprite.textureInfo_.textureSrvHandlesGPU, false);
+}
+
+void Renderer::DrawBackGround() {
+	VertexData vertices[4];
+	MakeSpriteVertices(
+		vertices,
+		static_cast<float>(Environment::GetInstance()->GetWindowSize().width),
+		static_cast<float>(Environment::GetInstance()->GetWindowSize().height)
+	);
+
+	Transform worldTransform;
+	worldTransform.Initialize();
+	worldTransform.translate.z = 100000.0f;
+	DrawSpriteCommon(worldTransform.GetAffineMatrix(), vertices, MakeSpriteMaterial({ 0.5f,0.15f,0.15f,1.0f }), TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesGPU, false);
 }
 
 void Renderer::DrawShadowModel(const Transform& transform, const Model* model, const Vector4* overrideColor) {

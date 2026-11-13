@@ -442,6 +442,8 @@ public:
 	/// <param name="sprite">スプライト</param>
 	void DrawSprite(const Transform& transform,const Sprite& sprite);
 
+	void DrawBackGround();
+
 	void DrawShadow(const Transform& transform, const Model* model);
 	void DrawShadow(const Transform& transform, const Model* model,const Vector4& color);
 
@@ -492,7 +494,7 @@ private:
 	/// <summary>
 	/// スプライトを描画する(DrawSprite共通).
 	/// </summary>
-	void DrawSpriteCommon(const Matrix4x4& worldMatrix, const VertexData* vertices, const Material& material, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle);
+	void DrawSpriteCommon(const Matrix4x4& worldMatrix, const VertexData* vertices, const Material& material, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle,bool useGuiButtom);
 
 	/// <summary>
 	/// 箱の8頂点から12本の辺を描画する(DrawBoxWireFrame共通).
