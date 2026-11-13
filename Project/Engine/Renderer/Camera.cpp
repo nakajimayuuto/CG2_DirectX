@@ -170,7 +170,7 @@ void Camera::DebugDraw() {
 	const float wheel = 0.0f;
 	const bool canOperate = true;
 #endif // USE_IMGUI
-
+	debugSpeedMagnification_ = 1.0f;
 	if (canOperate) {
 		if (input->PressKey(DIK_D)) {
 			move.x += 1.0f;
@@ -190,15 +190,18 @@ void Camera::DebugDraw() {
 		if (input->PressKey(DIK_LSHIFT)) {
 			move.y -= 1.0f;
 		}
+		if (input->PressKey(DIK_LCONTROL)) {
+			debugSpeedMagnification_ = 2.0f;
+		}
 		debugTransformCenter_.rotate.x += input->GetMouse().GetMove().y * Radian(0.1f);
 		debugTransformCenter_.rotate.y += input->GetMouse().GetMove().x * Radian(0.1f);
 	}
 
 	Matrix4x4 cameraRotateMatrix = Matrix4x4::MakeRotateMatrix(debugTransformCenter_.rotate);
 
-	move = move.Normalize() * kDebugMoveSpeed;
+	move = move.Normalize() * kDebugMoveSpeed * debugSpeedMagnification_;
 	// ホイール1目盛り(120)で前後に0.5移動する.
-	debugTransform_.translate.z += wheel / 120.0f * (kDebugWheelSpeed / kDebugSpeed);
+	//debugTransform_.translate.z += wheel / 120.0f * (kDebugWheelSpeed / kDebugSpeed);
 	move = cameraRotateMatrix.TransformNomal(move);
 	debugTransformCenter_.translate += move * kDebugSpeed;
 	matrix_ = debugTransformCenter_.GetAffineMatrix();

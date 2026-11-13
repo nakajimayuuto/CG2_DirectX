@@ -598,10 +598,10 @@ void ImGuiManager::DrawGizmos(const Vector2& imagePos, const Vector2& imageSize)
 void ImGuiManager::DrawDebugCameraButton() {
 	Camera* camera = Camera::GetInstance();
 	const bool isDebugCamera = camera->GetUseDebugCamera();
-	std::string label = "デバッグカメラ" + static_cast<std::string>(isDebugCamera ? "\n起動中" : "\n停止中");
+	std::string label = "デバッグカメラ\n" + static_cast<std::string>(isDebugCamera ? "起動中" : "停止中");
 	const float buttonWidth = ImGui::CalcTextSize(label.c_str()).x + ImGui::GetStyle().FramePadding.x * 2.0f;
 	// 再生ボタンと同じ高さにして、ウィンドウの右端に寄せる.
-	const float buttonHeight = kPlayControlIconSize_ + ImGui::GetStyle().FramePadding.y * 2.0f;
+	const float buttonHeight = kPlayControlIconSize_ + ImGui::GetStyle().FramePadding.y * 4.0f;
 	const float rightX = ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - buttonWidth - 8.0f;
 	if (ImGui::GetCursorPosX() < rightX) {
 		ImGui::SetCursorPosX(rightX);

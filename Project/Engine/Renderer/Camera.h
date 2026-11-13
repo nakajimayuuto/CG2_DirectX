@@ -130,6 +130,8 @@ private:
 	// "Game"画面の上で右ドラッグを始めてから離すまでの間か.
 	bool isDebugCameraDragging_ = false;
 
+	float debugSpeedMagnification_ = 1.0f;
+
 	Vector3 aspectScale_;
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource_ = nullptr;
