@@ -2,8 +2,10 @@
 #include <algorithm>
 void Fade::Initialize() {
 	sprite_.Initialize();
+	sprite_.SetCutSize(Vector2(1280.0f, 720.0f));
 	sprite_.SetSize(Vector2(1280.0f, 720.0f));
 	sprite_.SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+	sprite_.SetIsVisible(false);
 }
 
 void Fade::Update() {
@@ -42,6 +44,10 @@ void Fade::FadeOutUpdate() {
 }
 
 void Fade::Draw() {
+	if (ImGuiManager::GetInstance()->GetPlayState() == ImGuiManager::PlayState::kStop) {
+		return;
+	}
+
 	if (status_ == Status::None) {
 		return;
 	}
@@ -53,7 +59,7 @@ void Fade::Start(Fade::Status status, float duration) {
 	status_ = status;
 	duration_ = duration;
 	counter_ = 0.0f;
-
+	sprite_.SetIsVisible(true);
 }
 
 void Fade::Stop() { status_ = Fade::Status::None; }

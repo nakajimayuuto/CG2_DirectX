@@ -414,6 +414,10 @@ void Sprite::Draw(const Transform& transform) {
 		return;
 	}
 
+	if (!ImGuiManager::GetInstance()->IsGameUIVisible()) {
+		return;
+	}
+
 	transformationMatrixData_->World = transform.GetAffineMatrix();
 	transformationMatrixData_->WVP = Camera::GetInstance()->GetWorldViewProjectionMatrixSprite(transform.GetAffineMatrix());
 
@@ -1085,6 +1089,23 @@ void Renderer::DrawShadowModel(const Transform& transform, const Model* model, c
 	matrix.World = rootMatrix * worldMatrix * projectionMatrix;
 
 	DrawModelInstance(matrix, worldMatrix, model, overrideColor, false);
+}
+
+void Renderer::DrawBackGround(const Vector4& color){
+	VertexData vertices[4];
+	MakeSpriteVertices(
+		vertices, 
+		static_cast<float>(Environment::GetInstance()->GetWindowSize().width),
+		static_cast<float>(Environment::GetInstance()->GetWindowSize().height)
+		);
+	Transform worldTransform;
+	worldTransform.Initialize();
+	worldTransform.translate.z = kBackGroundTranslateZ;
+	DrawSpriteCommon(worldTransform.GetAffineMatrix(), vertices, MakeSpriteMaterial(color), TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesGPU);
+}
+
+void Renderer::DrawBackGround(){
+	DrawBackGround({0.1f,0.25f,0.5f,1.0f});
 }
 
 void Renderer::DrawShadow(const Transform& transform, const Model* model) {

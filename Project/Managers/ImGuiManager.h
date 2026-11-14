@@ -225,6 +225,7 @@ private:
 #endif // USE_IMGUI
 	// 停止中 / 一時停止中にUIを表示するか(imgui.ini に保存して次回の起動でも同じにする).
 	bool isUIVisibleWhenNotPlaying_ = true;
+	bool isDebugUIVisibleWhenNotPlaying_ = true;
 	bool isPlayStarted_ = false;
 	bool isStopRequested_ = false;
 

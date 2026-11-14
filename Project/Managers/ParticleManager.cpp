@@ -258,6 +258,7 @@ void ParticleManager::ApplyParticleSettings(const ParticleSettings& settings, bo
 	}
 
 	particles.SetSize(settings.size);
+	particles.SetSpawnColor(settings.spawnColor);
 }
 
 void ParticleManager::RemoveParticles(const std::string& name) {
