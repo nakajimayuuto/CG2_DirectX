@@ -25,6 +25,11 @@ void Application::Update(){
 
 void Application::Draw(){
 	SceneManager::GetInstance()->Draw();
+
+	// 描画命令は必ず Framework::Draw()(=EndFrame) より前に積む.
+	FontManager::GetInstance()->DrawString("main", "祟殺鱟翁", { -500.0f, -250.0f },
+		32.0f,
+		{ 1,1,1,1 }, TextAlign::kLeft);
 	//=============================================
 	//以上ゲームの描画処理.
 	//=============================================
@@ -40,6 +45,8 @@ void Application::Finalize(){
 }
 
 void Application::LoadDatas(){
+	FontManager::GetInstance()->LoadFont("main", "NoPackageResources/Fonts/dot.ttf", 18.0f);
+
 	//ModelManager::GetInstance()->RegisterModel("boss", "Resource/boss", "boss_ghost.obj", false);
 	ModelManager::GetInstance()->RegisterModel("ground", "Resources/Ground", "ground.obj");
 	ModelManager::GetInstance()->RegisterModel("celling", "Resources/Ground", "celling.obj");

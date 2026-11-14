@@ -1064,6 +1064,19 @@ void Renderer::DrawSprite(const Transform& transform, const Vector2& size, const
 	DrawSpriteCommon(transform.GetAffineMatrix(), vertices, MakeSpriteMaterial(color), textureInfo.textureSrvHandlesGPU);
 }
 
+void Renderer::DrawSpriteRect(const Transform& transform, const Vector2& size, const TextureInfo& textureInfo, const Vector4& color, const Vector2& uvLeftTop, const Vector2& uvRightBottom) {
+	VertexData vertices[4];
+	MakeSpriteVertices(vertices, size.x, size.y);
+
+	// UVを切り抜き範囲に差し替える.
+	vertices[0].texcoord = { uvLeftTop.x,     uvRightBottom.y }; // 左下.
+	vertices[1].texcoord = { uvLeftTop.x,     uvLeftTop.y };     // 左上.
+	vertices[2].texcoord = { uvRightBottom.x, uvRightBottom.y }; // 右下.
+	vertices[3].texcoord = { uvRightBottom.x, uvLeftTop.y };     // 右上.
+
+	DrawSpriteCommon(transform.GetAffineMatrix(), vertices, MakeSpriteMaterial(color), textureInfo.textureSrvHandlesGPU);
+}
+
 void Renderer::DrawSprite(const Transform& transform, const Sprite& sprite) {
 	Vector2 size = sprite.GetSize();
 

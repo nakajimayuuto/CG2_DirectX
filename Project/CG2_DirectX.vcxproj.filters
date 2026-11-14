@@ -25,6 +25,9 @@
     <Filter Include="Managers\SoundManager">
       <UniqueIdentifier>{f4cd9e91-c44f-41f4-997d-2287b1ea4666}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Managers\FontManager">
+      <UniqueIdentifier>{6a3e2f71-9c4b-4d8e-b1a5-7f20c3d94e18}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Managers\InputManager">
       <UniqueIdentifier>{28d8bb8c-f15a-45b7-a0f4-1c89c988f4e7}</UniqueIdentifier>
     </Filter>
@@ -324,6 +327,9 @@
     <ClCompile Include="Managers\TextureManager.cpp">
       <Filter>Managers\TextureManager</Filter>
     </ClCompile>
+    <ClCompile Include="Managers\FontManager.cpp">
+      <Filter>Managers\FontManager</Filter>
+    </ClCompile>
     <ClCompile Include="Application\Scene\GameScene.cpp">
       <Filter>Application\Scene\GameScene</Filter>
     </ClCompile>
@@ -559,6 +565,9 @@
     </ClInclude>
     <ClInclude Include="Managers\TextureManager.h">
       <Filter>Managers\TextureManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\FontManager.h">
+      <Filter>Managers\FontManager</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Environment\Satlib.h">
       <Filter>Environment</Filter>

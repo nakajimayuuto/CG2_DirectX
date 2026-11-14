@@ -436,6 +436,17 @@ public:
 	void DrawSprite(const Transform& transform, const Vector2& size, const std::string& name, const Vector4& color) { DrawSprite(transform,size, TextureManager::GetInstance()->GetTextureInfo(name), color); };
 
 	/// <summary>
+	/// テクスチャの一部(UV矩形)を切り抜いてスプライト描画する(フォントのグリフ描画等).
+	/// </summary>
+	/// <param name="transform">トランスフォーム(中心座標)</param>
+	/// <param name="size">描画サイズ</param>
+	/// <param name="textureInfo">テクスチャインフォ</param>
+	/// <param name="color">色</param>
+	/// <param name="uvLeftTop">UV左上(0~1)</param>
+	/// <param name="uvRightBottom">UV右下(0~1)</param>
+	void DrawSpriteRect(const Transform& transform, const Vector2& size, const TextureInfo& textureInfo, const Vector4& color, const Vector2& uvLeftTop, const Vector2& uvRightBottom);
+
+	/// <summary>
 	/// スプライトの描画(不完全).
 	/// </summary>
 	/// <param name="transform">トランスフォーム</param>
