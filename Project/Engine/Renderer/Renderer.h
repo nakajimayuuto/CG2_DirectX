@@ -442,6 +442,17 @@ public:
 	/// <param name="sprite">スプライト</param>
 	void DrawSprite(const Transform& transform,const Sprite& sprite);
 
+	/// <summary>
+	/// 背景(色変更可).
+	/// </summary>
+	/// <param name="color">色</param>
+	void DrawBackGround(const Vector4& color);
+
+	/// <summary>
+	/// 背景.
+	/// </summary>
+	void DrawBackGround();
+
 	void DrawShadow(const Transform& transform, const Model* model);
 	void DrawShadow(const Transform& transform, const Model* model,const Vector4& color);
 
@@ -545,7 +556,7 @@ private:
 	uint32_t currentDrawSpriteIndex_;
 	const uint32_t maxSpriteNum = 300;
 
-
+	const float kBackGroundTranslateZ = 100000.0f;
 
 	std::unique_ptr<ModelElement> lineElement_;
 

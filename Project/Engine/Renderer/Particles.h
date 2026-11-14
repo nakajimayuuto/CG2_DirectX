@@ -31,6 +31,9 @@ struct ParticleData {
 	Vector3 scaleRate{ 1.0f,1.0f,1.0f }; // 基準の大きさに掛ける倍率.
 	float random = 0.0f;              // パーティクルごとに固定の乱数(0〜1).
 	uint32_t randomSeed = 0;          // "生成時乱数"ノードの値を決める種(パーティクルごとに固定).
+
+	// 出現時の色(生成した時の Particles::SetSpawnColor の値). 描画時に color に掛ける.
+	Vector4 spawnColor{ 1.0f,1.0f,1.0f,1.0f };
 };
 
 class ParticleNodeMove;
@@ -110,6 +113,13 @@ public:
 	void SetUvTransform(Transform transform) { uvTransform_ = transform; };
 
 	void SetColor(const Vector3& color) { colorNoAlpha_ = color; };
+
+	/// <summary>
+	/// 出現時の色(これから出すパーティクルの色に掛ける色. 白なら今まで通り).
+	/// 出した後に変えても、出ているパーティクルの色は変わらない.
+	/// </summary>
+	void SetSpawnColor(const Vector4& color) { spawnColor_ = color; };
+	const Vector4& GetSpawnColor() const { return spawnColor_; };
 private:
 	/// <summary>
 	/// 各Initializeで共通の処理(マテリアル・インスタンシング用バッファの生成など).
@@ -128,6 +138,9 @@ private:
 private:
 	// SetParticleSizeを呼ばなくても見えるよう等倍にしておく.
 	Vector3 size_{ 1.0f,1.0f,1.0f };
+
+	// 出現時の色(SetSpawnColor).
+	Vector4 spawnColor_{ 1.0f,1.0f,1.0f,1.0f };
 
 	Move moveType_;
 

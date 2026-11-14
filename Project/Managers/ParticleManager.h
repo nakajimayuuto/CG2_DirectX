@@ -35,6 +35,9 @@ struct ParticleSettings {
 
 	// SetParticleSize の値.
 	Vector3 size{ 1.0f,1.0f,1.0f };
+
+	// 出現時の色(Particles::SetSpawnColor の値. 動きで決まる色に掛ける. 白なら今まで通り).
+	Vector4 spawnColor{ 1.0f,1.0f,1.0f,1.0f };
 };
 
 class ParticleManager{

@@ -27,6 +27,17 @@ namespace {
 		return { json[0].get<float>(), json[1].get<float>(), json[2].get<float>() };
 	}
 
+	nlohmann::json ToJsonArray(const Vector4& v) {
+		return nlohmann::json::array({ v.x, v.y, v.z, v.w });
+	}
+
+	Vector4 FromJsonArray(const nlohmann::json& json, const Vector4& defaultValue) {
+		if (!json.is_array() || json.size() != 4 || !json[0].is_number() || !json[1].is_number() || !json[2].is_number() || !json[3].is_number()) {
+			return defaultValue;
+		}
+		return { json[0].get<float>(), json[1].get<float>(), json[2].get<float>(), json[3].get<float>() };
+	}
+
 	// enum を名前の文字列で保存する(順番を入れ替えても読み込めるように).
 	template <typename T>
 	std::string EnumToString(T value) {
@@ -175,6 +186,7 @@ nlohmann::json ParticleSettingsManager::SettingsToJson(const ParticleSettings& s
 		{ "move", EnumToString(settings.moveType) },
 		{ "nodeMove", settings.nodeMoveName },
 		{ "size", ToJsonArray(settings.size) },
+		{ "spawnColor", ToJsonArray(settings.spawnColor) },
 	};
 }
 
@@ -196,6 +208,10 @@ ParticleSettings ParticleSettingsManager::SettingsFromJson(const nlohmann::json&
 	settings.nodeMoveName = json.value("nodeMove", settings.nodeMoveName);
 	if (json.contains("size")) {
 		settings.size = FromJsonArray(json["size"], settings.size);
+	}
+	// 無い時(前のバージョンで保存したファイル)は白のまま.
+	if (json.contains("spawnColor")) {
+		settings.spawnColor = FromJsonArray(json["spawnColor"], settings.spawnColor);
 	}
 	return settings;
 }
@@ -451,6 +467,18 @@ void ParticleSettingsManager::DrawInspector(Entry& entry) {
 	/*---------- SetParticleSize ----------*/
 	ImGui::SeparatorText("SetParticleSize");
 	isApply |= ImGui::DragFloat3("大きさ", &settings.size.x, 0.01f, 0.0f, 100.0f, "%.2f");
+
+	/*---------- SetSpawnColor ----------*/
+	ImGui::SeparatorText("出現時の色");
+	isApply |= ImGui::ColorEdit4("出現時の色", &settings.spawnColor.x, ImGuiColorEditFlags_AlphaBar);
+	if (ImGui::IsItemHovered()) {
+		ImGui::SetTooltip("これから出すパーティクルの色に掛ける色です(白なら動きで決まる色のまま)\n出ているパーティクルの色は変わりません");
+	}
+	ImGui::SameLine();
+	if (ImGui::SmallButton("白に戻す")) {
+		settings.spawnColor = { 1.0f,1.0f,1.0f,1.0f };
+		isApply = true;
+	}
 
 	/*---------- 確認 / 削除 ----------*/
 	ImGui::Separator();

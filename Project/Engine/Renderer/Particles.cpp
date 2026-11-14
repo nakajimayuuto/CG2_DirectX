@@ -119,6 +119,7 @@ void Particles::MakeNewParticle(const Vector3& position, const Vector3& velocity
 	newParticleData.transform.scale = size_;
 	newParticleData.currentTime = 0;
 	newParticleData.posBlank = blank;
+	newParticleData.spawnColor = spawnColor_;
 
 	// ノードで作った動きを使う時は、初期値もノードで決める.
 	// 渡された 速度 / 寿命 / 目標地点(生成位置から見たローカル座標) はノードの"パーティクル"ノードの 初速 / 寿命 / 目標地点 になる.
@@ -316,7 +317,10 @@ void Particles::Draw() {
 
 			instancingData_[numInstance_].World = worldMatrix;
 			instancingData_[numInstance_].WVP = Camera::GetInstance()->GetWorldViewProjectionMatrix(worldMatrix);
-			instancingData_[numInstance_].color = (*particleIterator).color;
+			// 動きで決まる色に、出現時の色を掛ける.
+			const Vector4& color = (*particleIterator).color;
+			const Vector4& spawnColor = (*particleIterator).spawnColor;
+			instancingData_[numInstance_].color = { color.x * spawnColor.x, color.y * spawnColor.y, color.z * spawnColor.z, color.w * spawnColor.w };
 
 			++numInstance_;
 		}
