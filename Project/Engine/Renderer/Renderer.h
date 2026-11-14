@@ -451,6 +451,10 @@ public:
 	void DrawLineAll();
 
 	void ChangeUseDebugLine();
+
+	// デバッグ用の線(DrawLineなど)を描画するか. "Game"ウィンドウのボタンでも切り替えられる.
+	bool GetUseDebugLine() const { return useDebugLine_; };
+	void SetUseDebugLine(bool isUse) { useDebugLine_ = isUse; };
 private:
 	/// <summary>
 	/// 半径などで形が変わるPrimitive図形用に、メッシュを最大数分用意しておく.

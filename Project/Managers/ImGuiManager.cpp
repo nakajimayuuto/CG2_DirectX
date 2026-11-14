@@ -21,6 +21,7 @@
 #include "EmitterManager.h"
 #include "ParticleSettingsManager.h"
 #include "../Engine/Renderer/Camera.h"
+#include "../Engine/Renderer/Renderer.h"
 
 ImGuiManager* ImGuiManager::GetInstance() {
 	static ImGuiManager instance;
@@ -62,6 +63,7 @@ void ImGuiManager::RegisterEditorSettingsHandler() {
 	// imgui.ini に次の形で書き込まれ、起動した時(最初のフレーム)に読み込まれる.
 	// [EngineEditor][Settings]
 	// UIVisibleWhenNotPlaying=0
+	// UseDebugLine=1
 	ImGuiSettingsHandler handler;
 	handler.TypeName = "EngineEditor";
 	handler.TypeHash = ImHashStr("EngineEditor");
@@ -76,6 +78,9 @@ void ImGuiManager::RegisterEditorSettingsHandler() {
 		int value = 0;
 		if (sscanf_s(line, "UIVisibleWhenNotPlaying=%d", &value) == 1) {
 			manager->isUIVisibleWhenNotPlaying_ = value != 0;
+		} else if (sscanf_s(line, "UseDebugLine=%d", &value) == 1) {
+			// Rendererの初期化の後(最初のフレーム)に読み込まれるので、そのまま設定してよい.
+			Renderer::GetInstance()->SetUseDebugLine(value != 0);
 		}
 	};
 	// imgui.ini に書き出す時.
@@ -83,6 +88,7 @@ void ImGuiManager::RegisterEditorSettingsHandler() {
 		const ImGuiManager* manager = static_cast<const ImGuiManager*>(settingsHandler->UserData);
 		buffer->appendf("[%s][Settings]\n", settingsHandler->TypeName);
 		buffer->appendf("UIVisibleWhenNotPlaying=%d\n", manager->isUIVisibleWhenNotPlaying_ ? 1 : 0);
+		buffer->appendf("UseDebugLine=%d\n", Renderer::GetInstance()->GetUseDebugLine() ? 1 : 0);
 		buffer->append("\n");
 	};
 	ImGui::AddSettingsHandler(&handler);
@@ -541,6 +547,10 @@ void ImGuiManager::DrawGizmos(const Vector2& imagePos, const Vector2& imageSize)
 	if (gizmoTargets_.empty()) {
 		return;
 	}
+	// デバッグ線を非表示にしている時はギズモ(と操作の切り替えボタン)も出さない.
+	if (!Renderer::GetInstance()->GetUseDebugLine()) {
+		return;
+	}
 
 	// 操作の切り替え(停止中 / 一時停止中は W / E / R キーでも切り替えられる. 右ドラッグ中はカメラ操作なので切り替えない).
 	if (playState_ != PlayState::kPlay && isGameViewHovered_ && !ImGui::IsMouseDown(ImGuiMouseButton_Right) && !ImGui::GetIO().WantTextInput) {
@@ -642,6 +652,10 @@ void ImGuiManager::DrawViewOptionButtons() {
 	const ImGuiStyle& style = ImGui::GetStyle();
 	const ImVec4 activeColor = ImVec4(0.20f, 0.45f, 0.80f, 1.0f);
 
+	// デバッグ用の線の表示の切り替え(Renderer::ChangeUseDebugLine と同じ).
+	Renderer* renderer = Renderer::GetInstance();
+	const bool isDebugLine = renderer->GetUseDebugLine();
+	const std::string lineLabel = "デバッグ線\n" + static_cast<std::string>(isDebugLine ? "表示" : "非表示");
 	// UIの表示の切り替え(停止中 / 一時停止中だけ使う. 再生中はいつも表示する).
 	const std::string uiLabel = "UI\n" + static_cast<std::string>(isUIVisibleWhenNotPlaying_ ? "表示" : "非表示");
 	// デバッグカメラの切り替え.
@@ -649,15 +663,30 @@ void ImGuiManager::DrawViewOptionButtons() {
 	const bool isDebugCamera = camera->GetUseDebugCamera();
 	const std::string cameraLabel = "デバッグカメラ\n" + static_cast<std::string>(isDebugCamera ? "起動中" : "停止中");
 
-	// 再生ボタンと同じ高さにして、2つ並べてウィンドウの右端に寄せる.
+	// 再生ボタンと同じ高さにして、3つ並べてウィンドウの右端に寄せる.
+	const float lineButtonWidth = ImGui::CalcTextSize("デバッグ線\n非表示").x + style.FramePadding.x * 2.0f;
 	const float uiButtonWidth = ImGui::CalcTextSize("UI\n非表示").x + style.FramePadding.x * 2.0f;
 	const float cameraButtonWidth = ImGui::CalcTextSize(cameraLabel.c_str()).x + style.FramePadding.x * 2.0f;
 	const float buttonHeight = kPlayControlIconSize_ + style.FramePadding.y * 4.0f;
-	const float totalWidth = uiButtonWidth + style.ItemSpacing.x + cameraButtonWidth;
+	const float totalWidth = lineButtonWidth + uiButtonWidth + cameraButtonWidth + style.ItemSpacing.x * 2.0f;
 	const float rightX = ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - totalWidth - 8.0f;
 	if (ImGui::GetCursorPosX() < rightX) {
 		ImGui::SetCursorPosX(rightX);
 	}
+
+	// 表示している時はボタンの色を変えて分かるようにする(Push / Popは押す前の値で決める).
+	if (isDebugLine) { ImGui::PushStyleColor(ImGuiCol_Button, activeColor); }
+	if (ImGui::Button(lineLabel.c_str(), ImVec2(lineButtonWidth, buttonHeight))) {
+		renderer->ChangeUseDebugLine();
+		// 次に imgui.ini を書き出す時に保存される(次回の起動でも同じ状態になる).
+		ImGui::MarkIniSettingsDirty();
+	}
+	if (isDebugLine) { ImGui::PopStyleColor(); }
+	if (ImGui::IsItemHovered()) {
+		ImGui::SetTooltip("デバッグ用の線(Renderer::DrawLine など)とギズモを表示するか\n(Renderer::ChangeUseDebugLine と同じ. ゲーム中のF4でも切り替わります)");
+	}
+
+	ImGui::SameLine();
 
 	// 非表示にしている時はボタンの色を変えて分かるようにする.
 	// (押した時に値が変わるので、Push / Popは押す前の値で決める).
