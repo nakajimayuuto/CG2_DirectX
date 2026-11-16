@@ -11,12 +11,12 @@ void SrvManager::Initialize() {
 	// 先頭はImGui用に予約しておく.
 	descriptorHeapNum_ = kImGuiDescriptorNum;
 
-	descriptorHeap_ = GameSystem::GetInstance()->CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, kDescriptorHeapNumMax,true);
+	descriptorHeap_ = GameSystem::GetInstance()->CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, kDescriptorHeapNumMax, true);
 
 	descriptorSize_ = GameSystem::GetInstance()->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 }
 
-void SrvManager::PreDraw(){
+void SrvManager::PreDraw() {
 	// 描画用のDescriptorHeapの設定.
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { descriptorHeap_.Get() };
 	GameSystem::GetInstance()->GetCommandList()->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
@@ -60,7 +60,7 @@ void SrvManager::DescriptorHeapNumIncrement() {
 	descriptorHeapNum_++;
 }
 
-TextureInfo SrvManager::CreateSRVforTexture2D(ID3D12Resource* pResource, DXGI_FORMAT format, UINT mipLevels, bool useMipMap){
+TextureInfo SrvManager::CreateSRVforTexture2D(ID3D12Resource* pResource, DXGI_FORMAT format, UINT mipLevels, bool useMipMap) {
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
 	TextureInfo info;
 	srvDesc.Format = format;
@@ -83,7 +83,29 @@ TextureInfo SrvManager::CreateSRVforTexture2D(ID3D12Resource* pResource, DXGI_FO
 	return info;
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE SrvManager::CreateSRVforStructureBuffer( ID3D12Resource* pResource, UINT numElements, UINT structureByteStride){
+TextureInfo SrvManager::CreateSRVforTextureCube(ID3D12Resource* pResource, DXGI_FORMAT format, UINT mipLevels) {
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	TextureInfo info;
+	srvDesc.Format = format;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE; // 2Dテクスチャ.
+	srvDesc.TextureCube.MostDetailedMip = 0;
+	srvDesc.TextureCube.MipLevels = UINT_MAX;
+	srvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
+
+
+	// SRVを生成するDescriptorHeapを決める.
+	info.textureSrvHandlesCPU = GetCPUDescriptorHandle(descriptorHeapNum_);
+	info.textureSrvHandlesGPU = GetGPUDescriptorHandle(descriptorHeapNum_);
+	info.number = descriptorHeapNum_;
+
+	// SRVの生成.
+	GameSystem::GetInstance()->GetDevice()->CreateShaderResourceView(pResource, &srvDesc, info.textureSrvHandlesCPU);
+	DescriptorHeapNumIncrement();
+	return info;
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE SrvManager::CreateSRVforStructureBuffer(ID3D12Resource* pResource, UINT numElements, UINT structureByteStride) {
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
 	srvDesc.Format = DXGI_FORMAT_UNKNOWN;
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;

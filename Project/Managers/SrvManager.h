@@ -17,6 +17,7 @@ public:
 	uint32_t GetDescriptorSizeSRV() { return descriptorSize_; };
 
 	TextureInfo CreateSRVforTexture2D(ID3D12Resource* pResource,DXGI_FORMAT format,UINT mipLevels,bool useMipMap);
+	TextureInfo CreateSRVforTextureCube(ID3D12Resource* pResource,DXGI_FORMAT format,UINT mipLevels);
 	D3D12_GPU_DESCRIPTOR_HANDLE CreateSRVforStructureBuffer(ID3D12Resource* pResource,UINT numElements,UINT structureByteStride);
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetDescriptorHeap() { return descriptorHeap_; };

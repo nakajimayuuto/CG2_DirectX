@@ -6,11 +6,11 @@ TextureManager* TextureManager::GetInstance() {
 	return &instance;
 }
 
-TextureInfo TextureManager::RegisterTexture(const std::string& name, const std::string& filePath){
-	return RegisterTexture(name,filePath,true);
+TextureInfo TextureManager::RegisterTexture(const std::string& name, const std::string& filePath) {
+	return RegisterTexture(name, filePath, true);
 }
 
-TextureInfo TextureManager::RegisterTexture(const std::string& name, const std::string& filePath, bool useMipMap){
+TextureInfo TextureManager::RegisterTexture(const std::string& name, const std::string& filePath, bool useMipMap) {
 	if (textures_.find(name) != textures_.end()) {
 		return TextureInfo();
 	}
@@ -20,7 +20,12 @@ TextureInfo TextureManager::RegisterTexture(const std::string& name, const std::
 	// Textureを読んで転送する.
 	DirectX::ScratchImage mipImage;
 	DirectX::TexMetadata metadata;
-	mipImage = LoadTexture(filePath);
+
+	if (filePath.ends_with(".dds")) {
+		mipImage = LoadDDSTexture(filePath);
+	} else {
+		mipImage = LoadTexture(filePath);
+	}
 
 	metadata = mipImage.GetMetadata();
 	textures_[name].textureResource = CreateTextureResource(GameSystem::GetInstance()->GetDevice(), metadata);
@@ -78,13 +83,13 @@ TextureInfo TextureManager::RegisterTexture(const std::string& name, const std::
 	//// SRVの生成.
 	//GameSystem::GetInstance()->GetDevice()->CreateShaderResourceView(textures_[name].textureResource.Get(), &srvDesc, textures_[name].textureSrvHandlesCPU);
 	//GameSystem::GetInstance()->SrvDescriptorHeapNumIncrement();
-	TextureInfo newCPUandGPU = SrvManager::GetInstance()->CreateSRVforTexture2D(textures_[name].textureResource.Get(),metadata.format,static_cast<UINT>(metadata.mipLevels),useMipMap);
+	TextureInfo newCPUandGPU = SrvManager::GetInstance()->CreateSRVforTexture2D(textures_[name].textureResource.Get(), metadata.format, static_cast<UINT>(metadata.mipLevels), useMipMap);
 	textures_[name].textureSrvHandlesCPU = newCPUandGPU.textureSrvHandlesCPU;
 	textures_[name].textureSrvHandlesGPU = newCPUandGPU.textureSrvHandlesGPU;
 	return textures_[name];
 }
 
-TextureInfo TextureManager::GetTextureInfo(const std::string& name){
+TextureInfo TextureManager::GetTextureInfo(const std::string& name) {
 	auto it = textures_.find(name);
 
 	assert(it != textures_.end());
@@ -106,6 +111,17 @@ DirectX::ScratchImage TextureManager::LoadTexture(const std::string& filePath) {
 
 	// ミニマップ付きのデータを返す.
 	return mipImages;
+}
+
+DirectX::ScratchImage TextureManager::LoadDDSTexture(const std::string& filePath){
+	// テクスチャファイルを読んでプログラムを扱えるようにする.
+	DirectX::ScratchImage image{};
+	std::wstring filePathW = Convert::ConvertString(filePath);
+	HRESULT hr = DirectX::LoadFromDDSFile(filePathW.c_str(), DirectX::DDS_FLAGS_NONE, nullptr, image);
+	assert(SUCCEEDED(hr));
+
+	// ミニマップ付きのデータを返す.
+	return image;
 }
 
 Microsoft::WRL::ComPtr<ID3D12Resource> TextureManager::CreateTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, const DirectX::TexMetadata& metaData) {

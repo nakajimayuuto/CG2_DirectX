@@ -26,10 +26,6 @@ void Application::Update(){
 void Application::Draw(){
 	SceneManager::GetInstance()->Draw();
 
-	// 描画命令は必ず Framework::Draw()(=EndFrame) より前に積む.
-	FontManager::GetInstance()->DrawString("main", "祟殺鱟翁", { -500.0f, -250.0f },
-		32.0f,
-		{ 1,1,1,1 }, TextAlign::kLeft);
 	//=============================================
 	//以上ゲームの描画処理.
 	//=============================================
@@ -63,6 +59,7 @@ void Application::LoadDatas(){
 	TextureManager::GetInstance()->RegisterTexture("door", "Resources/wall/door.png");
 	//TextureManager::GetInstance()->RegisterTexture("halberd_soul", "Resource/Halberd/halberd_soul.png");
 
+	TextureManager::GetInstance()->RegisterTexture("sky_box_test", "Resources/SkyBoxTest/rostock_laage_airport_4k.dds");
 	TextureManager::GetInstance()->RegisterTexture("effect_plane", "Resources/effects/effect_plane.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_fire", "Resources/effects/effect_fire.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_big_fire", "Resources/effects/effect_big_fire.png");

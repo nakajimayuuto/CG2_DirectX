@@ -35,6 +35,7 @@ public:
 private:
 	// Textureデータを読む(TextureManager的な奴に入れる).
 	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
+	static DirectX::ScratchImage LoadDDSTexture(const std::string& filePath);
 
 	// DirectX12のTextureResourceを作る(TextureManager的な奴に入れる).
 	static Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, const DirectX::TexMetadata& metaData);
