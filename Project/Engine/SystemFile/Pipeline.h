@@ -19,6 +19,7 @@ enum class ShaderType {
 	kLine, // テクスチャ無しモデル.
 	kSprite, // スプライト.
 	kParticle, // パーティクル.
+	kSkyBox, // パーティクル.
 	kCount // 最大数.
 };
 
@@ -42,6 +43,8 @@ enum class BlendMode {
 class Pipeline {
 private:
 	static inline const D3D12_FILTER kUsingFilter_ = D3D12_FILTER_MIN_MAG_MIP_POINT; // D3D12_FILTER_MIN_MAG_MIP_LINEAR.
+
+	static inline const std::wstring kShaderFilePath = L"./Resources/Shaders/";
 public:
 	void Initialize();
 
@@ -121,18 +124,26 @@ private:
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob3dObject;
 	// 【PixelShader】
 	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob3dObject;
+
 	// 【VertexShader】
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlobParticle;
 	// 【PixelShader】
 	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlobParticle;
+
 	// 【VertexShader】
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlobLine;
 	// 【PixelShader】
 	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlobLine;
+
 	// 【VertexShader】
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlobNoTexture;
 	// 【PixelShader】
 	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlobNoTexture;
+
+	// 【VertexShader】
+	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlobSkyBox;
+	// 【PixelShader】
+	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlobSkyBox;
 private:
 
 	D3D12_ROOT_PARAMETER rootParameters[8] = {};

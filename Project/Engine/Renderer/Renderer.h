@@ -347,6 +347,8 @@ public:
 	void DrawBox(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color);
 	void DrawBox(const Transform& transform, const Transform& uvTransform, const TextureInfo& textureInfo, const Vector4& color);
 
+	void DrawSkyBox();
+
 	/// <summary>
 	/// ボックスの描画.
 	/// </summary>

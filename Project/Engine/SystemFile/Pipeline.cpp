@@ -25,17 +25,20 @@ void Pipeline::CreateAllPipeline() {
 }
 
 void Pipeline::ShaderCompile() {
-	vertexShaderBlobParticle = CompileShader(L"./Resources/Shaders/Particle.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
-	pixelShaderBlobParticle = CompileShader(L"./Resources/Shaders/Particle.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	vertexShaderBlobParticle = CompileShader(kShaderFilePath + L"Particle/Particle.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	pixelShaderBlobParticle = CompileShader(kShaderFilePath + L"Particle/Particle.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
 
-	vertexShaderBlobLine = CompileShader(L"./Resources/Shaders/Line.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
-	pixelShaderBlobLine = CompileShader(L"./Resources/Shaders/Line.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	vertexShaderBlobLine = CompileShader(kShaderFilePath + L"Line/Line.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	pixelShaderBlobLine = CompileShader(kShaderFilePath + L"Line/Line.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
 
-	vertexShaderBlob3dObject = CompileShader(L"./Resources/Shaders/Object3d.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
-	pixelShaderBlob3dObject = CompileShader(L"./Resources/Shaders/Object3d.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	vertexShaderBlob3dObject = CompileShader(kShaderFilePath + L"Object3d/Object3d.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	pixelShaderBlob3dObject = CompileShader(kShaderFilePath + L"Object3d/Object3d.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
 
-	vertexShaderBlobNoTexture = CompileShader(L"./Resources/Shaders/NoTexture.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
-	pixelShaderBlobNoTexture = CompileShader(L"./Resources/Shaders/NoTexture.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	vertexShaderBlobNoTexture = CompileShader(kShaderFilePath + L"NoTexture/NoTexture.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	pixelShaderBlobNoTexture = CompileShader(kShaderFilePath + L"NoTexture/NoTexture.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+
+	vertexShaderBlobSkyBox = CompileShader(kShaderFilePath + L"SkyBox/SkyBox.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	pixelShaderBlobSkyBox = CompileShader(kShaderFilePath + L"SkyBox/SkyBox.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
 
 }
 

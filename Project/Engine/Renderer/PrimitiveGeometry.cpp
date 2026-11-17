@@ -35,6 +35,26 @@ namespace {
 		vertexData[3] = { {  0.5f, 0.5f,0.0f,1.0f },{ 1.0f,1.0f },normal };
 	}
 
+	void WriteSkyBoxVertices(VertexData* vertexData) {
+		const Vector2 texcoord = { 0.0f,0.0f };
+		const Vector3 normal = { 0.0f,1.0f,0.0f };
+		vertexData[0] = { {1.0f,1.0f,1.0f,1.0f },texcoord,normal };
+		vertexData[1] = { {1.0f,1.0f,-1.0f,1.0f },texcoord,normal };
+		vertexData[2] = { {1.0f,-1.0f,1.0f,1.0f },texcoord,normal };
+		vertexData[3] = { {1.0f,-1.0f,-1.0f,1.0f },texcoord,normal };
+
+		vertexData[4] = { {-1.0f,1.0f,-1.0f,1.0f },texcoord,normal };
+		vertexData[5] = { {-1.0f,1.0f,1.0f,1.0f },texcoord,normal };
+		vertexData[6] = { {-1.0f,-1.0f,-1.0f,1.0f },texcoord,normal };
+		vertexData[7] = { {-1.0f,-1.0f,1.0f,1.0f },texcoord,normal };
+
+		vertexData[8] = { {-1.0f,1.0f,1.0f,1.0f },texcoord,normal };
+		vertexData[9] = { {1.0f,1.0f,1.0f,1.0f },texcoord,normal };
+		vertexData[10] = { {-1.0f,-1.0f,1.0f,1.0f },texcoord,normal };
+		vertexData[11] = { {1.0f,-1.0f,1.0f,1.0f },texcoord,normal };
+
+	}
+
 	void WriteSphereVertices(VertexData* vertexData) {
 		const uint32_t kSubdivision = PrimitiveGeometry::kSphereSubdivision;
 		const float pi = std::numbers::pi_v<float>;
@@ -213,6 +233,10 @@ namespace PrimitiveGeometry {
 		case PrimitiveType::kBox: {
 			const ModelData& box = GetBoxModelData();
 			std::memcpy(vertexData, box.vertices.data(), sizeof(VertexData) * box.vertexCount);
+			break;
+		}
+		case PrimitiveType::kSkyBox: {
+			WriteSkyBoxVertices(vertexData);
 			break;
 		}
 		case PrimitiveType::kSphere:

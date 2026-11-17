@@ -8,6 +8,7 @@
 enum class PrimitiveType {
 	kPlane,
 	kBox,
+	kSkyBox,
 	kSphere,
 	kTours,
 	kRing,

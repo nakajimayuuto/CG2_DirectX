@@ -763,6 +763,10 @@ void Renderer::DrawBox(const Transform& transform, const Transform& uvTransform,
 	DrawPrimitiveShape(PrimitiveType::kBox, transform, {}, textureInfo, color, uvTransform);
 }
 
+void Renderer::DrawSkyBox(){
+	//DrawPrimitiveShape(PrimitiveType::kSkyBox,Transform::GetInitialValue());
+}
+
 void Renderer::DrawBoxEdges(const Vector3(&vertices)[8], const Vector4& color) {
 	// 頂点の並び: 0~3が手前の面(-z)、4~7が奥の面(+z).
 	static constexpr uint32_t kEdges[12][2] = {
