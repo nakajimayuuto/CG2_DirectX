@@ -149,6 +149,11 @@ public:
 		Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource,
 		D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU,
 		uint32_t indexInstancedNum);
+
+	void SetGraphicsRoots(ShaderType shaderType,
+		Microsoft::WRL::ComPtr<ID3D12Resource> materialResource,
+		Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource,
+		D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU );
 public:
 	// ログを表示する.
 	static void Log(const std::string& message);

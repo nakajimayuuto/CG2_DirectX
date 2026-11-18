@@ -3,7 +3,7 @@
 void TitleScene::Initialize() {
 	SoundManager::GetInstance()->ResetBGM();
 	SoundManager::GetInstance()->SoundPlay("mus_title", 1.0f, 0.25f, kBGM, true, "mus_title");
-	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 0.05f;
+	LightManager::GetInstance()->GetDirectionalLightData()->intensity = 1.0f;
 	LightManager::GetInstance()->GetDirectionalLightData()->color = { 0.5f,0.5f,1.0f,1.0f };
 	LightManager::GetInstance()->ClearLight();
 
@@ -212,10 +212,10 @@ void TitleScene::SettingUpdate() {
 }
 
 void TitleScene::Draw() {
-	ground_->Draw();
+	//ground_->Draw();
 
-	Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "wall", { 1.0f,1.0f,1.0f,1.0f }, false);
-	Renderer::GetInstance()->DrawBox(Transform::GetInitialValue({ 10.0f,10.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,5.0f,-75.0f }), "door", { 1.0f,1.0f,1.0f,1.0f });
+	//Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "wall", { 1.0f,1.0f,1.0f,1.0f }, false);
+	//Renderer::GetInstance()->DrawBox(Transform::GetInitialValue({ 10.0f,10.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,5.0f,-75.0f }), "door", { 1.0f,1.0f,1.0f,1.0f });
 
 	Renderer::GetInstance()->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,2.0f,0.0f }), "halberd", { 1.0f,1.0f,1.0f,1.0f }, false);
 	Renderer::GetInstance()->DrawShadow(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "halberd", { 0.0f,0.0f,0.0f,1.0f });

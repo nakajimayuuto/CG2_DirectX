@@ -1,4 +1,4 @@
-#include "Object3d.hlsli"
+#include "SkyBox.hlsli"
 
 struct TransformationMatrix{
     float32_t4x4 WVP;
@@ -15,9 +15,7 @@ struct VertexShaderInput{
 
 VertexShaderOutput main(VertexShaderInput input){
     VertexShaderOutput output;
-    output.position = mul(input.position,gTransformationMatrix.WVP);
-    output.texcoord = input.texcoord;
-    output.normal = normalize(mul(input.normal, (float32_t3x3)gTransformationMatrix.WorldInverseTranspose));
-    output.worldPosition = mul(input.position,gTransformationMatrix.World).xyz;
+    output.position = mul(input.position,gTransformationMatrix.WVP).xyww;
+    output.texcoord = input.position.xyz;
 	return output;
 }

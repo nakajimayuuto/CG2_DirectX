@@ -447,24 +447,8 @@ void GameSystem::DrawCommand(
 	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
 	commandList->IASetPrimitiveTopology(topology);
 
-	if (shaderType == ShaderType::kLine) {
-		// transformationMatrixCBufferの場所.
-		commandList->SetGraphicsRootConstantBufferView(0, wvpResource->GetGPUVirtualAddress());
-	} else {
-		// マテリアル用のCBufferの場所.
-		commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-		// transformationMatrixCBufferの場所.
-		commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
-		// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
-		commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-		commandList->SetGraphicsRootConstantBufferView(3, LightManager::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
-		commandList->SetGraphicsRootConstantBufferView(4, Camera::GetInstance()->GetCameraForGPUResource()->GetGPUVirtualAddress());
-		//commandList->SetGraphicsRootConstantBufferView(5, PointLight::GetInstance()->GetPointLightResource()->GetGPUVirtualAddress());
-		//commandList->SetGraphicsRootConstantBufferView(6, SpotLight::GetInstance()->GetSpotLightResource()->GetGPUVirtualAddress());
-		commandList->SetGraphicsRootDescriptorTable(5, LightManager::GetInstance()->GetPointLightSrvHandleGPU());
-		commandList->SetGraphicsRootDescriptorTable(6, LightManager::GetInstance()->GetSpotLightSrvHandleGPU());
-		commandList->SetGraphicsRootConstantBufferView(7, LightManager::GetInstance()->GetLightNumResource()->GetGPUVirtualAddress());
-	}
+	SetGraphicsRoots(shaderType,materialResource,wvpResource,textureSrvHandleGPU);
+	
 	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
 	if (indexBufferView == nullptr) {
 		commandList->DrawInstanced(indexInstancedNum, 1, 0, 0);
@@ -473,6 +457,36 @@ void GameSystem::DrawCommand(
 	}
 
 	drawCount_++;
+}
+
+void GameSystem::SetGraphicsRoots(ShaderType shaderType, Microsoft::WRL::ComPtr<ID3D12Resource> materialResource, Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource, D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU ){
+	switch (shaderType){
+	case ShaderType::kLine:
+		// transformationMatrixCBufferの場所.
+		commandList->SetGraphicsRootConstantBufferView(0, wvpResource->GetGPUVirtualAddress());
+		break;
+	case ShaderType::kSkyBox:
+		// マテリアル用のCBufferの場所.
+		commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+		// transformationMatrixCBufferの場所.
+		commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
+		// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
+		commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+		break;
+	default:
+		// マテリアル用のCBufferの場所.
+		commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+		// transformationMatrixCBufferの場所.
+		commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
+		// SRVのDescriptorTableの先頭の設定。2はrootParameter[2]である.
+		commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+		commandList->SetGraphicsRootConstantBufferView(3, LightManager::GetInstance()->GetDirectionalLightResource()->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootConstantBufferView(4, Camera::GetInstance()->GetCameraForGPUResource()->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootDescriptorTable(5, LightManager::GetInstance()->GetPointLightSrvHandleGPU());
+		commandList->SetGraphicsRootDescriptorTable(6, LightManager::GetInstance()->GetSpotLightSrvHandleGPU());
+		commandList->SetGraphicsRootConstantBufferView(7, LightManager::GetInstance()->GetLightNumResource()->GetGPUVirtualAddress());
+		break;
+	}
 }
 
 bool GameSystem::ProcessMessage() {

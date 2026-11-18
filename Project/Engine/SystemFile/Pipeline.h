@@ -70,6 +70,7 @@ private:
 	std::array<PipelineData, static_cast<size_t>(BlendMode::kCount)> pipelineSprite_;
 	std::array<PipelineData, static_cast<size_t>(BlendMode::kCount)> pipelineParticle_;
 	PipelineData pipelineLine_;
+	PipelineData pipelineSkyBox_;
 private:
 	struct ShaderBlobs {
 		// 【VertexShader】
@@ -150,6 +151,7 @@ private:
 	D3D12_ROOT_PARAMETER rootParametersNoTexture[7] = {};
 	D3D12_ROOT_PARAMETER rootParametersParticle[3] = {};
 	D3D12_ROOT_PARAMETER rootParametersLine[1] = {};
+	D3D12_ROOT_PARAMETER rootParametersSkyBox[3] = {};
 
 	//D3D12_ROOT_PARAMETER rootParameter;
 

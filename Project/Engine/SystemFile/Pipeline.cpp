@@ -2,7 +2,7 @@
 #include "Pipeline.h"
 #include "GameSystem.h"
 
-void Pipeline::Initialize(){
+void Pipeline::Initialize() {
 	DXCompilerInitialize();
 	ShaderCompile();
 	CreateAllPipeline();
@@ -10,18 +10,20 @@ void Pipeline::Initialize(){
 
 void Pipeline::CreateAllPipeline() {
 	for (uint32_t i = 0; i < static_cast<uint32_t>(BlendMode::kCount); i++) {
-		pipelineObject3d_[i] = PipelineCreate(static_cast<BlendMode>(i),ShaderType::kNormal,D3D12_DEPTH_WRITE_MASK_ALL,kUsingFilter_,D3D12_CULL_MODE_BACK);
+		pipelineObject3d_[i] = PipelineCreate(static_cast<BlendMode>(i), ShaderType::kNormal, D3D12_DEPTH_WRITE_MASK_ALL, kUsingFilter_, D3D12_CULL_MODE_BACK);
 	}
 
 	for (uint32_t i = 0; i < static_cast<uint32_t>(BlendMode::kCount); i++) {
-		pipelineSprite_[i] = PipelineCreate(static_cast<BlendMode>(i),ShaderType::kSprite,D3D12_DEPTH_WRITE_MASK_ALL,kUsingFilter_,D3D12_CULL_MODE_NONE);
+		pipelineSprite_[i] = PipelineCreate(static_cast<BlendMode>(i), ShaderType::kSprite, D3D12_DEPTH_WRITE_MASK_ALL, kUsingFilter_, D3D12_CULL_MODE_NONE);
 	}
 
 	for (uint32_t i = 0; i < static_cast<uint32_t>(BlendMode::kCount); i++) {
-		pipelineParticle_[i] = PipelineCreate(static_cast<BlendMode>(i),ShaderType::kParticle,D3D12_DEPTH_WRITE_MASK_ALL,kUsingFilter_,D3D12_CULL_MODE_NONE);
+		pipelineParticle_[i] = PipelineCreate(static_cast<BlendMode>(i), ShaderType::kParticle, D3D12_DEPTH_WRITE_MASK_ZERO, kUsingFilter_, D3D12_CULL_MODE_NONE);
 	}
 
 	pipelineLine_ = PipelineCreate(BlendMode::kNormal, ShaderType::kLine, D3D12_DEPTH_WRITE_MASK_ALL, kUsingFilter_, D3D12_CULL_MODE_NONE);
+
+	pipelineSkyBox_ = PipelineCreate(BlendMode::kNone, ShaderType::kSkyBox, D3D12_DEPTH_WRITE_MASK_ZERO, kUsingFilter_, D3D12_CULL_MODE_BACK);
 }
 
 void Pipeline::ShaderCompile() {
@@ -136,7 +138,7 @@ PipelineData Pipeline::PipelineCreate(BlendMode blendMode, ShaderType shaderType
 
 	// Shaderをコンパイルする.
 	ShaderBlobs shaderBlobs;
-	SelectShaderBlobs(shaderBlobs,shaderType);
+	SelectShaderBlobs(shaderBlobs, shaderType);
 
 	// 【PSO】
 	graphicsPipelineStateDesc.pRootSignature = pipeline.rootSignature.Get(); // RootSignature.
@@ -170,10 +172,13 @@ PipelineData Pipeline::PipelineCreate(BlendMode blendMode, ShaderType shaderType
 	return pipeline;
 }
 
-PipelineData Pipeline::GetPSO(BlendMode blendMode, ShaderType shaderType){
-	switch (shaderType){
+PipelineData Pipeline::GetPSO(BlendMode blendMode, ShaderType shaderType) {
+	switch (shaderType) {
 	case ShaderType::kNormal:
 		return GetObject3dPSO(blendMode);
+		break;
+	case ShaderType::kSkyBox:
+		return pipelineSkyBox_;
 		break;
 	case ShaderType::kLine:
 		return GetLinePSO();
@@ -233,11 +238,15 @@ D3D12_DEPTH_STENCIL_DESC Pipeline::CreateDepthStencilDesc(D3D12_DEPTH_WRITE_MASK
 	// Depthの機能を有効化する.
 	depthStencilDesc.DepthEnable = true;
 	// 書き込みします.
-	if (shaderType == ShaderType::kParticle) {
+	switch (shaderType) {
+	case ShaderType::kParticle:
 		depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
-	} else {
-		depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+		break;
+	default:
+		depthStencilDesc.DepthWriteMask = mask;
+		break;
 	}
+
 	// 比較関数はLessEqual。つまり、近ければ描画される.
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
@@ -258,7 +267,7 @@ void Pipeline::CreateConstantBufferView(D3D12_ROOT_PARAMETER& rootParameter, D3D
 }
 
 void Pipeline::CreateDescriptorTable(D3D12_ROOT_PARAMETER& rootParameter, D3D12_SHADER_VISIBILITY shaderVisibility, D3D12_DESCRIPTOR_RANGE* descriptorRange, UINT numDescriptorRanges) {
-	
+
 	// SpotLightData.
 	rootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; //DescriptorTableを使う.
 	rootParameter.ShaderVisibility = shaderVisibility; // PixelShaderで使う.
@@ -274,9 +283,9 @@ void Pipeline::CreateRootParameters(D3D12_ROOT_SIGNATURE_DESC& rootSignature, Sh
 
 	switch (shaderType) {
 	case ShaderType::kParticle:
-		CreateConstantBufferView(rootParametersParticle[0],D3D12_SHADER_VISIBILITY_PIXEL, 0);
-		CreateDescriptorTable(rootParametersParticle[1],D3D12_SHADER_VISIBILITY_VERTEX, descriptorRangeForInstancing, _countof(descriptorRangeForInstancing));
-		CreateDescriptorTable(rootParametersParticle[2],D3D12_SHADER_VISIBILITY_PIXEL, descriptorRange, _countof(descriptorRange));
+		CreateConstantBufferView(rootParametersParticle[0], D3D12_SHADER_VISIBILITY_PIXEL, 0);
+		CreateDescriptorTable(rootParametersParticle[1], D3D12_SHADER_VISIBILITY_VERTEX, descriptorRangeForInstancing, _countof(descriptorRangeForInstancing));
+		CreateDescriptorTable(rootParametersParticle[2], D3D12_SHADER_VISIBILITY_PIXEL, descriptorRange, _countof(descriptorRange));
 		rootSignature.pParameters = rootParametersParticle; // ルートパラメータ配列へのポインタ.
 		rootSignature.NumParameters = _countof(rootParametersParticle); // 配列の長さ.
 		return;
@@ -285,41 +294,50 @@ void Pipeline::CreateRootParameters(D3D12_ROOT_SIGNATURE_DESC& rootSignature, Sh
 		CreateConstantBufferView(rootParametersNoTexture[0], D3D12_SHADER_VISIBILITY_PIXEL, 0);
 		CreateConstantBufferView(rootParametersNoTexture[1], D3D12_SHADER_VISIBILITY_VERTEX, 0);
 		// DirectionalLightData.
-		 CreateConstantBufferView(rootParametersNoTexture[2],D3D12_SHADER_VISIBILITY_PIXEL, 1);
+		CreateConstantBufferView(rootParametersNoTexture[2], D3D12_SHADER_VISIBILITY_PIXEL, 1);
 		// CameraData.
-		 CreateConstantBufferView(rootParametersNoTexture[3],D3D12_SHADER_VISIBILITY_PIXEL, 2);
+		CreateConstantBufferView(rootParametersNoTexture[3], D3D12_SHADER_VISIBILITY_PIXEL, 2);
 		// PointLightData.
-		CreateDescriptorTable(rootParametersNoTexture[4],D3D12_SHADER_VISIBILITY_PIXEL, pointLightDescriptorRange, _countof(pointLightDescriptorRange));
+		CreateDescriptorTable(rootParametersNoTexture[4], D3D12_SHADER_VISIBILITY_PIXEL, pointLightDescriptorRange, _countof(pointLightDescriptorRange));
 		// SpotLightData.
-		CreateDescriptorTable(rootParametersNoTexture[5],D3D12_SHADER_VISIBILITY_PIXEL, spotLightDescriptorRange, _countof(spotLightDescriptorRange));
+		CreateDescriptorTable(rootParametersNoTexture[5], D3D12_SHADER_VISIBILITY_PIXEL, spotLightDescriptorRange, _countof(spotLightDescriptorRange));
 		// LightNumData.
-		CreateConstantBufferView(rootParametersNoTexture[6],D3D12_SHADER_VISIBILITY_PIXEL, 3);
+		CreateConstantBufferView(rootParametersNoTexture[6], D3D12_SHADER_VISIBILITY_PIXEL, 3);
 
 		rootSignature.pParameters = rootParametersNoTexture; // ルートパラメータ配列へのポインタ.
 		rootSignature.NumParameters = _countof(rootParametersNoTexture); // 配列の長さ.
 		return;
 		break;
 	case ShaderType::kLine:
-		CreateConstantBufferView(rootParametersLine[0],D3D12_SHADER_VISIBILITY_VERTEX, 0);
+		CreateConstantBufferView(rootParametersLine[0], D3D12_SHADER_VISIBILITY_VERTEX, 0);
 
 		rootSignature.pParameters = rootParametersLine; // ルートパラメータ配列へのポインタ.
 		rootSignature.NumParameters = _countof(rootParametersLine); // 配列の長さ.
 		return;
 		break;
+	case ShaderType::kSkyBox:
+		CreateConstantBufferView(rootParametersSkyBox[0], D3D12_SHADER_VISIBILITY_PIXEL, 0);
+		CreateConstantBufferView(rootParametersSkyBox[1], D3D12_SHADER_VISIBILITY_VERTEX, 0);
+		CreateDescriptorTable(rootParametersSkyBox[2], D3D12_SHADER_VISIBILITY_PIXEL, descriptorRange, _countof(descriptorRange));
+
+		rootSignature.pParameters = rootParametersSkyBox; // ルートパラメータ配列へのポインタ.
+		rootSignature.NumParameters = _countof(rootParametersSkyBox); // 配列の長さ.
+		return;
+		break;
 	default:
 		CreateConstantBufferView(rootParameters[0], D3D12_SHADER_VISIBILITY_PIXEL, 0);
 		CreateConstantBufferView(rootParameters[1], D3D12_SHADER_VISIBILITY_VERTEX, 0);
-		CreateDescriptorTable(rootParameters[2],D3D12_SHADER_VISIBILITY_PIXEL, descriptorRange, _countof(descriptorRange));
+		CreateDescriptorTable(rootParameters[2], D3D12_SHADER_VISIBILITY_PIXEL, descriptorRange, _countof(descriptorRange));
 		// DirectionalLightData.
-		CreateConstantBufferView(rootParameters[3],D3D12_SHADER_VISIBILITY_PIXEL, 1);
+		CreateConstantBufferView(rootParameters[3], D3D12_SHADER_VISIBILITY_PIXEL, 1);
 		// CameraData.
-		CreateConstantBufferView(rootParameters[4],D3D12_SHADER_VISIBILITY_PIXEL, 2);
+		CreateConstantBufferView(rootParameters[4], D3D12_SHADER_VISIBILITY_PIXEL, 2);
 		// PointLightData.
-		CreateDescriptorTable(rootParameters[5],D3D12_SHADER_VISIBILITY_PIXEL, pointLightDescriptorRange, _countof(pointLightDescriptorRange));
+		CreateDescriptorTable(rootParameters[5], D3D12_SHADER_VISIBILITY_PIXEL, pointLightDescriptorRange, _countof(pointLightDescriptorRange));
 		// SpotLightData.
-		CreateDescriptorTable(rootParameters[6],D3D12_SHADER_VISIBILITY_PIXEL, spotLightDescriptorRange, _countof(spotLightDescriptorRange));
+		CreateDescriptorTable(rootParameters[6], D3D12_SHADER_VISIBILITY_PIXEL, spotLightDescriptorRange, _countof(spotLightDescriptorRange));
 		// LightNumData.
-		CreateConstantBufferView(rootParameters[7],D3D12_SHADER_VISIBILITY_PIXEL, 3);
+		CreateConstantBufferView(rootParameters[7], D3D12_SHADER_VISIBILITY_PIXEL, 3);
 
 		rootSignature.pParameters = rootParameters; // ルートパラメータ配列へのポインタ.
 		rootSignature.NumParameters = _countof(rootParameters); // 配列の長さ.
@@ -332,7 +350,7 @@ void Pipeline::CreateRootParameters(D3D12_ROOT_SIGNATURE_DESC& rootSignature, Sh
 
 void Pipeline::CreateStaticSamplers(D3D12_ROOT_SIGNATURE_DESC& rootSignature, ShaderType shaderType, D3D12_FILTER filter) {
 	if (shaderType == ShaderType::kLine || shaderType == ShaderType::kNoTexture) {
-		return ;
+		return;
 	}
 
 	staticSamplers[0].Filter = filter; // バイリニアフィルタ.(重要!ゲーム的にここをLINEARからPOINTに切り替えています)
@@ -345,7 +363,7 @@ void Pipeline::CreateStaticSamplers(D3D12_ROOT_SIGNATURE_DESC& rootSignature, Sh
 	staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う.
 	rootSignature.pStaticSamplers = staticSamplers;
 	rootSignature.NumStaticSamplers = _countof(staticSamplers);
-	return ;
+	return;
 }
 
 D3D12_INPUT_LAYOUT_DESC Pipeline::CreateInputRayout(ShaderType shaderType) {
@@ -417,6 +435,10 @@ void Pipeline::SelectShaderBlobs(ShaderBlobs& shaderBlobs, ShaderType shaderType
 	case ShaderType::kParticle:
 		shaderBlobs.vertexShaderBlob = vertexShaderBlobParticle;
 		shaderBlobs.pixelShaderBlob = pixelShaderBlobParticle;
+		break;
+	case ShaderType::kSkyBox:
+		shaderBlobs.vertexShaderBlob = vertexShaderBlobSkyBox;
+		shaderBlobs.pixelShaderBlob = pixelShaderBlobSkyBox;
 		break;
 	default:
 		shaderBlobs.vertexShaderBlob = vertexShaderBlob3dObject;

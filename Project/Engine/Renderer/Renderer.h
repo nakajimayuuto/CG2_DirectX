@@ -347,7 +347,11 @@ public:
 	void DrawBox(const Transform& transform, const TextureInfo& textureInfo, const Vector4& color);
 	void DrawBox(const Transform& transform, const Transform& uvTransform, const TextureInfo& textureInfo, const Vector4& color);
 
-	void DrawSkyBox();
+	void DrawSkyBox(const TextureInfo& textureInfo, const Vector4& color);
+
+	void DrawSkyBox(const std::string& name, const Vector4& color) {
+		DrawSkyBox(TextureManager::GetInstance()->GetTextureInfo(name),color);
+	};
 
 	/// <summary>
 	/// ボックスの描画.

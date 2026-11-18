@@ -250,6 +250,9 @@
     <Filter Include="Engine\Math\BaseEntity">
       <UniqueIdentifier>{a92a85b8-066a-464d-b578-309aca6fda34}</UniqueIdentifier>
     </Filter>
+    <Filter Include="hlsl\SkyBox">
+      <UniqueIdentifier>{158e1b1e-4a4c-410e-a4a3-da7da43bdd75}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -739,43 +742,52 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resource\Shaders\Line.hlsli">
-      <Filter>hlsl\Line</Filter>
-    </None>
-    <None Include="Resource\Shaders\Object3d.hlsli">
-      <Filter>hlsl\Object3d</Filter>
-    </None>
-    <None Include="Resource\Shaders\Particle.hlsli">
-      <Filter>hlsl\Particle</Filter>
-    </None>
     <None Include="Resource\Shaders\NoTexture.hlsli">
       <Filter>hlsl\NoTexture</Filter>
     </None>
+    <None Include="Resources\Shaders\SkyBox\SkyBox.hlsli">
+      <Filter>hlsl\SkyBox</Filter>
+    </None>
+    <None Include="Resources\Shaders\Line\Line.hlsli">
+      <Filter>hlsl\Line</Filter>
+    </None>
+    <None Include="Resources\Shaders\Object3d\Object3d.hlsli">
+      <Filter>hlsl\Object3d</Filter>
+    </None>
+    <None Include="Resources\Shaders\Particle\Particle.hlsli">
+      <Filter>hlsl\Particle</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Resource\Shaders\Line.VS.hlsl">
-      <Filter>hlsl\Line</Filter>
-    </FxCompile>
-    <FxCompile Include="Resource\Shaders\Line.PS.hlsl">
-      <Filter>hlsl\Line</Filter>
-    </FxCompile>
-    <FxCompile Include="Resource\Shaders\Object3d.PS.hlsl">
-      <Filter>hlsl\Object3d</Filter>
-    </FxCompile>
-    <FxCompile Include="Resource\Shaders\Object3d.VS.hlsl">
-      <Filter>hlsl\Object3d</Filter>
-    </FxCompile>
-    <FxCompile Include="Resource\Shaders\Particle.VS.hlsl">
-      <Filter>hlsl\Particle</Filter>
-    </FxCompile>
-    <FxCompile Include="Resource\Shaders\Particle.PS.hlsl">
-      <Filter>hlsl\Particle</Filter>
-    </FxCompile>
     <FxCompile Include="Resource\Shaders\NoTexture.PS.hlsl">
       <Filter>hlsl\NoTexture</Filter>
     </FxCompile>
     <FxCompile Include="Resource\Shaders\NoTexture.VS.hlsl">
       <Filter>hlsl\NoTexture</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\SkyBox\SkyBox.PS.hlsl">
+      <Filter>hlsl\SkyBox</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\SkyBox\SkyBox.VS.hlsl">
+      <Filter>hlsl\SkyBox</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\Line\Line.PS.hlsl">
+      <Filter>hlsl\Line</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\Line\Line.VS.hlsl">
+      <Filter>hlsl\Line</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\Object3d\Object3d.PS.hlsl">
+      <Filter>hlsl\Object3d</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\Object3d\Object3d.VS.hlsl">
+      <Filter>hlsl\Object3d</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\Particle\Particle.PS.hlsl">
+      <Filter>hlsl\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\Particle\Particle.VS.hlsl">
+      <Filter>hlsl\Particle</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

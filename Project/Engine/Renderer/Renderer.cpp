@@ -712,11 +712,11 @@ void Renderer::DrawPlane(const Transform& transform, const TextureInfo& textureI
 	DrawPrimitiveShape(PrimitiveType::kPlane, transform, {}, textureInfo, color, uvTransform);
 }
 
-void Renderer::DrawRing(const Transform& transform, float majorRadius, float minorRadius, const TextureInfo& textureInfo, const Vector4& color, const Transform& uvTransform){
+void Renderer::DrawRing(const Transform& transform, float majorRadius, float minorRadius, const TextureInfo& textureInfo, const Vector4& color, const Transform& uvTransform) {
 	DrawPrimitiveShape(PrimitiveType::kRing, transform, { majorRadius,minorRadius }, textureInfo, color, uvTransform);
 }
 
-void Renderer::DrawCylinder(const Transform& transform, float topRadius, float bottomRadius, const TextureInfo& textureInfo, const Vector4& color, const Transform& uvTransform){
+void Renderer::DrawCylinder(const Transform& transform, float topRadius, float bottomRadius, const TextureInfo& textureInfo, const Vector4& color, const Transform& uvTransform) {
 	DrawPrimitiveShape(PrimitiveType::kCylinder, transform, { topRadius,bottomRadius }, textureInfo, color, uvTransform);
 }
 
@@ -763,8 +763,34 @@ void Renderer::DrawBox(const Transform& transform, const Transform& uvTransform,
 	DrawPrimitiveShape(PrimitiveType::kBox, transform, {}, textureInfo, color, uvTransform);
 }
 
-void Renderer::DrawSkyBox(){
-	//DrawPrimitiveShape(PrimitiveType::kSkyBox,Transform::GetInitialValue());
+void Renderer::DrawSkyBox(const TextureInfo& textureInfo, const Vector4& color) {
+	const PrimitiveMesh& mesh = AcquirePrimitiveMesh(PrimitiveType::kSkyBox, {});
+	ModelInstance* instance = AcquireModelInstance();
+	*instance->wvpData_ = MakeTransformationMatrix(Matrix4x4::Identity(),
+		Transform::GetInitialValue({ 500.0f,500.0f,500.0f }, { 0.0f,0.0f,0.0f }, {0.0f,0.0f,0.0f}).GetAffineMatrix());
+	*instance->materialData_ = MakeMaterial(color, Matrix4x4::Identity());
+
+	// DrawCommandは非constのポインタを受け取るのでコピーを渡す.
+	D3D12_VERTEX_BUFFER_VIEW vbv = mesh.GetVertexBufferView();
+	D3D12_INDEX_BUFFER_VIEW ibv{};
+	if (mesh.GetIndexBufferView()) {
+		ibv = *mesh.GetIndexBufferView();
+	}
+
+	/*=============================================================
+	三角形の描画のコマンド.
+	=============================================================*/
+	GameSystem::GetInstance()->DrawCommand(
+		BlendMode::kNone,
+		ShaderType::kSkyBox,
+		&vbv,
+		mesh.GetIndexBufferView() ? &ibv : nullptr,
+		D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+		instance->materialResource_,
+		instance->wvpResource_,
+		textureInfo.textureSrvHandlesGPU,
+		mesh.GetDrawCount()
+	);
 }
 
 void Renderer::DrawBoxEdges(const Vector3(&vertices)[8], const Vector4& color) {
@@ -1108,21 +1134,21 @@ void Renderer::DrawShadowModel(const Transform& transform, const Model* model, c
 	DrawModelInstance(matrix, worldMatrix, model, overrideColor, false);
 }
 
-void Renderer::DrawBackGround(const Vector4& color){
+void Renderer::DrawBackGround(const Vector4& color) {
 	VertexData vertices[4];
 	MakeSpriteVertices(
-		vertices, 
+		vertices,
 		static_cast<float>(Environment::GetInstance()->GetWindowSize().width),
 		static_cast<float>(Environment::GetInstance()->GetWindowSize().height)
-		);
+	);
 	Transform worldTransform;
 	worldTransform.Initialize();
 	worldTransform.translate.z = kBackGroundTranslateZ;
 	DrawSpriteCommon(worldTransform.GetAffineMatrix(), vertices, MakeSpriteMaterial(color), TextureManager::GetInstance()->GetTextureInfo("white_template").textureSrvHandlesGPU);
 }
 
-void Renderer::DrawBackGround(){
-	DrawBackGround({0.1f,0.25f,0.5f,1.0f});
+void Renderer::DrawBackGround() {
+	DrawBackGround({ 0.1f,0.25f,0.5f,1.0f });
 }
 
 void Renderer::DrawShadow(const Transform& transform, const Model* model) {

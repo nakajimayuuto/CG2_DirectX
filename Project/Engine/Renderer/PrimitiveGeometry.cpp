@@ -38,20 +38,41 @@ namespace {
 	void WriteSkyBoxVertices(VertexData* vertexData) {
 		const Vector2 texcoord = { 0.0f,0.0f };
 		const Vector3 normal = { 0.0f,1.0f,0.0f };
+		// 右.[0,1,2][2,1,3]
 		vertexData[0] = { {1.0f,1.0f,1.0f,1.0f },texcoord,normal };
 		vertexData[1] = { {1.0f,1.0f,-1.0f,1.0f },texcoord,normal };
 		vertexData[2] = { {1.0f,-1.0f,1.0f,1.0f },texcoord,normal };
 		vertexData[3] = { {1.0f,-1.0f,-1.0f,1.0f },texcoord,normal };
 
+		// 左.[4,5,6][6,5,7]
 		vertexData[4] = { {-1.0f,1.0f,-1.0f,1.0f },texcoord,normal };
 		vertexData[5] = { {-1.0f,1.0f,1.0f,1.0f },texcoord,normal };
 		vertexData[6] = { {-1.0f,-1.0f,-1.0f,1.0f },texcoord,normal };
 		vertexData[7] = { {-1.0f,-1.0f,1.0f,1.0f },texcoord,normal };
 
+		// 前.[8,9,10][10,9,11]
 		vertexData[8] = { {-1.0f,1.0f,1.0f,1.0f },texcoord,normal };
 		vertexData[9] = { {1.0f,1.0f,1.0f,1.0f },texcoord,normal };
 		vertexData[10] = { {-1.0f,-1.0f,1.0f,1.0f },texcoord,normal };
 		vertexData[11] = { {1.0f,-1.0f,1.0f,1.0f },texcoord,normal };
+
+		// 後.[12,13,14][14,13,15]
+		vertexData[12] = { {1.0f,1.0f,-1.0f,1.0f },texcoord,normal };
+		vertexData[13] = { {-1.0f,1.0f,-1.0f,1.0f },texcoord,normal };
+		vertexData[14] = { {1.0f,-1.0f,-1.0f,1.0f },texcoord,normal };
+		vertexData[15] = { {-1.0f,-1.0f,-1.0f,1.0f },texcoord,normal };
+
+		// 上.[16,17,18][18,17,19]
+		vertexData[16] = { {-1.0f,1.0f,-1.0f,1.0f },texcoord,normal };
+		vertexData[17] = { {1.0f,1.0f,-1.0f,1.0f },texcoord,normal };
+		vertexData[18] = { {-1.0f,1.0f,1.0f,1.0f },texcoord,normal };
+		vertexData[19] = { {1.0f,1.0f,1.0f,1.0f },texcoord,normal };
+
+		// 上.[20,21,22][22,21,23]
+		vertexData[20] = { {-1.0f,-1.0f,1.0f,1.0f },texcoord,normal };
+		vertexData[21] = { {1.0f,-1.0f,1.0f,1.0f },texcoord,normal };
+		vertexData[22] = { {-1.0f,-1.0f,-1.0f,1.0f },texcoord,normal };
+		vertexData[23] = { {1.0f,-1.0f,-1.0f,1.0f },texcoord,normal };
 
 	}
 
@@ -199,6 +220,7 @@ namespace PrimitiveGeometry {
 		switch (type) {
 		case PrimitiveType::kPlane:    return 4;
 		case PrimitiveType::kBox:      return GetBoxModelData().vertexCount;
+		case PrimitiveType::kSkyBox:   return 24;
 		case PrimitiveType::kSphere:   return kSphereSubdivision * kSphereSubdivision * 4;
 		case PrimitiveType::kTours:    return (kTorusSubdivision + 1) * (kTorusSubdivision + 1);
 		case PrimitiveType::kRing:     return kRingDivision * 4;
@@ -212,6 +234,7 @@ namespace PrimitiveGeometry {
 		switch (type) {
 		case PrimitiveType::kPlane:    return 6;
 		case PrimitiveType::kBox:      return 0; // モデルの頂点をそのまま並べて描画する.
+		case PrimitiveType::kSkyBox:   return 36;
 		case PrimitiveType::kSphere:   return kSphereSubdivision * kSphereSubdivision * 6;
 		case PrimitiveType::kTours:    return kTorusSubdivision * kTorusSubdivision * 6;
 		case PrimitiveType::kRing:     return kRingDivision * 6;
@@ -260,6 +283,9 @@ namespace PrimitiveGeometry {
 			WriteQuadIndices(indexData, 1);
 			break;
 		case PrimitiveType::kBox:
+			break;
+		case PrimitiveType::kSkyBox:
+			WriteQuadIndices(indexData, 36);
 			break;
 		case PrimitiveType::kSphere:
 			WriteQuadIndices(indexData, kSphereSubdivision * kSphereSubdivision);

@@ -26,6 +26,8 @@ void Application::Update(){
 void Application::Draw(){
 	SceneManager::GetInstance()->Draw();
 
+	Renderer::GetInstance()->DrawSkyBox("sky_box_test", {1.0f,1.0f,1.0f,1.0f});
+
 	//=============================================
 	//以上ゲームの描画処理.
 	//=============================================
@@ -42,6 +44,7 @@ void Application::Finalize(){
 
 void Application::LoadDatas(){
 	FontManager::GetInstance()->LoadFont("main", "NoPackageResources/Fonts/dot.ttf", 18.0f);
+	TextureManager::GetInstance()->RegisterTexture("sky_box_test", "Resources/SkyBoxTest/rostock_laage_airport_4k.dds");
 
 	//ModelManager::GetInstance()->RegisterModel("boss", "Resource/boss", "boss_ghost.obj", false);
 	ModelManager::GetInstance()->RegisterModel("ground", "Resources/Ground", "ground.obj");
@@ -59,7 +62,6 @@ void Application::LoadDatas(){
 	TextureManager::GetInstance()->RegisterTexture("door", "Resources/wall/door.png");
 	//TextureManager::GetInstance()->RegisterTexture("halberd_soul", "Resource/Halberd/halberd_soul.png");
 
-	TextureManager::GetInstance()->RegisterTexture("sky_box_test", "Resources/SkyBoxTest/rostock_laage_airport_4k.dds");
 	TextureManager::GetInstance()->RegisterTexture("effect_plane", "Resources/effects/effect_plane.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_fire", "Resources/effects/effect_fire.png");
 	TextureManager::GetInstance()->RegisterTexture("effect_big_fire", "Resources/effects/effect_big_fire.png");
