@@ -117,6 +117,7 @@ void Model::Initialize(const ModelInfo& info) {
 		materialData_[i]->uvTransform = data.materialData.matarial.uvTransform;
 		materialData_[i]->reflectionType = static_cast<uint32_t>(ReflectionType::kPhong);
 		materialData_[i]->shininess = 40.0f;
+		materialData_[i]->environmentCoefficient;
 
 		Transform uvTransform = materialData_[i]->uvTransform.GetMatrixToTransform();
 		uvTransform_[i].Initialize();
@@ -933,6 +934,7 @@ Material Renderer::MakeMaterial(const Vector4& color, const Matrix4x4& uvTransfo
 	material.uvTransform = uvTransform;
 	material.reflectionType = static_cast<int32_t>(reflectionType_);
 	material.shininess = 40.0f;
+	material.environmentCoefficient = 0.0f;
 	return material;
 }
 

@@ -147,7 +147,7 @@ private:
 	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlobSkyBox;
 private:
 
-	D3D12_ROOT_PARAMETER rootParameters[8] = {};
+	D3D12_ROOT_PARAMETER rootParameters[9] = {};
 	D3D12_ROOT_PARAMETER rootParametersNoTexture[7] = {};
 	D3D12_ROOT_PARAMETER rootParametersParticle[3] = {};
 	D3D12_ROOT_PARAMETER rootParametersLine[1] = {};
@@ -162,6 +162,7 @@ private:
 	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 	D3D12_DESCRIPTOR_RANGE spotLightDescriptorRange[1] = {};
 	D3D12_DESCRIPTOR_RANGE pointLightDescriptorRange[1] = {};
+	D3D12_DESCRIPTOR_RANGE environmentTextureDiscriptorRange[1] = {};
 
 	D3D12_INPUT_ELEMENT_DESC inputElementalDescs[3] = {};
 	D3D12_INPUT_ELEMENT_DESC inputElementalDescsLine[2] = {};

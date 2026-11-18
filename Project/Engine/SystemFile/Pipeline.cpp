@@ -280,6 +280,7 @@ void Pipeline::CreateRootParameters(D3D12_ROOT_SIGNATURE_DESC& rootSignature, Sh
 	CreateDescriptorRange(descriptorRange, 0, 1);
 	CreateDescriptorRange(pointLightDescriptorRange, 1, 1);
 	CreateDescriptorRange(spotLightDescriptorRange, 2, 1);
+	CreateDescriptorRange(environmentTextureDiscriptorRange, 3, 1);
 
 	switch (shaderType) {
 	case ShaderType::kParticle:
@@ -338,6 +339,8 @@ void Pipeline::CreateRootParameters(D3D12_ROOT_SIGNATURE_DESC& rootSignature, Sh
 		CreateDescriptorTable(rootParameters[6], D3D12_SHADER_VISIBILITY_PIXEL, spotLightDescriptorRange, _countof(spotLightDescriptorRange));
 		// LightNumData.
 		CreateConstantBufferView(rootParameters[7], D3D12_SHADER_VISIBILITY_PIXEL, 3);
+		// 環境マップ.
+		CreateDescriptorTable(rootParameters[8], D3D12_SHADER_VISIBILITY_PIXEL, environmentTextureDiscriptorRange, _countof(environmentTextureDiscriptorRange));
 
 		rootSignature.pParameters = rootParameters; // ルートパラメータ配列へのポインタ.
 		rootSignature.NumParameters = _countof(rootParameters); // 配列の長さ.

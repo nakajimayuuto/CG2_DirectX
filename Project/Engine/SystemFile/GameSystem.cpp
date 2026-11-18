@@ -485,6 +485,7 @@ void GameSystem::SetGraphicsRoots(ShaderType shaderType, Microsoft::WRL::ComPtr<
 		commandList->SetGraphicsRootDescriptorTable(5, LightManager::GetInstance()->GetPointLightSrvHandleGPU());
 		commandList->SetGraphicsRootDescriptorTable(6, LightManager::GetInstance()->GetSpotLightSrvHandleGPU());
 		commandList->SetGraphicsRootConstantBufferView(7, LightManager::GetInstance()->GetLightNumResource()->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootDescriptorTable(8, TextureManager::GetInstance()->GetTextureInfo("sky_box_test").textureSrvHandlesGPU);
 		break;
 	}
 }

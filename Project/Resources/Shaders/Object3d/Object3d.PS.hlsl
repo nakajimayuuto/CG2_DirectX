@@ -6,6 +6,7 @@ struct Material{
     float32_t4x4 uvTransform;
     float32_t shininess;
     int32_t reflectionType;
+    float32_t environmentCoefficient;
 };
 
 struct DirectionalLight{
@@ -50,6 +51,7 @@ ConstantBuffer<LightNumData> gLightNum : register(b3);
 Texture2D<float32_t4> gTexture : register(t0);
 StructuredBuffer<PointLight> gPointLight : register(t1);
 StructuredBuffer<SpotLight> gSpotLight : register(t2);
+TextureCube<float32_t4> gEnvironmentTexture : register(t3);
 
 SamplerState gSampler : register(s0);
 
@@ -176,6 +178,12 @@ PixelShaderOutput main(VertexShaderOutput input){
         //output.color.rgb = output.color.rgb + (GetOutputRGB(input.worldPosition, input.normal, textureColor.rgb, gSpotLight[j].color.rgb, pointLightDirection, gSpotLight[j].intensity) * factor);
    
     }
+    
+    float32_t3 cameraToPosition = normalize(input.worldPosition - gCamera.worldPosition);
+    float32_t3 reflectedVector = reflect(cameraToPosition, normalize(input.normal));
+    float32_t4 environmentColor = gEnvironmentTexture.Sample(gSampler,reflectedVector);
+    
+    output.color.rgb += environmentColor.rgb * gMaterial.environmentCoefficient;
     
     output.color.a = gMaterial.color.a * textureColor.a;
     
