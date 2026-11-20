@@ -24,9 +24,10 @@ void Application::Update(){
 }
 
 void Application::Draw(){
+	Renderer::GetInstance()->DrawSkyBox("sky_box_test", {1.0f,1.0f,1.0f,1.0f});
+
 	SceneManager::GetInstance()->Draw();
 
-	Renderer::GetInstance()->DrawSkyBox("sky_box_test", {1.0f,1.0f,1.0f,1.0f});
 
 	//=============================================
 	//以上ゲームの描画処理.
