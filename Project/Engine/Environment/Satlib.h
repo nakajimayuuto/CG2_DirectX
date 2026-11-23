@@ -23,6 +23,7 @@
 
 #include "./Managers/CollisionManager.h"
 #include "./Managers/FontManager.h"
+#include "./Managers/DialogBoxManager.h"
 #include "./Managers/DifficultyManager.h"
 #include "./Managers/ParticleManager.h"
 #include "./Managers/LightManager.h"

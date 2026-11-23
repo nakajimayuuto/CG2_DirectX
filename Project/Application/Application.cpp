@@ -29,6 +29,8 @@ void Application::Draw(){
 	SceneManager::GetInstance()->Draw();
 
 
+
+
 	//=============================================
 	//以上ゲームの描画処理.
 	//=============================================
@@ -45,6 +47,8 @@ void Application::Finalize(){
 
 void Application::LoadDatas(){
 	FontManager::GetInstance()->LoadFont("main", "NoPackageResources/Fonts/dot.ttf", 18.0f);
+	DialogBoxManager::GetInstance()->LoadDialogBox("default", "Resources/dialog_box/dialog_box_template.png");
+	DialogBoxManager::GetInstance()->SetFont("main", 18.0f);
 	TextureManager::GetInstance()->RegisterTexture("sky_box_test", "Resources/SkyBoxTest/rostock_laage_airport_4k.dds");
 
 	//ModelManager::GetInstance()->RegisterModel("boss", "Resource/boss", "boss_ghost.obj", false);

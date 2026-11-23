@@ -148,6 +148,7 @@
     <ClCompile Include="Managers\SoundManager.cpp" />
     <ClCompile Include="Managers\TextureManager.cpp" />
     <ClCompile Include="Managers\FontManager.cpp" />
+    <ClCompile Include="Managers\DialogBoxManager.cpp" />
     <ClCompile Include="Application\Player.cpp" />
     <ClCompile Include="Application\Scene\GameScene.cpp" />
     <ClCompile Include="Application\Scene\TitleScene.cpp" />
@@ -244,6 +245,7 @@
     <ClInclude Include="Managers\SoundManager.h" />
     <ClInclude Include="Managers\TextureManager.h" />
     <ClInclude Include="Managers\FontManager.h" />
+    <ClInclude Include="Managers\DialogBoxManager.h" />
     <ClInclude Include="Application\Player.h" />
     <ClInclude Include="Engine\Environment\Satlib.h" />
     <ClInclude Include="Application\Scene\GameScene.h" />

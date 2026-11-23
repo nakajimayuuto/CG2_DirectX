@@ -28,6 +28,9 @@
     <Filter Include="Managers\FontManager">
       <UniqueIdentifier>{6a3e2f71-9c4b-4d8e-b1a5-7f20c3d94e18}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Managers\DialogBoxManager">
+      <UniqueIdentifier>{c2d7a4e9-5b13-4f6a-9e82-3a1f0b7d6c54}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Managers\InputManager">
       <UniqueIdentifier>{28d8bb8c-f15a-45b7-a0f4-1c89c988f4e7}</UniqueIdentifier>
     </Filter>
@@ -336,6 +339,9 @@
     <ClCompile Include="Managers\FontManager.cpp">
       <Filter>Managers\FontManager</Filter>
     </ClCompile>
+    <ClCompile Include="Managers\DialogBoxManager.cpp">
+      <Filter>Managers\DialogBoxManager</Filter>
+    </ClCompile>
     <ClCompile Include="Application\Scene\GameScene.cpp">
       <Filter>Application\Scene\GameScene</Filter>
     </ClCompile>
@@ -574,6 +580,9 @@
     </ClInclude>
     <ClInclude Include="Managers\FontManager.h">
       <Filter>Managers\FontManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\DialogBoxManager.h">
+      <Filter>Managers\DialogBoxManager</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Environment\Satlib.h">
       <Filter>Environment</Filter>
