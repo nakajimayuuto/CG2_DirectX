@@ -252,8 +252,10 @@
     <ClInclude Include="Application\ShieldEnemy.h" />
     <ClInclude Include="Application\Skydome.h" />
     <ClInclude Include="Managers\SrvManager.h" />
+    <ClInclude Include="Engine\SystemFile\RenderTextureData.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\Shaders\FullScreen\FullScreen.hlsli" />
     <None Include="externals\imgui_node\imgui_bezier_math.inl" />
     <None Include="externals\imgui_node\imgui_extra_math.inl" />
     <None Include="externals\imgui_node\imgui_node_editor_internal.inl" />
@@ -264,6 +266,16 @@
     <None Include="Resource\Shaders\NoTexture.hlsli" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Resources\Shaders\FullScreen\FullScreen.PS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\FullScreen\FullScreen.VS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="Resources\Shaders\Line\Line.PS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

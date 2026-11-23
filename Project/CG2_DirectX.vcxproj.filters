@@ -253,6 +253,9 @@
     <Filter Include="hlsl\SkyBox">
       <UniqueIdentifier>{158e1b1e-4a4c-410e-a4a3-da7da43bdd75}</UniqueIdentifier>
     </Filter>
+    <Filter Include="hlsl\CopyImage">
+      <UniqueIdentifier>{bb1ad2bc-79be-4da2-881e-a22ad9f82217}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -740,6 +743,9 @@
     <ClInclude Include="Engine\Math\BaseEntity.h">
       <Filter>Engine\Math\BaseEntity</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\SystemFile\RenderTextureData.h">
+      <Filter>Engine\SystemFile\GameSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\NoTexture.hlsli">
@@ -756,6 +762,9 @@
     </None>
     <None Include="Resources\Shaders\Particle\Particle.hlsli">
       <Filter>hlsl\Particle</Filter>
+    </None>
+    <None Include="Resources\Shaders\FullScreen\FullScreen.hlsli">
+      <Filter>hlsl\CopyImage</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -788,6 +797,12 @@
     </FxCompile>
     <FxCompile Include="Resources\Shaders\Particle\Particle.VS.hlsl">
       <Filter>hlsl\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\FullScreen\FullScreen.VS.hlsl">
+      <Filter>hlsl\CopyImage</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\FullScreen\FullScreen.PS.hlsl">
+      <Filter>hlsl\CopyImage</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

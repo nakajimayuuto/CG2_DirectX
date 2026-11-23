@@ -254,8 +254,8 @@ void GameSystem::DescriptorInitialize() {
 	/*=============================================================
 	ディスクリプタ系
 	=============================================================*/
-	// RTV用のヒープでディスクリプタの数は3(スワップチェーン2 + RenderTexture1)。RTVはShader内で触るものではないので、ShaderVisibleはfalse.
-	rtvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 3, false);
+	// RTV用のヒープ(スワップチェーン2 + RenderTexture分)。RTVはShader内で触るものではないので、ShaderVisibleはfalse.
+	rtvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, kRTVDescriptorMax_, false);
 	descriptorSizeRTV_ = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
 	SrvManager::GetInstance()->Initialize();
@@ -273,6 +273,7 @@ void GameSystem::DescriptorInitialize() {
 }
 
 void GameSystem::RenderTargetViewInitialize() {
+	currentRTVIndex_ = 0;
 	// RTVの設定.
 	rtvDesc_.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB; // 出力結果をSRGBに変換して書き込む.
 	rtvDesc_.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D; // 2dテクスチャとして書き込む.
@@ -281,10 +282,10 @@ void GameSystem::RenderTargetViewInitialize() {
 	const uint32_t rtvHandleMax = 2;
 
 	for (uint32_t dataNumber = 0; dataNumber < rtvHandleMax; dataNumber++) {
-		rtvHandles[dataNumber] = GetCPUDescriptorHandle(rtvDescriptorHeap, descriptorSizeRTV_, dataNumber);
+		rtvHandles[dataNumber] = GetRTVHandle();
 	}
-	device->CreateRenderTargetView(swapChainResource[0].Get(), &rtvDesc_, rtvHandles[0]);
 
+	device->CreateRenderTargetView(swapChainResource[0].Get(), &rtvDesc_, rtvHandles[0]);
 	// 2つ目を作る.
 	device->CreateRenderTargetView(swapChainResource[1].Get(), &rtvDesc_, rtvHandles[1]);
 }
@@ -323,15 +324,15 @@ void GameSystem::ScissorInitialize() {
 	scissorRect.bottom = static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().height);
 }
 
-void GameSystem::PipelineInitialize(){
+void GameSystem::PipelineInitialize() {
 	// DSV用のヒープでディスクリプタ数は1。DSVはShader内で触れるものではないので、ShaderVisibleはfalse.
 	dsvDescriptorHeap = GameSystem::CreateDescriptorHeap(GameSystem::GetInstance()->GetDevice(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
-	
+
 	/*=============================================================
 	DepthStencilTextureをつくる
 	=============================================================*/
 	depthStencilResource = CreateDepthStencilTextureResource(GameSystem::GetInstance()->GetDevice(), static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().width), static_cast<int32_t>(Environment::GetInstance()->GetWindowSize().height));
-	
+
 	// DSVの設定.
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
 	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // Format。基本的にResourceに合わせる.
@@ -351,61 +352,17 @@ void GameSystem::ImGuiInitialize() {
 }
 
 void GameSystem::RenderTextureInitialize() {
-	/*=============================================================
-	RenderTexture(ゲーム画面のオフスクリーン描画先)の生成.
-	ImGuiが有効な時はゲームをここに描画し、ImGuiの"Game"ウィンドウに表示する.
-	=============================================================*/
-	const UINT width = static_cast<UINT>(Environment::GetInstance()->GetWindowSize().width);
-	const UINT height = static_cast<UINT>(Environment::GetInstance()->GetWindowSize().height);
-	// バックバッファと同じくSRGBで書き込み、SRGBで読み出す(ImGuiで表示した時に色が変わらないように).
-	const DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-
-	D3D12_RESOURCE_DESC resourceDesc{};
-	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	resourceDesc.Width = width;
-	resourceDesc.Height = height;
-	resourceDesc.DepthOrArraySize = 1;
-	resourceDesc.MipLevels = 1;
-	resourceDesc.Format = format;
-	resourceDesc.SampleDesc.Count = 1;
-	resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET; // RenderTargetとして使う.
-
-	D3D12_HEAP_PROPERTIES heapProperties{};
-	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT; // VRAM上に作る.
-
-	// 最適化クリア値(ClearRenderTargetViewの色と一致させないと警告が出る).
-	D3D12_CLEAR_VALUE clearValue{};
-	clearValue.Format = format;
-	for (int i = 0; i < 4; i++) {
-		clearValue.Color[i] = kRenderTextureClearColor_[i];
-	}
-
-	// 初期状態はシェーダーから読める状態にしておく(BeginFrameでRenderTargetへ遷移する).
-	HRESULT hr = device->CreateCommittedResource(
-		&heapProperties,
-		D3D12_HEAP_FLAG_NONE,
-		&resourceDesc,
-		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-		&clearValue,
-		IID_PPV_ARGS(&renderTextureResource_));
-	assert(SUCCEEDED(hr));
-
-	// RTVの生成(rtvDescriptorHeapの3番目).
-	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
-	rtvDesc.Format = format;
-	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-	renderTextureRtvHandle_ = GetCPUDescriptorHandle(rtvDescriptorHeap, descriptorSizeRTV_, 2);
-	device->CreateRenderTargetView(renderTextureResource_.Get(), &rtvDesc, renderTextureRtvHandle_);
-
-	// SRVの生成(SrvManagerのヒープ上に作る。ImGuiも同じヒープを使っている).
-	TextureInfo info = SrvManager::GetInstance()->CreateSRVforTexture2D(renderTextureResource_.Get(), format, 1, false);
-	renderTextureSrvHandleGPU_ = info.textureSrvHandlesGPU;
+	CreateRenderTexture(postEffectRenderTexture_);
+#ifdef USE_IMGUI
+	CreateRenderTexture(imguiRenderTexture_);
+	//postEffectRenderTexture_ = CreateRenderTexture();
 
 	// ImGuiの"Game"ウィンドウに表示する.
-	ImGuiManager::GetInstance()->SetGameViewTexture(renderTextureSrvHandleGPU_);
+	ImGuiManager::GetInstance()->SetGameViewTexture(imguiRenderTexture_.srvHandleGPU);
+#endif //USE_IMGUI
 }
 
-void GameSystem::LoadSampleDatas(){
+void GameSystem::LoadSampleDatas() {
 	ModelManager::GetInstance()->RegisterModel("block_template", "Resources/block", "block.obj");
 	ModelManager::GetInstance()->RegisterModel("effect_plane", "Resources/effects", "effect_plane.obj");
 	TextureManager::GetInstance()->RegisterTexture("white_template", "Resources/white_template.png");
@@ -415,7 +372,7 @@ void GameSystem::SetPipeline(BlendMode blendMode, ShaderType shaderType) {
 	commandList->RSSetViewports(1, &viewport); // Viewportを設定.
 	commandList->RSSetScissorRects(1, &scissorRect); // Scissorを設定.
 	// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
-	commandList->SetGraphicsRootSignature(pipeline_->GetPSO(blendMode,shaderType).rootSignature.Get());
+	commandList->SetGraphicsRootSignature(pipeline_->GetPSO(blendMode, shaderType).rootSignature.Get());
 	commandList->SetPipelineState(pipeline_->GetPSO(blendMode, shaderType).graphicsPipelineState.Get()); // PS0を設定.
 }
 
@@ -438,7 +395,7 @@ void GameSystem::DrawCommand(
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU,
 	uint32_t indexInstancedNum
 ) {
-	SetPipeline(blendMode,shaderType);
+	SetPipeline(blendMode, shaderType);
 
 	commandList->IASetVertexBuffers(0, 1, vertexBufferView); // VBVを設定.
 	if (indexBufferView != nullptr) {
@@ -447,8 +404,8 @@ void GameSystem::DrawCommand(
 	// 形状を設定。PS0に設定しているものとはまた別。同じものを設定すると考えておけば良い.
 	commandList->IASetPrimitiveTopology(topology);
 
-	SetGraphicsRoots(shaderType,materialResource,wvpResource,textureSrvHandleGPU);
-	
+	SetGraphicsRoots(shaderType, materialResource, wvpResource, textureSrvHandleGPU);
+
 	// 描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後.
 	if (indexBufferView == nullptr) {
 		commandList->DrawInstanced(indexInstancedNum, 1, 0, 0);
@@ -459,8 +416,8 @@ void GameSystem::DrawCommand(
 	drawCount_++;
 }
 
-void GameSystem::SetGraphicsRoots(ShaderType shaderType, Microsoft::WRL::ComPtr<ID3D12Resource> materialResource, Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource, D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU ){
-	switch (shaderType){
+void GameSystem::SetGraphicsRoots(ShaderType shaderType, Microsoft::WRL::ComPtr<ID3D12Resource> materialResource, Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource, D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU) {
+	switch (shaderType) {
 	case ShaderType::kLine:
 		// transformationMatrixCBufferの場所.
 		commandList->SetGraphicsRootConstantBufferView(0, wvpResource->GetGPUVirtualAddress());
@@ -524,21 +481,21 @@ bool GameSystem::BeginFrame() {
 	/*=============================================================
 	コマンドを積む
 	=============================================================*/
-#ifdef USE_IMGUI
+
 	// ImGui有効時はゲーム画面をRenderTextureに描画する(バックバッファはEndFrameでImGui用に使う).
 	D3D12_RESOURCE_BARRIER renderTextureBarrier{};
 	renderTextureBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	renderTextureBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	renderTextureBarrier.Transition.pResource = renderTextureResource_.Get();
+	renderTextureBarrier.Transition.pResource = postEffectRenderTexture_.resource.Get();
 	renderTextureBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 	renderTextureBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 	renderTextureBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	commandList->ResourceBarrier(1, &renderTextureBarrier);
 
 	// 描画先のRTVとDSVを設定する.
-	commandList->OMSetRenderTargets(1, &renderTextureRtvHandle_, false, &dsvHandle);
+	commandList->OMSetRenderTargets(1, &postEffectRenderTexture_.rtvHandle, false, &dsvHandle);
 	// 指定した色でRenderTextureをクリアする.
-	commandList->ClearRenderTargetView(renderTextureRtvHandle_, kRenderTextureClearColor_, 0, nullptr);
+	commandList->ClearRenderTargetView(postEffectRenderTexture_.rtvHandle, kRenderTextureClearColor_, 0, nullptr);
 
 	// RenderTextureはテクスチャ全体に描画する(表示時のアスペクト調整はImGui側で行う).
 	viewport = {};
@@ -549,33 +506,6 @@ bool GameSystem::BeginFrame() {
 	scissorRect = {};
 	scissorRect.right = static_cast<LONG>(viewport.Width);
 	scissorRect.bottom = static_cast<LONG>(viewport.Height);
-#else
-	// これから書き込むバックバッファのインデックスを取得.
-	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
-
-
-	// TransitionBarrierの設定.
-	// 今回のバリアはTransition.
-	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	// Noneにしておく.
-	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	// バリアを張る対象のリソース。現在のバックバッファに対して行う.
-	barrier.Transition.pResource = swapChainResource[backBufferIndex].Get();
-	// 遷移前(現在)のResourceState.
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-	// 遷移後のResourceState.
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	// TransitionBarrierを張る.
-	commandList->ResourceBarrier(1, &barrier);
-
-
-	// 描画先のRTVとDSVを設定する.
-	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
-	// 指定した色で画面全体をクリアする.
-	//float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };// 青っぽい色。RGBAの順.
-	float clearColor[] = { 0.0f,0.0f,0.0f,1.0f };// 青っぽい色。RGBAの順.
-	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
-#endif // USE_IMGUI
 
 	SrvManager::GetInstance()->PreDraw();
 	// 描画用のDescriptorHeapの設定.
@@ -586,9 +516,9 @@ bool GameSystem::BeginFrame() {
 	commandList->RSSetViewports(1, &viewport); // Viewportを設定.
 	commandList->RSSetScissorRects(1, &scissorRect); // Scissorを設定.
 	// RootSignatureを設定。PS0に設定しているけど別途設定が必要.
+
 	commandList->SetGraphicsRootSignature(pipeline_->GetObject3dPSO(BlendMode::kNormal).rootSignature.Get());
 	commandList->SetPipelineState(pipeline_->GetObject3dPSO(BlendMode::kNormal).graphicsPipelineState.Get()); // PS0を設定.
-
 
 
 	return true;
@@ -599,33 +529,51 @@ void GameSystem::DrawSetup() {
 }
 
 void GameSystem::EndFrame() {
-#ifndef USE_IMGUI
-	// ImGui有効時はゲーム画面をImGuiウィンドウに表示するので、ウィンドウに合わせたViewport調整は行わない.
-	WindowSizeUpdate();
-#endif // !USE_IMGUI
-
 	LightManager::GetInstance()->Update();
 
 	Camera::GetInstance()->Draw();
 
 	Renderer::GetInstance()->DrawLineAll();
 
+	D3D12_RESOURCE_BARRIER postEffectBarriers[2]{};
+
+	postEffectBarriers[0].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	postEffectBarriers[0].Transition.pResource = postEffectRenderTexture_.resource.Get();
+	postEffectBarriers[0].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	postEffectBarriers[0].Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	postEffectBarriers[0].Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+
+	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 #ifdef USE_IMGUI
+	postEffectBarriers[1].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	postEffectBarriers[1].Transition.pResource = imguiRenderTexture_.resource.Get();
+	postEffectBarriers[1].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	postEffectBarriers[1].Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+	postEffectBarriers[1].Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+
+	commandList->ResourceBarrier(2, postEffectBarriers);
+	commandList->OMSetRenderTargets(1, &imguiRenderTexture_.rtvHandle, false, nullptr);
+	commandList->ClearRenderTargetView(imguiRenderTexture_.rtvHandle, kRenderTextureClearColor_, 0, nullptr);
+	commandList->RSSetViewports(1, &viewport);
+	commandList->RSSetScissorRects(1, &scissorRect);
+
+	RenderTextureDraw();
 	/*=============================================================
 	ゲーム画面(RenderTexture)の描画終了 → バックバッファにImGuiを描画.
 	=============================================================*/
 	// RenderTextureをシェーダーから読める状態にする.
+
+
 	D3D12_RESOURCE_BARRIER renderTextureBarrier{};
 	renderTextureBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	renderTextureBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	renderTextureBarrier.Transition.pResource = renderTextureResource_.Get();
+	renderTextureBarrier.Transition.pResource = imguiRenderTexture_.resource.Get();
 	renderTextureBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 	renderTextureBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	renderTextureBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 	commandList->ResourceBarrier(1, &renderTextureBarrier);
 
 	// これから書き込むバックバッファのインデックスを取得.
-	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 	barrier.Transition.pResource = swapChainResource[backBufferIndex].Get();
@@ -645,6 +593,23 @@ void GameSystem::EndFrame() {
 
 	// エンジンのGUI(GameGUI / PlayControlGUI)を描画し、ImGuiの描画コマンドを積む.
 	ImGuiManager::GetInstance()->EndFrame(commandList.Get());
+#else
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier.Transition.pResource = swapChainResource[backBufferIndex].Get();
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	commandList->ResourceBarrier(1, &barrier);
+	commandList->ResourceBarrier(1, &postEffectBarriers[0]);
+	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
+	float clearColor[] = { 0.0f,0.0f,0.0f,1.0f };
+	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
+
+	WindowSizeUpdate();
+	commandList->RSSetViewports(1, &viewport);
+	commandList->RSSetScissorRects(1, &scissorRect);
+
+	RenderTextureDraw();
 #endif // USE_IMGUI
 
 
@@ -783,6 +748,19 @@ void GameSystem::WindowSizeUpdate() {
 	scissorRect.bottom = static_cast<LONG>(viewportY + viewportHeight);
 }
 
+void GameSystem::RenderTextureDraw() {
+
+
+	commandList->SetGraphicsRootSignature(pipeline_->GetCopyImagePSO().rootSignature.Get());
+	commandList->SetPipelineState(pipeline_->GetCopyImagePSO().graphicsPipelineState.Get()); // PS0を設定.
+	commandList->SetGraphicsRootDescriptorTable(0, postEffectRenderTexture_.srvHandleGPU);
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	if (!InputManager::GetInstance()->PressKey(DIK_J)) {
+		commandList->DrawInstanced(3, 1, 0, 0);
+	}
+}
+
 void GameSystem::RegisterGlobalVariables() {
 };
 
@@ -911,7 +889,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> GameSystem::CreateBufferResource(Microsof
 }
 
 Microsoft::WRL::ComPtr<ID3D12Resource> GameSystem::CreateBufferResource(size_t sizeInBytes) {
-	return CreateBufferResource(device,sizeInBytes);
+	return CreateBufferResource(device, sizeInBytes);
 }
 
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GameSystem::CreateDescriptorHeap(Microsoft::WRL::ComPtr<ID3D12Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDiscriptors, bool shaderVisible) {
@@ -927,8 +905,8 @@ Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GameSystem::CreateDescriptorHeap(Mi
 	return descriptorHeap;
 }
 
-Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GameSystem::CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDiscriptors, bool shaderVisible){
-	return CreateDescriptorHeap(device,heapType,numDiscriptors,shaderVisible);
+Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GameSystem::CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDiscriptors, bool shaderVisible) {
+	return CreateDescriptorHeap(device, heapType, numDiscriptors, shaderVisible);
 }
 
 DirectX::ScratchImage GameSystem::LoadTexture(const std::string& filePath) {
@@ -1044,4 +1022,65 @@ D3D12_GPU_DESCRIPTOR_HANDLE GameSystem::GetGPUDescriptorHandle(Microsoft::WRL::C
 	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
 	handleGPU.ptr += (descriptorSize * index);
 	return handleGPU;
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE GameSystem::GetRTVHandle() {
+	// ヒープの外にRTVを作ると不正なメモリへの書き込みになるので止める.
+	assert(currentRTVIndex_ < kRTVDescriptorMax_ && "RTVヒープを使い切りました。kRTVDescriptorMax_を増やしてください");
+	D3D12_CPU_DESCRIPTOR_HANDLE returnHandle = GetCPUDescriptorHandle(rtvDescriptorHeap, descriptorSizeRTV_, currentRTVIndex_);
+	currentRTVIndex_++;
+	return returnHandle;
+}
+
+void GameSystem::CreateRenderTexture(RenderTextureData& renderTextureData) {
+	/*=============================================================
+	RenderTexture(ゲーム画面のオフスクリーン描画先)の生成.
+	ImGuiが有効な時はゲームをここに描画し、ImGuiの"Game"ウィンドウに表示する.
+	=============================================================*/
+	const UINT width = static_cast<UINT>(Environment::GetInstance()->GetWindowSize().width);
+	const UINT height = static_cast<UINT>(Environment::GetInstance()->GetWindowSize().height);
+	// バックバッファと同じくSRGBで書き込み、SRGBで読み出す(ImGuiで表示した時に色が変わらないように).
+	const DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+
+	D3D12_RESOURCE_DESC resourceDesc{};
+	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	resourceDesc.Width = width;
+	resourceDesc.Height = height;
+	resourceDesc.DepthOrArraySize = 1;
+	resourceDesc.MipLevels = 1;
+	resourceDesc.Format = format;
+	resourceDesc.SampleDesc.Count = 1;
+	resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET; // RenderTargetとして使う.
+
+	D3D12_HEAP_PROPERTIES heapProperties{};
+	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT; // VRAM上に作る.
+
+	// 最適化クリア値(ClearRenderTargetViewの色と一致させないと警告が出る).
+	D3D12_CLEAR_VALUE clearValue{};
+	clearValue.Format = format;
+	for (int i = 0; i < 4; i++) {
+		clearValue.Color[i] = kRenderTextureClearColor_[i];
+	}
+
+	// 初期状態はシェーダーから読める状態にしておく(BeginFrameでRenderTargetへ遷移する).
+	HRESULT hr = device->CreateCommittedResource(
+		&heapProperties,
+		D3D12_HEAP_FLAG_NONE,
+		&resourceDesc,
+		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+		&clearValue,
+		IID_PPV_ARGS(&renderTextureData.resource));
+	assert(SUCCEEDED(hr));
+
+	// RTVの生成(rtvDescriptorHeapの3番目).
+	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
+	rtvDesc.Format = format;
+	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+	renderTextureData.rtvHandle = GetRTVHandle();
+	device->CreateRenderTargetView(renderTextureData.resource.Get(), &rtvDesc, renderTextureData.rtvHandle);
+
+	// SRVの生成(SrvManagerのヒープ上に作る。ImGuiも同じヒープを使っている).
+	TextureInfo info = SrvManager::GetInstance()->CreateSRVforTexture2D(renderTextureData.resource.Get(), format, 1, false);
+	renderTextureData.srvHandleGPU = info.textureSrvHandlesGPU;
+
 }

@@ -26,6 +26,7 @@
 
 #include "../Renderer/Material.h"
 #include "../Renderer/DirectionalLight.h"
+#include "RenderTextureData.h"
 #include "Convert.h"
 
 #include "../Renderer/ModelData.h"
@@ -56,6 +57,7 @@ struct D3DResourceLeakChecker {
 };
 
 struct ModelElement;
+
 
 class GameSystem {
 private:
@@ -104,10 +106,6 @@ private:
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory_ = nullptr;
 
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc_{};
-
-	uint32_t descriptorSizeRTV_;
-
-	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc_{};
 public:
 	void RegisterGlobalVariables();
 	void ApplyGlobalVariables();
@@ -132,7 +130,7 @@ public:
 	void SetViewport(D3D12_VIEWPORT setViewport) { viewport = setViewport; };
 
 	// ゲーム画面(RenderTexture)のSRV。ImGui::Imageなどで使える.
-	D3D12_GPU_DESCRIPTOR_HANDLE GetRenderTextureSrvHandleGPU() const { return renderTextureSrvHandleGPU_; };
+	D3D12_GPU_DESCRIPTOR_HANDLE GetImGuiRenderTextureSrvHandleGPU() const { return imguiRenderTexture_.srvHandleGPU; };
 	// "Game"ウィンドウの表示位置/サイズなどは ImGuiManager から取得する.
 
 	void SetPipeline(BlendMode blendMode,ShaderType shaderType);
@@ -201,10 +199,16 @@ public:
 	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index);
 	//static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle();
 
+	D3D12_CPU_DESCRIPTOR_HANDLE GetRTVHandle();
+
+	void CreateRenderTexture(RenderTextureData& renderTextureData);
+
 private:
 	std::ofstream CreateLogFile();
 
 	void WindowSizeUpdate();
+
+	void RenderTextureDraw();
 private:
 	/*=============================================================
 	WindowsApi系
@@ -244,6 +248,16 @@ private:
 
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
 
+	uint32_t descriptorSizeRTV_;
+
+	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc_{};
+
+	uint32_t currentRTVIndex_;
+
+	// RTVヒープに作れるRTVの最大数(スワップチェーン2 + RenderTexture分).
+	// RenderTextureを増やしたらここも増やす.
+	static inline const uint32_t kRTVDescriptorMax_ = 8;
+
 	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
 
 	uint64_t fenceValue = 0;
@@ -267,12 +281,16 @@ private:
 	/*=============================================================
 	RenderTexture(ゲーム画面のオフスクリーン描画先)
 	=============================================================*/
-	// ゲーム画面を書き込むテクスチャ.
-	Microsoft::WRL::ComPtr<ID3D12Resource> renderTextureResource_ = nullptr;
-	// RenderTexture用のRTV(rtvDescriptorHeapの3番目).
-	D3D12_CPU_DESCRIPTOR_HANDLE renderTextureRtvHandle_{};
-	// RenderTexture用のSRV(ImGui::Imageに渡す).
-	D3D12_GPU_DESCRIPTOR_HANDLE renderTextureSrvHandleGPU_{};
+	RenderTextureData imguiRenderTexture_;
+	RenderTextureData postEffectRenderTexture_;
+	//// ゲーム画面を書き込むテクスチャ.
+	//Microsoft::WRL::ComPtr<ID3D12Resource> imguiRenderTextureResource_ = nullptr;
+	//// RenderTexture用のRTV(rtvDescriptorHeapの3番目).
+	//D3D12_CPU_DESCRIPTOR_HANDLE imguiRenderTextureRtvHandle_{};
+	//// RenderTexture用のSRV(ImGui::Imageに渡す).
+	//D3D12_GPU_DESCRIPTOR_HANDLE imguiRenderTextureSrvHandleGPU_{};
+
+
 	// RenderTextureのクリアカラー(最適化クリア値と一致させる).
 	static inline const float kRenderTextureClearColor_[4] = { 0.0f,0.0f,0.0f,1.0f };
 

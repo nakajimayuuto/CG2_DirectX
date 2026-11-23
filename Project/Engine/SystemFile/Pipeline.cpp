@@ -24,6 +24,7 @@ void Pipeline::CreateAllPipeline() {
 	pipelineLine_ = PipelineCreate(BlendMode::kNormal, ShaderType::kLine, D3D12_DEPTH_WRITE_MASK_ALL, kUsingFilter_, D3D12_CULL_MODE_NONE);
 
 	pipelineSkyBox_ = PipelineCreate(BlendMode::kNone, ShaderType::kSkyBox, D3D12_DEPTH_WRITE_MASK_ZERO, kUsingFilter_, D3D12_CULL_MODE_BACK);
+	pipelineCopyImage_ = PipelineCreate(BlendMode::kNone, ShaderType::kFullScreen, D3D12_DEPTH_WRITE_MASK_ZERO, kUsingFilter_, D3D12_CULL_MODE_BACK);
 }
 
 void Pipeline::ShaderCompile() {
@@ -41,6 +42,9 @@ void Pipeline::ShaderCompile() {
 
 	vertexShaderBlobSkyBox = CompileShader(kShaderFilePath + L"SkyBox/SkyBox.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
 	pixelShaderBlobSkyBox = CompileShader(kShaderFilePath + L"SkyBox/SkyBox.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+
+	vertexShaderBlobFullScreen = CompileShader(kShaderFilePath + L"FullScreen/FullScreen.VS.hlsl", L"vs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	pixelShaderBlobFullScreen = CompileShader(kShaderFilePath + L"FullScreen/FullScreen.PS.hlsl", L"ps_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
 
 }
 
@@ -162,7 +166,11 @@ PipelineData Pipeline::PipelineCreate(BlendMode blendMode, ShaderType shaderType
 
 	// DepthStencilの設定.
 	graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
-	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	if (shaderType == ShaderType::kFullScreen) {
+		graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_UNKNOWN;
+	} else {
+		graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	}
 	// 実際に生成.
 	hr = GameSystem::GetInstance()->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&pipeline.graphicsPipelineState));
 	assert(SUCCEEDED(hr));
@@ -241,6 +249,10 @@ D3D12_DEPTH_STENCIL_DESC Pipeline::CreateDepthStencilDesc(D3D12_DEPTH_WRITE_MASK
 	switch (shaderType) {
 	case ShaderType::kParticle:
 		depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+		break;
+	case ShaderType::kFullScreen:
+		depthStencilDesc.DepthEnable = false;
+		return depthStencilDesc;
 		break;
 	default:
 		depthStencilDesc.DepthWriteMask = mask;
@@ -325,6 +337,12 @@ void Pipeline::CreateRootParameters(D3D12_ROOT_SIGNATURE_DESC& rootSignature, Sh
 		rootSignature.NumParameters = _countof(rootParametersSkyBox); // 配列の長さ.
 		return;
 		break;
+	case ShaderType::kFullScreen:
+		CreateDescriptorTable(rootParametersFullScreen[0], D3D12_SHADER_VISIBILITY_PIXEL, descriptorRange, _countof(descriptorRange));
+		rootSignature.pParameters = rootParametersFullScreen; // ルートパラメータ配列へのポインタ.
+		rootSignature.NumParameters = _countof(rootParametersFullScreen); // 配列の長さ.
+		return;
+		break;
 	default:
 		CreateConstantBufferView(rootParameters[0], D3D12_SHADER_VISIBILITY_PIXEL, 0);
 		CreateConstantBufferView(rootParameters[1], D3D12_SHADER_VISIBILITY_VERTEX, 0);
@@ -401,6 +419,11 @@ D3D12_INPUT_LAYOUT_DESC Pipeline::CreateInputRayout(ShaderType shaderType) {
 		inputLayoutDesc.NumElements = _countof(inputElementalDescsLine);
 		return inputLayoutDesc;
 		break;
+	case ShaderType::kFullScreen:
+		inputLayoutDesc.pInputElementDescs = nullptr;
+		inputLayoutDesc.NumElements = 0;
+		return inputLayoutDesc;
+		break;
 	default:
 		inputElementalDescs[0].SemanticName = "POSITION";
 		inputElementalDescs[0].SemanticIndex = 0;
@@ -442,6 +465,10 @@ void Pipeline::SelectShaderBlobs(ShaderBlobs& shaderBlobs, ShaderType shaderType
 	case ShaderType::kSkyBox:
 		shaderBlobs.vertexShaderBlob = vertexShaderBlobSkyBox;
 		shaderBlobs.pixelShaderBlob = pixelShaderBlobSkyBox;
+		break;
+	case ShaderType::kFullScreen:
+		shaderBlobs.vertexShaderBlob = vertexShaderBlobFullScreen;
+		shaderBlobs.pixelShaderBlob = pixelShaderBlobFullScreen;
 		break;
 	default:
 		shaderBlobs.vertexShaderBlob = vertexShaderBlob3dObject;

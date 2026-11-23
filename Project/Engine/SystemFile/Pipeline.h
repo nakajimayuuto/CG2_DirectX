@@ -20,6 +20,7 @@ enum class ShaderType {
 	kSprite, // スプライト.
 	kParticle, // パーティクル.
 	kSkyBox, // パーティクル.
+	kFullScreen, // オフスクリーンレンダリング.
 	kCount // 最大数.
 };
 
@@ -65,12 +66,14 @@ public:
 	PipelineData GetSpritePSO(BlendMode blendMode) { return pipelineSprite_[static_cast<uint32_t>(blendMode)]; };
 	PipelineData GetParticlePSO(BlendMode blendMode) { return pipelineParticle_[static_cast<uint32_t>(blendMode)]; };
 	PipelineData GetLinePSO() { return pipelineLine_; };
+	PipelineData GetCopyImagePSO() { return pipelineCopyImage_; };
 private:
 	std::array<PipelineData, static_cast<size_t>(BlendMode::kCount)> pipelineObject3d_;
 	std::array<PipelineData, static_cast<size_t>(BlendMode::kCount)> pipelineSprite_;
 	std::array<PipelineData, static_cast<size_t>(BlendMode::kCount)> pipelineParticle_;
 	PipelineData pipelineLine_;
 	PipelineData pipelineSkyBox_;
+	PipelineData pipelineCopyImage_;
 private:
 	struct ShaderBlobs {
 		// 【VertexShader】
@@ -145,6 +148,11 @@ private:
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlobSkyBox;
 	// 【PixelShader】
 	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlobSkyBox;
+
+	// 【VertexShader】
+	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlobFullScreen;
+	// 【PixelShader】
+	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlobFullScreen;
 private:
 
 	D3D12_ROOT_PARAMETER rootParameters[9] = {};
@@ -152,6 +160,7 @@ private:
 	D3D12_ROOT_PARAMETER rootParametersParticle[3] = {};
 	D3D12_ROOT_PARAMETER rootParametersLine[1] = {};
 	D3D12_ROOT_PARAMETER rootParametersSkyBox[3] = {};
+	D3D12_ROOT_PARAMETER rootParametersFullScreen[1] = {};
 
 	//D3D12_ROOT_PARAMETER rootParameter;
 
