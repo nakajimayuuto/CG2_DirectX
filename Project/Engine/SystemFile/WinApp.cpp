@@ -78,6 +78,17 @@ bool WinApp::ProcessMessage(){
 	return false;
 }
 
+bool WinApp::ConsumeResize(uint32_t& width, uint32_t& height) {
+	if (!isResized_) {
+		return false;
+	}
+
+	width = resizedWidth_;
+	height = resizedHeight_;
+	isResized_ = false;
+	return true;
+}
+
 void WinApp::Update() {
 
 }
@@ -91,13 +102,13 @@ void WinApp::Finalize() {
 LRESULT CALLBACK WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	float aspect = Environment::GetInstance()->GetAspect();
 
-#ifdef _DEBUG
+#ifdef USE_IMGUI
 
 
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
 		return true;
 	}
-#endif // _DEBUG
+#endif // USE_IMGUI
 
 	RECT* rect;
 	int width;
@@ -177,6 +188,14 @@ LRESULT CALLBACK WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM l
 		}
 
 		return TRUE;
+	case WM_SIZE:
+		// 最小化時はサイズが0になるので無視する.
+		if (wparam != SIZE_MINIMIZED && LOWORD(lparam) > 0 && HIWORD(lparam) > 0) {
+			resizedWidth_ = static_cast<uint32_t>(LOWORD(lparam));
+			resizedHeight_ = static_cast<uint32_t>(HIWORD(lparam));
+			isResized_ = true;
+		}
+		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;

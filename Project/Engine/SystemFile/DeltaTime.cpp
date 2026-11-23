@@ -39,10 +39,10 @@ void DeltaTime::Update() {
 }
 
 void DeltaTime::DebugDraw() {
-#ifdef _DEBUG
+#ifdef USE_IMGUI
 	ImGui::Text(std::format("FPS : {} / 60", static_cast<int>(60.0f / (deltaTime * 60.0f))).c_str());
 	ImGui::Text(std::format("inGame : {} / 60", static_cast<int>(60.0f / (gameTime * 60.0f))).c_str());
 	ImGui::Text(std::format("DebugFPS : {}", static_cast<int>(60.0f / (debugDeltaTime * 60.0f))).c_str());
-#endif // _DEBUG
+#endif // USE_IMGUI
 
 }

@@ -11,12 +11,12 @@ void DifficultyManager::Initialize() {
 
 void DifficultyManager::Update() {
 
-#ifdef _DEBUG
+#ifdef USE_IMGUI
 	ImGui::Begin("difficultyManager");
 	int dif = static_cast<int>(currentDifficulty_);
 	ImGui::SliderInt("Difficulty", &dif, 0, kDifficultyCount - 1);
 	currentDifficulty_ = static_cast<Difficulty>(dif);
-#endif // _DEBUG
+#endif // USE_IMGUI
 
 	switch (currentDifficulty_) {
 	case kDifficultyEasy:
@@ -43,10 +43,10 @@ void DifficultyManager::Update() {
 		dopamineSpeed_ = 1.0f;
 	}
 
-#ifdef _DEBUG
+#ifdef USE_IMGUI
 	ImGui::Text(magic_enum::enum_name(currentDifficulty_).data());
 	ImGui::Text("DopamineSpeed:%f\n", dopamineSpeed_);
 	ImGui::Text("CurrentBossSpeedMag:%f\nCurrentBossDamageMag:%f\n", speedMagnification_ * dopamineSpeed_, damageMagnification_);
 	ImGui::End();
-#endif // _DEBUG
+#endif // USE_IMGUI
 }

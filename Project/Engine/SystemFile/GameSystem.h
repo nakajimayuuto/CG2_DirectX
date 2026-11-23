@@ -208,6 +208,10 @@ private:
 
 	void WindowSizeUpdate();
 
+	// ウィンドウサイズに合わせてスワップチェーン(バックバッファ)を作り直す.
+	// ImGui有効時、バックバッファがウィンドウと違うサイズだとGUIが引き伸ばされて表示や当たり判定がずれるため.
+	void ResizeSwapChainIfNeeded();
+
 	void RenderTextureDraw();
 private:
 	/*=============================================================
