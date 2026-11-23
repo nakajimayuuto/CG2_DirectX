@@ -9,7 +9,7 @@ void Skydome::Initialize() {
 }
 
 void Skydome::Update() {
-#ifdef _DEBUG
+#ifdef USE_IMGUI
 
 
 	ImGui::Begin("DirectionalLight");
@@ -17,7 +17,7 @@ void Skydome::Update() {
 	ImGui::DragFloat("intensity",&LightManager::GetInstance()->GetDirectionalLightData()->intensity,0.01f,0.0f,1.0f);
 
 	ImGui::End();
-#endif // _DEBUG
+#endif // USE_IMGUI
 
 	//color_ = {
 	//LightManager::GetInstance()->GetDirectionalLightData()->intensity,

@@ -457,6 +457,9 @@ bool GameSystem::ProcessMessage() {
 
 bool GameSystem::BeginFrame() {
 	drawCount_ = 0;
+
+	// ウィンドウサイズが変わっていたらバックバッファのサイズを合わせる.
+	ResizeSwapChainIfNeeded();
 	// Windowにメッセージが来てたら最優先で処理させる.
 
 	InputManager::GetInstance()->Update();
@@ -746,6 +749,46 @@ void GameSystem::WindowSizeUpdate() {
 	scissorRect.top = static_cast<LONG>(viewportY);
 	scissorRect.right = static_cast<LONG>(viewportX + viewportWidth);
 	scissorRect.bottom = static_cast<LONG>(viewportY + viewportHeight);
+}
+
+void GameSystem::ResizeSwapChainIfNeeded() {
+	uint32_t width = 0;
+	uint32_t height = 0;
+	if (!WinApp::ConsumeResize(width, height)) {
+		return;
+	}
+
+#ifdef USE_IMGUI
+	if (width == swapChainDesc_.Width && height == swapChainDesc_.Height) {
+		return;
+	}
+
+	// GPUがバックバッファを使い終わるまで待つ.
+	fenceValue++;
+	commandQueue->Signal(fence.Get(), fenceValue);
+	if (fence->GetCompletedValue() < fenceValue) {
+		fence->SetEventOnCompletion(fenceValue, fenceEvent);
+		WaitForSingleObject(fenceEvent, INFINITE);
+	}
+
+	// ResizeBuffersの前にバックバッファへの参照を全て外す.
+	for (auto& resource : swapChainResource) {
+		resource.Reset();
+	}
+
+	HRESULT hr = swapChain->ResizeBuffers(swapChainDesc_.BufferCount, width, height, swapChainDesc_.Format, swapChainDesc_.Flags);
+	assert(SUCCEEDED(hr));
+
+	swapChainDesc_.Width = width;
+	swapChainDesc_.Height = height;
+
+	// バックバッファを取り直して、同じディスクリプタの位置にRTVを作り直す.
+	for (uint32_t i = 0; i < swapChainDesc_.BufferCount; i++) {
+		hr = swapChain->GetBuffer(i, IID_PPV_ARGS(&swapChainResource[i]));
+		assert(SUCCEEDED(hr));
+		device->CreateRenderTargetView(swapChainResource[i].Get(), &rtvDesc_, rtvHandles[i]);
+	}
+#endif // USE_IMGUI
 }
 
 void GameSystem::RenderTextureDraw() {
