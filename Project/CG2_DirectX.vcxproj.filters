@@ -193,6 +193,9 @@
     <Filter Include="Application\PauseMenu">
       <UniqueIdentifier>{561c0cc8-ab3a-4957-99a1-7d68f89e4cea}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Application\UpgradeManager">
+      <UniqueIdentifier>{8e4b1d3a-7c62-4f09-b5d1-2a6e9f0c3b78}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Application\MapChip">
       <UniqueIdentifier>{8dead884-e55b-4007-9574-18ef0c5db8e6}</UniqueIdentifier>
     </Filter>
@@ -437,6 +440,9 @@
     </ClCompile>
     <ClCompile Include="Application\PauseMenu.cpp">
       <Filter>Application\PauseMenu</Filter>
+    </ClCompile>
+    <ClCompile Include="Application\UpgradeManager.cpp">
+      <Filter>Application\UpgradeManager</Filter>
     </ClCompile>
     <ClCompile Include="Application\BaseEnemy.cpp">
       <Filter>Application\Enemy</Filter>
@@ -691,6 +697,9 @@
     </ClInclude>
     <ClInclude Include="Application\PauseMenu.h">
       <Filter>Application\PauseMenu</Filter>
+    </ClInclude>
+    <ClInclude Include="Application\UpgradeManager.h">
+      <Filter>Application\UpgradeManager</Filter>
     </ClInclude>
     <ClInclude Include="Application\BaseEnemy.h">
       <Filter>Application\Enemy</Filter>

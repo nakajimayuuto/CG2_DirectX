@@ -1,9 +1,11 @@
 #include "Application.h"
 #include "Satlib.h"
+#include "UpgradeManager.h"
 
 void Application::Initialize(){
 	Framework::Initialize();
 	LoadDatas();
+	UpgradeManager::GetInstance()->Initialize();
 	//=============================================
 	//以下ゲームの初期化.
 	//=============================================

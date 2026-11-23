@@ -45,6 +45,7 @@
     <ClCompile Include="Application\MapChipField.cpp" />
     <ClCompile Include="Application\MapChipManager.cpp" />
     <ClCompile Include="Application\PauseMenu.cpp" />
+    <ClCompile Include="Application\UpgradeManager.cpp" />
     <ClCompile Include="Engine\SystemFile\Pipeline.cpp" />
     <ClCompile Include="Application\ProjectileManager.cpp" />
     <ClCompile Include="Application\ContactRecord.cpp" />
@@ -192,6 +193,7 @@
     <ClInclude Include="Application\MapChipField.h" />
     <ClInclude Include="Application\MapChipManager.h" />
     <ClInclude Include="Application\PauseMenu.h" />
+    <ClInclude Include="Application\UpgradeManager.h" />
     <ClInclude Include="Engine\SystemFile\Pipeline.h" />
     <ClInclude Include="Application\ProjectileManager.h" />
     <ClInclude Include="Application\ContactRecord.h" />

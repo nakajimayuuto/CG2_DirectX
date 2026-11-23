@@ -1,6 +1,7 @@
 #include "GameScene.h"
 #include "Satlib.h"
 #include "../ProjectileManager.h"
+#include "../UpgradeManager.h"
 
 GameScene::~GameScene() {
 }
@@ -68,6 +69,10 @@ void GameScene::Initialize() {
 	isBossDeath_ = false;
 
 	MapChipManager::GetInstance()->Initialize();
+
+	// 強化レベル・所持財貨をリセット.
+	UpgradeManager::GetInstance()->DataClear();
+	UpgradeManager::GetInstance()->ChangeUIActive();
 }
 
 void GameScene::Update() {
@@ -88,6 +93,15 @@ void GameScene::Update() {
 
 	if (InputManager::GetInstance()->TriggerKey(DIK_F4)) {
 		Renderer::GetInstance()->ChangeUseDebugLine();
+	}
+
+	// 強化画面のテスト用 : F5で表示切替、F6で財貨を増やす.
+	if (InputManager::GetInstance()->TriggerKey(DIK_F5)) {
+		UpgradeManager::GetInstance()->ChangeUIActive();
+	}
+	if (InputManager::GetInstance()->TriggerKey(DIK_F6)) {
+		UpgradeManager::GetInstance()->AddGold(goldType::kA, 500);
+		UpgradeManager::GetInstance()->AddGold(goldType::kB, 5);
 	}
 #endif // _DEBUG
 
@@ -143,6 +157,8 @@ void GameScene::Update() {
 	CheckAllCollisions();
 
 	MapChipManager::GetInstance()->Update();
+
+	UpgradeManager::GetInstance()->Update();
 }
 
 void GameScene::Draw() {
@@ -180,6 +196,8 @@ void GameScene::Draw() {
 			renderer->DrawSprite(Transform::GetInitialValue(Easing({ 100.0f,100.0f,100.0f }, { 1.0f,1.0f,1.0f }, gameoverTimer_, gameoverTimerMax_, EaseType::kEaseOut), { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "gameover", { 1.0f,1.0f,1.0f,Easing(0.0f,1.0f, gameoverTimer_, gameoverTimerMax_, EaseType::kEaseOut) });
 		}
 	}
+
+	UpgradeManager::GetInstance()->Draw();
 
 	fade_->Draw();
 	pauseMenu_->Draw();
