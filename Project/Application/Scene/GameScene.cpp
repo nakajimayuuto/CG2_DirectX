@@ -100,8 +100,8 @@ void GameScene::Update() {
 		UpgradeManager::GetInstance()->ChangeUIActive();
 	}
 	if (InputManager::GetInstance()->TriggerKey(DIK_F6)) {
-		UpgradeManager::GetInstance()->AddGold(goldType::kA, 500);
-		UpgradeManager::GetInstance()->AddGold(goldType::kB, 5);
+		UpgradeManager::GetInstance()->AddGold(GoldType::kGold, 500);
+		UpgradeManager::GetInstance()->AddGold(GoldType::kXP, 5);
 	}
 #endif // _DEBUG
 

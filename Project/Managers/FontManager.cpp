@@ -262,7 +262,7 @@ bool FontManager::LoadGenerated(FontData& font) {
 /*=============================================================
 描画.
 =============================================================*/
-void FontManager::DrawString(const std::string& fontName, const std::string& text, const Vector2& position, float fontSize, const Vector4& color, TextAlign align) {
+void FontManager::DrawString(const std::string& fontName, const std::string& text, const Vector2& position, float fontSize,float yBlank, const Vector4& color, TextAlign align) {
 	auto it = fonts_.find(fontName);
 	assert(it != fonts_.end() && "FontManager : 登録されていないフォントです");
 	if (it == fonts_.end()) {
@@ -305,7 +305,7 @@ void FontManager::DrawString(const std::string& fontName, const std::string& tex
 
 		if (c == U'\n') {
 			penX = lineStartX(i + 1);
-			baselineY += font.lineHeight * scale;
+			baselineY += (font.lineHeight * scale) + yBlank;
 			continue;
 		}
 		if (c == U'\r') {
@@ -338,8 +338,8 @@ void FontManager::DrawString(const std::string& fontName, const std::string& tex
 	}
 }
 
-void FontManager::DrawString(const std::string& fontName, const std::wstring& text, const Vector2& position, float fontSize, const Vector4& color, TextAlign align) {
-	DrawString(fontName, Convert::ConvertString(text), position, fontSize, color, align);
+void FontManager::DrawString(const std::string& fontName, const std::wstring& text, const Vector2& position, float fontSize, float yBlank, const Vector4& color, TextAlign align) {
+	DrawString(fontName, Convert::ConvertString(text), position, fontSize,yBlank, color, align);
 }
 
 Vector2 FontManager::MeasureText(const std::string& fontName, const std::string& text, float fontSize) {

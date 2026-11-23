@@ -207,7 +207,7 @@ void DialogBoxManager::DrawDialogBox(const Vector2& position, const Vector2& siz
 	}
 }
 
-void DialogBoxManager::DrawDialogBox(const Vector2& position, const Vector2& size, std::string_view text, const Vector4& textColor, const Vector4& backgroundColor) {
+void DialogBoxManager::DrawDialogBox(const Vector2& position, const Vector2& size, std::string_view text, float yBlank, const Vector4& textColor, const Vector4& backgroundColor) {
 	// 背景.
 	DrawDialogBox(position, size, backgroundColor);
 
@@ -226,11 +226,11 @@ void DialogBoxManager::DrawDialogBox(const Vector2& position, const Vector2& siz
 	case TextAlign::kRight:  textPosition.x = position.x + size.x - textPadding_.x; break;
 	default: break;
 	}
-	FontManager::GetInstance()->DrawString(fontName_, std::string(text), textPosition, fontSize_, textColor, textAlign_);
+	FontManager::GetInstance()->DrawString(fontName_, std::string(text), textPosition, fontSize_,yBlank, textColor, textAlign_);
 }
 
-void DialogBoxManager::DrawDialogBox(const Vector2& position, const Vector2& size, std::wstring_view text, const Vector4& textColor, const Vector4& backgroundColor) {
-	DrawDialogBox(position, size, std::string_view(Convert::ConvertString(std::wstring(text))), textColor, backgroundColor);
+void DialogBoxManager::DrawDialogBox(const Vector2& position, const Vector2& size, std::wstring_view text, float yBlank, const Vector4& textColor, const Vector4& backgroundColor) {
+	DrawDialogBox(position, size, std::string_view(Convert::ConvertString(std::wstring(text))),yBlank, textColor, backgroundColor);
 }
 
 void DialogBoxManager::DrawNineSlice(const DialogBoxData& data, const TextureInfo& texture, const Vector2& position, const Vector2& size, const Vector4& color) {

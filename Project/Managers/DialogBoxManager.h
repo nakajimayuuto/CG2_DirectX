@@ -57,8 +57,10 @@ public:
 	/// <param name="backgroundColor">背景の色</param>
 	/// ※ std::string / "文字列" / L"文字列" のどれでも渡せる.
 	///   (string_view にしているのは、背景のみ版に {r,g,b,a} を直接書いた時に曖昧にならないようにするため)
-	void DrawDialogBox(const Vector2& position, const Vector2& size, std::string_view text, const Vector4& textColor = { 1.0f,1.0f,1.0f,1.0f }, const Vector4& backgroundColor = { 0.0f,0.0f,0.0f,1.0f });
-	void DrawDialogBox(const Vector2& position, const Vector2& size, std::wstring_view text, const Vector4& textColor = { 1.0f,1.0f,1.0f,1.0f }, const Vector4& backgroundColor = { 0.0f,0.0f,0.0f,1.0f });
+	void DrawDialogBox(const Vector2& position, const Vector2& size, std::string_view text,float yBlank, const Vector4& textColor = { 1.0f,1.0f,1.0f,1.0f }, const Vector4& backgroundColor = { 0.0f,0.0f,0.0f,1.0f });
+	void DrawDialogBox(const Vector2& position, const Vector2& size, std::wstring_view text, float yBlank, const Vector4& textColor = { 1.0f,1.0f,1.0f,1.0f }, const Vector4& backgroundColor = { 0.0f,0.0f,0.0f,1.0f });
+	void DrawDialogBox(const Vector2& position, const Vector2& size, std::string_view text, const Vector4& textColor = { 1.0f,1.0f,1.0f,1.0f }, const Vector4& backgroundColor = { 0.0f,0.0f,0.0f,1.0f }) { DrawDialogBox(position,size,text,0.0f,textColor,backgroundColor); };
+	void DrawDialogBox(const Vector2& position, const Vector2& size, std::wstring_view text, const Vector4& textColor = { 1.0f,1.0f,1.0f,1.0f }, const Vector4& backgroundColor = { 0.0f,0.0f,0.0f,1.0f }) { DrawDialogBox(position, size, text, 0.0f, textColor, backgroundColor); };
 
 	/*=============================================================
 	設定(一度設定すると以降の描画すべてに反映される).

@@ -65,8 +65,10 @@ public:
 	/// <param name="fontSize">描画する文字の高さ(px)</param>
 	/// <param name="color">色</param>
 	/// <param name="align">行ごとの揃え</param>
-	void DrawString(const std::string& fontName, const std::string& text, const Vector2& position, float fontSize, const Vector4& color = { 1.0f,1.0f,1.0f,1.0f }, TextAlign align = TextAlign::kLeft);
-	void DrawString(const std::string& fontName, const std::wstring& text, const Vector2& position, float fontSize, const Vector4& color = { 1.0f,1.0f,1.0f,1.0f }, TextAlign align = TextAlign::kLeft);
+	void DrawString(const std::string& fontName, const std::string& text, const Vector2& position, float fontSize, float yBlank, const Vector4& color = { 1.0f,1.0f,1.0f,1.0f }, TextAlign align = TextAlign::kLeft);
+	void DrawString(const std::string& fontName, const std::wstring& text, const Vector2& position, float fontSize, float yBlank, const Vector4& color = { 1.0f,1.0f,1.0f,1.0f }, TextAlign align = TextAlign::kLeft);
+	void DrawString(const std::string& fontName, const std::string& text, const Vector2& position, float fontSize, const Vector4& color = { 1.0f,1.0f,1.0f,1.0f }, TextAlign align = TextAlign::kLeft) {DrawString(fontName,text,position,fontSize,0.0f,color,align);};
+	void DrawString(const std::string& fontName, const std::wstring& text, const Vector2& position, float fontSize, const Vector4& color = { 1.0f,1.0f,1.0f,1.0f }, TextAlign align = TextAlign::kLeft) {DrawString(fontName, text, position, fontSize, 0.0f, color, align);};
 
 	/// <summary>
 	/// 文字列を描画した時の大きさを返す.

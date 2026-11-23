@@ -8,10 +8,10 @@ namespace {
 	// 実行中に組み立てる文字列で使う文字(FontManagerがソース中の文字列から文字画像を作るため).
 	[[maybe_unused]] const char* kUsedCharacters = "0123456789.,+-%/<> LvMAX財貨AB所持必要効果最大レベル説明";
 
-	const char* GetGoldName(goldType type) {
+	const char* GetGoldName(GoldType type) {
 		switch (type) {
-		case goldType::kA: return "財貨A";
-		case goldType::kB: return "財貨B";
+		case GoldType::kGold: return "財貨A";
+		case GoldType::kXP: return "財貨B";
 		default:           return "";
 		}
 	}
@@ -35,14 +35,15 @@ UpgradeManager* UpgradeManager::GetInstance() {
 =============================================================*/
 void UpgradeManager::Initialize() {
 	// 項目, 名前, 説明, 財貨, 最大レベル, 1レベルごとの%, 必要財貨(Lv0→1), 1レベルごとの必要財貨の増加.
-	CreateData(upgradeName::kAttack, "攻撃力", "与えるダメージが\n増える", goldType::kA, 5, 10.0f, 100, 50);
-	CreateData(upgradeName::kAttackSpeed, "攻撃速度", "攻撃の間隔が\n短くなる", goldType::kA, 5, 8.0f, 120, 60);
-	CreateData(upgradeName::kMoveSpeed, "移動速度", "移動が速くなる", goldType::kA, 3, 10.0f, 80, 40);
+	//CreateData(UpgradeName::kAttack, "攻撃力", "与えるダメージが\n増える", GoldType::kGold, 5, 10.0f, 100, 50);
+	//CreateData(UpgradeName::kAttackSpeed, "攻撃速度", "攻撃の間隔が\n短くなる", GoldType::kGold, 5, 8.0f, 120, 60);
+	//CreateData(UpgradeName::kMoveSpeed, "移動速度", "移動が速くなる", GoldType::kGold, 3, 10.0f, 80, 40);
 
 	// レベルごとに直接指定する版 : 項目, 名前, 説明, 財貨, { Lv1,Lv2,... の% }, { Lv0→1,Lv1→2,... の必要財貨 }.
-	CreateData(upgradeName::kMaxHP, "最大HP", "最大HPが増える", goldType::kB, { 10.0f,25.0f,50.0f }, { 1,2,4 });
-	CreateData(upgradeName::kDefense, "防御力", "受けるダメージが\n減る", goldType::kB, 5, 5.0f, 1, 1);
-	CreateData(upgradeName::kGoldBonus, "財貨獲得", "手に入る財貨が\n増える", goldType::kB, 3, 20.0f, 2, 2);
+	//CreateData(UpgradeName::kMaxHP, "最大HP", "最大HPが増える", GoldType::kXP, { 10.0f,25.0f,50.0f }, { 1,2,4 });
+	//CreateData(UpgradeName::kDefense, "防御力", "受けるダメージが\n減る", GoldType::kXP, 5, 5.0f, 1, 1);
+	//CreateData(UpgradeName::kGoldBonus, "財貨獲得", "手に入る財貨が\n増える", GoldType::kXP, 3, 20.0f, 2, 2);
+	CreateData(UpgradeName::kPlayerRate, "プレイヤー\n攻撃速度上昇", "プレイヤーの弾の\n発射速度が上がる", GoldType::kXP,10,20.0f,100,100);
 
 #ifdef _DEBUG
 	// 作り忘れチェック.
@@ -68,7 +69,7 @@ void UpgradeManager::DataClear() {
 	isActive_ = false;
 }
 
-void UpgradeManager::CreateData(upgradeName upgrade, const std::string& name, const std::string& description, goldType type,
+void UpgradeManager::CreateData(UpgradeName upgrade, const std::string& name, const std::string& description, GoldType type,
 	int maxLevel, float percentPerLevel, int baseCost, int costPerLevel) {
 	std::vector<float> percents;
 	std::vector<int> costs;
@@ -79,9 +80,9 @@ void UpgradeManager::CreateData(upgradeName upgrade, const std::string& name, co
 	CreateData(upgrade, name, description, type, percents, costs);
 }
 
-void UpgradeManager::CreateData(upgradeName upgrade, const std::string& name, const std::string& description, goldType type,
+void UpgradeManager::CreateData(UpgradeName upgrade, const std::string& name, const std::string& description, GoldType type,
 	const std::vector<float>& percents, const std::vector<int>& costs) {
-	assert(upgrade != upgradeName::kCount && type != goldType::kCount);
+	assert(upgrade != UpgradeName::kCount && type != GoldType::kCount);
 	assert(percents.size() == costs.size() && "UpgradeManager : percentsとcostsの要素数が違います");
 
 	UpgradeData& data = datas_[Index(upgrade)];
@@ -102,7 +103,7 @@ void UpgradeManager::CreateData(upgradeName upgrade, const std::string& name, co
 /*=============================================================
 取得・財貨.
 =============================================================*/
-float UpgradeManager::GetPercent(upgradeName upgrade) const {
+float UpgradeManager::GetPercent(UpgradeName upgrade) const {
 	const UpgradeData& data = GetData(upgrade);
 	if (data.percents.empty()) {
 		return 0.0f;
@@ -110,7 +111,7 @@ float UpgradeManager::GetPercent(upgradeName upgrade) const {
 	return data.percents[std::clamp(data.level, 0, data.maxLevel)];
 }
 
-int UpgradeManager::GetCost(upgradeName upgrade) const {
+int UpgradeManager::GetCost(UpgradeName upgrade) const {
 	const UpgradeData& data = GetData(upgrade);
 	if (data.level >= data.maxLevel) {
 		return -1;
@@ -118,12 +119,12 @@ int UpgradeManager::GetCost(upgradeName upgrade) const {
 	return data.costs[data.level];
 }
 
-void UpgradeManager::AddGold(goldType type, int amount) {
+void UpgradeManager::AddGold(GoldType type, int amount) {
 	int& gold = golds_[Index(type)];
 	gold = (std::max)(gold + amount, 0);
 }
 
-bool UpgradeManager::LevelUp(upgradeName upgrade) {
+bool UpgradeManager::LevelUp(UpgradeName upgrade) {
 	UpgradeData& data = datas_[Index(upgrade)];
 	if (!data.isCreated || data.level >= data.maxLevel) {
 		return false;
@@ -161,14 +162,14 @@ void UpgradeManager::ChangeUIActive() {
 
 void UpgradeManager::RollChoices() {
 	for (size_t row = 0; row < kRowNum_; row++) {
-		std::vector<upgradeName>& choice = choices_[row];
+		std::vector<UpgradeName>& choice = choices_[row];
 		choice.clear();
 
 		// その財貨で強化でき、まだ最大レベルではない項目から選ぶ.
 		for (size_t i = 0; i < datas_.size(); i++) {
 			const UpgradeData& data = datas_[i];
 			if (data.isCreated && Index(data.type) == row && data.level < data.maxLevel) {
-				choice.push_back(static_cast<upgradeName>(i));
+				choice.push_back(static_cast<UpgradeName>(i));
 			}
 		}
 		std::shuffle(choice.begin(), choice.end(), randomEngine_);
@@ -178,13 +179,13 @@ void UpgradeManager::RollChoices() {
 	}
 }
 
-upgradeName UpgradeManager::GetSelected() const {
+UpgradeName UpgradeManager::GetSelected() const {
 	if (cursorRow_ < 0 || cursorRow_ >= static_cast<int>(kRowNum_)) {
-		return upgradeName::kCount;
+		return UpgradeName::kCount;
 	}
-	const std::vector<upgradeName>& row = choices_[cursorRow_];
+	const std::vector<UpgradeName>& row = choices_[cursorRow_];
 	if (cursorColumn_ < 0 || cursorColumn_ >= static_cast<int>(row.size())) {
-		return upgradeName::kCount;
+		return UpgradeName::kCount;
 	}
 	return row[cursorColumn_];
 }
@@ -223,8 +224,8 @@ void UpgradeManager::Update() {
 
 	// Space : 選択中の項目のレベルを1上げる.
 	if (input->TriggerKey(DIK_SPACE)) {
-		upgradeName selected = GetSelected();
-		if (selected != upgradeName::kCount) {
+		UpgradeName selected = GetSelected();
+		if (selected != UpgradeName::kCount) {
 			LevelUp(selected);
 		}
 	}
@@ -251,10 +252,10 @@ void UpgradeManager::Draw() {
 	dialog->SetTextAlign(TextAlign::kCenter);
 	dialog->SetTextPadding({ 0.0f, (cellSize_.y - lineHeight * 2.0f) * 0.5f });
 
-	const upgradeName selected = GetSelected();
+	const UpgradeName selected = GetSelected();
 	for (size_t row = 0; row < kRowNum_; row++) {
 		for (size_t column = 0; column < choices_[row].size(); column++) {
-			const upgradeName upgrade = choices_[row][column];
+			const UpgradeName upgrade = choices_[row][column];
 			Vector2 position = {
 				gridPosition.x + (cellSize_.x + cellSpace_) * static_cast<float>(column),
 				gridPosition.y + (cellSize_.y + cellSpace_) * static_cast<float>(row) };
@@ -263,7 +264,7 @@ void UpgradeManager::Draw() {
 			std::string text = GetName(upgrade) + "\n" + (cost < 0 ? std::string("MAX") : std::to_string(cost));
 
 			const Vector4& textColor = (upgrade == selected) ? selectColor_ : normalColor_;
-			dialog->DrawDialogBox(position, cellSize_, text, textColor, backgroundColor_);
+			dialog->DrawDialogBox(position, cellSize_, text, kYBlank, textColor, backgroundColor_);
 		}
 	}
 
@@ -277,7 +278,7 @@ void UpgradeManager::Draw() {
 	Vector2 descriptionSize = { descriptionWidth_, gridHeight };
 
 	std::string description;
-	if (selected != upgradeName::kCount) {
+	if (selected != UpgradeName::kCount) {
 		const UpgradeData& data = GetData(selected);
 		description += data.name + "\n";
 		description += std::format("Lv {} / {}\n", data.level, data.maxLevel);
@@ -290,8 +291,8 @@ void UpgradeManager::Draw() {
 		description += data.description + "\n";
 	}
 	description += std::format("所持 {} {}  {} {}",
-		GetGoldName(goldType::kA), GetGold(goldType::kA),
-		GetGoldName(goldType::kB), GetGold(goldType::kB));
+		GetGoldName(GoldType::kGold), GetGold(GoldType::kGold),
+		GetGoldName(GoldType::kXP), GetGold(GoldType::kXP));
 
-	dialog->DrawDialogBox(descriptionPosition, descriptionSize, description, normalColor_, backgroundColor_);
+	dialog->DrawDialogBox(descriptionPosition, descriptionSize, description, kYBlank, normalColor_, backgroundColor_);
 }
