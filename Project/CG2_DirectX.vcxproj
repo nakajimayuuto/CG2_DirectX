@@ -24,6 +24,7 @@
     <ClCompile Include="Application\Application.cpp" />
     <ClCompile Include="Application\BaseEnemy.cpp" />
     <ClCompile Include="Application\Enemy.cpp" />
+    <ClCompile Include="Application\UpgradeManager.cpp" />
     <ClCompile Include="Engine\Math\BaseEntity.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
     </ClCompile>
@@ -52,6 +53,7 @@
     <ClCompile Include="Engine\Math\Keyframe.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
     </ClCompile>
+    <ClCompile Include="Managers\DialogBoxManager.cpp" />
     <ClCompile Include="Managers\GuiNode.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
     </ClCompile>
