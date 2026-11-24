@@ -48,7 +48,7 @@ private:
 
 	static inline float kAutoCompletionRate = 0.025f;
 
-	static inline Vector3 kOffset = { 0.0f,2.0f,-20.0f };
+	static inline Vector3 kOffset = { 0.0f,40.0f,-23.0f };
 
 	static inline float kRotateSpeed = Radian(1.0f);
 

@@ -395,9 +395,9 @@ void Player::BehaviorRootUpdate() {
 		isMoving_ = true;
 	}
 
-	Matrix4x4 cameraRotateMatrix = Matrix4x4::MakeRotateMatrix(Camera::GetInstance()->GetTransform().rotate);
-
-	velocity_ = cameraRotateMatrix.TransformNomal(velocity_);
+	//Matrix4x4 cameraRotateMatrix = Matrix4x4::MakeRotateMatrix(Camera::GetInstance()->GetTransform().rotate);
+	//
+	//velocity_ = cameraRotateMatrix.TransformNomal(velocity_);
 
 	if (isMoving_) {
 		targetRotateY = std::atan2(velocity_.x, velocity_.z);
