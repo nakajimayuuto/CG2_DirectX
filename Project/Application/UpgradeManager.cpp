@@ -43,8 +43,36 @@ void UpgradeManager::Initialize() {
 	//CreateData(UpgradeName::kMaxHP, "最大HP", "最大HPが増える", GoldType::kXP, { 10.0f,25.0f,50.0f }, { 1,2,4 });
 	//CreateData(UpgradeName::kDefense, "防御力", "受けるダメージが\n減る", GoldType::kXP, 5, 5.0f, 1, 1);
 	//CreateData(UpgradeName::kGoldBonus, "財貨獲得", "手に入る財貨が\n増える", GoldType::kXP, 3, 20.0f, 2, 2);
-	CreateData(UpgradeName::kPlayerRate, "プレイヤー\n攻撃速度上昇", "プレイヤーの弾の\n発射速度が上がる", GoldType::kXP,10,20.0f,100,100);
 
+
+
+	CreateData(UpgradeName::kPlayerRate, "プレイヤーの\n攻撃速度上昇", "プレイヤーの弾の\n発射速度が上昇する", GoldType::kXP,10,20.0f,1,0);
+	CreateData(UpgradeName::kPlayerBullets, "プレイヤー弾数上昇", "プレイヤーの一度に\n発射する弾の数が\n上昇する", GoldType::kXP,10,0.0f,1,0);
+	CreateData(UpgradeName::kPlayerDamageScale, "プレイヤーの\nダメージ倍率\n上昇", "プレイヤーの攻撃が\n倍率で強化される", GoldType::kXP,10,20.0f,1,0);
+	CreateData(UpgradeName::kPlayerMaxHP, "プレイヤーの\n最大HP\n上昇", "プレイヤーの最大HPが\n上がる", GoldType::kXP,10,20.0f,1,0);
+	CreateData(UpgradeName::kPlayerMoveSpeed, "プレイヤーの\n移動速度\n上昇", "プレイヤーの移動速度が\n上昇する", GoldType::kXP,10,0.0f,1,0);
+	CreateData(UpgradeName::kHPAbsorption, "撃破回復", "敵を撃破したときに\n敵のHPの一定値を吸収し\n回復できる", GoldType::kXP,10,5.0f,1,0);
+	CreateData(UpgradeName::kHealIncreesed, "回復力上昇", "全ての回復能力を\n上昇させる", GoldType::kXP,10,10.0f,1,0);
+
+	//CreateData(UpgradeName::kGrazeAbsorption, "かすり吸収\n一度きり！", "かすりエリアに入った\n敵に対してもダメージを与える\nかすりエリアで撃破した敵からは\n経験値とゴールドどちらも\n手に入る", GoldType::kGold,1,0.0f,1000,0);
+	CreateData(UpgradeName::kGrazeAbsorption, "かすり吸収\n一度きり！", "かすりエリアに入った\n敵に対してもダメージを与える\nかすりエリアで撃破した敵からは\n経験値とゴールドどちらも\n手に入る", GoldType::kXP,1,0.0f,3,0);
+	
+	CreateData(UpgradeName::kPlayerGrazeArea, "かすりエリア上昇", "かすりエリアの範囲が\n上昇する", GoldType::kGold,10,20.0f,100,100);
+	CreateData(UpgradeName::kPlayerGrazeDamage, "かすりダメージ上昇", "かすりエリアの\n弾に与えるダメージが\n上昇する", GoldType::kGold,10,20.0f,100,100);
+	CreateData(UpgradeName::kGrazeHeal, "かすり回復", "かすりエリアの弾に\nダメージを与えるたびに\n少量HPを回復する", GoldType::kGold,10,5.0f,100,100);
+	CreateData(UpgradeName::kEnemyBullets, "エネミー弾数上昇","敵の弾の\n一度に発射される数が\n上昇する", GoldType::kGold,10,0.0f,100,100);
+	CreateData(UpgradeName::kEnemyBulletSpeedDown, "エネミー弾速低下","敵の弾の\n速度が低下する", GoldType::kGold,10,7.0f,100,100);
+	CreateData(UpgradeName::kEnemyDamage, "エネミー攻撃力上昇","敵の攻撃力が\n上昇する\n受けるダメージが\n大きくなる代わりに\n吸収時の経験値量も\n増える", GoldType::kGold,10,7.0f,100,100);
+	CreateData(UpgradeName::kEnemyLevelUp, "エネミーレベルアップ","敵の基礎ステータスが\n上昇する\n強くなる代わりに\n貰えるゴールドも増える\n", GoldType::kGold,10,7.0f,100,100);
+
+
+
+
+
+
+
+
+	CreateData(UpgradeName::kEnemyLevelUp, "敵レベルアップ", "敵の基礎ステータスが\n上昇する代わりに\nゴールドの獲得効率が\n上がる", GoldType::kGold,10,20.0f,100,100);
 #ifdef _DEBUG
 	// 作り忘れチェック.
 	for (const UpgradeData& data : datas_) {

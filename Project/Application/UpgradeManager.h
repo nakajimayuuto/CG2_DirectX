@@ -17,21 +17,24 @@ enum class UpgradeName {
 	//kDefense,     // 防御力.
 	//kGoldBonus,   // 財貨獲得量.
 
-	// LV
+	// LV (レベルアップ時に1貰えるポイントで取得する。効果量大きくてもええやろ)
 	kPlayerRate, // 攻撃速度.
 	kPlayerBullets, // 弾数増加.
-	kGoldBonus, // ゴールド獲得量.
-	kMaxHP, // 最大体力.
-	kMoveSpeed, // 移動速度.
 	kPlayerDamageScale, // ダメージの倍率.
+	kPlayerMaxHP, // 最大体力.
+	kPlayerMoveSpeed, // 移動速度.
+	kHPAbsorption, // 敵撃破時にHPを回復.
+	kHealIncreesed, // 回復力上昇.
+	kGrazeAbsorption, // 敵にかすりでダメージを与えられる.
 	
-	// Gold
+	// Gold ()
 	kPlayerGrazeArea, // かすりエリア.
 	kPlayerGrazeDamage, // かすりダメージ.
-	kEnemyBullets, // 敵弾数増加.
-	kEnemyDamage, // 敵攻撃力.
-	kXPBonus, // 経験値効率.
 	kGrazeHeal, // かすり回復.
+	kEnemyBullets, // 敵弾数増加.
+	kEnemyBulletSpeedDown, // 敵の弾速低下.
+	kEnemyDamage, // 敵攻撃力.
+	kEnemyLevelUp, // ゴールド獲得効率上昇&&敵の基礎ステ上昇.
 
 	kCount,
 };
