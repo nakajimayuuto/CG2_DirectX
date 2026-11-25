@@ -110,6 +110,8 @@ private:
 	bool isDash_;
 	bool isJump_;
 
+	bool isChangeDirection_;
+
 	bool isImmune_;
 
 	bool isDeath_;
@@ -117,9 +119,16 @@ private:
 	static inline float deathTimerMax = 1.0f;
 
 	std::unique_ptr<HPGauge> hpGauge_;
+	std::unique_ptr<HPGauge> expGauge_;
+
+	float currentEXP_;
+	float maxEXP_;
 
 	float damageCoolTimer_;
 	float damageCoolTimeMax_;
+
+	float shotCoolTimer_;
+	static inline float kShotCoolTimeMax = 0.25f;
 
 	float movingRadius_ = 73.5f;
 

@@ -1,5 +1,7 @@
 #include "Player.h"
 #include "GameCamera.h"
+#include "UpgradeManager.h"
+#include "ProjectileManager.h"
 void Player::Initialize() {
 	transform_.Initialize();
 	targetRotateY = 0.0f;
@@ -10,10 +12,18 @@ void Player::Initialize() {
 	/// HPGauge.
 	maxHP_ = 200.0f;
 	currentHP_ = maxHP_;
+	maxEXP_ = 20.0f;
+	currentEXP_ = 0.0f;
 
 	hpGauge_ = std::make_unique<HPGauge>();
 	hpGauge_->Initialize(&currentHP_, maxHP_, { 200.0f,20.0f });
 	hpGauge_->SetPosition({ -500.0f,300.0f });
+
+	expGauge_ = std::make_unique<HPGauge>();
+	expGauge_->Initialize(&currentEXP_, maxEXP_, { 200.0f,10.0f });
+	expGauge_->SetPosition({ -500.0f,260.0f });
+	expGauge_->SetColor({ 0.5f,1.0f,0.5f });
+	expGauge_->SetBackColor({ 0.0f,0.0f,0.0f });
 
 	// 後々削除
 	transformColliderOffset.Initialize();
@@ -68,6 +78,16 @@ void Player::Initialize() {
 	deathTimer_ = 0.0f;
 
 	InspectorNameAutoSet;
+
+
+	attackCollider_.SetParent(&transform_);
+	attackCollider_.SetRadius(3.0f);
+	attackCollider_.SetDebugColor({ 1.0f,1.0f,1.0f,1.0f });
+	attackCollider_.SetCollisionAttribute(CollisionManager::GetInstance()->GetCollisionAttribute(CollisionAttributeName::kCollisionPlayerAttack));
+	attackCollider_.SetCollisionMask((
+		CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemy) |
+		CollisionManager::GetInstance()->GetCollisionAttribute(kCollisionEnemyAttack)
+		));
 }
 
 void Player::InitializeFloatingGimmick() {
@@ -331,7 +351,21 @@ void Player::BehaviorRootInitialize() {
 
 
 void Player::BehaviorRootUpdate() {
+	attackCollider_.SetDebugColor({ 1.0f,1.0f,1.0f,1.0f });
+	if (attackCollider_.GetOnCollision()) {
+		attackCollider_.SetOnCollision(false);
+		currentEXP_ += 1.0f;
+	}
+
+	if (currentEXP_ >= maxEXP_) {
+		currentEXP_ = 0;
+		maxEXP_ = static_cast<float>(static_cast<int>(maxEXP_ * 1.5f));
+		expGauge_->ChangeMax(maxEXP_);
+	}
+
 	isMoving_ = false;
+	isChangeDirection_ = false;
+	float preTargetRotateY = targetRotateY;
 
 	if (isDeath_) {
 		UpdateFloatingGimmick();
@@ -346,16 +380,32 @@ void Player::BehaviorRootUpdate() {
 			velocity_ = velocity_.Normalize() * kSpeed;
 		}
 
-		if (tutorialUsableJump_) {
-			if (GetJumpButtonTrigger()) {
-				behaviorRequest_ = Behavior::kJump;
-			}
+		if (input->GetRightStickDirection().x != 0.0f || input->GetRightStickDirection().y != 0.0f) {
+			targetRotateY = -VectorToRadian(input->GetRightStickDirection()) + Radian(90.0f);
+			isChangeDirection_ = true;
 		}
 
-		if (tutorialUsableAttack_) {
-			if (GetAttackButtonTrigger()) {
-				behaviorRequest_ = Behavior::kAttack;
+		if (shotCoolTimer_ <= 0.0f) {
+			if (input->PressPadButton(PadButtons::INPUT_R2)) {
+				shotCoolTimer_ = kShotCoolTimeMax;
+				Vector3 direction = { RadianToVector(-targetRotateY + Radian(90.0f)).x,0.0f,RadianToVector(-targetRotateY + Radian(90.0f)).y };
+				ProjectileManager::GetInstance()->CreateDiffusionBullet(
+					Transform::GetInitialValue(
+						{ 1.0f,1.0f,1.0f },
+						{ transform_.rotate.x,targetRotateY,transform_.rotate.z },
+						transform_.GetWorldPosition()
+					),
+					direction.Normalize() * 20.0f,
+					BulletType::kNormal,
+					CollisionAttributeName::kCollisionPlayerAttack,
+					10.0f,
+					3.0f,
+					15,
+					1
+				);
 			}
+		} else {
+			shotCoolTimer_ -= DeltaTime::GetInstance()->GetGameTime();
 		}
 	} else {
 		if (tutorialUsableMove_) {
@@ -374,18 +424,33 @@ void Player::BehaviorRootUpdate() {
 			if (input->PressKey(DIK_D)) {
 				velocity_.x += 1.0f;
 			}
-		}
 
-		if (tutorialUsableJump_) {
-			if (GetJumpButtonTrigger()) {
-				behaviorRequest_ = Behavior::kJump;
+			if (input->TriggerKey(DIK_SPACE)) {
+				UpgradeManager::GetInstance()->ChangeUIActive();
 			}
-		}
 
-		if (tutorialUsableAttack_) {
-			if (GetAttackButtonTrigger()) {
-				behaviorRequest_ = Behavior::kAttack;
+			if (shotCoolTimer_ <= 0.0f) {
+			if (input->PressMouse(MouseButtons::MOUSE_LEFT)) {
+				shotCoolTimer_ = kShotCoolTimeMax;
+				Vector3 direction = { RadianToVector(-targetRotateY + Radian(90.0f)).x,0.0f,RadianToVector(-targetRotateY + Radian(90.0f)).y };
+				ProjectileManager::GetInstance()->CreateDiffusionBullet(
+					Transform::GetInitialValue(
+						{ 1.0f,1.0f,1.0f },
+						{ transform_.rotate.x,targetRotateY,transform_.rotate.z },
+						transform_.GetWorldPosition()
+					),
+					direction.Normalize() * 20.0f,
+					BulletType::kNormal,
+					CollisionAttributeName::kCollisionPlayerAttack,
+					10.0f,
+					3.0f,
+					15,
+					1
+				);
 			}
+		} else {
+			shotCoolTimer_ -= DeltaTime::GetInstance()->GetGameTime();
+		}
 		}
 
 		velocity_ = velocity_.Normalize() * kSpeed;
@@ -395,20 +460,19 @@ void Player::BehaviorRootUpdate() {
 		isMoving_ = true;
 	}
 
-	//Matrix4x4 cameraRotateMatrix = Matrix4x4::MakeRotateMatrix(Camera::GetInstance()->GetTransform().rotate);
-	//
-	//velocity_ = cameraRotateMatrix.TransformNomal(velocity_);
 
 	if (isMoving_) {
-		targetRotateY = std::atan2(velocity_.x, velocity_.z);
+		if (!isChangeDirection_) {
+			targetRotateY = std::atan2(velocity_.x, velocity_.z);
+		}
 	}
 
 	transform_.rotate.y = LerpShortAngle(transform_.rotate.y, targetRotateY, kCompletionRate);
-	//transform_.rotate.y = std::atan2(move.x, move.z);
 
 	transform_.translate += velocity_ * DeltaTime::GetInstance()->GetGameTime();;
 
 	UpdateFloatingGimmick();
+	CollisionManager::GetInstance()->AddColliderList(&attackCollider_);
 
 }
 
@@ -942,9 +1006,11 @@ void Player::Draw() {
 
 	//particles_->Draw();
 	hpGauge_->Draw();
+	expGauge_->Draw();
 
 
 	DrawCollider();
+	attackCollider_.DrawCollider();
 }
 
 void Player::RegisterGlobalVariables() {

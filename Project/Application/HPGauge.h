@@ -16,6 +16,8 @@ public:
 
 	void SetColor(const Vector3& color) { color_ = color; };
 	void SetBackColor(const Vector3& color) { backColor_ = color; };
+
+	void ChangeMax(float maxHP) { maxHP_ = maxHP; };
 private:
 	float* targetHP_;
 	float maxHP_;

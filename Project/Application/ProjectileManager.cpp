@@ -234,6 +234,9 @@ void Bullet::Initialize(const Transform& transform, const Vector3& velocity, Bul
 	colliderRadius_ = 0.4f;
 	colliderColor_ = { 1.0f,0.0f,0.0f,1.0f };
 	collisionAttribute_ = CollisionManager::GetInstance()->GetCollisionAttribute(colliderName);
+	collisionMask_ = 
+		CollisionManager::GetInstance()->GetCollisionAttribute(CollisionAttributeName::kCollisionPlayer) |
+		CollisionManager::GetInstance()->GetCollisionAttribute(CollisionAttributeName::kCollisionPlayerAttack);
 	colliderDimensionType_ = ColliderDimensionType::k3D;
 	model_.Initialize(ModelManager::GetInstance()->GetModelInfo("bullet_crystal"));
 	model_.SetBlendMode(BlendMode::kNormal);
@@ -269,6 +272,10 @@ void Bullet::Draw() {
 	if (type_ != BulletType::kSpike && type_ != BulletType::kSlowSpike) {
 		model_.Draw(modelTransform_);
 	}
+}
+
+void Bullet::OnCollision(Collider* other){
+	other->SetDebugColor({1.0f,1.0f,0.0f,1.0f});
 }
 
 void Bullet::NormalInitialize() {

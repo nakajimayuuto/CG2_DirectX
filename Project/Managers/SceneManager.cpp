@@ -32,7 +32,7 @@ void SceneManager::Initialize() {
 	isSceneChange_ = false;
 	#ifdef _DEBUG
 	//Debug::GetInstance()->LoadDebugSettings();
-	//sceneName_ = SceneName::kGameScene;
+	sceneName_ = SceneName::kGameScene;
 	//gGamePhase = GamePhase::kBossPhase2;
 	//DifficultyManager::GetInstance()->SetCurrentDifficulty(Difficulty::kDifficultyHard);
 	#endif // _DEBUG

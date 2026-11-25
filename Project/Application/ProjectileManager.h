@@ -24,6 +24,8 @@ public:
 
 	void SetDiffusionAmount(uint32_t diffusionAmount) {diffusionAmount_ = diffusionAmount;};
 private:
+	void OnCollision([[maybe_unused]] Collider* other)override;
+
 	static void (Bullet::* pInitializeFunc[])();
 	static void (Bullet::* pUpdateFunc[])();
 

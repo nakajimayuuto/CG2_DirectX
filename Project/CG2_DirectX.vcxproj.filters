@@ -262,6 +262,9 @@
     <Filter Include="hlsl\CopyImage">
       <UniqueIdentifier>{bb1ad2bc-79be-4da2-881e-a22ad9f82217}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Application\Enemy\EnemyManager">
+      <UniqueIdentifier>{b046dd2d-1d78-40fd-8d5a-13b852889a9c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include=".editorconfig" />
@@ -500,6 +503,9 @@
     </ClCompile>
     <ClCompile Include="Managers\DialogBoxManager.cpp">
       <Filter>Managers\DialogBoxManager</Filter>
+    </ClCompile>
+    <ClCompile Include="EnemyManager.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -763,6 +769,9 @@
     </ClInclude>
     <ClInclude Include="Engine\SystemFile\RenderTextureData.h">
       <Filter>Engine\SystemFile\GameSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="EnemyManager.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

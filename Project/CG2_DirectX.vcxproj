@@ -25,6 +25,7 @@
     <ClCompile Include="Application\BaseEnemy.cpp" />
     <ClCompile Include="Application\Enemy.cpp" />
     <ClCompile Include="Application\UpgradeManager.cpp" />
+    <ClCompile Include="EnemyManager.cpp" />
     <ClCompile Include="Engine\Math\BaseEntity.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
     </ClCompile>
@@ -271,6 +272,7 @@
     <ClInclude Include="Application\Application.h" />
     <ClInclude Include="Application\BaseEnemy.h" />
     <ClInclude Include="Application\Enemy.h" />
+    <ClInclude Include="EnemyManager.h" />
     <ClInclude Include="Engine\Math\BaseEntity.h" />
     <ClInclude Include="Engine\Math\Node.h" />
     <ClInclude Include="Engine\Math\Quaternion.h" />

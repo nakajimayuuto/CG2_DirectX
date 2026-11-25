@@ -22,7 +22,7 @@ void GameScene::Initialize() {
 	GameCamera::GetInstance()->Initialize();
 	player_ = std::make_unique<Player>();
 	player_->Initialize();
-	player_->SetStartPosition({ 0.0f,1.0f,-375.0f });
+	player_->SetStartPosition({ 0.0f,1.0f,10.0f });
 	//player_->SetInspectorName("Player");
 	//if (gGamePhase == GamePhase::kGameStartAnim || gGamePhase == GamePhase::kBossPhase1) {
 	//	SoundManager::GetInstance()->SoundPlay("mus_phase1_intro", 1.0f, 0.25f, kBGM, false, "mus_phase1_intro");
@@ -72,7 +72,6 @@ void GameScene::Initialize() {
 
 	// 強化レベル・所持財貨をリセット.
 	UpgradeManager::GetInstance()->DataClear();
-	//UpgradeManager::GetInstance()->ChangeUIActive();
 }
 
 void GameScene::Update() {
@@ -104,6 +103,16 @@ void GameScene::Update() {
 		UpgradeManager::GetInstance()->AddGold(GoldType::kXP, 5);
 	}
 #endif // _DEBUG
+
+	ImGui::Begin("directionalLightBug");
+
+	DirectionalLightData* dData = LightManager::GetInstance()->GetDirectionalLightData();
+
+	ImGui::Text("c%f,%f,%f,%f",dData->color.x, dData->color.y, dData->color.z,dData->color.w);
+	ImGui::Text("d%f,%f,%f",dData->direction.x, dData->direction.y, dData->direction.z);
+	ImGui::Text("i%f",dData->intensity);
+
+	ImGui::End();
 
 	if (gameOverMenu_->GetIsActive()) {
 		if (gameOverMenu_->GetCanGameUpdate()) {
@@ -138,6 +147,21 @@ void GameScene::Update() {
 		}
 	}
 
+	tutorialTimer_ += DeltaTime::GetInstance()->GetGameTime();
+
+	if (tutorialTimer_ >= tutorialTimerMax_) {
+		tutorialTimer_ -= tutorialTimerMax_;
+		ProjectileManager::GetInstance()->CreateDiffusionBullet(Transform::GetInitialValue(),
+			{ 0.0f,0.0f,-10.0f },
+			BulletType::kNormal,
+			CollisionAttributeName::kCollisionEnemyAttack,
+			10.0f,
+			3.0f,
+			Radian(15.0f),
+			5
+		);
+	}
+
 	player_->Update();
 
 
@@ -156,20 +180,12 @@ void GameScene::Update() {
 	Camera::GetInstance()->Update();
 	CheckAllCollisions();
 
-	MapChipManager::GetInstance()->Update();
-
 	UpgradeManager::GetInstance()->Update();
 }
 
 void GameScene::Draw() {
 	ground_->Draw();
 	Renderer* renderer = Renderer::GetInstance();
-
-
-	//renderer->DrawModel(Transform::GetInitialValue({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }), "wall", { 1.0f,1.0f,1.0f,1.0f }, false);
-	//renderer->DrawBox(Transform::GetInitialValue({ 10.0f,10.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,5.0f,-75.0f }), "door", { 1.0f,1.0f,1.0f,1.0f });
-	MapChipManager::GetInstance()->Draw();
-
 
 	ProjectileManager::GetInstance()->Draw();
 
@@ -183,12 +199,12 @@ void GameScene::Draw() {
 
 	ParticleManager::GetInstance()->Draw();
 
-	renderer->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 500.0f,200.0f,0.0f }), "play_guid", { 1.0f,1.0f,1.0f,1.0f });
+	//renderer->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 500.0f,200.0f,0.0f }), "play_guid", { 1.0f,1.0f,1.0f,1.0f });
 
 
 
 
-	renderer->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 265.0f,300.0f,0.0f }), "pause_to_hamburger", { 1.0f,1.0f,1.0f,1.0f });
+	//renderer->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 265.0f,300.0f,0.0f }), "pause_to_hamburger", { 1.0f,1.0f,1.0f,1.0f });
 
 
 	if (player_->GetIsDeath()) {
