@@ -22,10 +22,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application\Application.cpp" />
-    <ClCompile Include="Application\BaseEnemy.cpp" />
-    <ClCompile Include="Application\Enemy.cpp" />
     <ClCompile Include="Application\UpgradeManager.cpp" />
-    <ClCompile Include="EnemyManager.cpp" />
+    <ClCompile Include="Application\EnemyManager.cpp" />
     <ClCompile Include="Engine\Math\BaseEntity.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
     </ClCompile>
@@ -54,6 +52,7 @@
     <ClCompile Include="Engine\Math\Keyframe.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
     </ClCompile>
+    <ClCompile Include="Application\IEnemy.cpp" />
     <ClCompile Include="Managers\DialogBoxManager.cpp" />
     <ClCompile Include="Managers\GuiNode.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
@@ -262,17 +261,15 @@
     <ClCompile Include="Application\Player.cpp" />
     <ClCompile Include="Application\Scene\GameScene.cpp" />
     <ClCompile Include="Application\Scene\TitleScene.cpp" />
-    <ClCompile Include="Application\ShieldEnemy.cpp" />
     <ClCompile Include="Application\Skydome.cpp" />
     <ClCompile Include="Managers\SrvManager.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
     </ClCompile>
+    <ClCompile Include="Application\ShotEnemy.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application\Application.h" />
-    <ClInclude Include="Application\BaseEnemy.h" />
-    <ClInclude Include="Application\Enemy.h" />
-    <ClInclude Include="EnemyManager.h" />
+    <ClInclude Include="Application\EnemyManager.h" />
     <ClInclude Include="Engine\Math\BaseEntity.h" />
     <ClInclude Include="Engine\Math\Node.h" />
     <ClInclude Include="Engine\Math\Quaternion.h" />
@@ -285,6 +282,7 @@
     <ClInclude Include="Application\HPGauge.h" />
     <ClInclude Include="Engine\SystemFile\Framework.h" />
     <ClInclude Include="Engine\Math\Keyframe.h" />
+    <ClInclude Include="Application\IEnemy.h" />
     <ClInclude Include="Managers\GuiNode.h" />
     <ClInclude Include="Managers\ImGuiManager.h" />
     <ClInclude Include="Engine\Renderer\ParticleNodeMove.h" />
@@ -365,10 +363,10 @@
     <ClInclude Include="Application\Scene\GameScene.h" />
     <ClInclude Include="Application\Scene\IScene.h" />
     <ClInclude Include="Application\Scene\TitleScene.h" />
-    <ClInclude Include="Application\ShieldEnemy.h" />
     <ClInclude Include="Application\Skydome.h" />
     <ClInclude Include="Managers\SrvManager.h" />
     <ClInclude Include="Engine\SystemFile\RenderTextureData.h" />
+    <ClInclude Include="Application\ShotEnemy.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\FullScreen\FullScreen.hlsli" />

@@ -441,15 +441,6 @@
     <ClCompile Include="Application\PauseMenu.cpp">
       <Filter>Application\PauseMenu</Filter>
     </ClCompile>
-    <ClCompile Include="Application\BaseEnemy.cpp">
-      <Filter>Application\Enemy</Filter>
-    </ClCompile>
-    <ClCompile Include="Application\Enemy.cpp">
-      <Filter>Application\Enemy</Filter>
-    </ClCompile>
-    <ClCompile Include="Application\ShieldEnemy.cpp">
-      <Filter>Application\Enemy</Filter>
-    </ClCompile>
     <ClCompile Include="Application\MapChipField.cpp">
       <Filter>Application\MapChip</Filter>
     </ClCompile>
@@ -504,8 +495,14 @@
     <ClCompile Include="Managers\DialogBoxManager.cpp">
       <Filter>Managers\DialogBoxManager</Filter>
     </ClCompile>
-    <ClCompile Include="EnemyManager.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Application\EnemyManager.cpp">
+      <Filter>Application\Enemy\EnemyManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Application\IEnemy.cpp">
+      <Filter>Application\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="Application\ShotEnemy.cpp">
+      <Filter>Application\Enemy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -707,15 +704,6 @@
     <ClInclude Include="Application\UpgradeManager.h">
       <Filter>Application\UpgradeManager</Filter>
     </ClInclude>
-    <ClInclude Include="Application\BaseEnemy.h">
-      <Filter>Application\Enemy</Filter>
-    </ClInclude>
-    <ClInclude Include="Application\Enemy.h">
-      <Filter>Application\Enemy</Filter>
-    </ClInclude>
-    <ClInclude Include="Application\ShieldEnemy.h">
-      <Filter>Application\Enemy</Filter>
-    </ClInclude>
     <ClInclude Include="Application\MapChipField.h">
       <Filter>Application\MapChip</Filter>
     </ClInclude>
@@ -770,8 +758,14 @@
     <ClInclude Include="Engine\SystemFile\RenderTextureData.h">
       <Filter>Engine\SystemFile\GameSystem</Filter>
     </ClInclude>
-    <ClInclude Include="EnemyManager.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Application\EnemyManager.h">
+      <Filter>Application\Enemy\EnemyManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Application\IEnemy.h">
+      <Filter>Application\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="Application\ShotEnemy.h">
+      <Filter>Application\Enemy</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

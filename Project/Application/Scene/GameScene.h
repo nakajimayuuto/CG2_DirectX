@@ -9,6 +9,7 @@
 #include "Fade.h"
 #include "PauseMenu.h"
 #include "MapChipManager.h"
+#include "EnemyManager.h"
 
 class GameScene : public IScene {
 public:

@@ -17,6 +17,7 @@ void GameScene::Initialize() {
 	LightManager::GetInstance()->GetDirectionalLightData()->color = { 1.0f,1.0f,1.0f,1.0f };
 	ParticleManager::GetInstance()->ClearParticles();
 
+
 	LightManager::GetInstance()->ClearLight();
 	Camera::GetInstance()->SetPosition({ 0.0f,2.0f,-30.0f });
 	GameCamera::GetInstance()->Initialize();
@@ -72,6 +73,7 @@ void GameScene::Initialize() {
 
 	// 強化レベル・所持財貨をリセット.
 	UpgradeManager::GetInstance()->DataClear();
+	EnemyManager::GetInstance()->Initialize();
 }
 
 void GameScene::Update() {
@@ -101,6 +103,9 @@ void GameScene::Update() {
 	if (InputManager::GetInstance()->TriggerKey(DIK_F6)) {
 		UpgradeManager::GetInstance()->AddGold(GoldType::kGold, 500);
 		UpgradeManager::GetInstance()->AddGold(GoldType::kXP, 5);
+	}
+	if (InputManager::GetInstance()->TriggerKey(DIK_F7)) {
+		EnemyManager::GetInstance()->SpawnEnemy({0.0f,0.0f,0.0f});
 	}
 #endif // _DEBUG
 
@@ -162,6 +167,7 @@ void GameScene::Update() {
 		);
 	}
 
+	EnemyManager::GetInstance()->Update();
 	player_->Update();
 
 
@@ -199,6 +205,7 @@ void GameScene::Draw() {
 
 	ParticleManager::GetInstance()->Draw();
 
+	EnemyManager::GetInstance()->Draw();
 	//renderer->DrawSprite(Transform::GetInitialValue({ 1.0f,1.0f ,1.0f }, { 0.0f,0.0f,0.0f }, { 500.0f,200.0f,0.0f }), "play_guid", { 1.0f,1.0f,1.0f,1.0f });
 
 
